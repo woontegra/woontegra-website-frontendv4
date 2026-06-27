@@ -1,0 +1,88 @@
+import type { CartSnapshot } from '@/lib/cartStorage'
+import type { ProductType, PublicProductDetail, PublicProductListItem } from '@/types/product'
+
+export type ProductPurchaseFields = Pick<
+  PublicProductListItem,
+  'purchaseEnabled' | 'price' | 'productType'
+>
+
+export function hasValidPrice(product: Pick<PublicProductListItem, 'price'>): boolean {
+  return Number.isFinite(product.price) && product.price > 0
+}
+
+export function canPurchaseProduct(product: ProductPurchaseFields): boolean {
+  if (isFreeDownloadProduct(product)) return false
+  if (product.purchaseEnabled === false) return false
+  if (!hasValidPrice(product)) return false
+  return (
+    product.productType === 'DOWNLOAD' ||
+    product.productType === 'SAAS' ||
+    product.productType === 'SERVICE'
+  )
+}
+
+export function isFreeDownloadProduct(product: ProductPurchaseFields): boolean {
+  return (
+    product.productType === 'DOWNLOAD' &&
+    product.purchaseEnabled === false &&
+    !hasValidPrice(product)
+  )
+}
+
+export function shouldShowQuoteCta(product: ProductPurchaseFields): boolean {
+  if (isFreeDownloadProduct(product)) return false
+  if (product.purchaseEnabled === false) return true
+  return !hasValidPrice(product)
+}
+
+export function isSingleQuantityProduct(product: {
+  productType: ProductType
+  licenseRequired?: boolean
+  singleQuantity?: boolean
+}): boolean {
+  if (product.singleQuantity === true) return true
+  if (product.singleQuantity === false) return false
+  if (product.productType === 'SAAS') return false
+  if (product.licenseRequired === true) return true
+  if (product.productType === 'DOWNLOAD') return true
+  if (product.productType === 'SERVICE') return true
+  return false
+}
+
+export function buildCartSnapshot(
+  product: Pick<
+    PublicProductListItem,
+    'name' | 'slug' | 'price' | 'currency' | 'productType' | 'coverImage' | 'licenseMonths'
+  > & { licenseRequired?: boolean },
+): CartSnapshot {
+  const licenseRequired =
+    'licenseRequired' in product && typeof product.licenseRequired === 'boolean'
+      ? product.licenseRequired
+      : undefined
+  return {
+    name: product.name,
+    slug: product.slug,
+    price: product.price,
+    currency: product.currency,
+    productType: product.productType,
+    coverImage: product.coverImage,
+    licenseDurationMonths: product.licenseMonths,
+    licenseRequired,
+    singleQuantity: isSingleQuantityProduct({
+      productType: product.productType,
+      licenseRequired,
+    }),
+  }
+}
+
+export function isSaasSubscriptionProduct(productType: ProductType): boolean {
+  return productType === 'SAAS'
+}
+
+export function licenseDisplayLabel(product: PublicProductDetail): string {
+  if (product.licenseRequired) return 'Merkezi Lisans'
+  const isFree = !Number.isFinite(product.price) || product.price <= 0
+  if (isFree && product.purchaseEnabled === false) return 'Ücretsiz'
+  if (product.productType === 'SAAS' || product.productType === 'SERVICE') return 'Manuel Teslim'
+  return 'Lisanssız'
+}

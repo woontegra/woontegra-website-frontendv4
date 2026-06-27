@@ -1,0 +1,64 @@
+import type { BuilderBlock } from '@/builder/types'
+import type { HomePageContent } from '@/types/homePageContent'
+import { defaultHomePageContent, normalizeHomePageContent } from '@/types/homePageContent'
+
+export type HomeRenderPlan =
+  | { mode: 'builder'; blocks: BuilderBlock[]; seoTitle?: string; seoDescription?: string }
+  | { mode: 'sections'; content: HomePageContent; seoTitle?: string; seoDescription?: string }
+
+function isBuilderBlock(value: unknown): value is BuilderBlock {
+  if (!value || typeof value !== 'object') return false
+  const row = value as Record<string, unknown>
+  return typeof row.type === 'string' && typeof row.id === 'string'
+}
+
+function parseBlocks(raw: unknown): BuilderBlock[] | null {
+  if (!Array.isArray(raw) || raw.length === 0) return null
+  const blocks = raw.filter(isBuilderBlock)
+  return blocks.length > 0 ? blocks : null
+}
+
+function extractSeo(raw: Record<string, unknown> | null): { title?: string; description?: string } {
+  if (!raw) return {}
+  const title = String(raw.seoTitle ?? '').trim()
+  const description = String(raw.seoDescription ?? '').trim()
+  return {
+    title: title || undefined,
+    description: description || undefined,
+  }
+}
+
+/**
+ * Ana sayfa render planı — öncelik:
+ * 1) Çok bloklu builder JSON → PageBlocksRenderer
+ * 2) page-content/home veya fallback → tam bölüm vitrini (HomePageView)
+ */
+export function resolveHomeRenderPlan(raw: Record<string, unknown> | null): HomeRenderPlan {
+  const seo = extractSeo(raw)
+
+  if (raw && typeof raw === 'object') {
+    const blocks =
+      parseBlocks(raw.blocks) ??
+      parseBlocks((raw.page as Record<string, unknown> | undefined)?.blocks) ??
+      null
+
+    if (blocks && blocks.length >= 1) {
+      return { mode: 'builder', blocks, ...seo }
+    }
+  }
+
+  const content = normalizeHomePageContent(raw)
+
+  return {
+    mode: 'sections',
+    content,
+    seoTitle: seo.title ?? defaultHomePageContent.hero.title,
+    seoDescription:
+      seo.description ??
+      'Woontegra — dijital çözümler, yazılım geliştirme, e-ticaret ve teknoloji hizmetleri.',
+  }
+}
+
+export function homePlanSeo(plan: HomeRenderPlan): { title?: string; description?: string } {
+  return { title: plan.seoTitle, description: plan.seoDescription }
+}
