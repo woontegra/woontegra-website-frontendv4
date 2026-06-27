@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import { KeyRound, Mail, ShieldCheck } from 'lucide-react'
 import { CartAddedFeedback } from '@/components/public/CartAddedFeedback'
+import { ProductFreeDownloadButton } from '@/components/public/product/ProductFreeDownloadButton'
 import type { PublicProductDetail } from '@/types/product'
 import { formatMoney } from '@/types/product'
 import { formatCampaignDate } from '@/types/campaign'
+import { getPublicProductDownloadFiles } from '@/lib/freeProductDownload'
 import {
   canPurchaseProduct,
   isFreeDownloadProduct,
@@ -41,6 +43,7 @@ export function ProductPurchasePanel({
   const strikePrice =
     product.originalPrice != null && product.originalPrice > unitPrice ? product.originalPrice : null
   const campaignBadge = product.campaign?.badge?.trim() || (product.campaign ? 'Kampanyalı' : null)
+  const publicDownloadFiles = getPublicProductDownloadFiles(product)
 
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm sm:p-6">
@@ -122,13 +125,26 @@ export function ProductPurchasePanel({
         <p className="mt-4 text-sm text-slate-600">Ödeme sonrası indirme bilgileri e-posta ile gönderilir.</p>
       ) : null}
 
-      {isFreeDownload ? (
+      {isFreeDownload && !product.licenseRequired ? (
         <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
-          Ücretsiz indirme bağlantısı yakında eklenecek.
+          Ücretsiz Windows aracıdır. Verileriniz bilgisayarınızda kalır; Woontegra sunucularına gönderilmez.
+        </p>
+      ) : null}
+
+      {isFreeDownload && publicDownloadFiles.length === 0 ? (
+        <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+          Ücretsiz indirme bağlantısı henüz tanımlı değil.
         </p>
       ) : null}
 
       <div className="mt-5 space-y-3">
+        {isFreeDownload && publicDownloadFiles.length > 0 ? (
+          <div className="flex flex-wrap gap-3">
+            {publicDownloadFiles.map((file) => (
+              <ProductFreeDownloadButton key={`${file.type ?? file.label}-${file.downloadPath}`} file={file} />
+            ))}
+          </div>
+        ) : null}
         {feedback ? (
           <CartAddedFeedback
             message={feedback === 'in-cart' ? 'Bu ürün zaten sepetinizde.' : 'Ürün sepete eklendi.'}

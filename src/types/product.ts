@@ -52,6 +52,17 @@ export type PublicProductDetail = PublicProductListItem & {
   licenseDays: number | null
   licenseMaxDevices: number | null
   hasDownload: boolean
+  publicDownloadFiles?: PublicProductDownloadFile[]
+}
+
+export type PublicProductDownloadFile = {
+  label: string
+  downloadPath: string
+  filename: string
+  version?: string
+  size?: string
+  type?: 'setup' | 'portable' | 'other'
+  buttonLabel?: string
 }
 
 function toNumber(value: unknown, fallback = 0): number {
@@ -185,7 +196,34 @@ export function normalizePublicDetail(raw: unknown): PublicProductDetail | null 
     licenseDays: toNullableNumber(row.licenseDays),
     licenseMaxDevices: toNullableNumber(row.licenseMaxDevices),
     hasDownload: toBool(row.hasDownload, false),
+    publicDownloadFiles: normalizePublicDownloadFiles(row.publicDownloadFiles),
   }
+}
+
+function normalizePublicDownloadFiles(raw: unknown): PublicProductDownloadFile[] | undefined {
+  if (!Array.isArray(raw) || raw.length === 0) return undefined
+  const files: PublicProductDownloadFile[] = []
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue
+    const row = item as Record<string, unknown>
+    const downloadPath = toString(row.downloadPath)
+    const label = toString(row.label)
+    const filename = toString(row.filename, 'download.exe')
+    if (!downloadPath || !label) continue
+    const typeRaw = row.type
+    const type =
+      typeRaw === 'setup' || typeRaw === 'portable' || typeRaw === 'other' ? typeRaw : undefined
+    files.push({
+      label,
+      downloadPath,
+      filename,
+      version: row.version == null ? undefined : toString(row.version),
+      size: row.size == null ? undefined : toString(row.size),
+      type,
+      buttonLabel: row.buttonLabel == null ? undefined : toString(row.buttonLabel),
+    })
+  }
+  return files.length > 0 ? files : undefined
 }
 
 export function formatMoney(amount: number, currency = 'TRY'): string {
