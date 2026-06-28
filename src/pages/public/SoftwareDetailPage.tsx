@@ -4,12 +4,14 @@ import { LoadingState } from '@/components/public/LoadingState'
 import { ErrorState } from '@/components/public/ErrorState'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { Link, useParams } from 'react-router-dom'
+import { usePreviewOrParamSlug } from '@/lib/previewRouteParams'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { productsService } from '@/services/productsService'
 import { getErrorMessage } from '@/api/client'
 
 export function SoftwareDetailPage() {
-  const { slug = '' } = useParams()
+  const { slug: paramSlug = '' } = useParams()
+  const slug = usePreviewOrParamSlug(paramSlug)
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ['products', slug],

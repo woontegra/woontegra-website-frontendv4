@@ -6,8 +6,13 @@ import { renderIfMediaUrl, renderIfText, shouldShowField } from '@/builder/rende
 import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 import { resolveIcon } from '@/lib/iconRegistry'
 import { cn } from '@/lib/cn'
-import type { HeroBlock } from '@/builder/types'
+import type { BlockButton, HeroBlock } from '@/builder/types'
 import { buildHeroGradientCss } from '@/builder/types'
+import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
+
+function heroButtonClass(variant: BlockButton['variant'], outlineClass: string, primaryClass: string) {
+  return variant === 'outline' ? outlineClass : primaryClass
+}
 
 export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps) {
   if (block.type !== 'hero') return null
@@ -135,14 +140,14 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
                   type="button"
                   className="inline-block"
                 >
-                  <span
-                    className={cn(
-                      'inline-flex rounded-lg px-4 py-2 text-sm font-medium',
-                      btn.variant === 'outline' ? 'border border-white/30 text-white' : 'bg-emerald-600 text-white',
+                  <BlockButtonLink
+                    btn={btn}
+                    className={heroButtonClass(
+                      btn.variant,
+                      'inline-flex rounded-lg border border-white/30 px-4 py-2 text-sm font-medium text-white',
+                      'inline-flex rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white',
                     )}
-                  >
-                    {btn.label}
-                  </span>
+                  />
                 </BuilderField>
               ))}
             </div>
@@ -250,16 +255,14 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
                       type="button"
                       className="inline-block"
                     >
-                      <span
-                        className={cn(
-                          'inline-flex rounded-lg px-6 py-2.5 text-sm font-medium',
-                          btn.variant === 'outline'
-                            ? 'border border-white/30 text-white'
-                            : 'bg-emerald-600 text-white',
+                      <BlockButtonLink
+                        btn={btn}
+                        className={heroButtonClass(
+                          btn.variant,
+                          'inline-flex rounded-lg border border-white/30 px-6 py-2.5 text-sm font-medium text-white',
+                          'inline-flex rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white',
                         )}
-                      >
-                        {btn.label}
-                      </span>
+                      />
                     </BuilderField>
                   ))}
                 </div>
@@ -340,16 +343,14 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
                       type="button"
                       className="inline-block"
                     >
-                      <span
-                        className={cn(
-                          'inline-flex rounded-lg px-6 py-2.5 text-sm font-medium',
-                          btn.variant === 'outline'
-                            ? 'border border-white/30 text-white'
-                            : 'bg-green-600 text-white',
+                      <BlockButtonLink
+                        btn={btn}
+                        className={heroButtonClass(
+                          btn.variant,
+                          'inline-flex rounded-lg border border-white/30 px-6 py-2.5 text-sm font-medium text-white',
+                          'inline-flex rounded-lg bg-green-600 px-6 py-2.5 text-sm font-medium text-white',
                         )}
-                      >
-                        {btn.label}
-                      </span>
+                      />
                     </BuilderField>
                   ))}
                 </div>
@@ -442,10 +443,8 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
                   type="button"
                   className="inline-block"
                 >
-                  <a
-                    href={btn.href}
-                    target={btn.openInNewTab ? '_blank' : undefined}
-                    rel={btn.openInNewTab ? 'noopener noreferrer' : undefined}
+                  <BlockButtonLink
+                    btn={btn}
                     className={cn(
                       'inline-flex rounded-lg px-5 py-2.5 text-sm font-semibold transition',
                       btn.variant === 'secondary' && secondaryBtnClass,
@@ -453,9 +452,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
                       (!btn.variant || btn.variant === 'primary') &&
                         'bg-emerald-600 text-white hover:bg-emerald-700',
                     )}
-                  >
-                    {btn.label}
-                  </a>
+                  />
                 </BuilderField>
               ))}
             </div>

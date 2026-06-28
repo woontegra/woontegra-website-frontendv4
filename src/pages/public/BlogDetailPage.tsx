@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
+import { usePreviewOrParamSlug } from '@/lib/previewRouteParams'
 import { BlogDetailView } from '@/components/public/blog/BlogDetailView'
 import { LoadingState } from '@/components/public/LoadingState'
 import { ErrorState } from '@/components/public/ErrorState'
@@ -9,7 +10,8 @@ import { blogService } from '@/services/blogService'
 import { getErrorMessage } from '@/api/client'
 
 export function BlogDetailPage() {
-  const { slug = '' } = useParams()
+  const { slug: paramSlug = '' } = useParams()
+  const slug = usePreviewOrParamSlug(paramSlug)
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ['blog', slug],

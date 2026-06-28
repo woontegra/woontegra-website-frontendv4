@@ -28,6 +28,7 @@ const KNOWN_V4_ROUTES = new Set([
 ])
 
 const SERVICE_SLUGS = [
+  'mobil-uygulama-gelistirme',
   'web-tasarim',
   'e-ticaret',
   'saas',

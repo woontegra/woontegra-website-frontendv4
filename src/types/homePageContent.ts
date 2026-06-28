@@ -126,7 +126,7 @@ export const defaultHomePageContent: HomePageContent = {
       'Sadece yazılım geliştirmiyoruz; kendi ürünlerimizi yaratıyor ve yönetiyoruz. E-ticaret, SaaS ve danışmanlık — hepsini deneyimliyoruz.',
     image: '/images/ana-sayfa-hero.jpg',
     button1Text: 'Çözümleri İncele',
-    button1Href: '#hizmetler',
+    button1Href: '/cozumler',
     button2Text: 'İletişime Geç',
     button2Href: '/iletisim',
   },

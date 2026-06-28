@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { BuilderField } from '@/builder/edit/BuilderField'
 import { BlockSectionHeader } from '@/builder/render/SectionBlockShell'
+import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
 import { renderIfText } from '@/builder/render/renderRules'
 import { cn } from '@/lib/cn'
 import type { CtaBlock } from '@/builder/types'
@@ -70,9 +71,10 @@ export function CtaBlockRenderer({ block }: BlockRendererProps) {
                   type="button"
                   className="inline-block"
                 >
-                  <span className="inline-flex items-center justify-center rounded-lg border border-white/40 px-10 py-4 text-base text-white transition hover:bg-white hover:text-emerald-700">
-                    {btn.label}
-                  </span>
+                  <BlockButtonLink
+                    btn={btn}
+                    className="inline-flex items-center justify-center rounded-lg border border-white/40 px-10 py-4 text-base text-white transition hover:bg-white hover:text-emerald-700"
+                  />
                 </BuilderField>
               ))}
             </div>
@@ -108,8 +110,8 @@ export function CtaBlockRenderer({ block }: BlockRendererProps) {
                 type="button"
                 className="inline-block"
               >
-                <a
-                  href={btn.href}
+                <BlockButtonLink
+                  btn={btn}
                   className={cn(
                     'inline-flex rounded-lg px-5 py-2.5 text-sm font-semibold transition',
                     btn.variant === 'outline' &&
@@ -121,9 +123,7 @@ export function CtaBlockRenderer({ block }: BlockRendererProps) {
                     (!btn.variant || btn.variant === 'primary') &&
                       'bg-emerald-600 text-white hover:bg-emerald-700',
                   )}
-                >
-                  {btn.label}
-                </a>
+                />
               </BuilderField>
             ))}
           </div>

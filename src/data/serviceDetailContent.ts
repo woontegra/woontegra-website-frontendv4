@@ -686,7 +686,162 @@ export const digitalConsultingDetail: ServiceDetailContent = {
   },
 }
 
+export const mobileAppDevelopmentDetail: ServiceDetailContent = {
+  slug: 'mobil-uygulama-gelistirme',
+  heroTheme: 'blue',
+  hero: {
+    eyebrow: 'Mobil Uygulama Geliştirme',
+    title: 'iOS ve Android İçin Ölçeklenebilir Mobil Uygulamalar',
+    description:
+      'Kurumsal mobil uygulamalardan tüketici ürünlerine kadar; performans, güvenlik ve kullanıcı deneyimi odaklı native ve cross-platform çözümler geliştiriyoruz.',
+    image: '/images/saas-dashboard.jpg',
+    imageAlt: 'Woontegra mobil uygulama geliştirme',
+    primaryCta: { text: 'Teklif Al', to: '/teklif-al' },
+    secondaryCta: { text: 'İletişime Geç', to: '/iletisim' },
+  },
+  problems: {
+    title: 'Kimler İçin?',
+    subtitle: 'Mobil uygulama yatırımı yapan ekiplerin karşılaştığı tipik ihtiyaçlar.',
+    items: [
+      {
+        icon: 'Smartphone',
+        title: 'Kurumsal mobil operasyon',
+        description: 'Saha ekipleri, bayiler veya iç kullanıcılar için güvenli mobil iş akışları.',
+      },
+      {
+        icon: 'Users',
+        title: 'Tüketici mobil ürünleri',
+        description: 'App Store ve Google Play’de konumlanan, büyümeye hazır mobil uygulamalar.',
+      },
+      {
+        icon: 'Building2',
+        title: 'Mevcut sistem entegrasyonu',
+        description: 'ERP, CRM veya web paneli ile senkron çalışan mobil istemciler.',
+      },
+      {
+        icon: 'Rocket',
+        title: 'MVP ile hızlı piyasaya çıkış',
+        description: 'Sınırlı bütçe ve sürede test edilebilir, iterasyona açık ilk sürüm ihtiyacı.',
+      },
+    ],
+  },
+  approach: {
+    title: 'Ürün Odaklı Mobil Geliştirme Yaklaşımı',
+    description:
+      'Mobil uygulamanızı yalnızca ekran tasarımı olarak değil; sürdürülebilir bir dijital ürün olarak ele alırız. Kullanıcı akışları, teknik mimari ve yayın stratejisini birlikte planlarız.',
+    bullets: [
+      'Hedef kullanıcı ve iş senaryolarını netleştiririz',
+      'UX akışları ve teknik mimariyi birlikte tasarlarız',
+      'Performans ve güvenlik gereksinimlerini erken aşamada tanımlarız',
+      'Mağaza yayını ve sürüm yönetimini sürece dahil ederiz',
+    ],
+    flowSteps: ['Keşif', 'UX', 'Geliştirme', 'Test', 'Yayın', 'Bakım'],
+  },
+  scope: {
+    title: 'Neler Sunuyoruz?',
+    subtitle: 'Mobil uygulama projelerinde uçtan uca geliştirme ve destek kapsamı.',
+    items: [
+      {
+        icon: 'Smartphone',
+        title: 'Native & Cross-Platform',
+        description: 'iOS, Android ve gerektiğinde React Native / Flutter tabanlı çözümler.',
+        gradient: 'from-blue-500 to-cyan-500',
+      },
+      {
+        icon: 'Layout',
+        title: 'UX/UI Tasarımı',
+        description: 'Mobil öncelikli arayüz, bileşen kütüphanesi ve etkileşim tasarımı.',
+        gradient: 'from-violet-500 to-purple-600',
+      },
+      {
+        icon: 'Zap',
+        title: 'API & Backend Entegrasyonu',
+        description: 'REST/GraphQL servisleri, kimlik doğrulama ve gerçek zamanlı senkronizasyon.',
+        gradient: 'from-emerald-500 to-teal-500',
+      },
+      {
+        icon: 'Bell',
+        title: 'Push & Bildirim',
+        description: 'FCM/APNs entegrasyonu, segmentli bildirim ve kullanıcı tercih yönetimi.',
+        gradient: 'from-amber-500 to-orange-500',
+      },
+      {
+        icon: 'Shield',
+        title: 'Güvenlik & Uyumluluk',
+        description: 'Token yönetimi, veri şifreleme ve KVKK odaklı veri işleme pratikleri.',
+        gradient: 'from-slate-600 to-slate-800',
+      },
+      {
+        icon: 'BarChart3',
+        title: 'Analitik & İzleme',
+        description: 'Olay takibi, çökme raporlama ve sürüm performans metrikleri.',
+        gradient: 'from-pink-500 to-rose-500',
+      },
+    ],
+  },
+  process: {
+    title: 'Süreç',
+    subtitle: 'Fikirden mağaza yayınına kadar yapılandırılmış geliştirme adımları.',
+    steps: [
+      { step: '01', title: 'Keşif & Kapsam', description: 'İş hedefleri, kullanıcı profilleri ve MVP kapsamı belirlenir.' },
+      { step: '02', title: 'Tasarım & Prototip', description: 'Akışlar, wireframe ve tıklanabilir prototip onaylanır.' },
+      { step: '03', title: 'Geliştirme', description: 'Sprint bazlı geliştirme, kod inceleme ve düzenli demo.' },
+      { step: '04', title: 'Test & Kalite', description: 'Cihaz matrisi, performans ve güvenlik testleri tamamlanır.' },
+      { step: '05', title: 'Mağaza Yayını', description: 'App Store / Play Store süreçleri ve sürüm notları yönetilir.' },
+      { step: '06', title: 'Bakım & İterasyon', description: 'Hata düzeltme, OS güncellemeleri ve özellik genişletmesi.' },
+    ],
+  },
+  whyUs: {
+    title: 'Avantajlarımız',
+    items: [
+      { title: 'Ürün + yazılım deneyimi', description: 'Kendi dijital ürünlerimizden gelen mobil geliştirme pratiği.' },
+      { title: 'Performans odaklı mimari', description: 'Düşük gecikme, optimize edilmiş veri kullanımı ve stabil sürümler.' },
+      { title: 'Şeffaf proje yönetimi', description: 'Sprint planı, teslimat takvimi ve düzenli durum raporları.' },
+      { title: 'Yayın sonrası destek', description: 'Mağaza güncellemeleri, izleme ve sürekli iyileştirme.' },
+    ],
+  },
+  technology: {
+    title: 'Sık Sorulan Sorular',
+    description: 'Mobil uygulama projelerinde en çok sorulan konular.',
+    items: [
+      {
+        icon: 'HelpCircle',
+        title: 'Native mi cross-platform mu tercih edilmeli?',
+        description:
+          'Performans, bütçe ve yayın takvimine göre birlikte karar veririz. Kurumsal entegrasyon ağırlıklı projelerde native; hızlı MVP için cross-platform uygun olabilir.',
+      },
+      {
+        icon: 'HelpCircle',
+        title: 'Mevcut web panelimizle entegre olur mu?',
+        description:
+          'Evet. Mevcut API veya yeni bir backend katmanı üzerinden mobil uygulama ile web sisteminizi senkronize ederiz.',
+      },
+      {
+        icon: 'HelpCircle',
+        title: 'App Store ve Google Play sürecini siz yönetiyor musunuz?',
+        description:
+          'Evet. Hesap yapılandırması, sürüm gönderimi, reddedilme durumları ve güncelleme döngüsünde destek sağlarız.',
+      },
+      {
+        icon: 'HelpCircle',
+        title: 'Proje tesliminden sonra bakım alabilir miyiz?',
+        description:
+          'Evet. SLA kapsamında hata giderme, OS uyumluluk güncellemeleri ve yeni özellik geliştirmesi sunuyoruz.',
+      },
+    ],
+  },
+  cta: {
+    title: 'Mobil uygulama projenizi birlikte hayata geçirelim.',
+    description: 'Hedeflerinizi, kullanıcı kitlenizi ve teknik gereksinimlerinizi konuşarak net bir yol haritası çıkaralım.',
+    buttonText: 'Teklif Al',
+    buttonTo: '/teklif-al',
+    secondaryButtonText: 'İletişime Geç',
+    secondaryButtonTo: '/iletisim',
+  },
+}
+
 export const SERVICE_DETAIL_BY_SLUG: Record<string, ServiceDetailContent> = {
+  'mobil-uygulama-gelistirme': mobileAppDevelopmentDetail,
   'yazilim-gelistirme': softwareDevelopmentDetail,
   'web-tasarim': webDesignDetail,
   'e-ticaret': ecommerceDetail,

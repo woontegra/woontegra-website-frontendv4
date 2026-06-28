@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
+import { usePreviewOrParamSlug } from '@/lib/previewRouteParams'
 import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocksPage'
 import { SolutionDetailLayout } from '@/components/public/solutions/SolutionDetailLayout'
 import { NotFoundPage } from '@/pages/public/NotFoundPage'
@@ -32,7 +33,8 @@ function mergeSolution(base: SolutionDetailContent, partial: Partial<SolutionDet
 }
 
 export function SolutionDetailPage() {
-  const { slug = '' } = useParams()
+  const { slug: paramSlug = '' } = useParams()
+  const slug = usePreviewOrParamSlug(paramSlug)
   const base = SOLUTION_DETAIL_BY_SLUG[slug]
   const { blocks } = usePublicPageBlocks(SOLUTION_PAGE_CONTENT_KEY, slug)
 
