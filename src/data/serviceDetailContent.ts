@@ -524,87 +524,6 @@ export const trademarkPatentDetail: ServiceDetailContent = {
   },
 }
 
-export const gameDevelopmentDetail: ServiceDetailContent = {
-  slug: 'oyun-gelistirme',
-  heroTheme: 'violet',
-  hero: {
-    eyebrow: 'Oyun Geliştirme',
-    title: 'Mobil ve Web Oyunları Geliştiriyoruz',
-    description:
-      'Fikirden yayına, oyun tasarımı, geliştirme ve yayın süreçlerinde uçtan uca oyun geliştirme hizmeti sunuyoruz.',
-    image: '/images/hero-dashboard.jpg',
-    imageAlt: 'Woontegra oyun geliştirme',
-    primaryCta: { text: 'Teklif Al', to: '/teklif-al' },
-    secondaryCta: { text: 'İletişime Geç', to: '/iletisim' },
-  },
-  problems: {
-    title: 'Oyun Projeniz Hedefe Ulaşıyor mu?',
-    subtitle: 'Oyun geliştirme teknik ve yaratıcı disiplin gerektirir.',
-    items: [
-      { icon: 'Gamepad2', title: 'Oynanış net değil', description: 'Belirsiz mekanikler oyuncu tutma oranını düşürür.' },
-      { icon: 'Cpu', title: 'Performans sorunları', description: 'Optimizasyon eksikliği farklı cihazlarda sorun yaratır.' },
-      { icon: 'Sparkles', title: 'Görsel tutarsızlık', description: 'Art direction eksikliği marka algısını zayıflatır.' },
-      { icon: 'Target', title: 'Yayın stratejisi yok', description: 'Mağaza optimizasyonu ve pazarlama planı eksik kalır.' },
-    ],
-  },
-  approach: {
-    title: 'Oyunu Tasarımdan Yayına Taşıyoruz',
-    description: 'Oynanış, görsel dil ve teknik altyapıyı birlikte kurgulayarak sürdürülebilir oyun ürünleri geliştiriyoruz.',
-    bullets: ['Oynanış mekaniğini tasarlarız', 'Görsel kimliği oluştururuz', 'Performans odaklı geliştiririz', 'Yayın sürecini planlarız'],
-    flowSteps: ['Konsept', 'Prototip', 'Geliştirme', 'Test', 'Yayın', 'Destek'],
-  },
-  scope: {
-    title: 'Oyun Geliştirme Kapsamı',
-    subtitle: 'Mobil, web ve hibrit platformlar için oyun çözümleri.',
-    items: [
-      { icon: 'Smartphone', title: 'Mobil Oyunlar', description: 'iOS ve Android için native ve cross-platform oyunlar.', gradient: 'from-violet-500 to-purple-600' },
-      { icon: 'Monitor', title: 'Web Oyunları', description: 'Tarayıcı tabanlı, hızlı erişilebilir oyun deneyimleri.', gradient: 'from-blue-500 to-cyan-500' },
-      { icon: 'Gamepad2', title: 'Oynanış Tasarımı', description: 'Mekanik, seviye ve ilerleme sistemi tasarımı.', gradient: 'from-pink-500 to-rose-500' },
-      { icon: 'Palette', title: 'Görsel & UI', description: 'Karakter, arayüz ve animasyon tasarımı.', gradient: 'from-amber-500 to-orange-500' },
-      { icon: 'Cpu', title: 'Backend & API', description: 'Skor tablosu, çok oyunculu ve veri senkronizasyonu.', gradient: 'from-emerald-500 to-teal-500' },
-      { icon: 'Megaphone', title: 'Yayın & ASO', description: 'Mağaza optimizasyonu ve lansman stratejisi.', gradient: 'from-slate-600 to-slate-800' },
-    ],
-  },
-  process: {
-    title: 'Nasıl Çalışıyoruz?',
-    subtitle: 'Prototipten yayına iteratif oyun geliştirme.',
-    steps: [
-      { step: '01', title: 'Konsept & Tasarım', description: 'Oynanış döngüsü, hedef kitle ve görsel yön belirlenir.' },
-      { step: '02', title: 'Prototip', description: 'Hızlı prototip ile mekanikler test edilir.' },
-      { step: '03', title: 'Geliştirme', description: 'Art, kod ve ses entegrasyonu tamamlanır.' },
-      { step: '04', title: 'Test & Optimizasyon', description: 'Cihaz testleri ve performans iyileştirmesi.' },
-      { step: '05', title: 'Yayın & Destek', description: 'Mağaza yayını ve güncelleme desteği.' },
-    ],
-  },
-  whyUs: {
-    title: 'Neden Woontegra?',
-    items: [
-      { title: 'Ürün odaklı oyun geliştirme', description: 'Sadece kod değil; oynanış ve tutma oranı odaklı yaklaşım.' },
-      { title: 'Cross-platform deneyim', description: 'Mobil ve web platformlarında geliştirme tecrübesi.' },
-      { title: 'Performans optimizasyonu', description: 'Düşük donanımlı cihazlarda da akıcı deneyim.' },
-      { title: 'Yayın sonrası destek', description: 'Güncelleme, bakım ve yeni içerik geliştirme.' },
-    ],
-  },
-  technology: {
-    title: 'Oyununuz performanslı, ölçeklenebilir ve güncellenebilir olsun.',
-    description: 'Modern oyun motorları ve optimize edilmiş asset pipeline.',
-    items: [
-      { icon: 'Cpu', title: 'Performans optimizasyonu', description: 'FPS ve bellek kullanımı odaklı geliştirme.' },
-      { icon: 'Cloud', title: 'Backend altyapısı', description: 'Skor, liderlik tablosu ve çok oyunculu servisler.' },
-      { icon: 'Shield', title: 'Güvenli veri', description: 'Oyuncu verisi ve oturum güvenliği.' },
-      { icon: 'RefreshCw', title: 'Canlı güncelleme', description: 'İçerik ve özellik güncellemeleri için esnek yapı.' },
-    ],
-  },
-  cta: {
-    title: 'Oyun projenizi birlikte hayata geçirelim.',
-    description: 'Fikrinizi oynanabilir, yayınlanabilir bir oyuna dönüştürmek için birlikte planlayalım.',
-    buttonText: 'Teklif Al',
-    buttonTo: '/teklif-al',
-    secondaryButtonText: 'İletişime Geç',
-    secondaryButtonTo: '/iletisim',
-  },
-}
-
 export const digitalConsultingDetail: ServiceDetailContent = {
   slug: 'dijital-danismanlik',
   heroTheme: 'slate',
@@ -847,6 +766,5 @@ export const SERVICE_DETAIL_BY_SLUG: Record<string, ServiceDetailContent> = {
   'e-ticaret': ecommerceDetail,
   saas: saasProductDetail,
   'marka-patent-vekilligi': trademarkPatentDetail,
-  'oyun-gelistirme': gameDevelopmentDetail,
   'dijital-danismanlik': digitalConsultingDetail,
 }

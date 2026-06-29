@@ -4,6 +4,7 @@ import { ImageTextBlockRenderer } from '@/builder/render/blocks/ImageTextBlockRe
 import { CardGridBlockRenderer } from '@/builder/render/blocks/CardGridBlockRenderer'
 import { CtaBlockRenderer } from '@/builder/render/blocks/CtaBlockRenderer'
 import { FaqBlockRenderer } from '@/builder/render/blocks/FaqBlockRenderer'
+import { BlogShowcaseBlockRenderer } from '@/builder/render/blocks/BlogShowcaseBlockRenderer'
 import { ShowcaseBlockRenderer } from '@/builder/render/blocks/ShowcaseBlockRenderer'
 import { LegacySectionBlockRenderer } from '@/builder/render/blocks/LegacySectionBlockRenderer'
 import { ProductDetailBlockRenderer } from '@/builder/render/blocks/ProductDetailBlockRenderer'
@@ -40,7 +41,7 @@ export function initBlockRenderRegistry(): void {
   registerBlockRenderer('faq', FaqBlockRenderer)
   registerBlockRenderer('services-showcase', ShowcaseBlockRenderer)
   registerBlockRenderer('products-showcase', ShowcaseBlockRenderer)
-  registerBlockRenderer('blog-showcase', ShowcaseBlockRenderer)
+  registerBlockRenderer('blog-showcase', BlogShowcaseBlockRenderer)
   registerBlockRenderer('legacy-section', LegacySectionBlockRenderer)
   registerBlockRenderer('product-detail', ProductDetailBlockRenderer)
   registerBlockRenderer('blog-article', BlogArticleBlockRenderer)

@@ -1,8 +1,6 @@
 import { SettingsAccordion } from '@/builder/admin/ui/SettingsAccordion'
 import {
-  ManualListPlaceholder,
   RadioCardGroup,
-  SelectField,
   TextField,
 } from '@/builder/admin/ui/FormFields'
 import {
@@ -12,8 +10,8 @@ import {
   SharedResponsiveSection,
   wrapSections,
 } from '@/builder/admin/settings/SharedSections'
+import { BlogCategorySelect, BlogPostManualPicker } from '@/builder/admin/settings/BlogPostManualPicker'
 import { useSelectedBlock } from '@/builder/admin/settings/useSelectedBlock'
-import { PLACEHOLDER_CATEGORIES } from '@/builder/admin/blockLibraryConfig'
 import type { BlogShowcaseBlock, BlogShowcaseSource } from '@/builder/types'
 
 const SOURCE_OPTIONS = [
@@ -45,15 +43,15 @@ export function BlogShowcaseSettingsPanel() {
             options={SOURCE_OPTIONS}
           />
           {settings.source === 'category' ? (
-            <SelectField
-              label="Kategori"
-              value={settings.categoryId ?? ''}
-              onChange={(categoryId) => update({ ...block, settings: { ...settings, categoryId } })}
-              options={[
-                { value: '', label: 'Kategori seçin…' },
-                ...PLACEHOLDER_CATEGORIES.map((c) => ({ value: c.id, label: c.label })),
-              ]}
-            />
+            <div>
+              <p className="mb-1 text-sm font-medium text-slate-900">Kategori</p>
+              <BlogCategorySelect
+                value={settings.categoryId ?? ''}
+                onChange={(categoryId) =>
+                  update({ ...block, settings: { ...settings, categoryId: categoryId || undefined } })
+                }
+              />
+            </div>
           ) : null}
           {settings.source === 'tag' ? (
             <TextField
@@ -64,10 +62,13 @@ export function BlogShowcaseSettingsPanel() {
             />
           ) : null}
           {settings.source === 'manual' ? (
-            <ManualListPlaceholder
-              title="Manuel yazı listesi"
-              description="Blog yazı seçici API entegrasyonu ile gelecek."
-            />
+            <div>
+              <p className="mb-2 text-sm font-medium text-slate-900">Manuel yazı listesi</p>
+              <BlogPostManualPicker
+                selectedIds={settings.manualPostIds ?? []}
+                onChange={(manualPostIds) => update({ ...block, settings: { ...settings, manualPostIds } })}
+              />
+            </div>
           ) : null}
           <TextField
             label="Limit"

@@ -3,7 +3,6 @@ import { BlockSectionHeader, SectionBlockShell } from '@/builder/render/SectionB
 import { renderIfText } from '@/builder/render/renderRules'
 import { BLOCK_TYPE_LABELS } from '@/builder/types'
 import type {
-  BlogShowcaseBlock,
   ProductsShowcaseBlock,
   ServicesShowcaseBlock,
 } from '@/builder/types'
@@ -18,13 +17,12 @@ const MOCK_ITEMS = [
 export function ShowcaseBlockRenderer({ block, mode = 'public' }: BlockRendererProps) {
   if (
     block.type !== 'services-showcase' &&
-    block.type !== 'products-showcase' &&
-    block.type !== 'blog-showcase'
+    block.type !== 'products-showcase'
   ) {
     return null
   }
 
-  const b = block as ProductsShowcaseBlock | BlogShowcaseBlock | ServicesShowcaseBlock
+  const b = block as ProductsShowcaseBlock | ServicesShowcaseBlock
   if (!b.visibility.enabled) return null
 
   const hasHeader =
@@ -32,8 +30,7 @@ export function ShowcaseBlockRenderer({ block, mode = 'public' }: BlockRendererP
     (b.visibility.showDescription !== false && renderIfText(b.description))
 
   if (!hasHeader && mode === 'public' && b.settings.source === 'manual') return null
-  if (!hasHeader && mode === 'public' && block.type !== 'products-showcase' && block.type !== 'blog-showcase')
-    return null
+  if (!hasHeader && mode === 'public' && block.type !== 'products-showcase') return null
 
   const limit = Math.min(Math.max(b.settings.limit ?? 3, 1), 6)
   const items = MOCK_ITEMS.slice(0, limit)
