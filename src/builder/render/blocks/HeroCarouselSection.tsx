@@ -10,9 +10,13 @@ import {
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { BuilderField } from '@/builder/edit/BuilderField'
 import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
+import { HeroSlideLinkShell } from '@/builder/render/HeroSlideLinkShell'
 import {
+  carouselHasDistinctMobileImage,
   getHeroSlideImageSources,
-  heroUsesMobileNaturalImageLayout,
+  getSlideLink,
+  slideHasRenderableImage,
+  slideUsesMobileNaturalLayout,
 } from '@/builder/render/heroResponsiveImage'
 import { renderIfText, shouldShowField } from '@/builder/render/renderRules'
 import type { BlockButton, HeroBlock, HeroSlide } from '@/builder/types'
@@ -21,7 +25,23 @@ import { cn } from '@/lib/cn'
 
 type Props = {
   hero: HeroBlock
-  mode?: 'public' | 'preview' | 'edit'
+  mode?: 'public' | 'preview'
+}
+
+function useNarrowViewport(maxWidth: number): boolean {
+  const [narrow, setNarrow] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(`(max-width: ${maxWidth}px)`).matches : false,
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${maxWidth}px)`)
+    const onChange = () => setNarrow(mq.matches)
+    onChange()
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [maxWidth])
+
+  return narrow
 }
 
 function usePrefersReducedMotion(): boolean {
@@ -48,39 +68,6 @@ function heroHeightVars(settings: HeroBlock['settings'], desktopDefault: string)
     ['--hero-h-mobile' as string]:
       settings.height?.mobile ?? settings.height?.tablet ?? desktopDefault,
   }
-}
-
-function heroMinHeightClass(settings: HeroBlock['settings'], fullscreen?: boolean): string {
-  if (fullscreen) return 'min-h-screen'
-  if (heroUsesMobileNaturalImageLayout(settings)) {
-    return 'max-[640px]:min-h-0 sm:min-h-[var(--hero-h-mobile,var(--hero-h,280px))] lg:min-h-[var(--hero-h,280px)]'
-  }
-  return 'min-h-[var(--hero-h-mobile,var(--hero-h,280px))] lg:min-h-[var(--hero-h,280px)]'
-}
-
-function heroCenteredImageClass(naturalMobile: boolean): string {
-  if (naturalMobile) {
-    return cn(
-      'relative block w-full max-w-full max-[640px]:h-auto max-[640px]:object-contain max-[640px]:object-center',
-      'sm:absolute sm:inset-0 sm:h-full sm:w-full sm:object-cover sm:object-center',
-    )
-  }
-  return 'absolute inset-0 h-full w-full object-cover object-center'
-}
-
-function heroCenteredImageWrapperClass(naturalMobile: boolean): string {
-  if (naturalMobile) return 'relative w-full max-[640px]:bg-slate-900 sm:absolute sm:inset-0'
-  return 'absolute inset-0'
-}
-
-function heroSplitImageClass(naturalMobile: boolean): string {
-  if (naturalMobile) {
-    return cn(
-      'w-full max-[640px]:h-auto max-[640px]:object-contain max-[640px]:object-top',
-      'sm:aspect-[8/5] sm:object-cover sm:object-center',
-    )
-  }
-  return 'aspect-[8/5] w-full object-cover object-center'
 }
 
 function heroButtonClass(variant: BlockButton['variant'], outlineClass: string, primaryClass: string) {
@@ -123,19 +110,41 @@ function stopBuilderNav(e: MouseEvent) {
   e.stopPropagation()
 }
 
-export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
+function heroCenteredImageClass(naturalMobile: boolean): string {
+  if (naturalMobile) {
+    return cn(
+      'relative block w-full max-w-full max-[640px]:h-auto max-[640px]:object-contain max-[640px]:object-center',
+      'sm:absolute sm:inset-0 sm:h-full sm:w-full sm:object-cover sm:object-center',
+    )
+  }
+  return 'absolute inset-0 h-full w-full object-cover object-center'
+}
+
+function heroSplitImageClass(naturalMobile: boolean): string {
+  if (naturalMobile) {
+    return cn(
+      'w-full max-[640px]:h-auto max-[640px]:max-h-[85vh] max-[640px]:object-contain max-[640px]:object-top',
+      'sm:aspect-[8/5] sm:max-h-none sm:object-cover sm:object-center',
+    )
+  }
+  return 'aspect-[8/5] w-full object-cover object-center'
+}
+
+export function HeroCarouselSection({ hero }: Props) {
   const { settings, style, visibility } = hero
   const sectionRef = useRef<HTMLElement>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
 
+  const isMobileViewport = useNarrowViewport(640)
   const prefersReducedMotion = usePrefersReducedMotion()
   const layout = settings.layout ?? 'centered'
   const isSplit = layout === 'split'
 
   const slides = useMemo(() => sortedEnabledSlides(settings.slides), [settings.slides])
   const isCarousel = slides.length > 1
+  const hasAnyImage = slides.some((s) => slideHasRenderableImage(s))
 
   const carousel = settings.carousel ?? {}
   const autoplay = carousel.autoplay ?? true
@@ -149,6 +158,12 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
 
   const safeIndex = slides.length > 0 ? currentIndex % slides.length : 0
   const currentSlide = slides[safeIndex]
+
+  const carouselMobileNatural = carouselHasDistinctMobileImage(settings)
+  const currentSlideNaturalMobile = currentSlide
+    ? slideUsesMobileNaturalLayout(currentSlide, settings)
+    : false
+  const useMobileFlowLayout = !isSplit && isMobileViewport && carouselMobileNatural
 
   const goTo = useCallback(
     (index: number) => {
@@ -197,8 +212,6 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
     return () => window.clearInterval(id)
   }, [effectiveAutoplay, isVisible, isPaused, intervalMs, goNext, safeIndex])
 
-  const height = heroMinHeightClass(settings, settings.fullscreen)
-  const naturalMobileImage = heroUsesMobileNaturalImageLayout(settings)
   const hideContentOnMobile =
     settings.hideContentOnMobile === true ||
     hero.responsiveSettings?.hideContentOnMobile === true ||
@@ -212,6 +225,16 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
     ? 'transition-none'
     : 'transition-opacity duration-700 ease-in-out'
 
+  const sectionHeightClass = isSplit
+    ? carouselMobileNatural
+      ? 'max-[640px]:min-h-[200px] sm:py-12 sm:min-h-[var(--hero-h-mobile,var(--hero-h,520px))] lg:py-20'
+      : 'py-12 sm:py-16 lg:py-20 min-h-[var(--hero-h-mobile,var(--hero-h,520px))] lg:min-h-[var(--hero-h,520px)]'
+    : useMobileFlowLayout
+      ? 'min-h-[200px]'
+      : carouselMobileNatural
+        ? 'max-[640px]:min-h-[200px] sm:min-h-[var(--hero-h-mobile,var(--hero-h,280px))] lg:min-h-[var(--hero-h,280px)]'
+        : 'min-h-[var(--hero-h-mobile,var(--hero-h,280px))] lg:min-h-[var(--hero-h,280px)]'
+
   const renderSlideContent = (slide: HeroSlide, slideIndex: number, active: boolean) => {
     const title = getSlideText(slide, hero, 'title')
     const description = getSlideText(slide, hero, 'description')
@@ -224,6 +247,8 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
     const visibleButtons = getSlideButtons(slide, hero)
     const showButtons = slideVisibility.showButton !== false && visibleButtons.length > 0
 
+    if (!showTitle && !showDescription && !showBadge && !showButtons) return null
+
     const contentAlign = settings.contentAlign ?? style.contentAlign ?? 'left'
     const alignClass =
       contentAlign === 'center'
@@ -234,18 +259,20 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
 
     return (
       <div
-        key={slide.id}
+        key={`content-${slide.id}`}
         className={cn(
           transitionClass,
-          isCarousel && !active && 'pointer-events-none absolute inset-0 opacity-0',
-          isCarousel && active && 'absolute inset-0 z-[2] opacity-100',
+          'pointer-events-none',
+          isCarousel && !active && 'absolute inset-0 opacity-0',
+          isCarousel && active && !useMobileFlowLayout && 'absolute inset-0 z-[3] opacity-100',
+          isCarousel && active && useMobileFlowLayout && 'relative z-[2] opacity-100',
           !isCarousel && 'relative z-[2]',
         )}
         aria-hidden={isCarousel && !active}
       >
         <div
           className={cn(
-            'mx-auto flex h-full w-full max-w-7xl flex-col justify-center px-4 py-16 text-white',
+            'mx-auto flex h-full w-full max-w-7xl flex-col justify-center px-4 py-8 text-white sm:py-16',
             hideContentOnMobile && 'max-[640px]:hidden',
             alignClass,
           )}
@@ -255,7 +282,7 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
               path={`slides.${slideIndex}.badge`}
               label="Badge"
               type="text"
-              className="mb-4 inline-block"
+              className="pointer-events-auto mb-4 inline-block"
             >
               <span className="inline-block rounded-full bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400">
                 {badge}
@@ -267,7 +294,7 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
               path={`slides.${slideIndex}.title`}
               label="Başlık"
               type="text"
-              className="w-fit max-w-full"
+              className="pointer-events-auto w-fit max-w-full"
             >
               <h1 className="text-3xl font-semibold leading-tight text-white drop-shadow md:text-4xl lg:text-5xl">
                 {title}
@@ -279,7 +306,7 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
               path={`slides.${slideIndex}.description`}
               label="Açıklama"
               type="text"
-              className="w-fit max-w-full"
+              className="pointer-events-auto w-fit max-w-full"
             >
               <p className="mt-4 max-w-xl text-base leading-relaxed text-gray-300 drop-shadow md:text-lg">
                 {description}
@@ -287,7 +314,7 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
             </BuilderField>
           ) : null}
           {showButtons ? (
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="pointer-events-auto mt-6 flex flex-wrap gap-3">
               {visibleButtons.map((btn, btnIndex) => (
                 <BuilderField
                   key={btn.id}
@@ -319,7 +346,8 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
 
     const overlay = slideOverlay(slide, hero)
     const imageAlt = getSlideText(slide, hero, 'title') ?? hero.title ?? ''
-    const link = slide.link?.trim()
+    const link = getSlideLink(slide)
+    const slideNaturalMobile = slideUsesMobileNaturalLayout(slide, settings)
 
     const imageNode = (
       <>
@@ -335,9 +363,13 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
         <HeroResponsiveImage
           sources={sources}
           alt={imageAlt}
-          className={isSplit ? heroSplitImageClass(naturalMobileImage) : heroCenteredImageClass(naturalMobileImage)}
+          className={
+            isSplit
+              ? heroSplitImageClass(slideNaturalMobile)
+              : heroCenteredImageClass(slideNaturalMobile)
+          }
           loading={slideIndex === 0 ? 'eager' : 'lazy'}
-          fill={!isSplit && !naturalMobileImage}
+          fill={!isSplit && !slideNaturalMobile && !useMobileFlowLayout}
         />
       </>
     )
@@ -345,17 +377,22 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
     const wrapperClass = isSplit
       ? cn(
           'relative overflow-hidden rounded-xl border border-white/10 shadow-xl',
-          naturalMobileImage && 'max-[640px]:rounded-none max-[640px]:border-0 max-[640px]:shadow-none',
+          slideNaturalMobile && 'max-[640px]:rounded-none max-[640px]:border-0 max-[640px]:shadow-none',
         )
-      : heroCenteredImageWrapperClass(naturalMobileImage)
+      : useMobileFlowLayout
+        ? 'relative w-full overflow-hidden bg-slate-900'
+        : slideNaturalMobile
+          ? 'relative w-full max-[640px]:bg-slate-900 sm:absolute sm:inset-0'
+          : 'absolute inset-0'
 
     const inner = (
       <div
         className={cn(
           wrapperClass,
-          isCarousel && !isSplit && 'absolute inset-0',
-          isCarousel && !active && !isSplit && 'pointer-events-none opacity-0',
-          isCarousel && active && !isSplit && 'opacity-100',
+          isCarousel && !isSplit && !useMobileFlowLayout && 'absolute inset-0',
+          isCarousel && !active && !useMobileFlowLayout && 'pointer-events-none opacity-0',
+          isCarousel && active && !useMobileFlowLayout && 'opacity-100',
+          isCarousel && !active && useMobileFlowLayout && 'hidden',
           transitionClass,
         )}
         aria-hidden={isCarousel && !active}
@@ -364,26 +401,11 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
       </div>
     )
 
-    if (link && mode === 'public') {
-      const isExternal = /^https?:\/\//i.test(link)
-      return (
-        <BuilderField
-          key={slide.id}
-          path={`slides.${slideIndex}.image`}
-          label="Görsel"
-          type="media"
-          className={cn(isCarousel && !isSplit && 'absolute inset-0', !isCarousel && 'relative')}
-        >
-          <a
-            href={link}
-            className={cn('block h-full w-full', isCarousel && !isSplit && 'absolute inset-0')}
-            {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-          >
-            {inner}
-          </a>
-        </BuilderField>
-      )
-    }
+    const linkClass = cn(
+      'block h-full w-full',
+      !isSplit && !useMobileFlowLayout && 'absolute inset-0',
+      useMobileFlowLayout && 'relative w-full',
+    )
 
     return (
       <BuilderField
@@ -392,35 +414,33 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
         label="Görsel"
         type="media"
         className={cn(
-          isCarousel && !isSplit ? 'absolute inset-0' : 'relative',
-          isCarousel && !isSplit && !active && 'pointer-events-none opacity-0',
-          isCarousel && !isSplit && active && 'opacity-100',
+          isCarousel && !isSplit && !useMobileFlowLayout && 'absolute inset-0',
+          useMobileFlowLayout && active && 'relative w-full',
+          !isCarousel && 'relative',
+          isCarousel && !isSplit && !useMobileFlowLayout && !active && 'pointer-events-none opacity-0',
+          isCarousel && !isSplit && !useMobileFlowLayout && active && 'opacity-100',
           transitionClass,
         )}
       >
-        {inner}
+        <HeroSlideLinkShell
+          href={link}
+          className={linkClass}
+          ariaLabel={imageAlt ? `${imageAlt} — slayt bağlantısı` : 'Slayt bağlantısı'}
+        >
+          {inner}
+        </HeroSlideLinkShell>
       </BuilderField>
     )
   }
 
-  if (slides.length === 0) return null
+  if (slides.length === 0 || !hasAnyImage) return null
 
   const controlsVisible = isCarousel && (showArrows || showDots)
 
   return (
     <section
       ref={sectionRef}
-      className={cn(
-        'relative w-full overflow-hidden bg-slate-900',
-        naturalMobileImage && 'max-[640px]:bg-slate-900',
-        isSplit
-          ? cn(
-              naturalMobileImage
-                ? 'max-[640px]:min-h-0 max-[640px]:bg-slate-900 sm:py-12 sm:min-h-[var(--hero-h-mobile,var(--hero-h,520px))] lg:py-20'
-                : cn('py-12 sm:py-16 lg:py-20', height),
-            )
-          : cn('relative', height),
-      )}
+      className={cn('relative w-full overflow-hidden bg-slate-900', sectionHeightClass)}
       style={{
         ...bgStyle,
         ...heroHeightVars(settings, isSplit ? '520px' : '280px'),
@@ -431,20 +451,37 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
       onMouseLeave={pauseOnHover && effectiveAutoplay ? () => setIsPaused(false) : undefined}
     >
       {!isSplit ? (
-        <>
-          <div className="absolute inset-0">
-            {slides.map((slide, i) => renderSlideImage(slide, i, i === safeIndex))}
-          </div>
-          {!slideOverlay(currentSlide, hero) && style.overlay?.enabled ? (
-            <div
-              className="pointer-events-none absolute inset-0 z-[1]"
-              style={{
-                backgroundColor: style.overlay.color ?? '#000',
-                opacity: style.overlay.opacity ?? 0.4,
-              }}
-            />
-          ) : null}
-        </>
+        useMobileFlowLayout ? (
+          <>
+            {slides.map((slide, i) =>
+              i === safeIndex ? renderSlideImage(slide, i, true) : null,
+            )}
+            {!slideOverlay(currentSlide, hero) && style.overlay?.enabled ? (
+              <div
+                className="pointer-events-none absolute inset-0 z-[1]"
+                style={{
+                  backgroundColor: style.overlay.color ?? '#000',
+                  opacity: style.overlay.opacity ?? 0.4,
+                }}
+              />
+            ) : null}
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0">
+              {slides.map((slide, i) => renderSlideImage(slide, i, i === safeIndex))}
+            </div>
+            {!slideOverlay(currentSlide, hero) && style.overlay?.enabled ? (
+              <div
+                className="pointer-events-none absolute inset-0 z-[1]"
+                style={{
+                  backgroundColor: style.overlay.color ?? '#000',
+                  opacity: style.overlay.opacity ?? 0.4,
+                }}
+              />
+            ) : null}
+          </>
+        )
       ) : (
         <>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,197,94,0.15),transparent_70%)]" />
@@ -455,12 +492,13 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
                 hideContentOnMobile && 'max-[640px]:grid-cols-1',
               )}
             >
-              <div className={cn('relative min-h-[200px]', hideContentOnMobile && 'max-[640px]:hidden')}>
+              <div className={cn('relative min-h-[120px]', hideContentOnMobile && 'max-[640px]:hidden')}>
                 {slides.map((slide, i) => renderSlideContent(slide, i, i === safeIndex))}
               </div>
               <div
                 className={cn(
-                  'relative min-h-[240px]',
+                  'relative w-full',
+                  currentSlideNaturalMobile ? 'max-[640px]:min-h-[200px]' : 'min-h-[240px]',
                   hideContentOnMobile && 'max-[640px]:order-first',
                 )}
               >
@@ -484,7 +522,11 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
       )}
 
       {!isSplit ? (
-        <div className="relative z-[2] h-full min-h-[inherit]">
+        <div
+          className={cn(
+            useMobileFlowLayout ? 'relative z-[2]' : 'relative z-[2] h-full min-h-[inherit]',
+          )}
+        >
           {slides.map((slide, i) => renderSlideContent(slide, i, i === safeIndex))}
         </div>
       ) : null}
@@ -496,7 +538,7 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
               <button
                 type="button"
                 aria-label="Önceki slayt"
-                className="absolute left-3 top-1/2 z-[4] -translate-y-1/2 rounded-full bg-black/40 p-2 text-white backdrop-blur-sm transition hover:bg-black/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:left-4"
+                className="pointer-events-auto absolute left-3 top-1/2 z-[5] -translate-y-1/2 rounded-full bg-black/40 p-2 text-white backdrop-blur-sm transition hover:bg-black/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:left-4"
                 onClick={(e) => {
                   stopBuilderNav(e)
                   goPrev()
@@ -507,7 +549,7 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
               <button
                 type="button"
                 aria-label="Sonraki slayt"
-                className="absolute right-3 top-1/2 z-[4] -translate-y-1/2 rounded-full bg-black/40 p-2 text-white backdrop-blur-sm transition hover:bg-black/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:right-4"
+                className="pointer-events-auto absolute right-3 top-1/2 z-[5] -translate-y-1/2 rounded-full bg-black/40 p-2 text-white backdrop-blur-sm transition hover:bg-black/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:right-4"
                 onClick={(e) => {
                   stopBuilderNav(e)
                   goNext()
@@ -519,7 +561,7 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
           ) : null}
           {showDots ? (
             <div
-              className="absolute bottom-4 left-1/2 z-[4] flex -translate-x-1/2 gap-2"
+              className="pointer-events-auto absolute bottom-4 left-1/2 z-[5] flex -translate-x-1/2 gap-2"
               role="tablist"
               aria-label="Slayt seçimi"
             >
@@ -532,7 +574,7 @@ export function HeroCarouselSection({ hero, mode = 'public' }: Props) {
                   aria-label={`Slayt ${i + 1}`}
                   className={cn(
                     'h-2.5 w-2.5 rounded-full transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70',
-                    i === safeIndex ? 'bg-white scale-110' : 'bg-white/45 hover:bg-white/70',
+                    i === safeIndex ? 'scale-110 bg-white' : 'bg-white/45 hover:bg-white/70',
                   )}
                   onClick={(e) => {
                     stopBuilderNav(e)

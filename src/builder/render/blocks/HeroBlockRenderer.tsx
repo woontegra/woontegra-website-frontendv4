@@ -123,7 +123,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
     isDarkHexColor(style.backgroundColor)
 
   if (settings.mode === 'carousel') {
-    return <HeroCarouselSection hero={hero} mode={mode} />
+    return <HeroCarouselSection hero={hero} />
   }
 
   const useLightText = hasDarkBackground

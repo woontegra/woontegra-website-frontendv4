@@ -74,22 +74,20 @@ export function HeroResponsiveImage({
 
   if (failed || !activeSrc) return null
 
-  const usePicture =
-    !isMobile &&
-    !isTablet &&
-    sources.mobile !== sources.desktop &&
-    sources.tablet !== sources.desktop
+  const hasDistinctMobile = Boolean(sources.mobile && sources.mobile !== sources.desktop)
+  const hasDistinctTablet = Boolean(
+    sources.tablet && sources.tablet !== sources.desktop && sources.tablet !== sources.mobile,
+  )
+
+  const usePicture = hasDistinctMobile || hasDistinctTablet
 
   if (usePicture) {
-    const hasDistinctMobile = Boolean(sources.mobile && sources.mobile !== sources.desktop)
-    const hasDistinctTablet = Boolean(
-      sources.tablet && sources.tablet !== sources.desktop && sources.tablet !== sources.mobile,
-    )
-
     return (
-      <picture className={cn(fill && 'absolute inset-0 block h-full w-full', !fill && 'block')}>
+      <picture className={cn(fill && 'absolute inset-0 block h-full w-full', !fill && 'block w-full')}>
         {hasDistinctMobile ? <source media="(max-width: 640px)" srcSet={sources.mobile} /> : null}
-        {hasDistinctTablet ? <source media="(max-width: 1024px)" srcSet={sources.tablet} /> : null}
+        {hasDistinctTablet ? (
+          <source media="(max-width: 1024px)" srcSet={sources.tablet} />
+        ) : null}
         <img
           src={sources.desktop}
           alt={alt}

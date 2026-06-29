@@ -168,7 +168,7 @@ export function heroRequiresImage(settings: HeroSettings): boolean {
     return settings.slides.some(
       (s) =>
         s.enabled !== false &&
-        Boolean(s.desktopImage?.url?.trim() || s.mobileImage?.url?.trim()),
+        Boolean(s.desktopImage?.url?.trim() || s.mobileImage?.url?.trim() || s.tabletImage?.url?.trim()),
     )
   }
   return Boolean(
