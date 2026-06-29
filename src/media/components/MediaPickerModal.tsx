@@ -8,6 +8,11 @@ import {
   type CatalogMediaFileType,
 } from '@/types/catalogMedia'
 import { cn } from '@/lib/cn'
+import {
+  catalogMediaStorageSource,
+  mediaStorageSourceBadgeClass,
+  mediaStorageSourceLabel,
+} from '@/lib/mediaStorageSource'
 
 export type MediaPickerModalProps = {
   open: boolean
@@ -18,6 +23,8 @@ export type MediaPickerModalProps = {
   allowedTypes?: CatalogMediaFileType[]
   /** Upload alanını göster (endpoint mevcut) */
   allowUpload?: boolean
+  /** Vercel Blob alt klasörü: logo, hero, blog, products, builder, general */
+  uploadFolder?: string
 }
 
 const DEFAULT_TYPES: CatalogMediaFileType[] = ['IMAGE']
@@ -29,6 +36,7 @@ export function MediaPickerModal({
   onSelect,
   allowedTypes = DEFAULT_TYPES,
   allowUpload = true,
+  uploadFolder = 'general',
 }: MediaPickerModalProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [items, setItems] = useState<CatalogMedia[]>([])
@@ -89,7 +97,7 @@ export function MediaPickerModal({
     setUploading(true)
     setError(null)
     try {
-      const created = await catalogMediaService.upload(file)
+      const created = await catalogMediaService.upload(file, uploadFolder)
       setItems((prev) => [created, ...prev])
     } catch (err) {
       setError(getErrorMessage(err, 'Yükleme başarısız'))
@@ -114,7 +122,9 @@ export function MediaPickerModal({
             <h2 id="media-picker-title" className="text-lg font-semibold text-slate-900">
               {title}
             </h2>
-            <p className="mt-0.5 text-xs text-slate-500">GET /api/admin/media</p>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Yeni görseller Vercel Blob&apos;a yüklenir · klasör: {uploadFolder}
+            </p>
           </div>
           <button
             type="button"
@@ -158,7 +168,14 @@ export function MediaPickerModal({
           {error ? (
             <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
               {error}
-              <p className="mt-1 text-xs text-red-600">URL alanından elle girmeye devam edebilirsiniz.</p>
+              {error.includes('BLOB_READ_WRITE_TOKEN') ? (
+                <p className="mt-1 text-xs text-red-700">
+                  Railway/Vercel backend ortamına <code className="rounded bg-red-100 px-1">BLOB_READ_WRITE_TOKEN</code>{' '}
+                  ekleyin (Vercel Dashboard → Storage → Blob).
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-red-600">URL alanından elle girmeye devam edebilirsiniz.</p>
+              )}
             </div>
           ) : null}
 
@@ -172,6 +189,7 @@ export function MediaPickerModal({
             {filtered.map((m) => {
               const previewSrc = resolveCatalogMediaPreviewUrl(m.publicUrl || m.url)
               const storedUrl = catalogMediaPickUrl(m)
+              const source = catalogMediaStorageSource(m)
               return (
                 <li key={m.id}>
                   <button
@@ -203,6 +221,14 @@ export function MediaPickerModal({
                     </div>
                     <div className="border-t border-slate-100 p-3">
                       <p className="truncate text-sm font-medium text-slate-900">{m.originalName}</p>
+                      <span
+                        className={cn(
+                          'mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium',
+                          mediaStorageSourceBadgeClass(source),
+                        )}
+                      >
+                        {mediaStorageSourceLabel(source)}
+                      </span>
                       <p className="mt-0.5 truncate text-[11px] text-slate-500" title={storedUrl}>
                         {storedUrl}
                       </p>

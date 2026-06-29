@@ -887,6 +887,7 @@ export function AdminProductFormPage() {
         allowedTypes={['IMAGE']}
         onClose={() => setCoverPickerOpen(false)}
         onSelect={onCoverSelect}
+        uploadFolder="products"
       />
       <MediaPickerModal
         open={galleryPickerOpen}
@@ -894,6 +895,7 @@ export function AdminProductFormPage() {
         allowedTypes={['IMAGE']}
         onClose={() => setGalleryPickerOpen(false)}
         onSelect={onGallerySelect}
+        uploadFolder="products"
       />
       <MediaPickerModal
         open={downloadPickerOpen}

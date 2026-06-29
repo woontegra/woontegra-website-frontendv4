@@ -8,12 +8,13 @@ type Props = {
   className?: string
   style?: CSSProperties
   loading?: 'eager' | 'lazy'
+  onError?: () => void
 }
 
 /**
  * Public medya — boş/kırık görselde gri kutu veya broken icon yok; null döner.
  */
-export function MediaImage({ src, alt = '', className, style, loading = 'lazy' }: Props) {
+export function MediaImage({ src, alt = '', className, style, loading = 'lazy', onError }: Props) {
   const resolved = resolveMediaUrl(src)
   const [failed, setFailed] = useState(false)
 
@@ -31,7 +32,13 @@ export function MediaImage({ src, alt = '', className, style, loading = 'lazy' }
       decoding="async"
       className={cn(className)}
       style={style}
-      onError={() => setFailed(true)}
+      onError={() => {
+        if (onError) {
+          onError()
+          return
+        }
+        setFailed(true)
+      }}
     />
   )
 }

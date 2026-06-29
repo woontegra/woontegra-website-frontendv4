@@ -336,6 +336,7 @@ function SingleImageFields({
       <ImageUrlField
         label="Desktop görsel"
         settingsFieldId="desktop-image"
+        uploadFolder="hero"
         value={settings.desktopImage?.url ?? ''}
         onChange={(url) =>
           onChange({
@@ -347,6 +348,7 @@ function SingleImageFields({
       <ImageUrlField
         label="Tablet görsel"
         hint="Boş bırakılırsa desktop kullanılır"
+        uploadFolder="hero"
         value={settings.tabletImage?.url ?? ''}
         onChange={(url) =>
           onChange({
@@ -357,6 +359,7 @@ function SingleImageFields({
       />
       <ImageUrlField
         label="Mobil görsel"
+        uploadFolder="hero"
         value={settings.mobileImage?.url ?? ''}
         onChange={(url) =>
           onChange({
@@ -469,6 +472,7 @@ function VideoFields({
       />
       <ImageUrlField
         label="Poster görsel"
+        uploadFolder="hero"
         value={video.posterUrl ?? ''}
         onChange={(posterUrl) => setVideo({ posterUrl })}
       />
@@ -563,6 +567,7 @@ function CarouselSlidesEditor({
           <SlideButtonFields slide={slide} index={1} label="Buton 2" onUpdate={updateSlide} />
           <ImageUrlField
             label="Desktop görsel"
+            uploadFolder="hero"
             value={slide.desktopImage?.url ?? ''}
             onChange={(url) =>
               updateSlide(slide.id, { desktopImage: { ...slide.desktopImage, url } })
@@ -570,6 +575,7 @@ function CarouselSlidesEditor({
           />
           <ImageUrlField
             label="Mobil görsel"
+            uploadFolder="hero"
             value={slide.mobileImage?.url ?? ''}
             onChange={(url) =>
               updateSlide(slide.id, { mobileImage: { ...slide.mobileImage, url } })

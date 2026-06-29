@@ -22,7 +22,7 @@ export const catalogMediaService = {
     return normalizeCatalogMediaList(data)
   },
 
-  async upload(file: File): Promise<CatalogMedia> {
+  async upload(file: File, folder = 'general'): Promise<CatalogMedia> {
     const form = new FormData()
     form.append('file', file)
     const token = useAuthStore.getState().adminToken
@@ -30,6 +30,7 @@ export const catalogMediaService = {
       `${getApiBaseUrl()}/admin/media/upload`,
       form,
       {
+        params: { folder },
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },

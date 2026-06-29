@@ -24,7 +24,7 @@ export function resolveMediaUrl(path: string | null | undefined): string {
   const raw = path.trim()
   if (!raw || INVALID_LITERALS.has(raw.toLowerCase())) return ''
 
-  if (/^https?:\/\//i.test(raw)) return raw
+  if (/^https?:\/\//i.test(raw)) return raw // Vercel Blob, R2 legacy ve harici CDN URL'leri
 
   if (raw.startsWith('/uploads/') || raw.startsWith('uploads/')) {
     const rel = raw.startsWith('/') ? raw : `/${raw}`

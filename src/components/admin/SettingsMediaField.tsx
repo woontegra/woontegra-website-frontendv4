@@ -16,9 +16,18 @@ type Props = {
   onChange: (url: string) => void
   hint?: string
   sizeSpec?: ImageUploadSpecKey
+  uploadFolder?: string
 }
 
-export function SettingsMediaField({ label, value, logoUpdatedAt, onChange, hint, sizeSpec }: Props) {
+export function SettingsMediaField({
+  label,
+  value,
+  logoUpdatedAt,
+  onChange,
+  hint,
+  sizeSpec,
+  uploadFolder = 'logo',
+}: Props) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const preview = buildBrandedAssetUrl(value, logoUpdatedAt)
 
@@ -72,6 +81,7 @@ export function SettingsMediaField({ label, value, logoUpdatedAt, onChange, hint
         allowedTypes={['IMAGE']}
         onClose={() => setPickerOpen(false)}
         onSelect={onSelect}
+        uploadFolder={uploadFolder}
       />
     </div>
   )

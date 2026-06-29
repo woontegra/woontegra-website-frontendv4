@@ -21,18 +21,17 @@ export function pickHeroImageSourcesFromRefs(
   tabletRef?: MediaRef | null,
   mobileRef?: MediaRef | null,
 ): HeroImageSources | null {
-  const desktopResolved = resolveHeroMediaUrl(desktopRef)
-  const tabletResolved = resolveHeroMediaUrl(tabletRef)
-  const mobileResolved = resolveHeroMediaUrl(mobileRef)
+  const d = resolveHeroMediaUrl(desktopRef)
+  const t = resolveHeroMediaUrl(tabletRef)
+  const m = resolveHeroMediaUrl(mobileRef)
 
-  const anchor = desktopResolved || tabletResolved || mobileResolved
-  if (!anchor) return null
+  if (!d && !t && !m) return null
 
-  const tablet = tabletResolved || desktopResolved || mobileResolved
-  const mobile = mobileResolved || tablet || desktopResolved
-  const desktop = desktopResolved || tablet || mobileResolved
-
-  return { desktop, tablet, mobile }
+  return {
+    desktop: d || t || m,
+    tablet: t || d || m,
+    mobile: m || t || d,
+  }
 }
 
 export function getHeroSlideImageSources(slide: HeroSlide): HeroImageSources | null {

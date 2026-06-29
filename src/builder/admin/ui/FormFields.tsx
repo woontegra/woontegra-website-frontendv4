@@ -222,6 +222,7 @@ export function ImageUrlField({
   onChange,
   placeholder = 'https://... veya /uploads/...',
   settingsFieldId,
+  uploadFolder = 'builder',
 }: {
   label: string
   hint?: string
@@ -229,6 +230,7 @@ export function ImageUrlField({
   onChange: (v: string) => void
   placeholder?: string
   settingsFieldId?: string
+  uploadFolder?: string
 }) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const previewUrl = resolveMediaUrl(value)
@@ -262,6 +264,7 @@ export function ImageUrlField({
         title={label}
         onClose={() => setPickerOpen(false)}
         onSelect={(media) => onChange(catalogMediaPickUrl(media))}
+        uploadFolder={uploadFolder}
       />
     </div>
   )

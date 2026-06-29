@@ -2,9 +2,15 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { catalogMediaService, getErrorMessage } from '@/services/catalogMediaService'
 import { resolveCatalogMediaPreviewUrl } from '@/media/resolveCatalogMediaPreviewUrl'
 import { catalogMediaPickUrl, type CatalogMedia, type CatalogMediaFileType } from '@/types/catalogMedia'
+import { cn } from '@/lib/cn'
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 import { useToastStore } from '@/store/toastStore'
+import {
+  catalogMediaStorageSource,
+  mediaStorageSourceBadgeClass,
+  mediaStorageSourceLabel,
+} from '@/lib/mediaStorageSource'
 
 export function AdminMediaLibraryPage() {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -54,7 +60,7 @@ export function AdminMediaLibraryPage() {
   const onUpload = async (file: File) => {
     setUploading(true)
     try {
-      await catalogMediaService.upload(file)
+      await catalogMediaService.upload(file, 'general')
       toast('Dosya yüklendi', 'success')
       await load()
     } catch (err) {
@@ -138,6 +144,7 @@ export function AdminMediaLibraryPage() {
           {filtered.map((item) => {
             const preview = resolveCatalogMediaPreviewUrl(item.publicUrl || item.url)
             const url = catalogMediaPickUrl(item)
+            const source = catalogMediaStorageSource(item)
             return (
               <Card key={item.id} className="overflow-hidden">
                 <div className="aspect-video bg-slate-100">
@@ -151,7 +158,17 @@ export function AdminMediaLibraryPage() {
                 </div>
                 <div className="space-y-1 p-3">
                   <p className="truncate text-xs font-medium text-slate-900">{item.originalName}</p>
-                  <Badge tone="default">{item.fileType}</Badge>
+                  <div className="flex flex-wrap gap-1">
+                    <Badge tone="default">{item.fileType}</Badge>
+                    <span
+                      className={cn(
+                        'inline-flex rounded px-1.5 py-0.5 text-[10px] font-medium',
+                        mediaStorageSourceBadgeClass(source),
+                      )}
+                    >
+                      {mediaStorageSourceLabel(source)}
+                    </span>
+                  </div>
                   <p className="truncate text-[10px] text-slate-400" title={url}>
                     {url}
                   </p>
