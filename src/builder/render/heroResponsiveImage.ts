@@ -17,13 +17,13 @@ export function resolveHeroMediaUrl(ref?: MediaRef | null): string {
  * Panel: settings.desktopImage / tabletImage / mobileImage veya slide.* alanları.
  */
 export function pickHeroImageSourcesFromRefs(
-  desktop?: MediaRef | null,
-  tablet?: MediaRef | null,
-  mobile?: MediaRef | null,
+  desktopRef?: MediaRef | null,
+  tabletRef?: MediaRef | null,
+  mobileRef?: MediaRef | null,
 ): HeroImageSources | null {
-  const desktopResolved = resolveHeroMediaUrl(desktop)
-  const tabletResolved = resolveHeroMediaUrl(tablet)
-  const mobileResolved = resolveHeroMediaUrl(mobile)
+  const desktopResolved = resolveHeroMediaUrl(desktopRef)
+  const tabletResolved = resolveHeroMediaUrl(tabletRef)
+  const mobileResolved = resolveHeroMediaUrl(mobileRef)
 
   const anchor = desktopResolved || tabletResolved || mobileResolved
   if (!anchor) return null
