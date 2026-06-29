@@ -32,6 +32,8 @@ export type HeroCarouselSettings = {
   intervalMs?: number
   showArrows?: boolean
   showDots?: boolean
+  pauseOnHover?: boolean
+  loop?: boolean
 }
 
 export type HeroGradientStyle = {

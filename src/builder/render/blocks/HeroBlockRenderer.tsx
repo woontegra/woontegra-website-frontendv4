@@ -9,6 +9,7 @@ import { cn } from '@/lib/cn'
 import type { BlockButton, HeroBlock } from '@/builder/types'
 import { buildHeroGradientCss } from '@/builder/types'
 import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
+import { HeroCarouselSection } from '@/builder/render/blocks/HeroCarouselSection'
 
 function heroButtonClass(variant: BlockButton['variant'], outlineClass: string, primaryClass: string) {
   return variant === 'outline' ? outlineClass : primaryClass
@@ -120,6 +121,10 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
     Boolean(showImage) ||
     style.overlay?.enabled === true ||
     isDarkHexColor(style.backgroundColor)
+
+  if (settings.mode === 'carousel') {
+    return <HeroCarouselSection hero={hero} mode={mode} />
+  }
 
   const useLightText = hasDarkBackground
   const titleClass = useLightText ? 'text-white drop-shadow' : 'text-slate-900'

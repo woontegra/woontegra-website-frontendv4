@@ -127,7 +127,10 @@ export function HeroSettingsPanel() {
             <SingleImageFields block={block} onChange={update} />
           ) : null}
           {settings.mode === 'carousel' ? (
-            <CarouselSlidesEditor block={block} onChange={update} />
+            <>
+              <CarouselSlidesEditor block={block} onChange={update} />
+              <CarouselSettingsFields block={block} onChange={update} />
+            </>
           ) : null}
           {settings.mode === 'gradient' ? (
             <GradientFields block={block} onChange={update} />
@@ -532,6 +535,64 @@ function VideoFields({
       <ToggleField label="Sessiz başlat" checked={video.muted ?? true} onChange={(muted) => setVideo({ muted })} />
       <ToggleField label="Loop" checked={video.loop ?? true} onChange={(loop) => setVideo({ loop })} />
       <ToggleField label="Autoplay" checked={video.autoplay ?? true} onChange={(autoplay) => setVideo({ autoplay })} />
+    </div>
+  )
+}
+
+function CarouselSettingsFields({
+  block,
+  onChange,
+}: {
+  block: HeroBlock
+  onChange: (b: HeroBlock) => void
+}) {
+  const carousel = block.settings.carousel ?? {}
+  const setCarousel = (patch: Partial<NonNullable<HeroBlock['settings']['carousel']>>) =>
+    onChange({
+      ...block,
+      settings: {
+        ...block.settings,
+        carousel: { ...carousel, ...patch },
+      },
+    })
+
+  return (
+    <div className="space-y-3 rounded-xl border border-slate-100 bg-slate-50/50 p-3">
+      <p className="text-xs font-medium text-slate-600">Carousel ayarları</p>
+      <ToggleField
+        label="Otomatik geçiş"
+        checked={carousel.autoplay ?? true}
+        onChange={(autoplay) => setCarousel({ autoplay })}
+      />
+      <TextField
+        label="Geçiş süresi (ms)"
+        hint="Slaytlar arası bekleme süresi"
+        value={String(carousel.intervalMs ?? 5000)}
+        onChange={(v) => {
+          const n = parseInt(v, 10)
+          if (!Number.isNaN(n) && n >= 1000) setCarousel({ intervalMs: n })
+        }}
+      />
+      <ToggleField
+        label="Okları göster"
+        checked={carousel.showArrows ?? true}
+        onChange={(showArrows) => setCarousel({ showArrows })}
+      />
+      <ToggleField
+        label="Noktaları göster"
+        checked={carousel.showDots ?? true}
+        onChange={(showDots) => setCarousel({ showDots })}
+      />
+      <ToggleField
+        label="Hover'da duraklat"
+        checked={carousel.pauseOnHover ?? true}
+        onChange={(pauseOnHover) => setCarousel({ pauseOnHover })}
+      />
+      <ToggleField
+        label="Döngü (loop)"
+        checked={carousel.loop ?? true}
+        onChange={(loop) => setCarousel({ loop })}
+      />
     </div>
   )
 }
