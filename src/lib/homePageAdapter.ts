@@ -1,6 +1,16 @@
 import type { BuilderBlock } from '@/builder/types'
+import type { HeroBlock } from '@/builder/types/hero'
+import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 import type { HomePageContent } from '@/types/homePageContent'
 import { defaultHomePageContent, normalizeHomePageContent } from '@/types/homePageContent'
+
+export type HomeHeroShellLayout = 'split' | 'fullscreen' | 'compact' | 'none'
+
+export type HomeHeroShell = {
+  layout: HomeHeroShellLayout
+  minHeight: string
+  imageUrl: string | null
+}
 
 export type HomeRenderPlan =
   | { mode: 'builder'; blocks: BuilderBlock[]; seoTitle?: string; seoDescription?: string }
@@ -61,4 +71,58 @@ export function resolveHomeRenderPlan(raw: Record<string, unknown> | null): Home
 
 export function homePlanSeo(plan: HomeRenderPlan): { title?: string; description?: string } {
   return { title: plan.seoTitle, description: plan.seoDescription }
+}
+
+function heroImageFromBlock(hero: HeroBlock): string | null {
+  const { settings } = hero
+  if (settings.mode === 'gradient' || settings.mode === 'solid-color' || settings.mode === 'video') {
+    return null
+  }
+
+  const desktopUrl =
+    settings.mode === 'carousel'
+      ? settings.slides.find((slide) => slide.enabled !== false)?.desktopImage?.url ??
+        settings.slides[0]?.desktopImage?.url
+      : settings.desktopImage?.url ?? settings.slides[0]?.desktopImage?.url
+
+  const resolved = resolveMediaUrl(desktopUrl)
+  return resolved || null
+}
+
+function heroLayoutFromBlock(hero: HeroBlock): HomeHeroShellLayout {
+  if (hero.settings.layout === 'compact') return 'compact'
+  if (hero.settings.layout === 'split') return 'split'
+  return 'fullscreen'
+}
+
+/**
+ * Ana sayfa hero kabuğu — skeleton ölçüsü ve preload URL'i için.
+ */
+export function extractHomeHeroShell(plan: HomeRenderPlan): HomeHeroShell {
+  if (plan.mode === 'sections') {
+    if (!plan.content.hero.enabled) {
+      return { layout: 'none', minHeight: '0px', imageUrl: null }
+    }
+
+    const imageUrl = plan.content.hero.image?.trim()
+      ? resolveMediaUrl(plan.content.hero.image) || null
+      : null
+
+    return {
+      layout: 'split',
+      minHeight: '520px',
+      imageUrl,
+    }
+  }
+
+  const hero = plan.blocks.find((block): block is HeroBlock => block.type === 'hero')
+  if (!hero?.visibility?.enabled) {
+    return { layout: 'none', minHeight: '0px', imageUrl: null }
+  }
+
+  return {
+    layout: heroLayoutFromBlock(hero),
+    minHeight: hero.settings.height?.desktop ?? (hero.settings.layout === 'compact' ? '280px' : '520px'),
+    imageUrl: heroImageFromBlock(hero),
+  }
 }
