@@ -1,9 +1,9 @@
 import type { BuilderBlock } from '@/builder/types'
 import type { HeroBlock } from '@/builder/types/hero'
+import { getHeroSettingsImageSources } from '@/builder/render/heroResponsiveImage'
 import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 import type { HomePageContent } from '@/types/homePageContent'
 import { defaultHomePageContent, normalizeHomePageContent } from '@/types/homePageContent'
-
 export type HomeHeroShellLayout = 'split' | 'fullscreen' | 'compact' | 'none'
 
 export type HomeHeroShell = {
@@ -79,18 +79,11 @@ function heroImageFromBlock(hero: HeroBlock): string | null {
     return null
   }
 
-  const desktopUrl =
-    settings.mode === 'carousel'
-      ? settings.slides.find((slide) => slide.enabled !== false)?.desktopImage?.url ??
-        settings.slides[0]?.desktopImage?.url
-      : settings.desktopImage?.url ?? settings.slides[0]?.desktopImage?.url
-
-  const resolved = resolveMediaUrl(desktopUrl)
-  return resolved || null
+  const sources = getHeroSettingsImageSources(settings)
+  return sources?.desktop || null
 }
 
-function heroLayoutFromBlock(hero: HeroBlock): HomeHeroShellLayout {
-  if (hero.settings.layout === 'compact') return 'compact'
+function heroLayoutFromBlock(hero: HeroBlock): HomeHeroShellLayout {  if (hero.settings.layout === 'compact') return 'compact'
   if (hero.settings.layout === 'split') return 'split'
   return 'fullscreen'
 }

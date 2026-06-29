@@ -1,9 +1,9 @@
 import type { CSSProperties } from 'react'
-import { MediaImage } from '@/media/components/MediaImage'
 import { BuilderField } from '@/builder/edit/BuilderField'
 import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
-import { renderIfMediaUrl, renderIfText, shouldShowField } from '@/builder/render/renderRules'
-import { resolveMediaUrl } from '@/media/resolveMediaUrl'
+import { renderIfText, shouldShowField } from '@/builder/render/renderRules'
+import { getHeroSettingsImageSources, heroHasRenderableImage } from '@/builder/render/heroResponsiveImage'
+import { HeroResponsiveImage } from '@/media/components/HeroResponsiveImage'
 import { resolveIcon } from '@/lib/iconRegistry'
 import { cn } from '@/lib/cn'
 import type { BlockButton, HeroBlock } from '@/builder/types'
@@ -14,6 +14,19 @@ function heroButtonClass(variant: BlockButton['variant'], outlineClass: string, 
   return variant === 'outline' ? outlineClass : primaryClass
 }
 
+function heroHeightVars(settings: HeroBlock['settings'], desktopDefault: string): CSSProperties {
+  return {
+    ['--hero-h' as string]: settings.height?.desktop ?? desktopDefault,
+    ['--hero-h-mobile' as string]:
+      settings.height?.mobile ?? settings.height?.tablet ?? desktopDefault,
+  }
+}
+
+function heroMinHeightClass(fullscreen?: boolean): string {
+  if (fullscreen) return 'min-h-screen'
+  return 'min-h-[var(--hero-h-mobile,var(--hero-h,280px))] lg:min-h-[var(--hero-h,280px)]'
+}
+
 export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps) {
   if (block.type !== 'hero') return null
   const hero = block as HeroBlock
@@ -22,8 +35,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
   const { settings, style, visibility } = hero
   const isPreview = mode === 'preview'
 
-  const height =
-    settings.fullscreen ? 'min-h-screen' : 'min-h-[var(--hero-h,280px)]'
+  const height = heroMinHeightClass(settings.fullscreen)
 
   const bgStyle: CSSProperties = {}
   if (settings.mode === 'gradient') {
@@ -39,13 +51,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
     bgStyle.background = style.backgroundGradient
   }
 
-  const desktopUrl =
-    settings.mode === 'carousel'
-      ? settings.slides.find((s) => s.enabled !== false)?.desktopImage?.url ??
-        settings.slides[0]?.desktopImage?.url
-      : settings.desktopImage?.url ?? settings.slides[0]?.desktopImage?.url
-
-  const resolvedImage = renderIfMediaUrl(desktopUrl ? resolveMediaUrl(desktopUrl) : null)
+  const imageSources = getHeroSettingsImageSources(settings)
 
   const title = renderIfText(hero.title)
   const description = renderIfText(hero.description)
@@ -56,7 +62,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
     settings.mode !== 'solid-color' &&
     settings.mode !== 'video' &&
     visibility.showImage !== false &&
-    Boolean(resolvedImage)
+    heroHasRenderableImage(settings)
 
   const visibleButtons = (settings.buttons ?? []).filter(
     (b) => b.visible !== false && renderIfText(b.label) && renderIfText(b.href),
@@ -103,6 +109,8 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
             bgStyle.background ??
             'linear-gradient(135deg, #0f172a, #1e293b)',
           ['--hero-h' as string]: settings.height?.desktop ?? '240px',
+          ['--hero-h-mobile' as string]:
+            settings.height?.mobile ?? settings.height?.tablet ?? '240px',
         }}
       >
         {style.overlay?.enabled ? (
@@ -268,12 +276,12 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
                 </div>
               ) : null}
             </div>
-            {showImage && resolvedImage ? (
+            {showImage && imageSources ? (
               <BuilderField path="image" label="Görsel" type="media" className="relative mx-auto w-full max-w-xl lg:max-w-none">
                 <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-emerald-500/20 to-blue-500/15 blur-2xl" />
                 <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-slate-900/40 p-2 shadow-2xl">
-                  <MediaImage
-                    src={resolvedImage}
+                  <HeroResponsiveImage
+                    sources={imageSources}
                     alt={hero.title ?? ''}
                     className="aspect-[4/3] w-full rounded-xl object-cover"
                     loading="eager"
@@ -296,7 +304,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
             style.backgroundGradient ??
             bgStyle.background ??
             'linear-gradient(to bottom right, #0f172a, #1e293b, #14532d)',
-          ['--hero-h' as string]: settings.height?.desktop ?? '520px',
+          ...heroHeightVars(settings, '520px'),
         }}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,197,94,0.15),transparent_70%)]" />
@@ -356,11 +364,11 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
                 </div>
               ) : null}
             </div>
-            {showImage && resolvedImage ? (
+            {showImage && imageSources ? (
               <BuilderField path="image" label="Görsel" type="media" className="relative">
                 <div className="relative overflow-hidden rounded-xl border border-white/10 shadow-xl">
-                  <MediaImage
-                    src={resolvedImage}
+                  <HeroResponsiveImage
+                    sources={imageSources}
                     alt={hero.title ?? ''}
                     className="aspect-[8/5] w-full object-cover"
                     loading="eager"
@@ -379,7 +387,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
       className={cn('relative w-full overflow-hidden', !hasDarkBackground && 'bg-slate-50', height)}
       style={{
         ...bgStyle,
-        ['--hero-h' as string]: settings.height?.desktop ?? '280px',
+        ...heroHeightVars(settings, '280px'),
       }}
     >
       {settings.mode === 'video' && settings.video?.videoUrl ? (
@@ -404,13 +412,14 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
         />
       ) : null}
 
-      {showImage ? (
+      {showImage && imageSources ? (
         <BuilderField path="image" label="Görsel" type="media" className="absolute inset-0">
-          <MediaImage
-            src={resolvedImage!}
+          <HeroResponsiveImage
+            sources={imageSources}
             alt={hero.title ?? ''}
             className="absolute inset-0 h-full w-full object-cover"
             loading="eager"
+            fill
           />
         </BuilderField>
       ) : null}
