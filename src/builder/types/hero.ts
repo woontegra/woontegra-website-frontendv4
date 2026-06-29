@@ -63,6 +63,8 @@ export type HeroHighlight = {
   iconClass?: string
 }
 
+export type HeroImageFit = 'cover' | 'contain'
+
 export type HeroSettings = {
   mode: HeroMode
   /** split = ana sayfa; about = hakkımızda; compact = detay sayfa; centered = klasik tam genişlik */
@@ -77,6 +79,10 @@ export type HeroSettings = {
   desktopImage?: MediaRef
   tabletImage?: MediaRef
   mobileImage?: MediaRef
+  /** Görsel sığdırma — mobilde ayrı görsel varsa varsayılan contain */
+  imageFit?: ResponsiveValue<HeroImageFit>
+  /** Mobil slider gibi gömülü metinli görsellerde builder metnini gizle */
+  hideContentOnMobile?: boolean
   buttons?: BlockButton[]
   contentAlign?: ContentAlign
   contentPosition?: ContentAlign

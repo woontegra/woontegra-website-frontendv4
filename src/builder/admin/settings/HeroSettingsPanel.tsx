@@ -18,7 +18,7 @@ import {
 } from '@/builder/admin/settings/SharedSections'
 import { useSelectedBlock } from '@/builder/admin/settings/useSelectedBlock'
 import { useFocusCollapsible } from '@/builder/admin/settings/useFocusCollapsible'
-import type { BlockButton, HeroBlock, HeroHighlight, HeroMode, HeroSlide } from '@/builder/types'
+import type { BlockButton, HeroBlock, HeroHighlight, HeroImageFit, HeroMode, HeroSlide } from '@/builder/types'
 import { createDefaultHeroSlide } from '@/builder/types'
 
 const HERO_MODE_OPTIONS = [
@@ -299,6 +299,46 @@ export function HeroSettingsPanel() {
             value={settings.height?.mobile ?? ''}
             onChange={(mobile) => setSettings({ height: { ...settings.height, mobile } })}
             placeholder="360px"
+            hint={
+              settings.mobileImage?.url?.trim()
+                ? 'Ayrı mobil görsel + contain modunda yükseklik görsel oranına göre otomatik olur'
+                : undefined
+            }
+          />
+          <SelectField
+            label="Mobil görsel sığdırma"
+            hint="Ayrı mobil görsel seçiliyse varsayılan: Tamamını göster (contain)"
+            value={settings.imageFit?.mobile ?? ''}
+            onChange={(v) => {
+              const mobile = (v || undefined) as HeroImageFit | undefined
+              setSettings({
+                imageFit: { ...settings.imageFit, mobile },
+              })
+            }}
+            options={[
+              { value: '', label: 'Otomatik (mobil görsel varsa contain)' },
+              { value: 'contain', label: 'Contain — tamamını göster' },
+              { value: 'cover', label: 'Cover — alanı doldur (kırpabilir)' },
+            ]}
+          />
+          <SelectField
+            label="Desktop görsel sığdırma"
+            value={settings.imageFit?.desktop ?? 'cover'}
+            onChange={(v) =>
+              setSettings({
+                imageFit: { ...settings.imageFit, desktop: v as 'cover' | 'contain' },
+              })
+            }
+            options={[
+              { value: 'cover', label: 'Cover' },
+              { value: 'contain', label: 'Contain' },
+            ]}
+          />
+          <ToggleField
+            label="Mobilde builder metnini gizle"
+            hint="Mobil slider gibi gömülü metinli görseller için"
+            checked={settings.hideContentOnMobile === true}
+            onChange={(hideContentOnMobile) => setSettings({ hideContentOnMobile })}
           />
           <SharedResponsiveSection block={block} onChange={update} />
         </>

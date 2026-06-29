@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import { BuilderField } from '@/builder/edit/BuilderField'
 import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { renderIfText, shouldShowField } from '@/builder/render/renderRules'
-import { getHeroSettingsImageSources, heroHasRenderableImage } from '@/builder/render/heroResponsiveImage'
+import { getHeroSettingsImageSources, heroHasRenderableImage, heroUsesMobileNaturalImageLayout } from '@/builder/render/heroResponsiveImage'
 import { HeroResponsiveImage } from '@/media/components/HeroResponsiveImage'
 import { resolveIcon } from '@/lib/iconRegistry'
 import { cn } from '@/lib/cn'
@@ -22,9 +22,47 @@ function heroHeightVars(settings: HeroBlock['settings'], desktopDefault: string)
   }
 }
 
-function heroMinHeightClass(fullscreen?: boolean): string {
+function heroMinHeightClass(settings: HeroBlock['settings'], fullscreen?: boolean): string {
   if (fullscreen) return 'min-h-screen'
+  if (heroUsesMobileNaturalImageLayout(settings)) {
+    return 'max-[640px]:min-h-0 sm:min-h-[var(--hero-h-mobile,var(--hero-h,280px))] lg:min-h-[var(--hero-h,280px)]'
+  }
   return 'min-h-[var(--hero-h-mobile,var(--hero-h,280px))] lg:min-h-[var(--hero-h,280px)]'
+}
+
+function heroCenteredImageClass(naturalMobile: boolean): string {
+  if (naturalMobile) {
+    return cn(
+      'relative block w-full max-w-full max-[640px]:h-auto max-[640px]:object-contain max-[640px]:object-center',
+      'sm:absolute sm:inset-0 sm:h-full sm:w-full sm:object-cover sm:object-center',
+    )
+  }
+  return 'absolute inset-0 h-full w-full object-cover object-center'
+}
+
+function heroCenteredImageWrapperClass(naturalMobile: boolean): string {
+  if (naturalMobile) return 'relative w-full max-[640px]:bg-slate-900 sm:absolute sm:inset-0'
+  return 'absolute inset-0'
+}
+
+function heroSplitImageClass(naturalMobile: boolean): string {
+  if (naturalMobile) {
+    return cn(
+      'w-full max-[640px]:h-auto max-[640px]:object-contain max-[640px]:object-top',
+      'sm:aspect-[8/5] sm:object-cover sm:object-center',
+    )
+  }
+  return 'aspect-[8/5] w-full object-cover object-center'
+}
+
+function heroAboutImageClass(naturalMobile: boolean): string {
+  if (naturalMobile) {
+    return cn(
+      'w-full max-[640px]:h-auto max-[640px]:object-contain max-[640px]:object-top',
+      'sm:aspect-[4/3] sm:object-cover sm:object-center',
+    )
+  }
+  return 'aspect-[4/3] w-full object-cover object-center'
 }
 
 export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps) {
@@ -35,7 +73,12 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
   const { settings, style, visibility } = hero
   const isPreview = mode === 'preview'
 
-  const height = heroMinHeightClass(settings.fullscreen)
+  const height = heroMinHeightClass(settings, settings.fullscreen)
+  const naturalMobileImage = heroUsesMobileNaturalImageLayout(settings)
+  const hideContentOnMobile =
+    settings.hideContentOnMobile === true ||
+    hero.responsiveSettings?.hideContentOnMobile === true ||
+    hero.responsiveSettings?.hideMobileContent === true
 
   const bgStyle: CSSProperties = {}
   if (settings.mode === 'gradient') {
@@ -191,7 +234,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
         ) : null}
         <div className="relative z-[2] mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className={cn('grid items-center gap-10 lg:gap-16', showImage ? 'lg:grid-cols-2' : 'max-w-4xl')}>
-            <div className="text-white">
+            <div className={cn('text-white', hideContentOnMobile && 'max-[640px]:hidden')}>
               {breadcrumbs.length > 0 ? (
                 <nav className="mb-5 flex flex-wrap items-center gap-1 text-sm text-slate-400">
                   {breadcrumbs.map((crumb, i) => (
@@ -283,7 +326,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
                   <HeroResponsiveImage
                     sources={imageSources}
                     alt={hero.title ?? ''}
-                    className="aspect-[4/3] w-full rounded-xl object-cover"
+                    className={heroAboutImageClass(naturalMobileImage)}
                     loading="eager"
                   />
                 </div>
@@ -298,7 +341,12 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
   if (settings.layout === 'split') {
     return (
       <section
-        className={cn('relative w-full overflow-hidden py-12 sm:py-16 lg:py-20', height)}
+        className={cn(
+          'relative w-full overflow-hidden',
+          naturalMobileImage
+            ? 'max-[640px]:min-h-0 max-[640px]:bg-slate-900 sm:py-12 sm:min-h-[var(--hero-h-mobile,var(--hero-h,520px))] lg:py-20'
+            : cn('py-12 sm:py-16 lg:py-20', height),
+        )}
         style={{
           background:
             style.backgroundGradient ??
@@ -318,8 +366,13 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
           />
         ) : null}
         <div className="relative z-[2] mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
-            <div className="text-white">
+          <div
+            className={cn(
+              'grid items-center gap-10 lg:grid-cols-2 lg:gap-12',
+              hideContentOnMobile && 'max-[640px]:grid-cols-1',
+            )}
+          >
+            <div className={cn('text-white', hideContentOnMobile && 'max-[640px]:hidden')}>
               {visibility.showBadge !== false && settings.badge?.trim() ? (
                 <BuilderField path="badge" label="Badge" type="text" className="mb-4 inline-block">
                   <span className="inline-block rounded-full bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400">
@@ -365,12 +418,22 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
               ) : null}
             </div>
             {showImage && imageSources ? (
-              <BuilderField path="image" label="Görsel" type="media" className="relative">
-                <div className="relative overflow-hidden rounded-xl border border-white/10 shadow-xl">
+              <BuilderField
+                path="image"
+                label="Görsel"
+                type="media"
+                className={cn('relative', hideContentOnMobile && 'max-[640px]:order-first')}
+              >
+                <div
+                  className={cn(
+                    'relative overflow-hidden rounded-xl border border-white/10 shadow-xl',
+                    naturalMobileImage && 'max-[640px]:rounded-none max-[640px]:border-0 max-[640px]:shadow-none',
+                  )}
+                >
                   <HeroResponsiveImage
                     sources={imageSources}
                     alt={hero.title ?? ''}
-                    className="aspect-[8/5] w-full object-cover"
+                    className={heroSplitImageClass(naturalMobileImage)}
                     loading="eager"
                   />
                 </div>
@@ -384,7 +447,12 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
 
   return (
     <section
-      className={cn('relative w-full overflow-hidden', !hasDarkBackground && 'bg-slate-50', height)}
+      className={cn(
+        'relative w-full overflow-hidden',
+        !hasDarkBackground && !naturalMobileImage && 'bg-slate-50',
+        naturalMobileImage && 'max-[640px]:bg-slate-900',
+        height,
+      )}
       style={{
         ...bgStyle,
         ...heroHeightVars(settings, '280px'),
@@ -413,13 +481,18 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
       ) : null}
 
       {showImage && imageSources ? (
-        <BuilderField path="image" label="Görsel" type="media" className="absolute inset-0">
+        <BuilderField
+          path="image"
+          label="Görsel"
+          type="media"
+          className={heroCenteredImageWrapperClass(naturalMobileImage)}
+        >
           <HeroResponsiveImage
             sources={imageSources}
             alt={hero.title ?? ''}
-            className="absolute inset-0 h-full w-full object-cover"
+            className={heroCenteredImageClass(naturalMobileImage)}
             loading="eager"
-            fill
+            fill={!naturalMobileImage}
           />
         </BuilderField>
       ) : null}
@@ -427,7 +500,9 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
       {(showTitle || showDescription || showButtons) && (
         <div
           className={cn(
-            'relative z-[2] mx-auto flex h-full max-w-7xl flex-col justify-center px-4 py-16',
+            'relative z-[2] mx-auto flex max-w-7xl flex-col justify-center px-4 py-16',
+            naturalMobileImage ? 'sm:absolute sm:inset-0 sm:h-full' : 'h-full',
+            hideContentOnMobile && 'max-[640px]:hidden',
             style.contentAlign === 'center' && 'items-center text-center',
             style.contentAlign === 'right' && 'items-end text-right',
           )}
