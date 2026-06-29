@@ -78,9 +78,9 @@ export function BlockSettingsPanel() {
 
     return (
 
-      <aside className="flex w-full shrink-0 flex-col border-t border-slate-200 bg-white lg:w-[340px] lg:border-l lg:border-t-0">
+      <aside className="flex w-full shrink-0 flex-col border-t border-slate-200 bg-white lg:h-full lg:min-h-0 lg:w-[340px] lg:overflow-hidden lg:border-l lg:border-t-0">
 
-        <div className="border-b border-slate-100 px-4 py-3">
+        <div className="shrink-0 border-b border-slate-100 px-4 py-3">
 
           <h2 className="text-sm font-semibold text-slate-900">Blok ayarları</h2>
 
@@ -130,9 +130,9 @@ export function BlockSettingsPanel() {
 
   return (
 
-    <aside className="flex w-full shrink-0 flex-col border-t border-slate-200 bg-white lg:w-[340px] lg:border-l lg:border-t-0">
+    <aside className="flex w-full shrink-0 flex-col border-t border-slate-200 bg-white lg:h-full lg:min-h-0 lg:w-[340px] lg:overflow-hidden lg:border-l lg:border-t-0">
 
-      <div className="border-b border-slate-100 px-4 py-3">
+      <div className="shrink-0 border-b border-slate-100 px-4 py-3">
 
         <h2 className="text-sm font-semibold text-slate-900">Blok ayarları</h2>
 

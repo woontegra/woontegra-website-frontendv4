@@ -56,7 +56,7 @@ export function BuilderToolbar({ onJsonOpen, onValidationOpen, onTemplatesOpen }
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white">
+    <header className="z-30 shrink-0 border-b border-slate-200 bg-white lg:sticky lg:top-0">
       <div className="flex flex-wrap items-center gap-3 px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-2">
           <Link

@@ -32,8 +32,8 @@ export function BlockLibraryPanel() {
   }, [query])
 
   return (
-    <aside className="flex w-full shrink-0 flex-col border-b border-slate-200 bg-white lg:w-72 lg:border-b-0 lg:border-r">
-      <div className="border-b border-slate-100 px-4 py-3">
+    <aside className="flex w-full shrink-0 flex-col border-b border-slate-200 bg-white lg:h-full lg:min-h-0 lg:w-72 lg:overflow-hidden lg:border-b-0 lg:border-r">
+      <div className="shrink-0 border-b border-slate-100 px-4 py-3">
         <h2 className="text-sm font-semibold text-slate-900">Bloklar</h2>
         {isEditable ? (
           <p className="mt-0.5 text-xs text-slate-400">Ekle ile yeni blok ekleyin</p>

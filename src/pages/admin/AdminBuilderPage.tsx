@@ -33,14 +33,14 @@ export function AdminBuilderPage() {
   }
 
   return (
-    <div className="-m-6 flex min-h-[calc(100vh)] flex-col bg-[#f4f6f9]">
+    <div className="-m-6 flex min-h-[calc(100vh)] flex-col bg-[#f4f6f9] lg:h-[calc(100vh)] lg:max-h-[calc(100vh)] lg:overflow-hidden">
       <BuilderToolbar
         onJsonOpen={() => setJsonOpen(true)}
         onValidationOpen={openValidation}
         onTemplatesOpen={() => setTemplatesOpen(true)}
       />
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
         <BlockLibraryPanel />
         <BuilderPreviewCanvas />
         <BlockSettingsPanel />

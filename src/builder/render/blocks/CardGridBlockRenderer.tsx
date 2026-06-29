@@ -7,6 +7,7 @@ import { HomeIcon } from '@/lib/homeIcons'
 import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 import { cn } from '@/lib/cn'
 import type { CardGridBlock, CardGridItem } from '@/builder/types'
+import { CardButtonLabel, CardLinkShell } from '@/builder/render/blocks/CardGridCardLink'
 
 export function CardGridBlockRenderer({ block }: BlockRendererProps) {
   if (block.type !== 'card-grid') return null
@@ -86,8 +87,10 @@ function IntroVariant({ block, cards }: { block: CardGridBlock; cards: CardGridI
         {cards.length > 0 ? (
           <div className="mx-auto mt-10 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {cards.map((card) => (
-              <div
+              <CardLinkShell
                 key={card.id}
+                card={card}
+                as="div"
                 className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur"
               >
                 {card.icon ? (
@@ -96,7 +99,8 @@ function IntroVariant({ block, cards }: { block: CardGridBlock; cards: CardGridI
                   </div>
                 ) : null}
                 <CardTitleDescription card={card} />
-              </div>
+                <CardButtonLabel card={card} />
+              </CardLinkShell>
             ))}
           </div>
         ) : null}
@@ -129,8 +133,10 @@ function IconDarkVariant({ block, cards }: { block: CardGridBlock; cards: CardGr
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {cards.map((card) => (
-            <div
+            <CardLinkShell
               key={card.id}
+              card={card}
+              as="div"
               className="group relative rounded-2xl border border-slate-700 bg-slate-800 p-6 sm:p-8"
             >
               {card.color ? (
@@ -149,7 +155,8 @@ function IconDarkVariant({ block, cards }: { block: CardGridBlock; cards: CardGr
                 </div>
               ) : null}
               <CardTitleDescription card={card} light />
-            </div>
+              <CardButtonLabel card={card} light />
+            </CardLinkShell>
           ))}
         </div>
       </div>
@@ -168,7 +175,11 @@ function LogoVariant({ block, cards }: { block: CardGridBlock; cards: CardGridIt
       />
       <div className="grid gap-6 md:grid-cols-3">
         {cards.map((card) => (
-          <article key={card.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <CardLinkShell
+            key={card.id}
+            card={card}
+            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+          >
             {card.imageUrl ? (
               <MediaImage
                 src={resolveMediaUrl(card.imageUrl)}
@@ -177,10 +188,8 @@ function LogoVariant({ block, cards }: { block: CardGridBlock; cards: CardGridIt
               />
             ) : null}
             <CardTitleDescription card={card} />
-            {card.href ? (
-              <p className="mt-2 truncate text-xs text-emerald-600">{card.href}</p>
-            ) : null}
-          </article>
+            <CardButtonLabel card={card} />
+          </CardLinkShell>
         ))}
       </div>
     </SectionBlockShell>
@@ -202,12 +211,17 @@ function StepsVariant({ block, cards }: { block: CardGridBlock; cards: CardGridI
       />
       <div className={cn('grid gap-6', colClass)}>
         {cards.map((card) => (
-          <article key={card.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <CardLinkShell
+            key={card.id}
+            card={card}
+            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+          >
             {card.icon ? (
               <span className="text-2xl font-bold text-emerald-600">{card.icon}</span>
             ) : null}
             <CardTitleDescription card={card} />
-          </article>
+            <CardButtonLabel card={card} />
+          </CardLinkShell>
         ))}
       </div>
     </SectionBlockShell>
@@ -244,7 +258,11 @@ function WhyVariant({ block, cards }: { block: CardGridBlock; cards: CardGridIte
         </div>
         <div className={cn('mt-12 grid gap-6', colClass)}>
           {cards.map((card) => (
-            <article key={card.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <CardLinkShell
+              key={card.id}
+              card={card}
+              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            >
               {card.icon ? (
                 <div
                   className={cn(
@@ -256,7 +274,8 @@ function WhyVariant({ block, cards }: { block: CardGridBlock; cards: CardGridIte
                 </div>
               ) : null}
               <CardTitleDescription card={card} />
-            </article>
+              <CardButtonLabel card={card} />
+            </CardLinkShell>
           ))}
         </div>
       </div>
@@ -281,8 +300,9 @@ function SolutionsVariant({ block, cards }: { block: CardGridBlock; cards: CardG
         />
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map((card) => (
-            <article
+            <CardLinkShell
               key={card.id}
+              card={card}
               className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
             >
               {card.icon ? (
@@ -296,7 +316,8 @@ function SolutionsVariant({ block, cards }: { block: CardGridBlock; cards: CardG
                 </div>
               ) : null}
               <CardTitleDescription card={card} />
-            </article>
+              <CardButtonLabel card={card} />
+            </CardLinkShell>
           ))}
         </div>
       </div>
@@ -339,10 +360,15 @@ function TimelineVariant({ block, cards }: { block: CardGridBlock; cards: CardGr
                   ) : null}
                 </div>
               </div>
-              <div className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+              <CardLinkShell
+                card={step}
+                as="div"
+                className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6"
+              >
                 <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Adım {index + 1}</p>
                 <CardTitleDescription card={step} />
-              </div>
+                <CardButtonLabel card={step} />
+              </CardLinkShell>
             </div>
           ))}
         </div>
@@ -374,11 +400,9 @@ function AboutBrandsVariant({ block, cards }: { block: CardGridBlock; cards: Car
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-2">
           {cards.map((brand) => (
-            <a
+            <CardLinkShell
               key={brand.id}
-              href={brand.href ?? '#'}
-              target="_blank"
-              rel="noopener noreferrer"
+              card={brand}
               className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-xl"
             >
               {brand.imageUrl ? (
@@ -407,15 +431,11 @@ function AboutBrandsVariant({ block, cards }: { block: CardGridBlock; cards: Car
                     <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{brand.description}</p>
                   </BuilderField>
                 ) : null}
-                {brand.href ? (
-                  <BuilderField path={`card.${brand.id}.href`} label="Marka linki" type="text" className="mt-4 w-fit">
-                    <span className="inline-flex items-center text-sm font-semibold text-emerald-700 group-hover:underline">
-                      Siteyi ziyaret et →
-                    </span>
-                  </BuilderField>
-                ) : null}
+                <BuilderField path={`card.${brand.id}.href`} label="Marka linki" type="text" className="w-fit">
+                  <CardButtonLabel card={brand} />
+                </BuilderField>
               </div>
-            </a>
+            </CardLinkShell>
           ))}
         </div>
       </div>
@@ -425,9 +445,10 @@ function AboutBrandsVariant({ block, cards }: { block: CardGridBlock; cards: Car
 
 function DefaultCard({ card }: { card: CardGridItem }) {
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <CardLinkShell card={card} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <CardTitleDescription card={card} />
-    </article>
+      <CardButtonLabel card={card} />
+    </CardLinkShell>
   )
 }
 
