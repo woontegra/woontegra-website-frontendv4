@@ -44,12 +44,12 @@ export function validateAdminProductForm(
     return 'Satışa açık ürünlerde fiyat zorunludur. Fiyat yoksa satışa kapatın veya teklif akışını kullanın.'
   }
 
+  if (presetId === 'SAAS' && onSale && !hasSaasSubscriptionPeriod(form)) {
+    return 'SaaS ürünlerde abonelik süresi (ay) zorunludur.'
+  }
+
   if (presetShowsDownloadFields(presetId) && onSale) {
-    const hasDelivery =
-      Boolean(form.downloadMediaId) ||
-      Boolean((form.downloadUrl ?? '').trim()) ||
-      hasConfiguredDownloadFiles(form.downloadFiles ?? undefined)
-    if (!hasDelivery) {
+    if (!hasDigitalDelivery(form)) {
       return 'Dijital teslimat için medyadan dosya seçin, R2 indirme dosyası ekleyin veya alternatif indirme adresi girin.'
     }
   }
@@ -104,10 +104,20 @@ export function hasDigitalDelivery(form: AdminProductInput): boolean {
   )
 }
 
+export function hasSaasSubscriptionPeriod(form: AdminProductInput): boolean {
+  return form.licenseMonths != null && form.licenseMonths > 0
+}
+
+export function isDeliveryReadyForSale(form: AdminProductInput, presetId: AdminProductPresetId): boolean {
+  if (presetId === 'SAAS') return hasSaasSubscriptionPeriod(form)
+  if (presetShowsDownloadFields(presetId)) return hasDigitalDelivery(form)
+  return true
+}
+
 export function isReadyForSale(form: AdminProductInput, presetId?: AdminProductPresetId): boolean {
   const preset = presetId ?? inferPresetFromForm(form)
   if (!form.isActive || !form.purchaseEnabled || form.price <= 0) return false
-  if (presetShowsDownloadFields(preset) && !hasDigitalDelivery(form)) return false
+  if (!isDeliveryReadyForSale(form, preset)) return false
   if (form.licenseRequired && !form.licenseAppCode?.trim()) return false
   return true
 }

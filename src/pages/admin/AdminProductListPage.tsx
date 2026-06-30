@@ -220,7 +220,9 @@ export function AdminProductListPage() {
                     <Badge tone={sale.tone}>{sale.label}</Badge>
                   </TD>
                   <TD>
-                    {item.productType === 'DOWNLOAD' ? (
+                    {item.productType === 'SAAS' ? (
+                      <Badge tone="brand">SaaS / abonelik</Badge>
+                    ) : item.productType === 'DOWNLOAD' ? (
                       hasR2DownloadFiles(item) ? (
                         <Badge tone="brand">R2 indirme</Badge>
                       ) : digital ? (

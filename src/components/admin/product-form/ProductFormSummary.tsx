@@ -6,6 +6,7 @@ import { formatMoney } from '@/types/product'
 import {
   deliveryTypeLabel,
   licenseStatusLabel,
+  presetShowsR2DownloadFields,
   saleStatusLabel,
   type AdminProductPresetId,
 } from '@/constants/adminProductPresets'
@@ -14,7 +15,7 @@ import {
   hasPortableDownloadFile,
   hasSetupDownloadFile,
 } from '@/lib/productDownloadFiles'
-import { isReadyForSale, hasDigitalDelivery } from '@/lib/adminProductForm'
+import { isReadyForSale } from '@/lib/adminProductForm'
 import { adminLicenseProgramsService } from '@/services/adminLicenseProgramsService'
 import { licenseProgramReadinessLabel } from '@/components/admin/LicenseProgramPicker'
 
@@ -27,7 +28,6 @@ type Props = {
 export function ProductFormSummary({ form, presetId, coverPreview }: Props) {
   const ready = isReadyForSale(form, presetId)
   const hasPrice = Number.isFinite(form.price) && form.price > 0
-  const hasDelivery = hasDigitalDelivery(form)
   const appCode = form.licenseAppCode?.trim() ?? ''
 
   const programsQuery = useQuery({
@@ -55,10 +55,7 @@ export function ProductFormSummary({ form, presetId, coverPreview }: Props) {
     form.licenseAppCode,
     selectedProgram,
   )
-  const saleReady =
-    ready &&
-    (!form.licenseRequired || licenseReady.tone === 'success') &&
-    (!form.licenseRequired || hasDelivery)
+  const saleReady = ready && (!form.licenseRequired || licenseReady.tone === 'success')
 
   return (
     <Card className="sticky top-20 border-slate-200 shadow-sm">
@@ -98,24 +95,26 @@ export function ProductFormSummary({ form, presetId, coverPreview }: Props) {
           <div>
             <p className="text-xs text-slate-500">Teslimat tipi</p>
             <p className="font-medium text-slate-900">{deliveryTypeLabel(presetId, form)}</p>
-            <div className="mt-1 flex flex-wrap gap-1">
-              {hasConfiguredDownloadFiles(form.downloadFiles ?? undefined) ? (
-                <Badge tone="brand">R2 indirme: Var</Badge>
-              ) : (
-                <Badge tone="default">R2 indirme: Yok</Badge>
-              )}
-              {hasSetupDownloadFile(form.downloadFiles ?? undefined) ? (
-                <Badge tone="success">Setup dosyası: Var</Badge>
-              ) : (
-                <Badge tone="default">Setup dosyası: Yok</Badge>
-              )}
-              {hasPortableDownloadFile(form.downloadFiles ?? undefined) ? (
-                <Badge tone="success">Portable dosya: Var</Badge>
-              ) : (
-                <Badge tone="default">Portable dosya: Yok</Badge>
-              )}
-              {presetId === 'FREE_TOOL' ? <Badge tone="success">Ücretsiz</Badge> : null}
-            </div>
+            {presetShowsR2DownloadFields(presetId) ? (
+              <div className="mt-1 flex flex-wrap gap-1">
+                {hasConfiguredDownloadFiles(form.downloadFiles ?? undefined) ? (
+                  <Badge tone="brand">R2 indirme: Var</Badge>
+                ) : (
+                  <Badge tone="default">R2 indirme: Yok</Badge>
+                )}
+                {hasSetupDownloadFile(form.downloadFiles ?? undefined) ? (
+                  <Badge tone="success">Setup dosyası: Var</Badge>
+                ) : (
+                  <Badge tone="default">Setup dosyası: Yok</Badge>
+                )}
+                {hasPortableDownloadFile(form.downloadFiles ?? undefined) ? (
+                  <Badge tone="success">Portable dosya: Var</Badge>
+                ) : (
+                  <Badge tone="default">Portable dosya: Yok</Badge>
+                )}
+                {presetId === 'FREE_TOOL' ? <Badge tone="success">Ücretsiz</Badge> : null}
+              </div>
+            ) : null}
           </div>
           <div>
             <p className="text-xs text-slate-500">Lisans durumu</p>
