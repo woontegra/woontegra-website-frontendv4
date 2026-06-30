@@ -1,15 +1,20 @@
 import { useQuery } from '@tanstack/react-query'
 import { PageHero } from '@/components/public/PageHero'
 import { ProductCard } from '@/components/public/ProductCard'
+import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocksPage'
 import { LoadingState } from '@/components/public/LoadingState'
 import { ErrorState } from '@/components/public/ErrorState'
 import { EmptyState } from '@/components/public/EmptyState'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
+import { SOFTWARE_PAGE_CONTENT_KEY } from '@/lib/builderPageContentKeys'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { productsService } from '@/services/productsService'
 import { getErrorMessage } from '@/api/client'
 
 export function SoftwareListPage() {
+  const { blocks } = usePublicPageBlocks(SOFTWARE_PAGE_CONTENT_KEY)
+
   usePageMeta({
     title: 'Yazılımlar',
     description: 'Woontegra yazılım ürünleri ve dijital çözümler.',
@@ -21,7 +26,7 @@ export function SoftwareListPage() {
     ...publicQueryOptions,
   })
 
-  return (
+  const legacyView = (
     <div>
       <PageHero
         eyebrow="Yazılımlar"
@@ -33,11 +38,14 @@ export function SoftwareListPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {isPending ? <LoadingState /> : null}
           {isError ? (
-            <ErrorState message={getErrorMessage(error)} action={
-              <button type="button" onClick={() => refetch()} className="text-sm font-semibold text-emerald-700">
-                Tekrar dene
-              </button>
-            } />
+            <ErrorState
+              message={getErrorMessage(error)}
+              action={
+                <button type="button" onClick={() => refetch()} className="text-sm font-semibold text-emerald-700">
+                  Tekrar dene
+                </button>
+              }
+            />
           ) : null}
           {!isPending && !isError && data?.length === 0 ? (
             <EmptyState title="Henüz yazılım yok" description="Yakında yeni ürünler eklenecek." />
@@ -53,4 +61,6 @@ export function SoftwareListPage() {
       </section>
     </div>
   )
+
+  return <PublicBuilderBlocksPage blocks={blocks} fallback={legacyView} />
 }

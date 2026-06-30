@@ -63,10 +63,13 @@ export function ProductDetailSettingsPanel() {
       content: (
         <ImageUrlField
           label="Ana görsel"
+          uploadFolder="products"
           value={settings.gallery[0]?.url ?? ''}
           onChange={(url) =>
             setSettings({
-              gallery: url ? [{ id: settings.gallery[0]?.id ?? 'cover', url }, ...settings.gallery.slice(1)] : settings.gallery.slice(1),
+              gallery: url
+                ? [{ id: settings.gallery[0]?.id ?? 'cover', url }, ...settings.gallery.slice(1)]
+                : settings.gallery.slice(1),
             })
           }
         />

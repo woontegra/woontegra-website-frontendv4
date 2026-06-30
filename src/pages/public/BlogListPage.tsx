@@ -1,15 +1,20 @@
 import { useQuery } from '@tanstack/react-query'
 import { BlogCard } from '@/components/public/BlogCard'
 import { PageHero } from '@/components/public/PageHero'
+import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocksPage'
 import { LoadingState } from '@/components/public/LoadingState'
 import { ErrorState } from '@/components/public/ErrorState'
 import { EmptyState } from '@/components/public/EmptyState'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
+import { BLOG_PAGE_CONTENT_KEY } from '@/lib/builderPageContentKeys'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { blogService } from '@/services/blogService'
 import { getErrorMessage } from '@/api/client'
 
 export function BlogListPage() {
+  const { blocks } = usePublicPageBlocks(BLOG_PAGE_CONTENT_KEY)
+
   usePageMeta({
     title: 'Blog',
     description: 'Woontegra duyuru, güncelleme ve teknik yazıları.',
@@ -21,7 +26,7 @@ export function BlogListPage() {
     ...publicQueryOptions,
   })
 
-  return (
+  const legacyView = (
     <div>
       <PageHero
         eyebrow="Blog"
@@ -56,4 +61,6 @@ export function BlogListPage() {
       </section>
     </div>
   )
+
+  return <PublicBuilderBlocksPage blocks={blocks} fallback={legacyView} />
 }

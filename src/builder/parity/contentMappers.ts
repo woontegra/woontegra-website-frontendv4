@@ -2,6 +2,7 @@ import type { ProductBuilderSeed } from '@/builder/data/productBuilderSeeds'
 import type { PublicProductDetail } from '@/types/product'
 
 export function productSeedToPublicDetail(seed: ProductBuilderSeed): PublicProductDetail {
+  const isFree = seed.productType === 'DOWNLOAD' && seed.price <= 0
   return {
     id: `seed-${seed.slug}`,
     name: seed.name,
@@ -15,7 +16,7 @@ export function productSeedToPublicDetail(seed: ProductBuilderSeed): PublicProdu
     isFeatured: false,
     sortOrder: 0,
     version: seed.version,
-    purchaseEnabled: true,
+    purchaseEnabled: !isFree && seed.price > 0,
     licenseMonths: seed.licenseMonths,
     coverImage: seed.coverImage,
     category: null,
@@ -32,6 +33,7 @@ export function productSeedToPublicDetail(seed: ProductBuilderSeed): PublicProdu
     licenseDays: null,
     licenseMaxDevices: null,
     hasDownload: seed.productType === 'DOWNLOAD',
+    publicDownloadFiles: undefined,
   }
 }
 

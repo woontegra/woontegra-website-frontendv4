@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Download, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { useBuilderEditContext } from '@/builder/edit/BuilderEditContext'
 import type { PublicProductDownloadFile } from '@/types/product'
 import { triggerFreeProductDownload } from '@/lib/downloadFile'
 import { resolveProductDownloadButtonLabel } from '@/lib/freeProductDownload'
+import { cn } from '@/lib/cn'
 
 type Props = {
   file: PublicProductDownloadFile
@@ -11,11 +13,29 @@ type Props = {
 }
 
 export function ProductFreeDownloadButton({ file, variant = 'primary' }: Props) {
+  const { annotateFields } = useBuilderEditContext()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const label = resolveProductDownloadButtonLabel(file)
   const buttonVariant = file.type === 'portable' ? 'secondary' : variant
+
+  if (annotateFields) {
+    return (
+      <span
+        className={cn(
+          'inline-flex min-w-[160px] items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold',
+          buttonVariant === 'secondary'
+            ? 'border border-slate-200 bg-white text-slate-800'
+            : 'bg-emerald-600 text-white',
+        )}
+        aria-hidden
+      >
+        <Download className="h-4 w-4" />
+        {label}
+      </span>
+    )
+  }
 
   const handleClick = async () => {
     setError(null)

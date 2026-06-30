@@ -1,5 +1,6 @@
 import type { BuilderPageDefinition } from '@/builder/pages/builderPageRegistry'
 import { pageContentService } from '@/services/pageContentService'
+import { productsService } from '@/services/productsService'
 import { SERVICE_CARDS_KEY } from '@/data/serviceCardsContent'
 import {
   SOLUTION_BENEFIT_CARDS_KEY,
@@ -27,6 +28,14 @@ export async function enrichParityRaw(
       base[`__${SOLUTION_BENEFIT_CARDS_KEY}`] = await pageContentService.getRawByKey(SOLUTION_BENEFIT_CARDS_KEY)
     } catch {
       /* defaults kullanılır */
+    }
+  }
+
+  if (def.kind === 'product-detail' && def.slug?.trim()) {
+    try {
+      base.__productDetail = await productsService.getBySlug(def.slug.trim())
+    } catch {
+      /* seed fallback — createProductDetailEditableTemplate */
     }
   }
 

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocksPage'
 import { LegalPageRenderer } from '@/components/legal/LegalPageRenderer'
 import { LegalPageLayout } from '@/components/legal/LegalPageLayout'
 import { activeLegalSections, legalTocFromSections, type LegalPageContent } from '@/types/legalPageContent'
 import { useLegalCompanyInfo } from '@/hooks/useLegalCompanyInfo'
 import { useLegalPageContent } from '@/hooks/useLegalPageContent'
+import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { fetchPublicCookies, type PublicCookieItem } from '@/lib/cookieInventory'
 
 type LegalCmsPageProps = {
@@ -19,6 +21,7 @@ export function LegalCmsPage({
   showCompanyRepresentative = true,
   loadCookies = false,
 }: LegalCmsPageProps) {
+  const { blocks } = usePublicPageBlocks(pageKey)
   const content = useLegalPageContent(pageKey, defaults)
   const companyInfo = useLegalCompanyInfo()
   const [cookies, setCookies] = useState<PublicCookieItem[]>([])
@@ -47,7 +50,7 @@ export function LegalCmsPage({
   const sections = activeLegalSections(content)
   const updatedAt = content.updatedAtLabel?.trim() || companyInfo.lastUpdated
 
-  return (
+  const legacyView = (
     <LegalPageLayout
       title={content.title}
       subtitle={content.description}
@@ -66,4 +69,6 @@ export function LegalCmsPage({
       />
     </LegalPageLayout>
   )
+
+  return <PublicBuilderBlocksPage blocks={blocks} fallback={legacyView} className="bg-white" />
 }

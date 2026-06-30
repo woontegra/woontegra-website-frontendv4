@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { KeyRound, Mail, ShieldCheck } from 'lucide-react'
 import { CartAddedFeedback } from '@/components/public/CartAddedFeedback'
 import { ProductFreeDownloadButton } from '@/components/public/product/ProductFreeDownloadButton'
+import { useBuilderEditContext } from '@/builder/edit/BuilderEditContext'
 import type { PublicProductDetail } from '@/types/product'
 import { formatMoney } from '@/types/product'
 import { formatCampaignDate } from '@/types/campaign'
@@ -31,6 +32,7 @@ export function ProductPurchasePanel({
   onFeedbackDismiss,
   onAddToCart,
 }: Props) {
+  const { annotateFields } = useBuilderEditContext()
   const canPurchase = canPurchaseProduct(product)
   const isFreeDownload = isFreeDownloadProduct(product)
   const showQuote = shouldShowQuoteCta(product)
@@ -151,24 +153,37 @@ export function ProductPurchasePanel({
             onContinue={onFeedbackDismiss}
           />
         ) : canPurchase ? (
-          <button
-            type="button"
-            onClick={onAddToCart}
-            className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
-          >
-            Sepete Ekle
-          </button>
+          annotateFields ? (
+            <span className="flex w-full items-center justify-center rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white">
+              Sepete Ekle
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={onAddToCart}
+              className="w-full rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            >
+              Sepete Ekle
+            </button>
+          )
         ) : showQuote ? (
-          <Link
-            to={teklifHref}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
-          >
-            <Mail className="h-4 w-4" aria-hidden />
-            Teklif Al
-          </Link>
+          annotateFields ? (
+            <span className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800">
+              <Mail className="h-4 w-4" aria-hidden />
+              Teklif Al
+            </span>
+          ) : (
+            <Link
+              to={teklifHref}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            >
+              <Mail className="h-4 w-4" aria-hidden />
+              Teklif Al
+            </Link>
+          )
         ) : null}
 
-        {canPurchase && !feedback ? (
+        {canPurchase && !feedback && !annotateFields ? (
           <Link to="/sepet" className="block text-center text-sm font-medium text-emerald-700 hover:underline">
             Sepete git
           </Link>
