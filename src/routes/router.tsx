@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate, Outlet, useParams } from 'react-router-d
 import { AdminGuard } from '@/app/guards/AdminGuard'
 import { CustomerGuard } from '@/app/guards/CustomerGuard'
 import { AppRouteErrorBoundary } from '@/components/common/AppRouteErrorBoundary'
+import { LazyChunkErrorBoundary } from '@/components/common/LazyChunkErrorBoundary'
 import { ScrollToTop } from '@/components/common/ScrollToTop'
 import { clearChunkReloadAttemptFlag } from '@/lib/chunkLoadError'
 import { AdminLayout } from '@/layouts/AdminLayout'
@@ -163,7 +164,11 @@ const AdminPaymentsPage = lazy(() =>
 )
 
 function LazyPage({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<LoadingState />}>{children}</Suspense>
+  return (
+    <LazyChunkErrorBoundary>
+      <Suspense fallback={<LoadingState />}>{children}</Suspense>
+    </LazyChunkErrorBoundary>
+  )
 }
 
 /** Eski PayTR / frontendV3 başarı yönlendirmeleri → frontendV4 ödeme sonuç sayfaları */
@@ -207,6 +212,7 @@ export const router = createBrowserRouter([
     children: [
   {
     element: <SiteLayout />,
+    errorElement: <AppRouteErrorBoundary />,
     children: [
       { index: true, element: <LazyPage><HomePage /></LazyPage> },
       { path: 'hakkimizda', element: <LazyPage><AboutPage /></LazyPage> },
@@ -261,6 +267,7 @@ export const router = createBrowserRouter([
       { path: 'sifre-sifirla', element: <LazyPage><ResetPasswordPage /></LazyPage> },
       {
         element: <CustomerGuard />,
+        errorElement: <AppRouteErrorBoundary />,
         children: [
           {
             path: 'hesabim',
@@ -285,6 +292,7 @@ export const router = createBrowserRouter([
   },
   {
     path: 'admin/giris',
+    errorElement: <AppRouteErrorBoundary />,
     element: (
       <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
         <LazyPage>
@@ -295,6 +303,7 @@ export const router = createBrowserRouter([
   },
   {
     element: <AdminGuard />,
+    errorElement: <AppRouteErrorBoundary />,
     children: [
       {
         path: 'admin',

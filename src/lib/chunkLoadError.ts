@@ -2,25 +2,35 @@ export const CHUNK_RELOAD_SESSION_KEY = 'woontegra_chunk_reload_attempted'
 
 const CHUNK_ERROR_PATTERNS = [
   'Failed to fetch dynamically imported module',
+  'dynamically imported module',
   'Importing a module script failed',
   'Loading chunk',
   'ChunkLoadError',
-  'dynamically imported module',
+  'error loading dynamically imported module',
+  'Unable to preload CSS',
 ] as const
 
-function extractErrorMessage(error: unknown): string {
-  if (!error) return ''
-  if (typeof error === 'string') return error
-  if (error instanceof Error) return `${error.name}: ${error.message}`
-  if (typeof error === 'object' && error !== null && 'message' in error) {
-    return String((error as { message: unknown }).message)
+function collectErrorText(error: unknown): string {
+  const parts: string[] = []
+  if (typeof error === 'string') {
+    parts.push(error)
+  } else if (error instanceof Error) {
+    parts.push(error.name, error.message)
+    if (error.stack) parts.push(error.stack)
+  } else if (typeof error === 'object' && error !== null) {
+    if ('message' in error) parts.push(String((error as { message: unknown }).message))
+    if ('statusText' in error) parts.push(String((error as { statusText: unknown }).statusText))
+  } else if (error != null) {
+    parts.push(String(error))
   }
-  return String(error)
+  return parts.filter(Boolean).join(' ')
 }
 
 export function isChunkLoadError(error: unknown): boolean {
-  const message = extractErrorMessage(error)
-  return CHUNK_ERROR_PATTERNS.some((pattern) => message.includes(pattern))
+  const message = collectErrorText(error)
+  if (!message) return false
+  if (CHUNK_ERROR_PATTERNS.some((pattern) => message.includes(pattern))) return true
+  return /\/assets\/[^?\s"']+\.js/i.test(message)
 }
 
 export function clearChunkReloadAttemptFlag(): void {
