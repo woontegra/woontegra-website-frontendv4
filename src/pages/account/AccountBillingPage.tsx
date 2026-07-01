@@ -5,8 +5,10 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { TurkeyCityDistrictFields } from '@/components/checkout/TurkeyCityDistrictFields'
 import { Input } from '@/components/ui/Input'
 import { LoadingState } from '@/components/ui/LoadingState'
+import { matchDistrictName, matchProvinceName } from '@/data/turkeyLocation'
 import type { CustomerAddress, CustomerAddressInput } from '@/types/customerAddress'
 import { customersService, getErrorMessage } from '@/services/customersService'
 import { useToastStore } from '@/store/toastStore'
@@ -39,11 +41,17 @@ export function AccountBillingPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      const payload: CustomerAddressInput = {
+        ...form,
+        city: matchProvinceName(form.city) || form.city.trim(),
+        district:
+          matchDistrictName(form.city, form.district ?? '') || form.district?.trim() || null,
+      }
       if (editingId) {
-        await customersService.patchAddress(editingId, form)
+        await customersService.patchAddress(editingId, payload)
         return
       }
-      await customersService.createAddress(form)
+      await customersService.createAddress(payload)
     },
     onSuccess: () => {
       toast(editingId ? 'Adres güncellendi' : 'Adres eklendi', 'success')
@@ -163,14 +171,24 @@ export function AccountBillingPage() {
               className="grid gap-4 sm:grid-cols-2"
               onSubmit={(e) => {
                 e.preventDefault()
+                const city = matchProvinceName(form.city) || form.city.trim()
+                if (!city) {
+                  toast('İl seçimi zorunludur', 'error')
+                  return
+                }
                 saveMutation.mutate()
               }}
             >
               <Input label="Adres başlığı" value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} required className="sm:col-span-2" />
               <Input label="Ad soyad" value={form.fullName} onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))} required />
               <Input label="Telefon" value={form.phone ?? ''} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} />
-              <Input label="İl" value={form.city} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))} required />
-              <Input label="İlçe" value={form.district ?? ''} onChange={(e) => setForm((p) => ({ ...p, district: e.target.value }))} />
+              <TurkeyCityDistrictFields
+                idPrefix="billing"
+                city={form.city}
+                district={form.district ?? ''}
+                onCityChange={(city) => setForm((p) => ({ ...p, city }))}
+                onDistrictChange={(district) => setForm((p) => ({ ...p, district }))}
+              />
               <Input label="Adres" value={form.addressLine} onChange={(e) => setForm((p) => ({ ...p, addressLine: e.target.value }))} required className="sm:col-span-2" />
               <Input label="Posta kodu" value={form.postalCode ?? ''} onChange={(e) => setForm((p) => ({ ...p, postalCode: e.target.value }))} />
               <Input label="Firma ünvanı (kurumsal)" value={form.companyName ?? ''} onChange={(e) => setForm((p) => ({ ...p, companyName: e.target.value }))} />
