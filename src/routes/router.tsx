@@ -1,8 +1,10 @@
-import { lazy, Suspense, type ReactNode } from 'react'
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
+import { lazy, Suspense, useEffect, type ReactNode } from 'react'
+import { createBrowserRouter, Navigate, Outlet, useParams } from 'react-router-dom'
 import { AdminGuard } from '@/app/guards/AdminGuard'
 import { CustomerGuard } from '@/app/guards/CustomerGuard'
+import { AppRouteErrorBoundary } from '@/components/common/AppRouteErrorBoundary'
 import { ScrollToTop } from '@/components/common/ScrollToTop'
+import { clearChunkReloadAttemptFlag } from '@/lib/chunkLoadError'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AccountLayout } from '@/layouts/AccountLayout'
 import { SiteLayout } from '@/layouts/SiteLayout'
@@ -164,7 +166,32 @@ function LazyPage({ children }: { children: ReactNode }) {
   return <Suspense fallback={<LoadingState />}>{children}</Suspense>
 }
 
+/** Eski PayTR / frontendV3 başarı yönlendirmeleri → frontendV4 ödeme sonuç sayfaları */
+function LegacyOrderSuccessRedirect() {
+  const { orderNo } = useParams()
+  return (
+    <Navigate
+      to={orderNo ? `/odeme/basarili/${encodeURIComponent(orderNo)}` : '/odeme/basarili'}
+      replace
+    />
+  )
+}
+
+function LegacyOrderFailRedirect() {
+  const { orderNo } = useParams()
+  return (
+    <Navigate
+      to={orderNo ? `/odeme/basarisiz/${encodeURIComponent(orderNo)}` : '/odeme/basarisiz'}
+      replace
+    />
+  )
+}
+
 function RootLayout() {
+  useEffect(() => {
+    clearChunkReloadAttemptFlag()
+  }, [])
+
   return (
     <>
       <ScrollToTop />
@@ -176,6 +203,7 @@ function RootLayout() {
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    errorElement: <AppRouteErrorBoundary />,
     children: [
   {
     element: <SiteLayout />,
@@ -205,6 +233,10 @@ export const router = createBrowserRouter([
       { path: 'odeme/basarili/:orderNo', element: <LazyPage><PaymentSuccessPage /></LazyPage> },
       { path: 'odeme/basarisiz', element: <LazyPage><PaymentFailPage /></LazyPage> },
       { path: 'odeme/basarisiz/:orderNo', element: <LazyPage><PaymentFailPage /></LazyPage> },
+      { path: 'siparis-basarili', element: <LegacyOrderSuccessRedirect /> },
+      { path: 'siparis-basarili/:orderNo', element: <LegacyOrderSuccessRedirect /> },
+      { path: 'siparis-basarisiz', element: <LegacyOrderFailRedirect /> },
+      { path: 'siparis-basarisiz/:orderNo', element: <LegacyOrderFailRedirect /> },
       { path: 'yasal/:slug', element: <LazyPage><LegalDocumentPage /></LazyPage> },
       { path: 'yasal-belge/:type', element: <LazyPage><LegalTypeDocumentPage /></LazyPage> },
       { path: 'cerez-politikasi', element: <LazyPage><CookiePolicyPage /></LazyPage> },
