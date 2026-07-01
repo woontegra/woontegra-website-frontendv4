@@ -1,4 +1,5 @@
 import {
+  Cloud,
   CreditCard,
   Download,
   HeadphonesIcon,
@@ -18,6 +19,7 @@ const NAV = [
   { to: '/hesabim', end: true, label: 'Genel Bakış', icon: LayoutGrid },
   { to: '/hesabim/siparisler', label: 'Siparişlerim', icon: Package },
   { to: '/hesabim/lisanslar', label: 'Lisanslarım', icon: KeyRound },
+  { to: '/hesabim/uyelikler', label: 'Üyelikler', icon: Cloud },
   { to: '/hesabim/indirmeler', label: 'İndirmelerim', icon: Download },
   { to: '/hesabim/profil', label: 'Profil Bilgilerim', icon: UserRound },
   { to: '/hesabim/fatura', label: 'Fatura Bilgilerim', icon: CreditCard },

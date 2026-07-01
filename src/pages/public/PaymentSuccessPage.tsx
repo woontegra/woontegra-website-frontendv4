@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   CheckCircle2,
@@ -24,6 +24,8 @@ import { usePageMeta } from '@/hooks/usePageMeta'
 import { useCustomerSession } from '@/hooks/useCustomerSession'
 import { trackPurchase } from '@/integrations/trackingEvents'
 import { clearCart } from '@/lib/cartStorage'
+import { resolveSaasSuccessKind, saasSuccessNotice } from '@/lib/orderSuccessSaas'
+import { SAAS_RENEW_ORDER_KEY } from '@/types/orderSuccess'
 
 function buildSuccessActions(orderNo: string, authed: boolean): PaymentResultAction[] {
   const actions: PaymentResultAction[] = [
@@ -51,7 +53,24 @@ function buildSuccessActions(orderNo: string, authed: boolean): PaymentResultAct
   return actions
 }
 
-function buildNextSteps(isBankTransfer: boolean): string[] {
+function buildNextSteps(isBankTransfer: boolean, saasKind: ReturnType<typeof resolveSaasSuccessKind>): string[] {
+  if (saasKind === 'renewal') {
+    return [
+      saasSuccessNotice('renewal'),
+      isBankTransfer
+        ? 'Havale/EFT ödemeniz onaylandığında üyelik süreniz otomatik uzatılır.'
+        : 'Ödeme onayı sonrası üyelik süreniz güncellenir; detaylar e-posta ile iletilir.',
+    ]
+  }
+  if (saasKind === 'first_purchase') {
+    return [
+      saasSuccessNotice('first_purchase'),
+      isBankTransfer
+        ? 'Havale/EFT ödemeniz onaylandığında yazılım hesabınız oluşturulur ve giriş bilgileri e-posta ile gönderilir.'
+        : 'Ödeme onayı sonrası yazılım hesabınız oluşturulur; giriş bilgileri e-posta ile iletilir.',
+    ]
+  }
+
   if (isBankTransfer) {
     return [
       'Siparişiniz oluşturuldu. Havale/EFT bilgileri e-posta ile paylaşıldı.',
@@ -69,6 +88,7 @@ function buildNextSteps(isBankTransfer: boolean): string[] {
 
 export function PaymentSuccessPage() {
   const ctx = usePaymentResultContext()
+  const navigate = useNavigate()
   const { authed } = useCustomerSession()
   const queryClient = useQueryClient()
   const tracked = useRef(false)
@@ -76,6 +96,7 @@ export function PaymentSuccessPage() {
   const ordersInvalidated = useRef<string | null>(null)
 
   const { orderNo, orderData, orderLoading } = ctx
+  const saasKind = resolveSaasSuccessKind(orderNo || orderData?.orderNo || '', orderData)
   const isPaidLike =
     orderData?.status === 'PAID' || orderData?.status === 'PROCESSING'
   const isPending = orderData?.status === 'PENDING'
@@ -116,6 +137,20 @@ export function PaymentSuccessPage() {
     void queryClient.invalidateQueries({ queryKey: ['customer', 'orders'] })
     void queryClient.invalidateQueries({ queryKey: ['customer', 'licenses'] })
   }, [authed, isPaidLike, orderNo, queryClient])
+
+  useEffect(() => {
+    if (!orderNo || !orderData || !isPaidLike) return
+    const resolvedNo = orderData.orderNo || orderNo
+    try {
+      const renewOrder = sessionStorage.getItem(SAAS_RENEW_ORDER_KEY)
+      if (renewOrder && renewOrder === resolvedNo) {
+        sessionStorage.removeItem(SAAS_RENEW_ORDER_KEY)
+        navigate('/hesabim/uyelikler?renewSuccess=1', { replace: true })
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [orderData, orderNo, isPaidLike, navigate])
 
   if (orderNo && orderLoading && !orderData) {
     return (
@@ -173,8 +208,14 @@ export function PaymentSuccessPage() {
       <PaymentOrderSummary ctx={ctx} />
 
       <PaymentResultPanel title="Sonraki adımlar" className="mt-4">
-        <PaymentResultSteps items={buildNextSteps(Boolean(isBankTransfer))} />
+        <PaymentResultSteps items={buildNextSteps(Boolean(isBankTransfer), saasKind)} />
       </PaymentResultPanel>
+
+      {saasKind ? (
+        <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-900">
+          {saasSuccessNotice(saasKind)}
+        </p>
+      ) : null}
 
       {isPaidLike && orderData?.paidAt ? (
         <p className="mt-4 text-center text-xs text-slate-500">

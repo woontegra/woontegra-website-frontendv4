@@ -53,6 +53,8 @@ export type OrderSuccessPaid = {
 export type OrderSuccessData = OrderSuccessPending | OrderSuccessFailed | OrderSuccessPaid
 
 export const LAST_ORDER_EMAIL_KEY = 'woontegra_last_order_email'
+export const SAAS_RENEW_ORDER_KEY = 'woontegra_saas_renew_order'
+export const MK_SAAS_CHECKOUT_ORDER_KEY = 'woontegra_mk_saas_checkout_order'
 
 export type PaymentResultLocationState = {
   orderNo?: string

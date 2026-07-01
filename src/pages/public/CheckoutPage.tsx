@@ -21,11 +21,14 @@ import {
   type CartLine,
 } from '@/lib/cartStorage'
 import { matchDistrictName, matchProvinceName } from '@/data/turkeyLocation'
+import { isMuvekkilKasaSaasProduct, SAAS_LOGIN_REQUIRED_MESSAGE } from '@/lib/muvekkilKasaSaasProduct'
 import { checkoutService } from '@/services/checkoutService'
+import { customersService } from '@/services/customersService'
 import { getErrorMessage } from '@/api/client'
 import { ordersService } from '@/services/ordersService'
 import { paymentsService } from '@/services/paymentsService'
-import { LAST_ORDER_EMAIL_KEY } from '@/types/orderSuccess'
+import { LAST_ORDER_EMAIL_KEY, MK_SAAS_CHECKOUT_ORDER_KEY } from '@/types/orderSuccess'
+import type { CustomerAddress } from '@/types/customerAddress'
 import { formatMoney } from '@/utils/formatMoney'
 import { resolveCheckoutTaxNumber, validateCheckoutBilling } from '@/utils/checkoutBilling'
 import { checkoutLegalConsentsOk, resolveOrderLegalConsentFlags } from '@/utils/orderLegalRequirements'
@@ -44,9 +47,39 @@ const LEGAL = {
   explicit: legalTypeToPublicHref('EXPLICIT_CONSENT'),
 } as const
 
+type CheckoutFormState = {
+  customerName: string
+  customerEmail: string
+  customerPhone: string
+  billingType: '' | 'Bireysel' | 'Kurumsal'
+  companyName: string
+  taxOffice: string
+  taxNumber: string
+  identityNumber: string
+  deliveryCity: string
+  deliveryDistrict: string
+  deliveryLine: string
+}
+
+function mergeAddressIntoCheckoutForm(base: CheckoutFormState, addr: CustomerAddress): CheckoutFormState {
+  const hasCompany = Boolean(addr.companyName?.trim())
+  return {
+    ...base,
+    customerName: addr.fullName.trim() || base.customerName,
+    customerPhone: addr.phone?.trim() || base.customerPhone,
+    companyName: addr.companyName?.trim() ?? '',
+    taxOffice: addr.taxOffice?.trim() ?? '',
+    taxNumber: addr.taxNumber?.trim() ?? '',
+    deliveryCity: addr.city,
+    deliveryDistrict: addr.district ?? '',
+    deliveryLine: addr.addressLine,
+    billingType: hasCompany ? 'Kurumsal' : base.billingType,
+  }
+}
+
 export function CheckoutPage() {
   const navigate = useNavigate()
-  const { authed, profile } = useCustomerSession()
+  const { authed } = useCustomerSession()
   const [lines, setLines] = useState<CartLine[]>(() => readCart())
   const productIds = useMemo(() => lines.map((l) => l.productId), [lines])
 
@@ -97,7 +130,13 @@ export function CheckoutPage() {
     [merged],
   )
 
-  const [form, setForm] = useState({
+  const cartHasMkSaas = useMemo(
+    () => merged.some((m) => isMuvekkilKasaSaasProduct({ slug: m.slug, productType: m.productType })),
+    [merged],
+  )
+  const saasLoginRequired = cartHasMkSaas && !authed
+
+  const [form, setForm] = useState<CheckoutFormState>({
     customerName: '',
     customerEmail: '',
     customerPhone: '',
@@ -113,15 +152,37 @@ export function CheckoutPage() {
   const [prefilled, setPrefilled] = useState(false)
 
   useEffect(() => {
-    if (prefilled || !profile) return
-    setForm((f) => ({
-      ...f,
-      customerName: f.customerName || profile.name || '',
-      customerEmail: f.customerEmail || profile.email || '',
-      customerPhone: f.customerPhone || profile.phone?.trim() || '',
-    }))
-    setPrefilled(true)
-  }, [profile, prefilled])
+    if (prefilled || !authed) return
+    let cancelled = false
+    void (async () => {
+      try {
+        const me = await customersService.getMe()
+        const addresses = await customersService.listAddresses()
+        if (cancelled) return
+        const profileBase: CheckoutFormState = {
+          customerName: me.name || '',
+          customerEmail: me.email || '',
+          customerPhone: me.phone?.trim() || '',
+          billingType: '',
+          companyName: '',
+          taxOffice: '',
+          taxNumber: '',
+          identityNumber: '',
+          deliveryCity: '',
+          deliveryDistrict: '',
+          deliveryLine: '',
+        }
+        const preferred = addresses.find((a) => a.isDefault) ?? addresses[0]
+        setForm(preferred ? mergeAddressIntoCheckoutForm(profileBase, preferred) : profileBase)
+        setPrefilled(true)
+      } catch {
+        if (!cancelled) setPrefilled(true)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [authed, prefilled])
 
   const [paymentMethod, setPaymentMethod] = useState<'PAYTR' | 'BANK_TRANSFER'>('PAYTR')
   const [acceptPre, setAcceptPre] = useState(false)
@@ -165,6 +226,10 @@ export function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (lines.length === 0 || merged.length === 0) return
+    if (saasLoginRequired) {
+      setFormError(SAAS_LOGIN_REQUIRED_MESSAGE)
+      return
+    }
     if (!form.customerName.trim() || !form.customerEmail.trim()) {
       setFormError('Ad soyad ve e-posta zorunludur.')
       return
@@ -220,6 +285,9 @@ export function CheckoutPage() {
       })
 
       sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, form.customerEmail.trim().toLowerCase())
+      if (cartHasMkSaas) {
+        sessionStorage.setItem(MK_SAAS_CHECKOUT_ORDER_KEY, created.orderNo)
+      }
 
       if (paymentMethod === 'BANK_TRANSFER' || created.paymentProvider === 'BANK_TRANSFER') {
         clearCart()
@@ -272,21 +340,37 @@ export function CheckoutPage() {
         </div>
       ) : null}
 
+      {saasLoginRequired ? (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950" role="status">
+          {SAAS_LOGIN_REQUIRED_MESSAGE}{' '}
+          <Link to={`/giris?return=${encodeURIComponent('/odeme')}`} className="font-semibold text-emerald-700 underline">
+            Giriş yapın
+          </Link>{' '}
+          veya{' '}
+          <Link to={`/kayit?return=${encodeURIComponent('/odeme')}`} className="font-semibold text-emerald-700 underline">
+            kayıt olun
+          </Link>
+          .
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] lg:items-start">
         <form className="min-w-0 space-y-6" onSubmit={(e) => void handleSubmit(e)}>
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
             <h2 className="text-lg font-semibold text-slate-900">Müşteri bilgileri</h2>
             {!authed ? (
-              <p className="mt-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                Hesabınız var mı?{' '}
-                <Link
-                  to={`/giris?return=${encodeURIComponent('/odeme')}`}
-                  className="font-semibold text-emerald-700 underline"
-                >
-                  Giriş yapın
-                </Link>
-                . Üye olmadan da devam edebilirsiniz.
-              </p>
+              saasLoginRequired ? null : (
+                <p className="mt-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                  Hesabınız var mı?{' '}
+                  <Link
+                    to={`/giris?return=${encodeURIComponent('/odeme')}`}
+                    className="font-semibold text-emerald-700 underline"
+                  >
+                    Giriş yapın
+                  </Link>
+                  . Üye olmadan da devam edebilirsiniz.
+                </p>
+              )
             ) : (
               <p className="mt-3 text-sm text-slate-600">Hesabınıza kayıtlı bilgiler otomatik dolduruldu.</p>
             )}
@@ -456,7 +540,7 @@ export function CheckoutPage() {
 
           <button
             type="submit"
-            disabled={submitting || !legalOk}
+            disabled={submitting || !legalOk || saasLoginRequired}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 disabled:opacity-60"
           >
             <ShieldCheck className="h-5 w-5" aria-hidden />

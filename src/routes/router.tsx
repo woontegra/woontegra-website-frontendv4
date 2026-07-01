@@ -87,6 +87,9 @@ const AccountOrderDetailPage = lazy(() =>
 const AccountLicensesPage = lazy(() =>
   import('@/pages/account/AccountLicensesPage').then((m) => ({ default: m.AccountLicensesPage })),
 )
+const AccountMembershipsPage = lazy(() =>
+  import('@/pages/account/AccountMembershipsPage').then((m) => ({ default: m.AccountMembershipsPage })),
+)
 const AccountDownloadsPage = lazy(() =>
   import('@/pages/account/AccountDownloadsPage').then((m) => ({ default: m.AccountDownloadsPage })),
 )
@@ -235,6 +238,7 @@ export const router = createBrowserRouter([
               { path: 'siparisler', element: <LazyPage><AccountOrdersPage /></LazyPage> },
               { path: 'siparisler/:orderNo', element: <LazyPage><AccountOrderDetailPage /></LazyPage> },
               { path: 'lisanslar', element: <LazyPage><AccountLicensesPage /></LazyPage> },
+              { path: 'uyelikler', element: <LazyPage><AccountMembershipsPage /></LazyPage> },
               { path: 'indirmeler', element: <LazyPage><AccountDownloadsPage /></LazyPage> },
               { path: 'profil', element: <LazyPage><AccountProfilePage /></LazyPage> },
               { path: 'fatura', element: <LazyPage><AccountBillingPage /></LazyPage> },

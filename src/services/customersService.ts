@@ -2,6 +2,11 @@ import type { ApiSuccess } from '@/types/api'
 import type { CustomerAddress, CustomerAddressInput } from '@/types/customerAddress'
 import type { CustomerLicenseListItem } from '@/types/customerLicenses'
 import type { CustomerOrderDetail, CustomerOrderListItem } from '@/types/customerOrders'
+import type {
+  CustomerSaasMembershipRow,
+  SaasRenewOrderResult,
+  SaasRenewQuote,
+} from '@/types/customerSaasMembership'
 import { publicApi, getErrorMessage } from '@/api/client'
 import {
   clearCustomerSession,
@@ -118,6 +123,42 @@ export const customersService = {
     const res = await publicApi.get<ApiSuccess<CustomerLicenseListItem[]>>('/customers/me/licenses', {
       headers: customerHeaders(),
     })
+    return unwrap(res.data)
+  },
+
+  async listSaasMemberships(): Promise<CustomerSaasMembershipRow[]> {
+    const res = await publicApi.get<ApiSuccess<CustomerSaasMembershipRow[]>>('/customers/me/saas-memberships', {
+      headers: customerHeaders(),
+    })
+    return unwrap(res.data)
+  },
+
+  async getSaasRenewQuote(membershipId: string, renewalPeriod: string): Promise<SaasRenewQuote> {
+    const q = new URLSearchParams({ renewalPeriod })
+    const res = await publicApi.get<ApiSuccess<SaasRenewQuote>>(
+      `/customers/me/saas-memberships/${encodeURIComponent(membershipId)}/renew-quote?${q}`,
+      { headers: customerHeaders() },
+    )
+    return unwrap(res.data)
+  },
+
+  async createSaasRenewOrder(
+    membershipId: string,
+    body: {
+      renewalPeriod: string
+      paymentProvider?: 'BANK_TRANSFER' | 'PAYTR'
+      acceptPreInfo: boolean
+      acceptDistanceSales: boolean
+      acceptKvkk: boolean
+      acceptSaasSubscription: boolean
+      acceptDigitalServiceWaiver: boolean
+    },
+  ): Promise<SaasRenewOrderResult> {
+    const res = await publicApi.post<ApiSuccess<SaasRenewOrderResult>>(
+      `/customers/me/saas-memberships/${encodeURIComponent(membershipId)}/renew-order`,
+      body,
+      { headers: customerHeaders() },
+    )
     return unwrap(res.data)
   },
 }
