@@ -55,12 +55,11 @@ function buildSuccessActions(orderNo: string, authed: boolean): PaymentResultAct
 
 function buildNextSteps(isBankTransfer: boolean, saasKind: ReturnType<typeof resolveSaasSuccessKind>): string[] {
   if (saasKind === 'renewal') {
-    return [
-      saasSuccessNotice('renewal'),
-      isBankTransfer
-        ? 'Havale/EFT ödemeniz onaylandığında üyelik süreniz otomatik uzatılır.'
-        : 'Ödeme onayı sonrası üyelik süreniz güncellenir; detaylar e-posta ile iletilir.',
-    ]
+    const steps = [saasSuccessNotice('renewal')]
+    if (isBankTransfer) {
+      steps.push('Havale/EFT ödemeniz onaylandığında üyelik süreniz otomatik uzatılır.')
+    }
+    return steps
   }
   if (saasKind === 'first_purchase') {
     return [

@@ -27,7 +27,7 @@ export function resolveSaasSuccessKind(
 
 export function saasSuccessNotice(kind: SaasSuccessKind): string {
   if (kind === 'renewal') {
-    return 'Ödeme onaylandıktan sonra üyelik süreniz uzatılacaktır.'
+    return 'Ödeme onaylandıktan sonra Müvekkil Kasa üyelik süreniz 1 yıl uzatılacaktır.'
   }
   return 'Ödeme onaylandıktan sonra yazılım hesabınız oluşturulacaktır.'
 }
