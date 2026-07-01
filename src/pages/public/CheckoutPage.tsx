@@ -199,6 +199,7 @@ export function CheckoutPage() {
   const [identityNumberError, setIdentityNumberError] = useState<string | null>(null)
   const [iframeToken, setIframeToken] = useState<string | null>(null)
   const [orderNo, setOrderNo] = useState<string | null>(null)
+  const [checkoutSuccessOrderNo, setCheckoutSuccessOrderNo] = useState<string | null>(null)
 
   const bankQuery = useQuery({
     queryKey: ['payments', 'bank-transfer-display'],
@@ -290,8 +291,9 @@ export function CheckoutPage() {
       }
 
       if (paymentMethod === 'BANK_TRANSFER' || created.paymentProvider === 'BANK_TRANSFER') {
-        clearCart()
+        setCheckoutSuccessOrderNo(created.orderNo)
         navigate(`/odeme/basarili/${encodeURIComponent(created.orderNo)}`)
+        clearCart()
         return
       }
 
@@ -303,6 +305,10 @@ export function CheckoutPage() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (checkoutSuccessOrderNo) {
+    return <Navigate to={`/odeme/basarili/${encodeURIComponent(checkoutSuccessOrderNo)}`} replace />
   }
 
   if (lines.length === 0) {
