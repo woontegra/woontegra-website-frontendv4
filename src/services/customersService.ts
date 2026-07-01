@@ -51,6 +51,19 @@ export const customersService = {
     return data
   },
 
+  async forgotPassword(email: string): Promise<{ ok: true; message: string }> {
+    const res = await publicApi.post<{ ok: true; message: string }>('/customers/forgot-password', { email })
+    return res.data
+  },
+
+  async resetPassword(token: string, password: string): Promise<{ ok: true; message: string }> {
+    const res = await publicApi.post<{ ok: true; message: string }>('/customers/reset-password', {
+      token,
+      password,
+    })
+    return res.data
+  },
+
   logoutLocal() {
     clearCustomerSession()
   },
@@ -147,6 +160,7 @@ export const customersService = {
     body: {
       renewalPeriod: string
       paymentProvider?: 'BANK_TRANSFER' | 'PAYTR'
+      paymentMethod?: 'BANK_TRANSFER' | 'PAYTR'
       acceptPreInfo: boolean
       acceptDistanceSales: boolean
       acceptKvkk: boolean
@@ -156,7 +170,11 @@ export const customersService = {
   ): Promise<SaasRenewOrderResult> {
     const res = await publicApi.post<ApiSuccess<SaasRenewOrderResult>>(
       `/customers/me/saas-memberships/${encodeURIComponent(membershipId)}/renew-order`,
-      body,
+      {
+        ...body,
+        paymentProvider: body.paymentProvider ?? body.paymentMethod,
+        paymentMethod: body.paymentMethod ?? body.paymentProvider,
+      },
       { headers: customerHeaders() },
     )
     return unwrap(res.data)
