@@ -148,6 +148,17 @@ export function countPendingPayments(orders: CustomerOrderListItem[]): number {
   return orders.filter((o) => o.status.toUpperCase() === 'PENDING').length
 }
 
+/** Dashboard özeti: ödeme onaylı siparişlerde indirilebilir ürün satırı sayısı (N+1 detay çağrısı gerektirmez). */
+export function countPaidDownloadLineItems(orders: CustomerOrderListItem[]): number {
+  let count = 0
+  for (const order of orders) {
+    if (!isPaidLikeOrder(order.status)) continue
+    const types = order.lineProductTypes ?? []
+    count += types.filter((t) => t === 'DOWNLOAD').length
+  }
+  return count
+}
+
 export function pickLatestOrder(orders: CustomerOrderListItem[]): CustomerOrderListItem | null {
   if (!orders.length) return null
   return [...orders].sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ?? null

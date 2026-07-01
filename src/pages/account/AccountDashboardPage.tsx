@@ -5,7 +5,7 @@ import { Card, CardBody } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { LoadingState } from '@/components/ui/LoadingState'
 import {
-  aggregateDownloadsFromOrders,
+  countPaidDownloadLineItems,
   countPendingPayments,
   formatAccountDate,
   orderStatusLabel,
@@ -13,18 +13,18 @@ import {
   pickLatestOrder,
 } from '@/lib/accountHelpers'
 import { useCustomerLicenses } from '@/hooks/useCustomerLicenses'
-import { useCustomerPaidOrderDetails } from '@/hooks/useCustomerOrders'
+import { useCustomerOrders } from '@/hooks/useCustomerOrders'
 import { formatMoney } from '@/types/product'
 import { getErrorMessage } from '@/services/customersService'
 
 export function AccountDashboardPage() {
-  const { orders, details, isLoading, isError, error } = useCustomerPaidOrderDetails()
+  const { data: orders = [], isLoading, isError, error } = useCustomerOrders()
   const licensesQuery = useCustomerLicenses()
   const latest = pickLatestOrder(orders)
   const pendingCount = countPendingPayments(orders)
   const licenses = licensesQuery.data ?? []
   const activeLicenseCount = licenses.filter((l) => l.licenseKeyMasked && l.status.toUpperCase() === 'ACTIVE').length
-  const downloads = aggregateDownloadsFromOrders(orders, details)
+  const downloadLineCount = countPaidDownloadLineItems(orders)
 
   if (isLoading || licensesQuery.isLoading) return <LoadingState label="Hesap özeti yükleniyor…" />
 
@@ -52,7 +52,7 @@ export function AccountDashboardPage() {
           to={latest ? `/hesabim/siparisler/${encodeURIComponent(latest.orderNo)}` : '/hesabim/siparisler'}
         />
         <SummaryCard icon={KeyRound} title="Aktif lisans" value={String(activeLicenseCount)} hint="Ödeme onaylı lisanslar" to="/hesabim/lisanslar" />
-        <SummaryCard icon={Download} title="İndirme dosyası" value={String(downloads.length)} hint="Hazır indirmeler" to="/hesabim/indirmeler" />
+        <SummaryCard icon={Download} title="İndirme dosyası" value={String(downloadLineCount)} hint="Hazır indirmeler" to="/hesabim/indirmeler" />
         <SummaryCard icon={Wallet} title="Bekleyen ödeme" value={String(pendingCount)} hint={pendingCount ? 'Onay bekleyen sipariş' : 'Bekleyen ödeme yok'} to="/hesabim/siparisler" />
       </div>
 
