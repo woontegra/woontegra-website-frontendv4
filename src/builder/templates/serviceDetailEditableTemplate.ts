@@ -82,14 +82,17 @@ export function resolveServiceDetailContent(
 
 function compactHero(slug: string, content: ServiceDetailContent, order: number): HeroBlock {
   const hero = createDefaultHeroBlock(blockId(slug, 'hero'), order)
+  const hasImage = Boolean(content.hero.image?.trim())
   hero.title = content.hero.title
   hero.description = content.hero.description
-  hero.settings.layout = 'compact'
+  // 'about' düzeni, legacy PageHero(compact) ile birebir aynı: metin solda, çerçeveli görsel sağda.
+  // 'compact' düzeni görseli hiç render etmediği için hero görseli kayboluyordu.
+  hero.settings.layout = hasImage ? 'about' : 'compact'
   hero.settings.badge = content.hero.eyebrow
   hero.settings.contentAlign = 'left'
-  hero.settings.mode = content.hero.image?.trim() ? 'single-image' : 'gradient'
+  hero.settings.mode = hasImage ? 'single-image' : 'gradient'
   hero.settings.height = { desktop: '280px', tablet: '240px', mobile: '200px' }
-  if (content.hero.image?.trim()) {
+  if (hasImage) {
     hero.settings.desktopImage = { url: content.hero.image }
   }
   hero.settings.buttons = [
