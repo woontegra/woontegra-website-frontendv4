@@ -42,8 +42,8 @@ function heroCenteredImageClass(naturalMobile: boolean): string {
 }
 
 function heroCenteredImageWrapperClass(naturalMobile: boolean): string {
-  if (naturalMobile) return 'relative w-full max-[640px]:bg-slate-900 sm:absolute sm:inset-0'
-  return 'absolute inset-0'
+  if (naturalMobile) return 'pointer-events-none relative w-full max-[640px]:bg-slate-900 sm:absolute sm:inset-0'
+  return 'pointer-events-none absolute inset-0'
 }
 
 function heroSplitImageClass(naturalMobile: boolean): string {
@@ -226,8 +226,8 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
           paddingBottom: style.paddingBottom?.desktop,
         }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(34,197,94,0.15),transparent_55%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_60%,rgba(59,130,246,0.12),transparent_50%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(34,197,94,0.15),transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_60%,rgba(59,130,246,0.12),transparent_50%)]" />
         {style.overlay?.enabled ? (
           <div
             className="pointer-events-none absolute inset-0 z-[1]"
@@ -326,7 +326,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
             </div>
             {showImage && imageSources ? (
               <BuilderField path="image" label="Görsel" type="media" className="relative mx-auto w-full max-w-xl lg:max-w-none">
-                <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-emerald-500/20 to-blue-500/15 blur-2xl" />
+                <div className="pointer-events-none absolute -inset-4 rounded-3xl bg-gradient-to-br from-emerald-500/20 to-blue-500/15 blur-2xl" />
                 <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-slate-900/40 p-2 shadow-2xl">
                   <HeroResponsiveImage
                     sources={imageSources}
@@ -360,7 +360,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
           ...heroHeightVars(settings, '520px'),
         }}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,197,94,0.15),transparent_70%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,197,94,0.15),transparent_70%)]" />
         {style.overlay?.enabled ? (
           <div
             className="pointer-events-none absolute inset-0 z-[1]"
