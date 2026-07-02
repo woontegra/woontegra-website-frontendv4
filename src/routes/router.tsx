@@ -30,6 +30,7 @@ const SoftwareDetailPage = lazy(() =>
 const BlogListPage = lazy(() => import('@/pages/public/BlogListPage').then((m) => ({ default: m.BlogListPage })))
 const BlogDetailPage = lazy(() => import('@/pages/public/BlogDetailPage').then((m) => ({ default: m.BlogDetailPage })))
 const ContactPage = lazy(() => import('@/pages/public/ContactPage').then((m) => ({ default: m.ContactPage })))
+const QuotePage = lazy(() => import('@/pages/public/QuotePage').then((m) => ({ default: m.QuotePage })))
 const CartPage = lazy(() => import('@/pages/public/CartPage').then((m) => ({ default: m.CartPage })))
 const CheckoutPage = lazy(() => import('@/pages/public/CheckoutPage').then((m) => ({ default: m.CheckoutPage })))
 const PaymentSuccessPage = lazy(() =>
@@ -233,6 +234,7 @@ export const router = createBrowserRouter([
       { path: 'blog', element: <LazyPage><BlogListPage /></LazyPage> },
       { path: 'blog/:slug', element: <LazyPage><BlogDetailPage /></LazyPage> },
       { path: 'iletisim', element: <LazyPage><ContactPage /></LazyPage> },
+      { path: 'teklif-al', element: <LazyPage><QuotePage /></LazyPage> },
       { path: 'sepet', element: <LazyPage><CartPage /></LazyPage> },
       { path: 'odeme', element: <LazyPage><CheckoutPage /></LazyPage> },
       { path: 'odeme/basarili', element: <LazyPage><PaymentSuccessPage /></LazyPage> },
