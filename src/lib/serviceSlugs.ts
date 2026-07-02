@@ -10,14 +10,41 @@ export function isRemovedServiceSlug(slug: string): boolean {
 }
 
 function hrefTargetsRemovedService(href: string): boolean {
-  const match = href.match(/\/hizmetler\/([^/?#]+)/i)
-  if (!match) return false
-  return isRemovedServiceSlug(match[1])
+  const raw = (href || '').trim().toLowerCase()
+  if (!raw || raw === '#') return false
+  const pathOnly = raw.split('?')[0]?.split('#')[0] ?? raw
+
+  // /hizmetler/<slug>
+  const hizmetlerMatch = pathOnly.match(/\/hizmetler\/([^/?#]+)/i)
+  if (hizmetlerMatch && isRemovedServiceSlug(hizmetlerMatch[1])) return true
+
+  // Herhangi bir yolun son segmenti kaldırılmış slug ise (ör. /oyun-gelistirme)
+  const segments = pathOnly.split('/').filter(Boolean)
+  const lastSegment = segments[segments.length - 1]
+  if (lastSegment && isRemovedServiceSlug(lastSegment)) return true
+
+  return false
 }
 
-export function filterRemovedServiceNavItems<T extends { href: string; resolvedUrl?: string; children?: T[] }>(
-  items: T[],
-): T[] {
+/** "Oyun Geliştirme" gibi kaldırılmış hizmetleri label üzerinden de yakalar. */
+function labelTargetsRemovedService(label: string): boolean {
+  const normalized = (label || '')
+    .trim()
+    .toLowerCase()
+    .replace(/ç/g, 'c')
+    .replace(/ğ/g, 'g')
+    .replace(/ı/g, 'i')
+    .replace(/ö/g, 'o')
+    .replace(/ş/g, 's')
+    .replace(/ü/g, 'u')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return isRemovedServiceSlug(normalized)
+}
+
+export function filterRemovedServiceNavItems<
+  T extends { label?: string; href: string; resolvedUrl?: string; children?: T[] },
+>(items: T[]): T[] {
   return items
     .map((item) => ({
       ...item,
@@ -26,7 +53,8 @@ export function filterRemovedServiceNavItems<T extends { href: string; resolvedU
     .filter(
       (item) =>
         !hrefTargetsRemovedService(item.href) &&
-        !hrefTargetsRemovedService(item.resolvedUrl ?? item.href),
+        !hrefTargetsRemovedService(item.resolvedUrl ?? item.href) &&
+        !labelTargetsRemovedService(item.label ?? ''),
     )
 }
 
