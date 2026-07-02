@@ -6,6 +6,7 @@ import { CtaBlockRenderer } from '@/builder/render/blocks/CtaBlockRenderer'
 import { FaqBlockRenderer } from '@/builder/render/blocks/FaqBlockRenderer'
 import { BlogShowcaseBlockRenderer } from '@/builder/render/blocks/BlogShowcaseBlockRenderer'
 import { ShowcaseBlockRenderer } from '@/builder/render/blocks/ShowcaseBlockRenderer'
+import { ProductsShowcaseBlockRenderer } from '@/builder/render/blocks/ProductsShowcaseBlockRenderer'
 import { LegacySectionBlockRenderer } from '@/builder/render/blocks/LegacySectionBlockRenderer'
 import { ProductDetailBlockRenderer } from '@/builder/render/blocks/ProductDetailBlockRenderer'
 import { BlogArticleBlockRenderer } from '@/builder/render/blocks/BlogArticleBlockRenderer'
@@ -40,7 +41,7 @@ export function initBlockRenderRegistry(): void {
   registerBlockRenderer('cta', CtaBlockRenderer)
   registerBlockRenderer('faq', FaqBlockRenderer)
   registerBlockRenderer('services-showcase', ShowcaseBlockRenderer)
-  registerBlockRenderer('products-showcase', ShowcaseBlockRenderer)
+  registerBlockRenderer('products-showcase', ProductsShowcaseBlockRenderer)
   registerBlockRenderer('blog-showcase', BlogShowcaseBlockRenderer)
   registerBlockRenderer('legacy-section', LegacySectionBlockRenderer)
   registerBlockRenderer('product-detail', ProductDetailBlockRenderer)
