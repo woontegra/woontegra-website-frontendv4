@@ -225,15 +225,14 @@ export function HeroCarouselSection({ hero }: Props) {
     ? 'transition-none'
     : 'transition-opacity duration-700 ease-in-out'
 
+  // Centered (banner) carousel artık görselin doğal oranını korur; yükseklik
+  // genişliğe göre otomatik oluşur (sabit px yok → kırpma yok). Split hero eski
+  // davranışını korur.
   const sectionHeightClass = isSplit
     ? carouselMobileNatural
       ? 'max-[640px]:min-h-[200px] sm:py-12 sm:min-h-[var(--hero-h-mobile,var(--hero-h,520px))] lg:py-20'
       : 'py-12 sm:py-16 lg:py-20 min-h-[var(--hero-h-mobile,var(--hero-h,520px))] lg:min-h-[var(--hero-h,520px)]'
-    : useMobileFlowLayout
-      ? 'min-h-[200px]'
-      : carouselMobileNatural
-        ? 'max-[640px]:min-h-[200px] sm:min-h-[var(--hero-h-mobile,var(--hero-h,280px))] lg:min-h-[var(--hero-h,280px)]'
-        : 'min-h-[var(--hero-h-mobile,var(--hero-h,280px))] lg:min-h-[var(--hero-h,280px)]'
+    : ''
 
   const renderSlideContent = (slide: HeroSlide, slideIndex: number, active: boolean) => {
     const title = getSlideText(slide, hero, 'title')
@@ -451,11 +450,61 @@ export function HeroCarouselSection({ hero }: Props) {
       onMouseLeave={pauseOnHover && effectiveAutoplay ? () => setIsPaused(false) : undefined}
     >
       {!isSplit ? (
-        useMobileFlowLayout ? (
-          <>
-            {slides.map((slide, i) =>
-              i === safeIndex ? renderSlideImage(slide, i, true) : null,
-            )}
+        <>
+          {/* Banner görselleri aynı grid hücresinde üst üste (crossfade); her biri
+              doğal oranıyla (object-contain, h-auto) → hiçbir ekranda kırpılmaz. */}
+          <div className="relative grid w-full">
+            {slides.map((slide, i) => {
+              const active = i === safeIndex
+              const sources = getHeroSlideImageSources(slide)
+              if (!sources) return null
+              const overlay = slideOverlay(slide, hero)
+              const imageAlt = getSlideText(slide, hero, 'title') ?? hero.title ?? ''
+              const link = getSlideLink(slide)
+              return (
+                <div
+                  key={slide.id}
+                  className={cn(
+                    '[grid-area:1/1] w-full',
+                    transitionClass,
+                    isCarousel && !active && 'pointer-events-none opacity-0',
+                    isCarousel && active && 'opacity-100',
+                  )}
+                  aria-hidden={isCarousel && !active}
+                >
+                  <BuilderField
+                    path={`slides.${i}.image`}
+                    label="Görsel"
+                    type="media"
+                    className="block w-full"
+                  >
+                    <HeroSlideLinkShell
+                      href={link}
+                      className="block w-full"
+                      ariaLabel={imageAlt ? `${imageAlt} — slayt bağlantısı` : 'Slayt bağlantısı'}
+                    >
+                      <div className="relative w-full">
+                        <HeroResponsiveImage
+                          sources={sources}
+                          alt={imageAlt}
+                          className="block h-auto w-full object-contain object-center"
+                          loading={i === 0 ? 'eager' : 'lazy'}
+                        />
+                        {overlay ? (
+                          <div
+                            className="pointer-events-none absolute inset-0 z-[1]"
+                            style={{
+                              backgroundColor: overlay.color ?? '#000',
+                              opacity: overlay.opacity ?? 0.4,
+                            }}
+                          />
+                        ) : null}
+                      </div>
+                    </HeroSlideLinkShell>
+                  </BuilderField>
+                </div>
+              )
+            })}
             {!slideOverlay(currentSlide, hero) && style.overlay?.enabled ? (
               <div
                 className="pointer-events-none absolute inset-0 z-[1]"
@@ -465,23 +514,14 @@ export function HeroCarouselSection({ hero }: Props) {
                 }}
               />
             ) : null}
-          </>
-        ) : (
-          <>
-            <div className="absolute inset-0">
-              {slides.map((slide, i) => renderSlideImage(slide, i, i === safeIndex))}
-            </div>
-            {!slideOverlay(currentSlide, hero) && style.overlay?.enabled ? (
-              <div
-                className="pointer-events-none absolute inset-0 z-[1]"
-                style={{
-                  backgroundColor: style.overlay.color ?? '#000',
-                  opacity: style.overlay.opacity ?? 0.4,
-                }}
-              />
-            ) : null}
-          </>
-        )
+          </div>
+
+          {/* Metin/buton içeriği görselin üzerine bindirilir (banner içine gömülü
+              yazı varsa bu alan boş kalır). */}
+          <div className="pointer-events-none absolute inset-0 z-[2]">
+            {slides.map((slide, i) => renderSlideContent(slide, i, i === safeIndex))}
+          </div>
+        </>
       ) : (
         <>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,197,94,0.15),transparent_70%)]" />
@@ -520,16 +560,6 @@ export function HeroCarouselSection({ hero }: Props) {
           </div>
         </>
       )}
-
-      {!isSplit ? (
-        <div
-          className={cn(
-            useMobileFlowLayout ? 'relative z-[2]' : 'relative z-[2] h-full min-h-[inherit]',
-          )}
-        >
-          {slides.map((slide, i) => renderSlideContent(slide, i, i === safeIndex))}
-        </div>
-      ) : null}
 
       {controlsVisible ? (
         <>
