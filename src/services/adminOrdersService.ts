@@ -2,6 +2,7 @@ import type { ApiSuccess } from '@/types/api'
 import { unwrapApiData } from '@/types/api'
 import type {
   AdminOrderDetail,
+  AdminOrderLegalArchiveFile,
   AdminOrderLicensePatchBody,
   AdminOrderListItem,
   AdminOrderListParams,
@@ -51,6 +52,33 @@ export const adminOrdersService = {
 
   async retryDelivery(id: string): Promise<void> {
     await adminApi.post(`/admin/orders/${encodeURIComponent(id)}/retry-delivery`)
+  },
+
+  async generateLegalArchive(
+    orderId: string,
+    force = false,
+  ): Promise<{ packageNo: string; files: AdminOrderLegalArchiveFile[] }> {
+    const res = await adminApi.post<ApiSuccess<{ packageNo: string; files: AdminOrderLegalArchiveFile[] }>>(
+      `/admin/orders/${encodeURIComponent(orderId)}/legal-archive/generate`,
+      { force },
+    )
+    return unwrapApiData(res.data, 'adminOrders.generateLegalArchive')
+  },
+
+  async downloadLegalArchiveFile(orderId: string, fileId: string, fileName: string): Promise<void> {
+    const res = await adminApi.get<Blob>(
+      `/admin/orders/${encodeURIComponent(orderId)}/legal-archive/files/${encodeURIComponent(fileId)}/download`,
+      { responseType: 'blob' },
+    )
+    const blob = res.data instanceof Blob ? res.data : new Blob([res.data as unknown as BlobPart])
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
   },
 }
 

@@ -88,6 +88,32 @@ export type AdminOrderLicense = {
   expiresAt: string | null
 }
 
+export type AdminOrderLegalSnapshot = {
+  id: string
+  documentType: string
+  title: string
+  content: string
+  version: number
+  acceptedAt: string
+  ipAddress: string | null
+  userAgent: string | null
+}
+
+export type AdminOrderLegalArchiveFile = {
+  id: string
+  packageNo: string
+  documentType: string | null
+  fileCategory: string
+  title: string
+  fileName: string
+  mimeType: string
+  size: number
+  sha256: string
+  acceptanceCode: string | null
+  version: number | null
+  generatedAt: string
+}
+
 export type AdminOrderDetail = {
   id: string
   orderNo: string
@@ -109,6 +135,18 @@ export type AdminOrderDetail = {
   paymentConfirmedByEmail: string | null
   downloadEmailSentAt: string | null
   digitalDeliveryEmailAlert?: string | null
+  preInfoAcceptedAt: string | null
+  distanceSalesAcceptedAt: string | null
+  kvkkReadAt: string | null
+  softwareLicenseAcceptedAt: string | null
+  saasSubscriptionAcceptedAt: string | null
+  digitalProductWaiverAcceptedAt: string | null
+  digitalServiceWaiverAcceptedAt: string | null
+  legalCartProductTypes: string | null
+  marketingConsentAt: string | null
+  explicitConsentAt: string | null
+  acceptedIp: string | null
+  acceptedUserAgent: string | null
   createdAt: string
   updatedAt: string
   adminNote?: string | null
@@ -123,6 +161,8 @@ export type AdminOrderDetail = {
   }
   items: AdminOrderItem[]
   paymentTransactions: AdminPaymentTransaction[]
+  legalSnapshots: AdminOrderLegalSnapshot[]
+  legalArchiveFiles: AdminOrderLegalArchiveFile[]
   licenses?: AdminOrderLicense[]
 }
 
@@ -220,6 +260,40 @@ function normalizeOrderLicense(raw: unknown, index: number): AdminOrderLicense |
   }
 }
 
+function normalizeLegalSnapshot(raw: unknown, index: number): AdminOrderLegalSnapshot | null {
+  if (!raw || typeof raw !== 'object') return null
+  const row = raw as Record<string, unknown>
+  return {
+    id: toString(row.id, `snap-${index}`),
+    documentType: toString(row.documentType),
+    title: toString(row.title),
+    content: toString(row.content),
+    version: toNumber(row.version, 1),
+    acceptedAt: toString(row.acceptedAt),
+    ipAddress: toNullableString(row.ipAddress),
+    userAgent: toNullableString(row.userAgent),
+  }
+}
+
+function normalizeLegalArchiveFile(raw: unknown, index: number): AdminOrderLegalArchiveFile | null {
+  if (!raw || typeof raw !== 'object') return null
+  const row = raw as Record<string, unknown>
+  return {
+    id: toString(row.id, `archive-${index}`),
+    packageNo: toString(row.packageNo),
+    documentType: row.documentType == null ? null : toString(row.documentType),
+    fileCategory: toString(row.fileCategory),
+    title: toString(row.title),
+    fileName: toString(row.fileName),
+    mimeType: toString(row.mimeType),
+    size: toNumber(row.size),
+    sha256: toString(row.sha256),
+    acceptanceCode: toNullableString(row.acceptanceCode),
+    version: typeof row.version === 'number' ? row.version : null,
+    generatedAt: toString(row.generatedAt),
+  }
+}
+
 export function normalizeAdminOrderDetail(raw: unknown): AdminOrderDetail | null {
   if (!raw || typeof raw !== 'object') return null
   const row = raw as Record<string, unknown>
@@ -230,6 +304,8 @@ export function normalizeAdminOrderDetail(raw: unknown): AdminOrderDetail | null
   const itemsRaw = Array.isArray(row.items) ? row.items : []
   const txRaw = Array.isArray(row.paymentTransactions) ? row.paymentTransactions : []
   const licRaw = Array.isArray(row.licenses) ? row.licenses : []
+  const snapRaw = Array.isArray(row.legalSnapshots) ? row.legalSnapshots : []
+  const archiveRaw = Array.isArray(row.legalArchiveFiles) ? row.legalArchiveFiles : []
 
   return {
     id,
@@ -253,6 +329,18 @@ export function normalizeAdminOrderDetail(raw: unknown): AdminOrderDetail | null
     paymentConfirmedByEmail: toNullableString(row.paymentConfirmedByEmail),
     downloadEmailSentAt: toNullableString(row.downloadEmailSentAt),
     digitalDeliveryEmailAlert: toNullableString(row.digitalDeliveryEmailAlert),
+    preInfoAcceptedAt: toNullableString(row.preInfoAcceptedAt),
+    distanceSalesAcceptedAt: toNullableString(row.distanceSalesAcceptedAt),
+    kvkkReadAt: toNullableString(row.kvkkReadAt),
+    softwareLicenseAcceptedAt: toNullableString(row.softwareLicenseAcceptedAt),
+    saasSubscriptionAcceptedAt: toNullableString(row.saasSubscriptionAcceptedAt),
+    digitalProductWaiverAcceptedAt: toNullableString(row.digitalProductWaiverAcceptedAt),
+    digitalServiceWaiverAcceptedAt: toNullableString(row.digitalServiceWaiverAcceptedAt),
+    legalCartProductTypes: toNullableString(row.legalCartProductTypes),
+    marketingConsentAt: toNullableString(row.marketingConsentAt),
+    explicitConsentAt: toNullableString(row.explicitConsentAt),
+    acceptedIp: toNullableString(row.acceptedIp),
+    acceptedUserAgent: toNullableString(row.acceptedUserAgent),
     createdAt: toString(row.createdAt),
     updatedAt: toString(row.updatedAt),
     adminNote: toNullableString(row.adminNote),
@@ -271,6 +359,12 @@ export function normalizeAdminOrderDetail(raw: unknown): AdminOrderDetail | null
     paymentTransactions: txRaw
       .map(normalizePaymentTx)
       .filter((x): x is AdminPaymentTransaction => x !== null),
+    legalSnapshots: snapRaw
+      .map(normalizeLegalSnapshot)
+      .filter((x): x is AdminOrderLegalSnapshot => x !== null),
+    legalArchiveFiles: archiveRaw
+      .map(normalizeLegalArchiveFile)
+      .filter((x): x is AdminOrderLegalArchiveFile => x !== null),
     licenses: licRaw
       .map(normalizeOrderLicense)
       .filter((x): x is AdminOrderLicense => x !== null),

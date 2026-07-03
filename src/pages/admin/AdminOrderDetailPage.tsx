@@ -11,6 +11,7 @@ import { LoadingState } from '@/components/ui/LoadingState'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/Table'
 import { CentralLicenseInfoBanner } from '@/components/admin/CentralLicenseInfoBanner'
+import { AdminLegalConsentsCard } from '@/components/admin/AdminLegalConsentsCard'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CENTRAL_LICENSE_PENDING_ADMIN } from '@/constants/centralLicenseServer'
 import { isIndividualBillingType } from '@/utils/checkoutBilling'
@@ -446,6 +447,8 @@ export function AdminOrderDetailPage() {
       ) : null}
 
       <CentralLicenseInfoBanner compact />
+
+      <AdminLegalConsentsCard order={data} onToast={setToast} />
 
       <ConfirmDialog
         open={retryConfirmOpen}

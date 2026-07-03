@@ -33,3 +33,16 @@ export function LegalExternalLink({ href, children }: { href: string; children: 
     </Link>
   )
 }
+
+/** Statik sayfa yerine siparişe özel önizleme modalını açan link görünümlü buton. */
+export function LegalModalLink({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="font-medium text-emerald-700 underline decoration-emerald-300 underline-offset-2 hover:text-emerald-800"
+    >
+      {children}
+    </button>
+  )
+}

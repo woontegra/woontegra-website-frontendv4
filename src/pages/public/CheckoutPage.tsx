@@ -4,7 +4,11 @@ import { useQuery } from '@tanstack/react-query'
 import { CreditCard, KeyRound, Lock, ShieldCheck } from 'lucide-react'
 import { PaytrIframe } from '@/components/payment/PaymentPanels'
 import { BillingIdentityNumberField } from '@/components/checkout/BillingIdentityNumberField'
-import { LegalConsentCheckbox, LegalExternalLink } from '@/components/checkout/LegalConsentCheckbox'
+import { LegalConsentCheckbox, LegalExternalLink, LegalModalLink } from '@/components/checkout/LegalConsentCheckbox'
+import { CheckoutLegalModal } from '@/components/checkout/CheckoutLegalModal'
+import { CheckoutLegalPreviewBody } from '@/components/checkout/CheckoutLegalPreviewBody'
+import { buildCheckoutLegalPreviewVariables } from '@/lib/buildCheckoutLegalPreviewVars'
+import type { LegalDocType } from '@/types/legalDocuments'
 import { TurkeyCityDistrictFields, checkoutSelectCls } from '@/components/checkout/TurkeyCityDistrictFields'
 import { LoadingState } from '@/components/public/LoadingState'
 import { Input } from '@/components/ui/Input'
@@ -46,6 +50,44 @@ const LEGAL = {
   commercial: legalTypeToPublicHref('COMMERCIAL_ELECTRONIC_MESSAGE'),
   explicit: legalTypeToPublicHref('EXPLICIT_CONSENT'),
 } as const
+
+type CheckoutLegalModalId =
+  | 'PRE_INFO'
+  | 'DISTANCE'
+  | 'KVKK'
+  | 'SOFTWARE_LICENSE'
+  | 'SAAS_SUBSCRIPTION'
+  | 'DIGITAL_PRODUCT_WAIVER'
+  | 'DIGITAL_SERVICE_WAIVER'
+  | 'COMMERCIAL'
+  | 'EXPLICIT'
+
+const LEGAL_MODAL_TITLES: Record<CheckoutLegalModalId, string> = {
+  PRE_INFO: 'Ön Bilgilendirme Formu',
+  DISTANCE: 'Mesafeli Satış / Hizmet Sözleşmesi',
+  KVKK: 'KVKK Aydınlatma Metni',
+  SOFTWARE_LICENSE: 'Yazılım Lisans ve Kullanım Sözleşmesi',
+  SAAS_SUBSCRIPTION: 'SaaS Abonelik ve Kullanım Koşulları',
+  DIGITAL_PRODUCT_WAIVER: 'Dijital Ürün — Cayma Hakkı İstisnası Onayı',
+  DIGITAL_SERVICE_WAIVER: 'Dijital Hizmetin İfasına Başlanması ve Cayma Hakkı Bilgilendirmesi',
+  COMMERCIAL: 'Ticari Elektronik İleti İzni',
+  EXPLICIT: 'Açık Rıza Metni',
+}
+
+const LEGAL_MODAL_PREVIEW: Record<
+  CheckoutLegalModalId,
+  { type: LegalDocType; variant?: 'DOWNLOAD' | 'SAAS' }
+> = {
+  PRE_INFO: { type: 'PRE_INFORMATION' },
+  DISTANCE: { type: 'DISTANCE_SALES' },
+  KVKK: { type: 'KVKK_CLARIFICATION' },
+  SOFTWARE_LICENSE: { type: 'SOFTWARE_LICENSE' },
+  SAAS_SUBSCRIPTION: { type: 'SAAS_SUBSCRIPTION' },
+  DIGITAL_PRODUCT_WAIVER: { type: 'DIGITAL_IMMEDIATE_DELIVERY_WAIVER', variant: 'DOWNLOAD' },
+  DIGITAL_SERVICE_WAIVER: { type: 'DIGITAL_IMMEDIATE_DELIVERY_WAIVER', variant: 'SAAS' },
+  COMMERCIAL: { type: 'COMMERCIAL_ELECTRONIC_MESSAGE' },
+  EXPLICIT: { type: 'EXPLICIT_CONSENT' },
+}
 
 type CheckoutFormState = {
   customerName: string
@@ -194,6 +236,7 @@ export function CheckoutPage() {
   const [acceptDigitalServiceWaiver, setAcceptDigitalServiceWaiver] = useState(false)
   const [marketingConsent, setMarketingConsent] = useState(false)
   const [explicitConsent, setExplicitConsent] = useState(false)
+  const [legalModal, setLegalModal] = useState<CheckoutLegalModalId | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [identityNumberError, setIdentityNumberError] = useState<string | null>(null)
@@ -223,6 +266,41 @@ export function CheckoutPage() {
     digitalProductWaiver: acceptDigitalProductWaiver,
     digitalServiceWaiver: acceptDigitalServiceWaiver,
   })
+
+  const legalPreviewVariables = useMemo(
+    () =>
+      buildCheckoutLegalPreviewVariables({
+        form: {
+          customerName: form.customerName,
+          customerEmail: form.customerEmail,
+          customerPhone: form.customerPhone,
+          billingType: form.billingType,
+          companyName: form.companyName,
+          taxOffice: form.taxOffice,
+          taxNumber: form.taxNumber,
+          identityNumber: form.identityNumber,
+          deliveryCity: form.deliveryCity,
+          deliveryDistrict: form.deliveryDistrict,
+          deliveryLine: form.deliveryLine,
+        },
+        merged,
+        grand,
+        currency,
+      }),
+    [form, merged, grand, currency],
+  )
+
+  const legalModalAccept: Record<CheckoutLegalModalId, () => void> = {
+    PRE_INFO: () => setAcceptPre(true),
+    DISTANCE: () => setAcceptDistance(true),
+    KVKK: () => setAcceptKvkk(true),
+    SOFTWARE_LICENSE: () => setAcceptSoftwareLicense(true),
+    SAAS_SUBSCRIPTION: () => setAcceptSaasSubscription(true),
+    DIGITAL_PRODUCT_WAIVER: () => setAcceptDigitalProductWaiver(true),
+    DIGITAL_SERVICE_WAIVER: () => setAcceptDigitalServiceWaiver(true),
+    COMMERCIAL: () => setMarketingConsent(true),
+    EXPLICIT: () => setExplicitConsent(true),
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -502,44 +580,52 @@ export function CheckoutPage() {
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
             <h2 className="text-lg font-semibold text-slate-900">Yasal onaylar</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Belge adına tıklayarak siparişinize özel oluşturulan metnin önizlemesini görebilirsiniz. Zorunlu
+              onaylar işaretlenmeden ödeme adımına geçilemez.
+            </p>
             <div className="mt-4 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Zorunlu onaylar</p>
               <LegalConsentCheckbox checked={acceptPre} onChange={setAcceptPre}>
-                <LegalExternalLink href={LEGAL.pre}>Ön bilgilendirme formunu</LegalExternalLink> okudum, kabul ediyorum.
+                <LegalModalLink onClick={() => setLegalModal('PRE_INFO')}>Ön bilgilendirme formunu</LegalModalLink> okudum, kabul ediyorum. *
               </LegalConsentCheckbox>
               <LegalConsentCheckbox checked={acceptDistance} onChange={setAcceptDistance}>
-                <LegalExternalLink href={LEGAL.distance}>Mesafeli satış sözleşmesini</LegalExternalLink> okudum, kabul ediyorum.
-              </LegalConsentCheckbox>
-              <LegalConsentCheckbox checked={acceptKvkk} onChange={setAcceptKvkk}>
-                <LegalExternalLink href={LEGAL.kvkk}>KVKK aydınlatma metnini</LegalExternalLink> ve{' '}
-                <LegalExternalLink href={LEGAL.privacy}>gizlilik politikasını</LegalExternalLink> okudum.
+                <LegalModalLink onClick={() => setLegalModal('DISTANCE')}>Mesafeli satış / hizmet sözleşmesini</LegalModalLink> okudum, kabul ediyorum. *
               </LegalConsentCheckbox>
               {legalFlags.needsSoftwareLicense ? (
                 <LegalConsentCheckbox checked={acceptSoftwareLicense} onChange={setAcceptSoftwareLicense}>
-                  <LegalExternalLink href={LEGAL.softwareLicense}>Yazılım lisans sözleşmesini</LegalExternalLink> kabul ediyorum.
+                  <LegalModalLink onClick={() => setLegalModal('SOFTWARE_LICENSE')}>Yazılım lisans sözleşmesini</LegalModalLink> okudum, kabul ediyorum. *
                 </LegalConsentCheckbox>
               ) : null}
               {legalFlags.needsSaasSubscription ? (
                 <LegalConsentCheckbox checked={acceptSaasSubscription} onChange={setAcceptSaasSubscription}>
-                  <LegalExternalLink href={LEGAL.saasSubscription}>SaaS abonelik sözleşmesini</LegalExternalLink> kabul ediyorum.
+                  <LegalModalLink onClick={() => setLegalModal('SAAS_SUBSCRIPTION')}>SaaS abonelik koşullarını</LegalModalLink> okudum, kabul ediyorum. *
                 </LegalConsentCheckbox>
               ) : null}
               {legalFlags.needsDigitalProductWaiver ? (
                 <LegalConsentCheckbox checked={acceptDigitalProductWaiver} onChange={setAcceptDigitalProductWaiver}>
-                  <LegalExternalLink href={LEGAL.digitalWaiver}>Dijital ürün anında ifa beyanını</LegalExternalLink> kabul ediyorum.
+                  <LegalModalLink onClick={() => setLegalModal('DIGITAL_PRODUCT_WAIVER')}>Dijital ürünün anında ifasına başlanması ve cayma hakkı bilgilendirmesini</LegalModalLink> okudum, kabul ediyorum. *
                 </LegalConsentCheckbox>
               ) : null}
               {legalFlags.needsDigitalServiceWaiver ? (
                 <LegalConsentCheckbox checked={acceptDigitalServiceWaiver} onChange={setAcceptDigitalServiceWaiver}>
-                  <LegalExternalLink href={LEGAL.digitalWaiver}>Dijital hizmet anında ifa beyanını</LegalExternalLink> kabul ediyorum.
+                  <LegalModalLink onClick={() => setLegalModal('DIGITAL_SERVICE_WAIVER')}>Dijital hizmetin ifasına başlanması ve cayma hakkı bilgilendirmesini</LegalModalLink> okudum, kabul ediyorum. *
                 </LegalConsentCheckbox>
               ) : null}
+
+              <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Bilgilendirme</p>
+              <LegalConsentCheckbox checked={acceptKvkk} onChange={setAcceptKvkk}>
+                <LegalModalLink onClick={() => setLegalModal('KVKK')}>KVKK aydınlatma metnini</LegalModalLink> ve{' '}
+                <LegalExternalLink href={LEGAL.privacy}>gizlilik politikasını</LegalExternalLink> okudum. *
+              </LegalConsentCheckbox>
+
+              <p className="pt-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Opsiyonel</p>
               <LegalConsentCheckbox checked={marketingConsent} onChange={setMarketingConsent}>
                 Ticari elektronik ileti almak istiyorum. (
-                <LegalExternalLink href={LEGAL.commercial}>bilgi</LegalExternalLink>)
+                <LegalModalLink onClick={() => setLegalModal('COMMERCIAL')}>bilgilendirme</LegalModalLink>)
               </LegalConsentCheckbox>
               <LegalConsentCheckbox checked={explicitConsent} onChange={setExplicitConsent}>
-                Açık rıza metnini onaylıyorum. (
-                <LegalExternalLink href={LEGAL.explicit}>metin</LegalExternalLink>)
+                <LegalModalLink onClick={() => setLegalModal('EXPLICIT')}>Açık rıza metnini</LegalModalLink> onaylıyorum.
               </LegalConsentCheckbox>
             </div>
           </section>
@@ -605,6 +691,24 @@ export function CheckoutPage() {
           </div>
         </aside>
       </div>
+
+      <CheckoutLegalModal
+        open={legalModal !== null}
+        title={legalModal ? LEGAL_MODAL_TITLES[legalModal] : ''}
+        onClose={() => setLegalModal(null)}
+        showReadAndClose={legalModal !== null}
+        onReadAndAccept={() => {
+          if (legalModal) legalModalAccept[legalModal]()
+        }}
+      >
+        {legalModal ? (
+          <CheckoutLegalPreviewBody
+            type={LEGAL_MODAL_PREVIEW[legalModal].type}
+            variant={LEGAL_MODAL_PREVIEW[legalModal].variant}
+            variables={legalPreviewVariables}
+          />
+        ) : null}
+      </CheckoutLegalModal>
     </div>
   )
 }
