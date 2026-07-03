@@ -53,7 +53,7 @@ export function CheckoutLegalPreviewBody({ type, variant, variables }: Props) {
 
   return (
     <div
-      className="prose prose-slate max-w-none text-sm leading-relaxed text-slate-800 [&_.legal-buyer-block]:my-4 [&_.legal-buyer-block]:rounded-lg [&_.legal-buyer-block]:border [&_.legal-buyer-block]:border-slate-200 [&_.legal-buyer-block]:bg-slate-50 [&_.legal-buyer-block]:p-3"
+      className="prose prose-slate max-w-none text-sm leading-relaxed text-slate-800 [&_.legal-buyer-block]:my-4 [&_.legal-buyer-block]:rounded-lg [&_.legal-buyer-block]:border [&_.legal-buyer-block]:border-slate-200 [&_.legal-buyer-block]:bg-slate-50 [&_.legal-buyer-block]:p-3 [&_.legal-product-block]:my-3 [&_.legal-product-block]:rounded-lg [&_.legal-product-block]:border [&_.legal-product-block]:border-slate-200 [&_.legal-product-block]:bg-slate-50/60 [&_.legal-product-block]:p-3"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )

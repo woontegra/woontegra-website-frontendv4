@@ -15,26 +15,52 @@ function escapeHtml(s: string): string {
 /** Ürün tipine göre teslim/abonelik etiketi (SaaS'ta masaüstü/kurulum ifadesi kullanılmaz). */
 function productKindLabel(productType: ProductType): string {
   if (isSaasSubscriptionProduct(productType)) return 'Web tabanlı SaaS aboneliği (dijital hizmet)'
-  if (productType === 'SERVICE') return 'Hizmet'
-  return 'Dijital ürün (indirilebilir yazılım)'
+  if (productType === 'SERVICE') return 'Dijital hizmet'
+  return 'İndirilebilir masaüstü yazılım'
 }
 
+function row(label: string, value: string): string {
+  return `<strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}`
+}
+
+/** Belgede okunabilir ürün bloğu; SaaS satırlarında abonelik süresi/başlangıç/bitiş bilgisi eklenir. */
 export function buildCheckoutLegalProductListHtml(merged: MergedCartRow[]): string {
   if (merged.length === 0) {
     return '<p>Sepetinizde ürün bulunmuyor.</p>'
   }
-  const items = merged
+  const blocks = merged
     .map((m) => {
       const web = isSaasSubscriptionProduct(m.productType)
       const single = mergedRowIsSingleQuantity(m)
-      const typeLabel = productKindLabel(m.productType)
-      const plan = web ? 'Yıllık Abonelik' : 'Ömür Boyu Lisans'
-      const qty = single ? '1 lisans' : web ? `${m.quantity} yıl` : `${m.quantity} adet`
       const price = formatMoney(m.lineTotal, m.currency)
-      return `<li><strong>${escapeHtml(m.name)}</strong> — ${escapeHtml(typeLabel)} — ${escapeHtml(plan)} — ${escapeHtml(qty)} — ${escapeHtml(price)}</li>`
+      const lines: string[] = [row('Ürün', m.name), row('Hizmet türü', productKindLabel(m.productType))]
+
+      if (web) {
+        const durationYears = single ? 1 : m.quantity
+        const durationText = durationYears === 1 ? '1 yıl' : `${durationYears} yıl`
+        lines.push(
+          row('Abonelik süresi', durationText),
+          row('Toplam bedel', price),
+          row('Başlangıç tarihi', 'Ödeme onayı ve hesap aktivasyonu sonrası başlar'),
+          row(
+            'Bitiş tarihi',
+            durationYears === 1
+              ? 'Başlangıç tarihinden itibaren 1 yıl sonra sona erer'
+              : `Başlangıç tarihinden itibaren ${durationYears} yıl sonra sona erer`,
+          ),
+        )
+      } else {
+        lines.push(
+          row('Plan', 'Ömür Boyu Lisans'),
+          row('Adet', single ? '1 lisans' : `${m.quantity} adet`),
+          row('Toplam bedel', price),
+        )
+      }
+
+      return `<div class="legal-product-block"><p>${lines.join('<br/>')}</p></div>`
     })
     .join('')
-  return `<ul>${items}</ul>`
+  return blocks
 }
 
 export type CheckoutLegalFormInput = {
