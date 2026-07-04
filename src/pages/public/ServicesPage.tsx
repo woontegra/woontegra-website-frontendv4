@@ -6,14 +6,9 @@ import { MarketingFeatureCard } from '@/components/public/MarketingFeatureCard'
 import { SiteCtaSection } from '@/components/public/SiteCtaSection'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { usePublicServiceCards } from '@/hooks/usePublicServiceCards'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { pageContentService } from '@/services/pageContentService'
-import {
-  defaultServiceCardsBundle,
-  getActiveServiceCards,
-  mergeServiceCards,
-  SERVICE_CARDS_KEY,
-} from '@/data/serviceCardsContent'
 import { defaultServicesPageContent, MARKETING_PAGE_KEYS } from '@/types/marketingPageContent'
 
 const PROCESS = [
@@ -24,7 +19,7 @@ const PROCESS = [
 ] as const
 
 const WHY = [
-  { icon: Target, title: 'Ürün Deneyimi', desc: 'Kendi markalarımızdan gelen gerçek operasyon tecrübesi.' },
+  { icon: Target, title: 'Yazılım Deneyimi', desc: 'E-ticaret ve SaaS projelerinde kanıtlanmış teknik tecrübe.' },
   { icon: Workflow, title: 'Tek Yapı', desc: 'Yazılım, satış ve operasyonu entegre yönetiyoruz.' },
   { icon: Zap, title: 'Performans', desc: 'Hızlı, stabil ve büyümeye hazır sistemler kuruyoruz.' },
 ] as const
@@ -37,18 +32,8 @@ export function ServicesPage() {
     placeholderData: defaultServicesPageContent,
     ...publicQueryOptions,
   })
-  const cardsQuery = useQuery({
-    queryKey: ['page-content', SERVICE_CARDS_KEY],
-    queryFn: async () => {
-      const raw = await pageContentService.getRawByKey(SERVICE_CARDS_KEY)
-      return mergeServiceCards(defaultServiceCardsBundle, raw as Partial<typeof defaultServiceCardsBundle>)
-    },
-    placeholderData: defaultServiceCardsBundle,
-    ...publicQueryOptions,
-  })
-
+  const { cards: serviceCards } = usePublicServiceCards()
   const page = pageQuery.data ?? defaultServicesPageContent
-  const serviceCards = getActiveServiceCards(cardsQuery.data ?? defaultServiceCardsBundle)
 
   usePageMeta({ title: page.seoTitle, description: page.seoDescription })
 
@@ -85,7 +70,7 @@ export function ServicesPage() {
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{page.sectionTitle}</h2>
             <p className="mt-4 text-base text-slate-600">{page.sectionDescription}</p>
           </div>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {serviceCards.map((service) => (
               <MarketingFeatureCard
                 key={service.id}

@@ -4,12 +4,8 @@ import { createDefaultCardGridBlock, createDefaultCtaBlock } from '@/builder/typ
 import { createDefaultHeroBlock } from '@/builder/types/hero'
 import type { HeroBlock } from '@/builder/types/hero'
 import { assignSortOrder } from '@/builder/load/parseBuilderBlocks'
-import {
-  defaultServiceCardsBundle,
-  getActiveServiceCards,
-  mergeServiceCards,
-  SERVICE_CARDS_KEY,
-} from '@/data/serviceCardsContent'
+import { defaultServiceCardsBundle, mergeServiceCardsWithCanonical } from '@/data/canonicalServices'
+import { SERVICE_CARDS_KEY } from '@/data/serviceCardsContent'
 import {
   defaultServicesPageContent,
   mergeMarketingPageContent,
@@ -24,7 +20,7 @@ const PROCESS_STEPS = [
 ] as const
 
 const WHY_ITEMS = [
-  { icon: 'target', title: 'Ürün Deneyimi', desc: 'Kendi markalarımızdan gelen gerçek operasyon tecrübesi.' },
+  { icon: 'target', title: 'Yazılım Deneyimi', desc: 'E-ticaret ve SaaS projelerinde kanıtlanmış teknik tecrübe.' },
   { icon: 'workflow', title: 'Tek Yapı', desc: 'Yazılım, satış ve operasyonu entegre yönetiyoruz.' },
   { icon: 'zap', title: 'Performans', desc: 'Hızlı, stabil ve büyümeye hazır sistemler kuruyoruz.' },
 ] as const
@@ -71,16 +67,17 @@ function servicesHero(page: MarketingPageContent): HeroBlock {
 
 function servicesCardsGrid(page: MarketingPageContent, raw: Record<string, unknown> | null): CardGridBlock {
   const cardsRaw = readEnriched(raw, `__${SERVICE_CARDS_KEY}`)
-  const cards = getActiveServiceCards(
-    mergeServiceCards(defaultServiceCardsBundle, cardsRaw as Partial<typeof defaultServiceCardsBundle> | null),
-  )
+  const cards = mergeServiceCardsWithCanonical(
+    cardsRaw as Partial<ReturnType<typeof defaultServiceCardsBundle>> | null,
+    null,
+  ).cards
   const grid = createDefaultCardGridBlock(1)
   grid.id = 'svc-landing-grid'
   grid.settings.variant = 'solutions'
   grid.settings.eyebrow = page.sectionEyebrow
   grid.title = page.sectionTitle
   grid.description = page.sectionDescription
-  grid.settings.columns = 4
+  grid.settings.columns = 3
   grid.settings.cards = cards.map((c) => ({
     id: c.id,
     title: c.title,

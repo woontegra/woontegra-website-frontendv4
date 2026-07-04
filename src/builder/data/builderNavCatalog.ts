@@ -36,9 +36,8 @@ export type BuilderNavLegal = {
   contentKey: string
 }
 
-/** Hizmetler alt menüsü — 6 sayfa */
+/** Hizmetler alt menüsü — header ile birebir (5 hizmet) */
 export const BUILDER_MENU_SERVICES: BuilderNavService[] = [
-  { slug: 'mobil-uygulama-gelistirme', title: 'Mobil Uygulama Geliştirme', path: '/hizmetler/mobil-uygulama-gelistirme' },
   { slug: 'saas', title: 'SaaS Ürün Geliştirme', path: '/hizmetler/saas' },
   { slug: 'web-tasarim', title: 'Web Tasarım', path: '/hizmetler/web-tasarim' },
   { slug: 'yazilim-gelistirme', title: 'Yazılım Geliştirme', path: '/hizmetler/yazilim-gelistirme' },
