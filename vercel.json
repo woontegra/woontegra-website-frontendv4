@@ -9,7 +9,7 @@
       "destination": "https://websitebackend-production-ab6e.up.railway.app/uploads/:path*"
     },
     {
-      "source": "/((?!assets/|uploads/|favicon\\.svg|.*\\..*).*)",
+      "source": "/((?!assets/|uploads/|favicon\\.svg|sitemap\\.xml|robots\\.txt|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]

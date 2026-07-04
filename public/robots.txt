@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /admin/
+Disallow: /giris
+Disallow: /sepet
+Disallow: /odeme
+Disallow: /hesabim
+Disallow: /hesabim/
+Disallow: /api
+
+Sitemap: https://woontegra.com/sitemap.xml
