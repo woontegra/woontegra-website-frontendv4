@@ -5,9 +5,16 @@ import { BlockSectionHeader, SectionBlockShell } from '@/builder/render/SectionB
 import { renderIfText } from '@/builder/render/renderRules'
 import type { BlogShowcaseBlock } from '@/builder/types'
 import { BlogCard } from '@/components/public/BlogCard'
+import { BlogCardSkeleton } from '@/components/public/BlogCardSkeleton'
 import { pickBlogShowcasePosts } from '@/lib/blogShowcasePosts'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { blogService } from '@/services/blogService'
+
+function blogShowcaseGridCols(count: number): string {
+  if (count <= 1) return 'grid-cols-1'
+  if (count === 2) return 'sm:grid-cols-2'
+  return 'sm:grid-cols-2 lg:grid-cols-3'
+}
 
 export function BlogShowcaseBlockRenderer({ block, mode = 'public' }: BlockRendererProps) {
   if (block.type !== 'blog-showcase') return null
@@ -18,20 +25,21 @@ export function BlogShowcaseBlockRenderer({ block, mode = 'public' }: BlockRende
     (b.visibility.showTitle !== false && renderIfText(b.title)) ||
     (b.visibility.showDescription !== false && renderIfText(b.description))
 
+  const skeletonCount = Math.min(Math.max(b.settings.limit ?? 3, 1), 3)
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ['blog', 'showcase', b.id, b.settings.source, b.settings.limit],
     queryFn: () => blogService.list(),
     ...publicQueryOptions,
   })
 
-  const posts = pickBlogShowcasePosts(data ?? [], b.settings)
+  const posts = !isLoading && !isError ? pickBlogShowcasePosts(data ?? [], b.settings) : []
   const isPreview = mode === 'preview'
 
-  if (!isPreview && !hasHeader && posts.length === 0) return null
-  if (!isPreview && !isLoading && posts.length === 0) return null
+  if (!isPreview && !hasHeader && !isLoading && posts.length === 0) return null
+  if (!isPreview && !isLoading && !isError && posts.length === 0 && !hasHeader) return null
 
-  const gridCols =
-    posts.length <= 1 ? 'grid-cols-1' : posts.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3'
+  const gridCols = blogShowcaseGridCols(isLoading ? skeletonCount : Math.max(posts.length, 1))
 
   return (
     <SectionBlockShell style={b.style}>
@@ -44,15 +52,15 @@ export function BlogShowcaseBlockRenderer({ block, mode = 'public' }: BlockRende
 
       {isLoading ? (
         <div className={`mt-8 grid gap-6 ${gridCols}`}>
-          {Array.from({ length: Math.min(b.settings.limit ?? 3, 3) }).map((_, i) => (
-            <div key={i} className="h-64 animate-pulse rounded-2xl bg-slate-100" />
+          {Array.from({ length: skeletonCount }).map((_, i) => (
+            <BlogCardSkeleton key={`sk-${i}`} />
           ))}
         </div>
       ) : null}
 
       {!isLoading && isError ? (
         <p className="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Blog yazıları yüklenemedi. Bağlantıyı kontrol edin.
+          Blog yazıları yüklenemedi. Daha sonra tekrar deneyin.
         </p>
       ) : null}
 
@@ -64,7 +72,7 @@ export function BlogShowcaseBlockRenderer({ block, mode = 'public' }: BlockRende
         </p>
       ) : null}
 
-      {posts.length > 0 ? (
+      {!isLoading && !isError && posts.length > 0 ? (
         <>
           <div className={`mt-8 grid gap-6 ${gridCols}`}>
             {posts.map((post) => (

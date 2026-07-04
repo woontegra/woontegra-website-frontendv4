@@ -36,13 +36,12 @@ export type BuilderNavLegal = {
   contentKey: string
 }
 
-/** Hizmetler alt menüsü — 7 sayfa */
+/** Hizmetler alt menüsü — 6 sayfa */
 export const BUILDER_MENU_SERVICES: BuilderNavService[] = [
   { slug: 'mobil-uygulama-gelistirme', title: 'Mobil Uygulama Geliştirme', path: '/hizmetler/mobil-uygulama-gelistirme' },
   { slug: 'saas', title: 'SaaS Ürün Geliştirme', path: '/hizmetler/saas' },
   { slug: 'web-tasarim', title: 'Web Tasarım', path: '/hizmetler/web-tasarim' },
   { slug: 'yazilim-gelistirme', title: 'Yazılım Geliştirme', path: '/hizmetler/yazilim-gelistirme' },
-  { slug: 'dijital-danismanlik', title: 'Dijital Danışmanlık', path: '/hizmetler/dijital-danismanlik' },
   { slug: 'e-ticaret', title: 'E-Ticaret Çözümleri', path: '/hizmetler/e-ticaret' },
   { slug: 'marka-patent-vekilligi', title: 'Marka & Patent Vekilliği', path: '/hizmetler/marka-patent-vekilligi' },
 ]

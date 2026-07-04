@@ -1,4 +1,4 @@
-import { resolveMediaUrl } from '@/media/resolveMediaUrl'
+import { isValidMediaUrl, resolveMediaUrl } from '@/media/resolveMediaUrl'
 
 function extractMediaUrl(media: unknown): string {
   if (!media) return ''
@@ -11,17 +11,38 @@ function extractMediaUrl(media: unknown): string {
   return ''
 }
 
+function pickFirstBlogImageRaw(post: {
+  featuredImage?: string | null
+  coverImageUrl?: string | null
+  coverImage?: string | null
+  image?: string | null
+  coverMedia?: { url?: string | null } | null
+}): string {
+  const candidates = [
+    post.featuredImage,
+    post.coverMedia?.url,
+    post.coverImageUrl,
+    post.coverImage,
+    post.image,
+  ]
+  for (const value of candidates) {
+    const trimmed = value?.trim()
+    if (trimmed) return trimmed
+  }
+  return ''
+}
+
 export function pickBlogCoverUrl(post: {
   featuredImage?: string | null
   coverImageUrl?: string | null
+  coverImage?: string | null
+  image?: string | null
   coverMedia?: { url?: string | null } | null
 }): string {
-  const raw =
-    post.featuredImage?.trim() ||
-    post.coverMedia?.url?.trim() ||
-    post.coverImageUrl?.trim() ||
-    ''
-  return raw ? resolveMediaUrl(raw) : ''
+  const raw = pickFirstBlogImageRaw(post)
+  if (!raw) return ''
+  const resolved = resolveMediaUrl(raw)
+  return isValidMediaUrl(resolved) ? resolved : ''
 }
 
 export function pickProductCoverUrl(product: {

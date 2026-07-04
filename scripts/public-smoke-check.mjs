@@ -33,7 +33,6 @@ const SERVICE_SLUGS = [
   'e-ticaret',
   'saas',
   'yazilim-gelistirme',
-  'dijital-danismanlik',
   'marka-patent-vekilligi',
 ]
 

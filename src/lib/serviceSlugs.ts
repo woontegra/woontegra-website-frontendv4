@@ -3,7 +3,7 @@ import { SERVICE_DETAIL_BY_SLUG } from '@/data/serviceDetailContent'
 
 
 /** Siteden kaldırılmış hizmet slug'ları — menü ve doğrudan URL erişimi filtrelenir */
-export const REMOVED_SERVICE_SLUGS = new Set(['oyun-gelistirme'])
+export const REMOVED_SERVICE_SLUGS = new Set(['oyun-gelistirme', 'dijital-danismanlik'])
 
 export function isRemovedServiceSlug(slug: string): boolean {
   return REMOVED_SERVICE_SLUGS.has(slug.trim().toLowerCase())

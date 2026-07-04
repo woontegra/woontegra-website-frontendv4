@@ -524,87 +524,6 @@ export const trademarkPatentDetail: ServiceDetailContent = {
   },
 }
 
-export const digitalConsultingDetail: ServiceDetailContent = {
-  slug: 'dijital-danismanlik',
-  heroTheme: 'slate',
-  hero: {
-    eyebrow: 'Dijital Danışmanlık',
-    title: 'Dijital Dönüşüm ve Teknoloji Stratejisi Danışmanlığı',
-    description:
-      'İşletmenizin dijital olgunluğunu artırmak, süreçleri optimize etmek ve doğru teknoloji yatırımlarını planlamak için stratejik danışmanlık sunuyoruz.',
-    image: '/images/danismanlik-hero.png',
-    imageAlt: 'Woontegra dijital danışmanlık',
-    primaryCta: { text: 'Teklif Al', to: '/teklif-al' },
-    secondaryCta: { text: 'İletişime Geç', to: '/iletisim' },
-  },
-  problems: {
-    title: 'Dijital Stratejiniz Net mi?',
-    subtitle: 'Belirsiz teknoloji yatırımları kaynak israfına yol açar.',
-    items: [
-      { icon: 'Target', title: 'Strateji eksikliği', description: 'Dijital hedefler net değilse yatırımlar dağınık kalır.' },
-      { icon: 'Workflow', title: 'Süreçler dijitalleşmemiş', description: 'Manuel operasyonlar ölçeklenmeyi engeller.' },
-      { icon: 'Layers', title: 'Teknoloji seçimi zor', description: 'Yanlış araç seçimi maliyet ve verimlilik kaybı yaratır.' },
-      { icon: 'BarChart3', title: 'Ölçüm yapılmıyor', description: 'ROI takibi olmadan iyileştirme mümkün değil.' },
-    ],
-  },
-  approach: {
-    title: 'Veriye Dayalı Dijital Yol Haritası',
-    description: 'Mevcut durum analizi, hedef belirleme ve uygulanabilir aksiyon planı ile dijital dönüşümü yönetiyoruz.',
-    bullets: ['Mevcut durumu analiz ederiz', 'Hedef ve KPI belirleriz', 'Yol haritası oluştururuz', 'Uygulamayı destekleriz'],
-    flowSteps: ['Analiz', 'Hedef', 'Yol Haritası', 'Uygulama', 'Ölçüm', 'İyileştirme'],
-  },
-  scope: {
-    title: 'Danışmanlık Kapsamımız',
-    subtitle: 'Stratejiden uygulamaya, ihtiyaca özel danışmanlık alanları.',
-    items: [
-      { icon: 'Lightbulb', title: 'Dijital Strateji', description: 'İş hedeflerine uygun dijital dönüşüm planı.', gradient: 'from-amber-500 to-orange-500' },
-      { icon: 'Workflow', title: 'Süreç Optimizasyonu', description: 'Operasyon akışlarının dijitalleştirilmesi.', gradient: 'from-emerald-500 to-teal-500' },
-      { icon: 'Code2', title: 'Teknoloji Seçimi', description: 'Doğru araç ve platform önerileri.', gradient: 'from-blue-500 to-cyan-500' },
-      { icon: 'ShoppingCart', title: 'E-Ticaret Danışmanlığı', description: 'Satış kanalı ve operasyon stratejisi.', gradient: 'from-violet-500 to-purple-500' },
-      { icon: 'Cloud', title: 'SaaS & Ürün Danışmanlığı', description: 'Ürünleşme ve SaaS modeli planlaması.', gradient: 'from-sky-500 to-blue-600' },
-      { icon: 'BarChart3', title: 'Performans & KPI', description: 'Ölçüm çerçevesi ve raporlama altyapısı.', gradient: 'from-slate-600 to-slate-800' },
-    ],
-  },
-  process: {
-    title: 'Nasıl Çalışıyoruz?',
-    subtitle: 'Analizden uygulamaya yapılandırılmış danışmanlık süreci.',
-    steps: [
-      { step: '01', title: 'Durum Analizi', description: 'Mevcut süreçler, araçlar ve dijital olgunluk değerlendirmesi.' },
-      { step: '02', title: 'Hedef Belirleme', description: 'İş hedefleri ve ölçülebilir KPI tanımlanır.' },
-      { step: '03', title: 'Yol Haritası', description: 'Öncelikli aksiyonlar ve zaman planı oluşturulur.' },
-      { step: '04', title: 'Uygulama Desteği', description: 'Seçilen projelerin hayata geçirilmesinde destek.' },
-      { step: '05', title: 'Ölçüm & İyileştirme', description: 'Sonuçların takibi ve sürekli optimizasyon.' },
-    ],
-  },
-  whyUs: {
-    title: 'Neden Woontegra?',
-    items: [
-      { title: 'Uygulayıcı danışmanlık', description: 'Sadece rapor değil; gerçek projelerde uygulanan öneriler.' },
-      { title: 'Çok disiplinli ekip', description: 'Yazılım, e-ticaret ve operasyon uzmanlığı tek çatıda.' },
-      { title: 'Kendi ürün deneyimi', description: 'Kendi markalarımızdan gelen pratik operasyon bilgisi.' },
-      { title: 'Ölçülebilir sonuçlar', description: 'KPI odaklı danışmanlık ve şeffaf ilerleme takibi.' },
-    ],
-  },
-  technology: {
-    title: 'Doğru teknoloji, doğru süreçle değer üretir.',
-    description: 'Teknoloji yatırımlarını iş hedefleriyle hizalıyoruz.',
-    items: [
-      { icon: 'Target', title: 'Hedef odaklı planlama', description: 'İş sonuçlarına bağlı teknoloji kararları.' },
-      { icon: 'Workflow', title: 'Süreç entegrasyonu', description: 'Araçlar arası veri ve iş akışı bütünlüğü.' },
-      { icon: 'BarChart3', title: 'Veri odaklı karar', description: 'Metrik ve raporlama altyapısı kurulumu.' },
-      { icon: 'RefreshCw', title: 'Sürekli iyileştirme', description: 'Periyodik gözden geçirme ve optimizasyon.' },
-    ],
-  },
-  cta: {
-    title: 'Dijital dönüşüm yol haritanızı birlikte çizelim.',
-    description: 'İşletmenizin dijital olgunluğunu artırmak ve doğru teknoloji yatırımlarını planlamak için görüşelim.',
-    buttonText: 'Teklif Al',
-    buttonTo: '/teklif-al',
-    secondaryButtonText: 'İletişime Geç',
-    secondaryButtonTo: '/iletisim',
-  },
-}
-
 export const mobileAppDevelopmentDetail: ServiceDetailContent = {
   slug: 'mobil-uygulama-gelistirme',
   heroTheme: 'blue',
@@ -766,5 +685,4 @@ export const SERVICE_DETAIL_BY_SLUG: Record<string, ServiceDetailContent> = {
   'e-ticaret': ecommerceDetail,
   saas: saasProductDetail,
   'marka-patent-vekilligi': trademarkPatentDetail,
-  'dijital-danismanlik': digitalConsultingDetail,
 }

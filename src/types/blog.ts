@@ -14,6 +14,8 @@ export type PublicBlogPost = {
   excerpt: string
   bodyHtml: string
   featuredImage: string | null
+  coverImageUrl?: string | null
+  coverMedia?: { url?: string | null } | null
   status: BlogPostStatus
   publishedAt: string | null
   createdAt: string
@@ -50,6 +52,13 @@ function normalizeDate(value: unknown): string | null {
   return date.toISOString()
 }
 
+function normalizeCoverMedia(raw: unknown): { url?: string | null } | null {
+  if (!raw || typeof raw !== 'object') return null
+  const row = raw as Record<string, unknown>
+  const url = toNullableString(row.url ?? row.src ?? row.path)
+  return url ? { url } : null
+}
+
 export function normalizeBlogPost(raw: unknown): PublicBlogPost | null {
   if (!raw || typeof raw !== 'object') return null
   const row = raw as Record<string, unknown>
@@ -65,6 +74,8 @@ export function normalizeBlogPost(raw: unknown): PublicBlogPost | null {
     excerpt: toString(row.excerpt),
     bodyHtml: toString(row.bodyHtml || row.body || row.content),
     featuredImage: toNullableString(row.featuredImage || row.coverImage || row.image),
+    coverImageUrl: toNullableString(row.coverImageUrl),
+    coverMedia: normalizeCoverMedia(row.coverMedia),
     status: toString(row.status, 'draft'),
     publishedAt: normalizeDate(row.publishedAt),
     createdAt: normalizeDate(row.createdAt) ?? '',

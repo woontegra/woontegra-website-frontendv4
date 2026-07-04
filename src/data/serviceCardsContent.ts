@@ -50,7 +50,6 @@ export const defaultServiceCardsBundle: ServiceCardsBundle = {
     { id: 'marketing', title: 'Dijital Pazarlama', description: 'Kampanya, dönüşüm ve performans odaklı dijital pazarlama stratejileri.', tag: 'Performans', icon: 'Megaphone', href: '/iletisim', gradient: 'from-orange-500 to-red-500', order: 3, enabled: true },
     { id: 'social', title: 'Sosyal Medya', description: 'Marka görünürlüğünü güçlendiren içerik ve sosyal medya yönetimi.', tag: 'Marka', icon: 'Share2', href: '/iletisim', gradient: 'from-pink-500 to-rose-500', order: 4, enabled: true },
     { id: 'design', title: 'Grafik Tasarım', description: 'Kurumsal kimlik, arayüz ve görsel iletişim tasarımları.', tag: 'Tasarım', icon: 'Palette', href: '/iletisim', gradient: 'from-fuchsia-500 to-purple-500', order: 5, enabled: true },
-    { id: 'consult', title: 'Danışmanlık', description: 'Dijital dönüşüm, süreç iyileştirme ve teknoloji stratejisi danışmanlığı.', tag: 'Strateji', icon: 'Lightbulb', href: '/hizmetler/dijital-danismanlik', gradient: 'from-amber-500 to-orange-500', order: 6, enabled: true },
     { id: 'custom', title: 'Özel Yazılım', description: 'İşletmenize özel, performans odaklı ve ölçeklenebilir yazılım sistemleri.', tag: 'Yazılım', icon: 'Code2', href: '/hizmetler/yazilim-gelistirme', gradient: 'from-slate-700 to-slate-900', order: 7, enabled: true },
   ],
 }

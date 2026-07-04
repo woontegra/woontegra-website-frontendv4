@@ -151,7 +151,7 @@ export const defaultHomePageContent: HomePageContent = {
       { id: 'svc-3', icon: 'shopping-cart', title: 'E-Ticaret', text: 'Satış odaklı, yönetilebilir e-ticaret altyapıları.', color: 'from-green-500 to-emerald-500', order: 2, enabled: true },
       { id: 'svc-4', icon: 'cloud', title: 'SaaS', text: 'Abonelik tabanlı yazılım ürünleri ve merkezi lisans.', color: 'from-orange-500 to-red-500', order: 3, enabled: true },
       { id: 'svc-5', icon: 'scale', title: 'Marka & Patent', text: 'Marka tescil ve danışmanlık süreçleri.', color: 'from-yellow-500 to-orange-500', order: 4, enabled: true },
-      { id: 'svc-6', icon: 'lightbulb', title: 'Danışmanlık', text: 'Dijital büyüme için strateji ve yol haritası.', color: 'from-teal-500 to-green-500', order: 5, enabled: true },
+      { id: 'svc-6', icon: 'lightbulb', title: 'Danışmanlık', text: 'Dijital büyüme için strateji ve yol haritası.', color: 'from-teal-500 to-green-500', order: 5, enabled: false },
     ],
   },
   brands: {

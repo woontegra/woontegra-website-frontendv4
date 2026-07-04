@@ -7,7 +7,7 @@ import { NotFoundPage } from '@/pages/public/NotFoundPage'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { mergeServicePage, servicePageSeo, type ServicePageOverrides } from '@/lib/servicePageMerge'
-import { resolveServiceSlug } from '@/lib/serviceSlugs'
+import { isRemovedServiceSlug, resolveServiceSlug } from '@/lib/serviceSlugs'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { pageContentService } from '@/services/pageContentService'
 import { SERVICE_PAGE_CONTENT_KEY } from '@/data/serviceCatalog'
@@ -25,6 +25,7 @@ export function normalizeServicePages(raw: unknown): Record<string, ServicePageO
 export function ServiceDetailPage() {
   const { slug: rawSlug = '' } = useParams()
   const slug = resolveServiceSlug(usePreviewOrParamSlug(rawSlug))
+  if (isRemovedServiceSlug(slug)) return <NotFoundPage />
   const base = SERVICE_DETAIL_BY_SLUG[slug]
   const { blocks } = usePublicPageBlocks(SERVICE_PAGE_CONTENT_KEY, slug)
 
