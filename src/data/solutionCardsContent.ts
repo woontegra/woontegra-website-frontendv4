@@ -3,6 +3,16 @@ import { GRADIENT_OPTIONS, ICON_OPTIONS } from '@/lib/iconRegistry'
 export const SOLUTION_CARDS_KEY = 'solutionCards'
 export const SOLUTION_BENEFIT_CARDS_KEY = 'solutionBenefitCards'
 
+/** Kart id → kanonik detay sayfası — DB'deki eski /iletisim linklerini düzeltir */
+export const CANONICAL_SOLUTION_CARD_HREF: Record<string, string> = {
+  ecom: '/cozumler/e-ticaret-altyapisi',
+  market: '/cozumler/pazaryeri-entegrasyonu',
+  order: '/cozumler/siparis-yonetimi',
+  stock: '/cozumler/stok-fiyat-yonetimi',
+  ops: '/cozumler/dijital-operasyon',
+  custom: '/cozumler/ozel-yazilim-surecleri',
+}
+
 export type SolutionCardConfig = {
   id: string
   title: string
@@ -31,12 +41,14 @@ function normalizeSolutionCard(card: SolutionCardConfig, index: number): Solutio
   const gradient = GRADIENT_OPTIONS.includes(card.gradient as (typeof GRADIENT_OPTIONS)[number])
     ? card.gradient
     : GRADIENT_OPTIONS[index % GRADIENT_OPTIONS.length]
+  const rawHref = card.href?.trim() || ''
+
   return {
     id: card.id || `sol-${index}`,
     title: card.title?.trim() || 'Başlıksız',
     description: card.description?.trim() || '',
     icon,
-    href: card.href?.trim() || '/iletisim',
+    href: CANONICAL_SOLUTION_CARD_HREF[card.id] ?? (rawHref && rawHref !== '/iletisim' ? rawHref : '/cozumler'),
     gradient,
     order: typeof card.order === 'number' ? card.order : index,
     enabled: card.enabled !== false,
@@ -73,12 +85,66 @@ export function mergeSolutionBenefitCards(
 
 export const defaultSolutionCardsBundle: SolutionCardsBundle = {
   cards: [
-    { id: 'ecom', title: 'E-ticaret Altyapısı', description: 'Satış odaklı, yönetilebilir ve ölçeklenebilir mağaza altyapıları.', icon: 'ShoppingCart', href: '/hizmetler/e-ticaret', gradient: 'from-emerald-500 to-teal-500', order: 0, enabled: true },
-    { id: 'market', title: 'Pazaryeri Entegrasyonu', description: 'Çoklu kanal satış süreçlerini tek sistemde birleştirin.', icon: 'Package', href: '/iletisim', gradient: 'from-blue-500 to-cyan-500', order: 1, enabled: true },
-    { id: 'order', title: 'Sipariş Yönetimi', description: 'Sipariş, kargo ve müşteri süreçlerini merkezi olarak yönetin.', icon: 'Truck', href: '/iletisim', gradient: 'from-violet-500 to-purple-500', order: 2, enabled: true },
-    { id: 'stock', title: 'Stok / Fiyat Yönetimi', description: 'Stok, fiyat ve kampanya kurallarını otomatikleştirin.', icon: 'RefreshCw', href: '/iletisim', gradient: 'from-orange-500 to-red-500', order: 3, enabled: true },
-    { id: 'ops', title: 'Dijital Operasyon', description: 'Satış sonrası süreçleri dijitalleştirin ve ölçülebilir hale getirin.', icon: 'Workflow', href: '/iletisim', gradient: 'from-pink-500 to-rose-500', order: 4, enabled: true },
-    { id: 'custom', title: 'Özel Yazılım Süreçleri', description: 'İşletmenize özel modüller, entegrasyonlar ve otomasyonlar.', icon: 'Boxes', href: '/hizmetler/yazilim-gelistirme', gradient: 'from-slate-700 to-slate-900', order: 5, enabled: true },
+    {
+      id: 'ecom',
+      title: 'E-ticaret Altyapısı',
+      description: 'Ürün, sepet, ödeme ve sipariş süreçlerini tek panelde yönetilebilir e-ticaret altyapıları.',
+      icon: 'ShoppingCart',
+      href: CANONICAL_SOLUTION_CARD_HREF.ecom,
+      gradient: 'from-emerald-500 to-teal-500',
+      order: 0,
+      enabled: true,
+    },
+    {
+      id: 'market',
+      title: 'Pazaryeri Entegrasyonu',
+      description: 'Trendyol ve benzeri kanallarda ürün, sipariş, fiyat ve stok senkronizasyonu.',
+      icon: 'Package',
+      href: CANONICAL_SOLUTION_CARD_HREF.market,
+      gradient: 'from-blue-500 to-cyan-500',
+      order: 1,
+      enabled: true,
+    },
+    {
+      id: 'order',
+      title: 'Sipariş Yönetimi',
+      description: 'Web, pazaryeri ve manuel satışlardan gelen siparişleri tek merkezde izleyin.',
+      icon: 'Truck',
+      href: CANONICAL_SOLUTION_CARD_HREF.order,
+      gradient: 'from-violet-500 to-purple-500',
+      order: 2,
+      enabled: true,
+    },
+    {
+      id: 'stock',
+      title: 'Stok / Fiyat Yönetimi',
+      description: 'Stok, kampanya fiyatları ve pazaryeri fiyat stratejilerini merkezi yönetin.',
+      icon: 'RefreshCw',
+      href: CANONICAL_SOLUTION_CARD_HREF.stock,
+      gradient: 'from-orange-500 to-red-500',
+      order: 3,
+      enabled: true,
+    },
+    {
+      id: 'ops',
+      title: 'Dijital Operasyon',
+      description: 'Satış sonrası, müşteri, ödeme, lisans ve raporlama süreçlerini dijitalleştirin.',
+      icon: 'Workflow',
+      href: CANONICAL_SOLUTION_CARD_HREF.ops,
+      gradient: 'from-pink-500 to-rose-500',
+      order: 4,
+      enabled: true,
+    },
+    {
+      id: 'custom',
+      title: 'Özel Yazılım Süreçleri',
+      description: 'İş akışınıza özel panel, SaaS, entegrasyon ve otomasyon sistemleri.',
+      icon: 'Boxes',
+      href: CANONICAL_SOLUTION_CARD_HREF.custom,
+      gradient: 'from-slate-700 to-slate-900',
+      order: 5,
+      enabled: true,
+    },
   ],
 }
 

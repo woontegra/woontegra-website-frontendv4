@@ -123,8 +123,7 @@ export function SolutionsPage() {
               <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Merkezi Yönetim</p>
               <h2 className="mt-3 text-3xl font-bold tracking-tight text-white md:text-4xl">Tek Merkezden Yönetim</h2>
               <p className="mt-4 text-base leading-relaxed text-slate-400">
-                Kendi markalarımızda kullandığımız operasyon deneyimini müşteri projelerine aktararak; e-ticaret,
-                entegrasyon ve özel yazılım katmanlarını birbirine bağlı bir sistem olarak kuruyoruz.
+    'Entegre e-ticaret, pazaryeri ve operasyon katmanlarını birbirine bağlı, yönetilebilir bir dijital sistem olarak kuruyoruz.',
               </p>
             </div>
             <div className="grid gap-4">

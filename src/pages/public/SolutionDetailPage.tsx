@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { usePreviewOrParamSlug } from '@/lib/previewRouteParams'
 import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocksPage'
 import { SolutionDetailLayout } from '@/components/public/solutions/SolutionDetailLayout'
@@ -7,34 +7,31 @@ import { NotFoundPage } from '@/pages/public/NotFoundPage'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
-import { pageContentService } from '@/services/pageContentService'
+import { mergeSolutionPage, type SolutionPageOverrides } from '@/lib/solutionPageMerge'
 import {
-  SOLUTION_DETAIL_BY_SLUG,
-  SOLUTION_PAGE_CONTENT_KEY,
-  type SolutionDetailContent,
-} from '@/data/solutionCatalog'
+  isKnownSolutionSlug,
+  isRemovedSolutionSlug,
+  resolveSolutionSlug,
+} from '@/lib/solutionSlugs'
+import { pageContentService } from '@/services/pageContentService'
+import { SOLUTION_PAGE_CONTENT_KEY } from '@/data/solutionCatalog'
+import { SOLUTION_DETAIL_BY_SLUG } from '@/data/solutionDetailContent'
 
-export function normalizeSolutionPages(raw: unknown): Record<string, Partial<SolutionDetailContent>> {
+export function normalizeSolutionPages(raw: unknown): Record<string, SolutionPageOverrides> {
   if (!raw || typeof raw !== 'object') return {}
   const row = raw as Record<string, unknown>
-  if (row.pages && typeof row.pages === 'object') return row.pages as Record<string, Partial<SolutionDetailContent>>
-  return row as Record<string, Partial<SolutionDetailContent>>
-}
-
-function mergeSolution(base: SolutionDetailContent, partial: Partial<SolutionDetailContent>): SolutionDetailContent {
-  return {
-    ...base,
-    ...partial,
-    title: partial.title?.trim() || base.title,
-    description: partial.description?.trim() || base.description,
-    seoTitle: partial.seoTitle?.trim() || base.seoTitle,
-    seoDescription: partial.seoDescription?.trim() || base.seoDescription,
-  }
+  if (row.pages && typeof row.pages === 'object') return row.pages as Record<string, SolutionPageOverrides>
+  return row as Record<string, SolutionPageOverrides>
 }
 
 export function SolutionDetailPage() {
   const { slug: paramSlug = '' } = useParams()
-  const slug = usePreviewOrParamSlug(paramSlug)
+  const slug = resolveSolutionSlug(usePreviewOrParamSlug(paramSlug))
+
+  if (isRemovedSolutionSlug(slug)) {
+    return <Navigate to="/cozumler" replace />
+  }
+
   const base = SOLUTION_DETAIL_BY_SLUG[slug]
   const { blocks } = usePublicPageBlocks(SOLUTION_PAGE_CONTENT_KEY, slug)
 
@@ -49,7 +46,7 @@ export function SolutionDetailPage() {
     ...publicQueryOptions,
   })
 
-  const content = base ? mergeSolution(base, overrides ?? {}) : null
+  const content = base ? mergeSolutionPage(base, overrides ?? {}) : null
   const disabled = content?.enabled === false
 
   usePageMeta({
@@ -57,7 +54,7 @@ export function SolutionDetailPage() {
     description: content?.seoDescription ?? content?.description,
   })
 
-  if (!base) return <NotFoundPage />
+  if (!base || !isKnownSolutionSlug(slug)) return <NotFoundPage />
 
   if (disabled) {
     return (
@@ -71,9 +68,6 @@ export function SolutionDetailPage() {
   }
 
   return (
-    <PublicBuilderBlocksPage
-      blocks={blocks}
-      fallback={<SolutionDetailLayout content={content!} />}
-    />
+    <PublicBuilderBlocksPage blocks={blocks} fallback={<SolutionDetailLayout content={content!} />} />
   )
 }

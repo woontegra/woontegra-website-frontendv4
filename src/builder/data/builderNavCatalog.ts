@@ -66,8 +66,12 @@ export const BUILDER_MENU_PRODUCTS: BuilderNavProduct[] = [
 ]
 
 export const BUILDER_MENU_SOLUTIONS: BuilderNavSolution[] = [
-  { slug: 'bilirkisi-hesaplama', title: 'Bilirkişi Hesap', path: '/cozumler/bilirkisi-hesaplama' },
-  { slug: 'datca-topikal', title: 'Datça Tropikal', path: '/cozumler/datca-topikal' },
+  { slug: 'e-ticaret-altyapisi', title: 'E-ticaret Altyapısı', path: '/cozumler/e-ticaret-altyapisi' },
+  { slug: 'pazaryeri-entegrasyonu', title: 'Pazaryeri Entegrasyonu', path: '/cozumler/pazaryeri-entegrasyonu' },
+  { slug: 'siparis-yonetimi', title: 'Sipariş Yönetimi', path: '/cozumler/siparis-yonetimi' },
+  { slug: 'stok-fiyat-yonetimi', title: 'Stok ve Fiyat Yönetimi', path: '/cozumler/stok-fiyat-yonetimi' },
+  { slug: 'dijital-operasyon', title: 'Dijital Operasyon', path: '/cozumler/dijital-operasyon' },
+  { slug: 'ozel-yazilim-surecleri', title: 'Özel Yazılım Süreçleri', path: '/cozumler/ozel-yazilim-surecleri' },
 ]
 
 /** Blog detay şablonu — API slug'ları builder'a eklenebilir */

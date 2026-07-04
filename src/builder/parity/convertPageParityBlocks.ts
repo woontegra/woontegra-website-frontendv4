@@ -54,7 +54,10 @@ export function convertPageParityBlocks(
         createServiceDetailEditableTemplate(def.slug ?? '', def.title, raw),
       )
     case 'solution-detail':
-      return editableResult(def.key, createSolutionDetailEditableTemplate(def.slug ?? '', raw))
+      return editableResult(
+        def.key,
+        createSolutionDetailEditableTemplate(def.slug ?? '', def.title, raw),
+      )
     case 'product-detail':
       return editableResult(def.key, createProductDetailEditableTemplate(def.slug ?? '', raw))
     case 'blog-detail':

@@ -228,6 +228,8 @@ export const router = createBrowserRouter([
         element: <Navigate to="/hizmetler/saas" replace />,
       },
       { path: 'cozumler', element: <LazyPage><SolutionsPage /></LazyPage> },
+      { path: 'cozumler/datca-topikal', element: <Navigate to="/cozumler" replace /> },
+      { path: 'cozumler/bilirkisi-hesaplama', element: <Navigate to="/cozumler" replace /> },
       { path: 'cozumler/:slug', element: <LazyPage><SolutionDetailPage /></LazyPage> },
       { path: 'yazilimlar', element: <LazyPage><SoftwareListPage /></LazyPage> },
       { path: 'yazilimlar/:slug', element: <LazyPage><SoftwareDetailPage /></LazyPage> },

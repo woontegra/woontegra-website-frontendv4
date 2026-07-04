@@ -107,8 +107,8 @@ function solutionsCentralBlock(): RichTextBlock {
   block.visibility.showDescription = false
   block.settings.variant = 'about-vision'
   block.settings.paragraphs = [
-    'Kendi markalarımızda kullandığımız operasyon deneyimini müşteri projelerine aktararak; e-ticaret, yazılım ve dijital süreçleri tek merkezden yönetilebilir hale getiriyoruz.',
-    'Dağınık sistemler yerine entegre, ölçülebilir ve sürdürülebilir dijital altyapılar kuruyoruz.',
+    'E-ticaret, pazaryeri entegrasyonu ve operasyon süreçlerini tek merkezden yönetilebilir dijital altyapılar kuruyoruz.',
+    'Dağınık sistemler yerine entegre, ölçülebilir ve sürdürülebilir yazılım mimarileri tasarlıyoruz.',
   ]
   block.style.backgroundGradient = 'linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a)'
   return block
