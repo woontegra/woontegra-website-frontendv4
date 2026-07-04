@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { BlogCard } from '@/components/public/BlogCard'
 import { PageHero } from '@/components/public/PageHero'
 import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocksPage'
-import { LoadingState } from '@/components/public/LoadingState'
+import { BlogCardSkeleton } from '@/components/public/BlogCardSkeleton'
 import { ErrorState } from '@/components/public/ErrorState'
 import { EmptyState } from '@/components/public/EmptyState'
 import { usePageMeta } from '@/hooks/usePageMeta'
@@ -36,7 +36,13 @@ export function BlogListPage() {
       />
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {isPending ? <LoadingState /> : null}
+          {isPending ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <BlogCardSkeleton key={`sk-${i}`} />
+              ))}
+            </div>
+          ) : null}
           {isError ? (
             <ErrorState
               message={getErrorMessage(error)}

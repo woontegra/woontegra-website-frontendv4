@@ -9,7 +9,7 @@ import { clearChunkReloadAttemptFlag } from '@/lib/chunkLoadError'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AccountLayout } from '@/layouts/AccountLayout'
 import { SiteLayout } from '@/layouts/SiteLayout'
-import { LoadingState } from '@/components/public/LoadingState'
+import { PublicRouteSkeleton } from '@/components/public/PublicRouteSkeleton'
 
 const HomePage = lazy(() => import('@/pages/public/HomePage').then((m) => ({ default: m.HomePage })))
 const AboutPage = lazy(() => import('@/pages/public/AboutPage').then((m) => ({ default: m.AboutPage })))
@@ -167,7 +167,7 @@ const AdminPaymentsPage = lazy(() =>
 function LazyPage({ children }: { children: ReactNode }) {
   return (
     <LazyChunkErrorBoundary>
-      <Suspense fallback={<LoadingState />}>{children}</Suspense>
+      <Suspense fallback={<PublicRouteSkeleton />}>{children}</Suspense>
     </LazyChunkErrorBoundary>
   )
 }

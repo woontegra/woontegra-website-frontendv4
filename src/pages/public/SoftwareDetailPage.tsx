@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { SoftwareDetailView } from '@/components/public/product/SoftwareDetailView'
-import { LoadingState } from '@/components/public/LoadingState'
+import { PublicDetailSkeleton } from '@/components/public/PublicRouteSkeleton'
 import { ErrorState } from '@/components/public/ErrorState'
 import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocksPage'
 import { usePageMeta } from '@/hooks/usePageMeta'
@@ -32,7 +32,7 @@ export function SoftwareDetailPage() {
 
   const legacyView =
     isPending ? (
-      <LoadingState />
+      <PublicDetailSkeleton />
     ) : isError || !data ? (
       <div className="mx-auto max-w-3xl px-6 py-24">
         <ErrorState message={getErrorMessage(error, 'Yazılım bulunamadı')} />

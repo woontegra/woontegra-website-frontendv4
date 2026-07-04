@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { PageHero } from '@/components/public/PageHero'
 import { ProductCard } from '@/components/public/ProductCard'
 import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocksPage'
-import { LoadingState } from '@/components/public/LoadingState'
+import { ProductCardSkeletonGrid } from '@/components/public/ProductCardSkeleton'
 import { ErrorState } from '@/components/public/ErrorState'
 import { EmptyState } from '@/components/public/EmptyState'
 import { usePageMeta } from '@/hooks/usePageMeta'
@@ -36,7 +36,7 @@ export function SoftwareListPage() {
       />
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {isPending ? <LoadingState /> : null}
+          {isPending ? <ProductCardSkeletonGrid count={6} /> : null}
           {isError ? (
             <ErrorState
               message={getErrorMessage(error)}

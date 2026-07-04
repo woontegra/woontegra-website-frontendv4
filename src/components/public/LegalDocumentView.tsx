@@ -1,7 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { PageShell } from '@/components/public/PageShell'
-import { LoadingState } from '@/components/public/LoadingState'
-import { ErrorState } from '@/components/public/ErrorState'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { resolvePublicLegalHtml } from '@/lib/legalDocumentContent'
@@ -26,7 +24,7 @@ export function LegalDocumentView({
   seoDescription,
   breadcrumbs,
 }: Props) {
-  const { data, isPending, isError, error } = useQuery({
+  const { data, isError, error } = useQuery({
     queryKey: ['legal-document', docType],
     queryFn: () => legalDocumentsService.preview(docType),
     ...publicQueryOptions,
@@ -34,14 +32,16 @@ export function LegalDocumentView({
 
   usePageMeta({ title: seoTitle, description: seoDescription })
 
-  if (isPending) return <LoadingState />
-
   const title = data?.title?.trim() || fallbackTitle
   const html = resolvePublicLegalHtml(docType, data?.content)
 
   return (
     <PageShell breadcrumbs={breadcrumbs} title={title} description={subtitle} maxWidth="3xl">
-      {isError ? <ErrorState message={getErrorMessage(error, 'Yasal metin yüklenemedi')} /> : null}
+      {isError ? (
+        <p className="mb-4 text-sm text-amber-700" role="status">
+          Güncel metin yüklenemedi; varsayılan içerik gösteriliyor. ({getErrorMessage(error, 'API hatası')})
+        </p>
+      ) : null}
       <div className="prose prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: html }} />
       {data?.version ? <p className="mt-8 text-xs text-slate-500">Sürüm {data.version}</p> : null}
     </PageShell>

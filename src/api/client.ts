@@ -2,11 +2,15 @@ import axios, { type AxiosError, type AxiosInstance } from 'axios'
 import { useAuthStore } from '@/store/authStore'
 import { getApiBaseUrl } from '@/lib/env'
 
-function createClient(withAdminAuth: boolean): AxiosInstance {
+/** Public GET istekleri — yavaş API'de 30 sn spinner yerine erken timeout + fallback */
+export const PUBLIC_API_TIMEOUT_MS = 8_000
+const ADMIN_API_TIMEOUT_MS = 30_000
+
+function createClient(withAdminAuth: boolean, timeoutMs: number): AxiosInstance {
   const client = axios.create({
     baseURL: getApiBaseUrl(),
     headers: { 'Content-Type': 'application/json' },
-    timeout: 30000,
+    timeout: timeoutMs,
   })
 
   client.interceptors.request.use((config) => {
@@ -33,8 +37,8 @@ function createClient(withAdminAuth: boolean): AxiosInstance {
   return client
 }
 
-export const publicApi = createClient(false)
-export const adminApi = createClient(true)
+export const publicApi = createClient(false, PUBLIC_API_TIMEOUT_MS)
+export const adminApi = createClient(true, ADMIN_API_TIMEOUT_MS)
 
 export function getErrorMessage(error: unknown, fallback = 'İşlem başarısız'): string {
   if (axios.isAxiosError(error)) {
@@ -42,4 +46,8 @@ export function getErrorMessage(error: unknown, fallback = 'İşlem başarısız
   }
   if (error instanceof Error) return error.message
   return fallback
+}
+
+export function isPublicApiTimeout(error: unknown): boolean {
+  return axios.isAxiosError(error) && error.code === 'ECONNABORTED'
 }

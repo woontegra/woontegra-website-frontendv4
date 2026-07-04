@@ -6,4 +6,6 @@ export const publicQueryOptions = {
   gcTime: PUBLIC_GC_MS,
   refetchOnWindowFocus: false,
   refetchOnReconnect: false,
+  retry: 1,
+  retryDelay: 400,
 } as const
