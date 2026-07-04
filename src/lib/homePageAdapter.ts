@@ -42,6 +42,9 @@ function extractSeo(raw: Record<string, unknown> | null): { title?: string; desc
  * Ana sayfa render planı — öncelik:
  * 1) Çok bloklu builder JSON → PageBlocksRenderer
  * 2) page-content/home veya fallback → tam bölüm vitrini (HomePageView)
+ *
+ * Yalnızca API isteği tamamlandıktan sonra çağırın (isPending iken değil).
+ * raw === null istek bitti ama içerik yok / hata → kontrollü fallback.
  */
 export function resolveHomeRenderPlan(raw: Record<string, unknown> | null): HomeRenderPlan {
   const seo = extractSeo(raw)
