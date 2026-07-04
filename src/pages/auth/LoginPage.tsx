@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { usePrivatePageMeta } from '@/hooks/usePageMeta'
 import { authService } from '@/services/authService'
 import { useAuthStore } from '@/store/authStore'
 import { getErrorMessage } from '@/api/client'
 
 export function LoginPage() {
+  usePrivatePageMeta('Admin Giriş')
   const navigate = useNavigate()
   const setAdminSession = useAuthStore((s) => s.setAdminSession)
   const [email, setEmail] = useState('')

@@ -217,6 +217,9 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <LazyPage><HomePage /></LazyPage> },
       { path: 'hakkimizda', element: <LazyPage><AboutPage /></LazyPage> },
+      { path: 'e-ticaret-altyapisi', element: <Navigate to="/hizmetler/e-ticaret" replace /> },
+      { path: 'web-tasarim', element: <Navigate to="/hizmetler/web-tasarim" replace /> },
+      { path: 'ozel-yazilim', element: <Navigate to="/hizmetler/yazilim-gelistirme" replace /> },
       { path: 'hizmetler', element: <LazyPage><ServicesPage /></LazyPage> },
       { path: 'hizmetler/:slug', element: <LazyPage><ServiceDetailPage /></LazyPage> },
       {

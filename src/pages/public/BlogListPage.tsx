@@ -6,6 +6,7 @@ import { BlogCardSkeleton } from '@/components/public/BlogCardSkeleton'
 import { ErrorState } from '@/components/public/ErrorState'
 import { EmptyState } from '@/components/public/EmptyState'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { mergePageSeo } from '@/lib/siteSeo'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { BLOG_PAGE_CONTENT_KEY } from '@/lib/builderPageContentKeys'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
@@ -15,10 +16,7 @@ import { getErrorMessage } from '@/api/client'
 export function BlogListPage() {
   const { blocks } = usePublicPageBlocks(BLOG_PAGE_CONTENT_KEY)
 
-  usePageMeta({
-    title: 'Blog',
-    description: 'Woontegra duyuru, güncelleme ve teknik yazıları.',
-  })
+  usePageMeta({ ...mergePageSeo('/blog'), canonicalPath: '/blog' })
 
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: ['blog', 'list'],

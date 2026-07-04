@@ -80,13 +80,14 @@ function DesktopNavItem({ item }: { item: PublicNavigationMenuItem }) {
         <div className="absolute left-0 top-full z-[110] pt-0.5">
           <div className="min-w-[240px] rounded-xl border border-slate-200 bg-white py-2 shadow-lg">
             {item.children.map((child) => (
-              <NavLink
+              <Link
                 key={child.id}
                 to={child.href}
-                className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                className="block rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                onClick={() => setOpen(false)}
               >
                 {child.label}
-              </NavLink>
+              </Link>
             ))}
           </div>
         </div>

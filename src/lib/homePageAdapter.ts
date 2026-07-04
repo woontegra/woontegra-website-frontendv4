@@ -65,7 +65,7 @@ export function resolveHomeRenderPlan(raw: Record<string, unknown> | null): Home
     seoTitle: seo.title ?? defaultHomePageContent.hero.title,
     seoDescription:
       seo.description ??
-      'Woontegra — dijital çözümler, yazılım geliştirme, e-ticaret ve teknoloji hizmetleri.',
+      'Woontegra Teknoloji Yazılım ve Dijital Hizmetler Ltd. Şti.; işletmeler için özel yazılım, e-ticaret altyapısı, web sitesi, masaüstü yazılım ve dijital dönüşüm çözümleri geliştirir.',
   }
 }
 

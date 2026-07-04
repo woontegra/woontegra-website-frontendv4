@@ -13,6 +13,7 @@ export function NotFoundPage() {
   usePageMeta({
     title: 'Sayfa bulunamadı',
     description: 'Aradığınız sayfa mevcut değil veya taşınmış olabilir.',
+    noindex: true,
   })
 
   return (

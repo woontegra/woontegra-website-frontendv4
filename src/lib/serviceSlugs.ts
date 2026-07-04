@@ -64,6 +64,8 @@ export const SERVICE_SLUG_ALIASES: Record<string, string> = {
 
   'saas-urun-gelistirme': 'saas',
 
+  'ozel-yazilim': 'yazilim-gelistirme',
+
 }
 
 

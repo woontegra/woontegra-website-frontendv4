@@ -14,6 +14,7 @@ import {
 } from '@/components/public/about/AboutSections'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { mergePageSeo } from '@/lib/siteSeo'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { pageContentService } from '@/services/pageContentService'
 import { defaultAboutPageContent } from '@/types/aboutPageContent'
@@ -29,8 +30,10 @@ export function AboutPage() {
   })
 
   usePageMeta({
-    title: content.hero.title || 'Hakkımızda',
-    description: content.metaDescription || content.hero.subtitle,
+    ...mergePageSeo('/hakkimizda', {
+      description: content.metaDescription || content.hero.subtitle,
+    }),
+    canonicalPath: '/hakkimizda',
   })
 
   return (

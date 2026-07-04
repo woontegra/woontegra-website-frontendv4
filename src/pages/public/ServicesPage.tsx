@@ -7,6 +7,7 @@ import { SiteCtaSection } from '@/components/public/SiteCtaSection'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { usePublicServiceCards } from '@/hooks/usePublicServiceCards'
+import { mergePageSeo } from '@/lib/siteSeo'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { pageContentService } from '@/services/pageContentService'
 import { defaultServicesPageContent, MARKETING_PAGE_KEYS } from '@/types/marketingPageContent'
@@ -35,7 +36,10 @@ export function ServicesPage() {
   const { cards: serviceCards } = usePublicServiceCards()
   const page = pageQuery.data ?? defaultServicesPageContent
 
-  usePageMeta({ title: page.seoTitle, description: page.seoDescription })
+  usePageMeta({
+    ...mergePageSeo('/hizmetler', { title: page.seoTitle, description: page.seoDescription }),
+    canonicalPath: '/hizmetler',
+  })
 
   if (!page.enabled) {
     return (

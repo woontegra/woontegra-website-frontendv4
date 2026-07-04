@@ -28,6 +28,7 @@ export function SoftwareDetailPage() {
   usePageMeta({
     title: data?.seoTitle || data?.name || 'Yazılım',
     description: data?.seoDescription || data?.shortDescription,
+    canonicalPath: slug ? `/yazilimlar/${slug}` : '/yazilimlar',
   })
 
   const legacyView =

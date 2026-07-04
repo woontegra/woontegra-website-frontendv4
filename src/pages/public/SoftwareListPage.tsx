@@ -6,6 +6,7 @@ import { ProductCardSkeletonGrid } from '@/components/public/ProductCardSkeleton
 import { ErrorState } from '@/components/public/ErrorState'
 import { EmptyState } from '@/components/public/EmptyState'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { mergePageSeo } from '@/lib/siteSeo'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { SOFTWARE_PAGE_CONTENT_KEY } from '@/lib/builderPageContentKeys'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
@@ -15,10 +16,7 @@ import { getErrorMessage } from '@/api/client'
 export function SoftwareListPage() {
   const { blocks } = usePublicPageBlocks(SOFTWARE_PAGE_CONTENT_KEY)
 
-  usePageMeta({
-    title: 'Yazılımlar',
-    description: 'Woontegra yazılım ürünleri ve dijital çözümler.',
-  })
+  usePageMeta({ ...mergePageSeo('/yazilimlar'), canonicalPath: '/yazilimlar' })
 
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: ['products', 'list'],

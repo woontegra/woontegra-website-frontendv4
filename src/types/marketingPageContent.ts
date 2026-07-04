@@ -75,8 +75,9 @@ export const defaultServicesPageContent: MarketingPageContent = {
   ctaButtonLink: '/iletisim',
   ctaSecondaryButtonText: 'Teklif Al',
   ctaSecondaryButtonLink: '/iletisim',
-  seoTitle: 'Hizmetler | Woontegra',
-  seoDescription: 'Woontegra dijital hizmetler: web tasarım, e-ticaret, SEO, yazılım ve danışmanlık.',
+  seoTitle: 'Woontegra Hizmetleri | Yazılım ve Dijital Çözümler',
+  seoDescription:
+    'Woontegra hizmetleri: özel yazılım geliştirme, SaaS ürün altyapısı, e-ticaret, web tasarım ve marka vekilliği çözümleri.',
 }
 
 export const defaultSolutionsPageContent: MarketingPageContent = {

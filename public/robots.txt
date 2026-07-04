@@ -1,13 +1,18 @@
-User-agent: *
-Allow: /
-
-Disallow: /admin
-Disallow: /admin/
-Disallow: /giris
-Disallow: /sepet
-Disallow: /odeme
-Disallow: /hesabim
-Disallow: /hesabim/
-Disallow: /api
-
-Sitemap: https://woontegra.com/sitemap.xml
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /admin/
+Disallow: /giris
+Disallow: /kayit
+Disallow: /sifremi-unuttum
+Disallow: /sifre-sifirla
+Disallow: /sepet
+Disallow: /odeme
+Disallow: /odeme/
+Disallow: /hesabim
+Disallow: /hesabim/
+Disallow: /api
+Disallow: /builder-preview
+
+Sitemap: https://www.woontegra.com/sitemap.xml

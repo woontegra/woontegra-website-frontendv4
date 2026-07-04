@@ -7,6 +7,7 @@ import { NotFoundPage } from '@/pages/public/NotFoundPage'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { mergeServicePage, servicePageSeo, type ServicePageOverrides } from '@/lib/servicePageMerge'
+import { mergePageSeo, PAGE_SEO_BY_PATH, normalizePublicPath } from '@/lib/siteSeo'
 import { isRemovedServiceSlug, resolveServiceSlug } from '@/lib/serviceSlugs'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { pageContentService } from '@/services/pageContentService'
@@ -43,8 +44,14 @@ export function ServiceDetailPage() {
   const content = base ? mergeServicePage(base, overrides ?? {}) : null
   const disabled = overrides?.enabled === false
   const seo = base ? servicePageSeo(base, overrides ?? {}) : { title: 'Hizmet bulunamadı', description: '' }
+  const canonicalPath = `/hizmetler/${slug}`
+  const brandSeo = PAGE_SEO_BY_PATH[normalizePublicPath(canonicalPath)]
+  const meta = mergePageSeo(canonicalPath, {
+    title: brandSeo?.title || seo.title,
+    description: overrides?.seoDescription?.trim() || brandSeo?.description || seo.description,
+  })
 
-  usePageMeta({ title: seo.title, description: seo.description })
+  usePageMeta({ title: meta.title, description: meta.description, canonicalPath })
 
   if (!base) return <NotFoundPage />
 

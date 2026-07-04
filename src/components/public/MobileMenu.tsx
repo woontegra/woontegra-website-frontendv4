@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import type { PublicNavigationMenuItem } from '@/types/navigationMenu'
 import { cn } from '@/lib/cn'
 
@@ -17,7 +17,8 @@ function linkClass(active: boolean, nested = false) {
 }
 
 function NavLeaf({ item, nested, onNavigate }: { item: PublicNavigationMenuItem; nested?: boolean; onNavigate?: () => void }) {
-  const external = item.href.startsWith('http')
+  const href = item.href?.trim() || '#'
+  const external = href.startsWith('http')
   if (external || item.openInNewTab) {
     return (
       <a
@@ -32,9 +33,9 @@ function NavLeaf({ item, nested, onNavigate }: { item: PublicNavigationMenuItem;
     )
   }
   return (
-    <NavLink to={item.href} className={({ isActive }) => linkClass(isActive, nested)} onClick={onNavigate} end>
+    <Link to={href} className={linkClass(false, nested)} onClick={onNavigate}>
       {item.label}
-    </NavLink>
+    </Link>
   )
 }
 

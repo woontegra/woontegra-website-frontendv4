@@ -1,16 +1,64 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://websitebackend-production-ab6e.up.railway.app/api/:path*"
-    },
-    {
-      "source": "/uploads/:path*",
-      "destination": "https://websitebackend-production-ab6e.up.railway.app/uploads/:path*"
-    },
-    {
-      "source": "/((?!assets/|uploads/|favicon\\.svg|sitemap\\.xml|robots\\.txt|.*\\..*).*)",
-      "destination": "/index.html"
-    }
-  ]
-}
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "woontegra.com" }],
+      "destination": "https://www.woontegra.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/e-ticaret-altyapisi",
+      "destination": "/hizmetler/e-ticaret",
+      "permanent": true
+    },
+    {
+      "source": "/web-tasarim",
+      "destination": "/hizmetler/web-tasarim",
+      "permanent": true
+    },
+    {
+      "source": "/ozel-yazilim",
+      "destination": "/hizmetler/yazilim-gelistirme",
+      "permanent": true
+    },
+    {
+      "source": "/hizmetler/e-ticaret-cozumleri",
+      "destination": "/hizmetler/e-ticaret",
+      "permanent": true
+    },
+    {
+      "source": "/hizmetler/saas-urun-gelistirme",
+      "destination": "/hizmetler/saas",
+      "permanent": true
+    },
+    {
+      "source": "/cozumler/datca-topikal",
+      "destination": "/cozumler",
+      "permanent": true
+    },
+    {
+      "source": "/cozumler/bilirkisi-hesaplama",
+      "destination": "/cozumler",
+      "permanent": true
+    },
+    {
+      "source": "/yasal/cerez-politikasi",
+      "destination": "/cerez-politikasi",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://websitebackend-production-ab6e.up.railway.app/api/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "https://websitebackend-production-ab6e.up.railway.app/uploads/:path*"
+    },
+    {
+      "source": "/((?!assets/|uploads/|favicon\\.svg|sitemap\\.xml|robots\\.txt|.*\\..*).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

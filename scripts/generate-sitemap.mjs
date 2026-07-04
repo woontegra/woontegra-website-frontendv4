@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
 const OUT = path.join(ROOT, 'public', 'sitemap.xml')
 
-const SITE = 'https://woontegra.com'
+const SITE = 'https://www.woontegra.com'
 const API_BASE = (() => {
   const raw =
     process.env.SITEMAP_API_URL?.trim() ||
@@ -22,63 +22,70 @@ const API_BASE = (() => {
 
 const API_TIMEOUT_MS = 5_000
 
-/** Canonical public routes — admin/auth/checkout hariç */
+const SERVICE_SLUGS = [
+  'saas',
+  'web-tasarim',
+  'yazilim-gelistirme',
+  'e-ticaret',
+  'marka-patent-vekilligi',
+]
+
+/** Indexlenmesi gereken statik public sayfalar (canonical path'ler) */
 const STATIC_ENTRIES = [
   { path: '/', priority: '1.0', changefreq: 'weekly' },
   { path: '/hakkimizda', priority: '0.9', changefreq: 'monthly' },
   { path: '/hizmetler', priority: '0.9', changefreq: 'weekly' },
-  { path: '/hizmetler/saas', priority: '0.8', changefreq: 'monthly' },
-  { path: '/hizmetler/web-tasarim', priority: '0.8', changefreq: 'monthly' },
-  { path: '/hizmetler/yazilim-gelistirme', priority: '0.8', changefreq: 'monthly' },
-  { path: '/hizmetler/e-ticaret', priority: '0.8', changefreq: 'monthly' },
-  { path: '/hizmetler/marka-patent-vekilligi', priority: '0.8', changefreq: 'monthly' },
-  { path: '/cozumler', priority: '0.9', changefreq: 'weekly' },
-  { path: '/cozumler/e-ticaret-altyapisi', priority: '0.8', changefreq: 'monthly' },
-  { path: '/cozumler/pazaryeri-entegrasyonu', priority: '0.8', changefreq: 'monthly' },
-  { path: '/cozumler/siparis-yonetimi', priority: '0.8', changefreq: 'monthly' },
-  { path: '/cozumler/stok-fiyat-yonetimi', priority: '0.8', changefreq: 'monthly' },
-  { path: '/cozumler/dijital-operasyon', priority: '0.8', changefreq: 'monthly' },
-  { path: '/cozumler/ozel-yazilim-surecleri', priority: '0.8', changefreq: 'monthly' },
+  ...SERVICE_SLUGS.map((slug) => ({
+    path: `/hizmetler/${slug}`,
+    priority: '0.8',
+    changefreq: 'monthly',
+  })),
   { path: '/yazilimlar', priority: '0.9', changefreq: 'weekly' },
-  { path: '/yazilimlar/muvekkil-kasa-defteri-yazilimi', priority: '0.8', changefreq: 'monthly' },
-  { path: '/yazilimlar/muvekkil-kasa-defteri-web-tabanli', priority: '0.8', changefreq: 'monthly' },
-  { path: '/yazilimlar/sifre-kasasi', priority: '0.8', changefreq: 'monthly' },
   { path: '/blog', priority: '0.9', changefreq: 'weekly' },
-  { path: '/blog/dijital-donusum-rehberi', priority: '0.7', changefreq: 'monthly' },
-  { path: '/blog/saas-urun-gelistirme-rehberi', priority: '0.7', changefreq: 'monthly' },
-  { path: '/blog/e-ticaret-optimizasyonu', priority: '0.7', changefreq: 'monthly' },
-  { path: '/blog/marka-tescil', priority: '0.7', changefreq: 'monthly' },
-  { path: '/blog/modern-web-teknolojileri', priority: '0.7', changefreq: 'monthly' },
-  { path: '/blog/dijital-pazarlama-stratejileri', priority: '0.7', changefreq: 'monthly' },
-  { path: '/blog/api-tasarimi-best-practices', priority: '0.7', changefreq: 'monthly' },
-  { path: '/iletisim', priority: '0.8', changefreq: 'monthly' },
-  { path: '/kvkk-aydinlatma-metni', priority: '0.4', changefreq: 'yearly' },
-  { path: '/gizlilik-politikasi', priority: '0.4', changefreq: 'yearly' },
-  { path: '/cerez-politikasi', priority: '0.4', changefreq: 'yearly' },
-  { path: '/acik-riza-metni', priority: '0.4', changefreq: 'yearly' },
-  { path: '/kullanim-sartlari', priority: '0.4', changefreq: 'yearly' },
 ]
 
-const BLOCKED_PREFIXES = [
+/** Sitemap'e girmemesi gereken path'ler (redirect kaynakları, private, legacy) */
+const BLOCKED_EXACT = new Set([
   '/admin',
   '/giris',
   '/kayit',
   '/sepet',
   '/odeme',
   '/hesabim',
-  '/api',
-  '/builder-preview',
+  '/teklif-al',
+  '/e-ticaret-altyapisi',
+  '/web-tasarim',
+  '/ozel-yazilim',
+  '/hizmetler/e-ticaret-cozumleri',
+  '/hizmetler/saas-urun-gelistirme',
   '/cozumler/datca-topikal',
   '/cozumler/bilirkisi-hesaplama',
+  '/siparis-basarili',
+  '/siparis-basarisiz',
+])
+
+const BLOCKED_PREFIXES = [
+  '/admin',
+  '/giris',
+  '/kayit',
+  '/sifremi-',
+  '/sepet',
+  '/odeme',
+  '/hesabim',
+  '/api',
+  '/builder-preview',
+  '/yasal/',
 ]
 
 const BLOCKED_SLUG_PARTS = ['optimoon', 'datca', 'mercan', 'bilirkisi']
 
 function isBlockedPath(p) {
-  const path = p.split('?')[0].split('#')[0]
-  if (BLOCKED_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))) return true
-  const lower = path.toLowerCase()
-  return BLOCKED_SLUG_PARTS.some((part) => lower.includes(part))
+  const pathname = p.split('?')[0].split('#')[0]
+  if (BLOCKED_EXACT.has(pathname)) return true
+  if (BLOCKED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix))) return true
+  const lower = pathname.toLowerCase()
+  if (BLOCKED_SLUG_PARTS.some((part) => lower.includes(part))) return true
+  return false
 }
 
 async function fetchJson(url) {
@@ -96,24 +103,29 @@ async function fetchJson(url) {
 }
 
 async function fetchDynamicPaths() {
-  const api = API_BASE
   const dynamic = []
 
-  const blogRes = await fetchJson(`${api}/blog/posts`)
+  const blogRes = await fetchJson(`${API_BASE}/blog/posts`)
   const posts = blogRes?.data ?? blogRes
   if (Array.isArray(posts)) {
     for (const post of posts) {
       const slug = String(post?.slug ?? '').trim()
-      if (slug) dynamic.push({ path: `/blog/${slug}`, priority: '0.7', changefreq: 'monthly' })
+      const published = post?.published !== false && post?.status !== 'draft'
+      if (slug && published) {
+        dynamic.push({ path: `/blog/${slug}`, priority: '0.7', changefreq: 'monthly' })
+      }
     }
   }
 
-  const productsRes = await fetchJson(`${api}/products`)
+  const productsRes = await fetchJson(`${API_BASE}/products`)
   const products = productsRes?.data ?? productsRes
   if (Array.isArray(products)) {
     for (const product of products) {
       const slug = String(product?.slug ?? '').trim()
-      if (slug) dynamic.push({ path: `/yazilimlar/${slug}`, priority: '0.8', changefreq: 'monthly' })
+      const active = product?.isActive !== false && product?.published !== false
+      if (slug && active) {
+        dynamic.push({ path: `/yazilimlar/${slug}`, priority: '0.8', changefreq: 'monthly' })
+      }
     }
   }
 

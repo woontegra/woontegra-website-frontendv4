@@ -27,6 +27,7 @@ export function BlogDetailPage() {
   usePageMeta({
     title: data?.title || 'Blog',
     description: data?.excerpt,
+    canonicalPath: slug ? `/blog/${slug}` : '/blog',
   })
 
   const legacyView =

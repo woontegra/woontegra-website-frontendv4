@@ -9,6 +9,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
+import { usePrivatePageMeta } from '@/hooks/usePageMeta'
 import { cn } from '@/lib/cn'
 
 type NavItem = {
@@ -71,6 +72,7 @@ function isNavActive(pathname: string, to: string, end?: boolean): boolean {
 }
 
 export function AdminLayout() {
+  usePrivatePageMeta('Woontegra Admin')
   const location = useLocation()
   const clearSession = useAuthStore((s) => s.clearAdminSession)
 

@@ -12,6 +12,13 @@ export function resolvePublicHref(url: string): string {
 
   const pathOnly = raw.split('?')[0]?.split('#')[0] ?? raw
 
+  const SERVICE_PATH_ALIASES: Record<string, string> = {
+    '/ozel-yazilim': '/hizmetler/yazilim-gelistirme',
+    '/hizmetler/ozel-yazilim': '/hizmetler/yazilim-gelistirme',
+    '/yazilim-gelistirme': '/hizmetler/yazilim-gelistirme',
+  }
+  if (SERVICE_PATH_ALIASES[pathOnly]) return SERVICE_PATH_ALIASES[pathOnly]
+
   if (pathOnly.startsWith('/urun/')) {
     return pathOnly.replace(/^\/urun\//, '/yazilimlar/')
   }
