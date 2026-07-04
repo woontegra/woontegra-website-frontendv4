@@ -42,6 +42,7 @@ const STATIC_ENTRIES = [
   })),
   { path: '/yazilimlar', priority: '0.9', changefreq: 'weekly' },
   { path: '/blog', priority: '0.9', changefreq: 'weekly' },
+  { path: '/iletisim', priority: '0.8', changefreq: 'monthly' },
 ]
 
 /** Sitemap'e girmemesi gereken path'ler (redirect kaynakları, private, legacy) */
