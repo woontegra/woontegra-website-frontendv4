@@ -26,6 +26,7 @@ function mergeHero(
     imageAlt: partial.imageAlt?.trim() || base.imageAlt,
     primaryCta: partial.primaryCta?.text?.trim() ? partial.primaryCta : base.primaryCta,
     secondaryCta: partial.secondaryCta?.text?.trim() ? partial.secondaryCta : base.secondaryCta,
+    highlights: partial.highlights?.length ? partial.highlights : base.highlights,
   }
 }
 
@@ -33,6 +34,7 @@ export function mergeServicePage(base: ServiceDetailContent, partial: ServicePag
   return {
     ...base,
     heroTheme: partial.heroTheme ?? base.heroTheme,
+    problemsTone: partial.problemsTone ?? base.problemsTone,
     hero: mergeHero(base.hero, partial.hero),
     problems: partial.problems?.items?.length
       ? { ...base.problems, ...partial.problems, items: partial.problems.items }
@@ -65,6 +67,7 @@ export function mergeServicePage(base: ServiceDetailContent, partial: ServicePag
       secondaryButtonText: partial.cta?.secondaryButtonText?.trim() || base.cta.secondaryButtonText,
       secondaryButtonTo: partial.cta?.secondaryButtonTo?.trim() || base.cta.secondaryButtonTo,
     },
+    related: partial.related?.links?.length ? partial.related : base.related,
   }
 }
 

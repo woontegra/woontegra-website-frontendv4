@@ -13,7 +13,10 @@ export type ServiceDetailContent = {
     imageAlt: string
     primaryCta: { text: string; to: string }
     secondaryCta: { text: string; to: string }
+    highlights?: Array<{ icon: string; title: string }>
   }
+  /** 'challenge' = sorun odaklı (kırmızı ikon); 'audience' = hedef kitle listesi */
+  problemsTone?: 'challenge' | 'audience'
   problems: {
     title: string
     subtitle: string
@@ -52,151 +55,184 @@ export type ServiceDetailContent = {
     secondaryButtonText?: string
     secondaryButtonTo?: string
   }
+  related?: {
+    title: string
+    links: Array<{ label: string; href: string; description?: string }>
+  }
 }
 
 export const softwareDevelopmentDetail: ServiceDetailContent = {
   slug: 'yazilim-gelistirme',
   heroTheme: 'emerald',
   hero: {
-    eyebrow: 'Özel Yazılım Geliştirme',
-    title: 'İşletmenize Özel Yazılım Sistemleri Geliştiriyoruz',
+    eyebrow: 'ÖZEL YAZILIM',
+    title: 'Yazılım Geliştirme',
     description:
-      'Hazır çözümlerin yetmediği süreçlerde, işletmenize özel yönetim panelleri, e-ticaret altyapıları, CRM sistemleri ve operasyon yazılımları geliştiriyoruz.',
-    image: '/images/yazilim-hero.png',
-    imageAlt: 'Woontegra yazılım geliştirme dashboard',
-    primaryCta: { text: 'Teklif Al', to: '/teklif-al' },
-    secondaryCta: { text: 'İletişime Geç', to: '/iletisim' },
+      'İş süreçlerinize özel web, masaüstü, panel ve entegrasyon tabanlı yazılım çözümleri geliştiriyoruz.',
+    image: '/images/yazilim-dashboard.jpg',
+    imageAlt: 'Woontegra yazılım geliştirme yönetim paneli',
+    primaryCta: { text: 'Projenizi Konuşalım', to: '/iletisim' },
+    secondaryCta: { text: 'Yazılım Ürünlerimizi İnceleyin', to: '/yazilimlar' },
+    highlights: [
+      { icon: 'Globe', title: 'Web ve masaüstü yazılım' },
+      { icon: 'LayoutDashboard', title: 'Yönetim paneli geliştirme' },
+      { icon: 'Plug', title: 'API ve entegrasyon altyapısı' },
+    ],
   },
+  problemsTone: 'audience',
   problems: {
-    title: 'Hazır Sistemler İşinizi Yavaşlatıyor mu?',
-    subtitle: 'Birçok işletme hazır yazılımlarla aynı dört sorunla karşılaşıyor.',
+    title: 'Kimler için uygun?',
+    subtitle: 'Özel yazılım geliştirme hizmetimiz şu ihtiyaçlara sahip ekipler için tasarlanmıştır.',
     items: [
       {
-        icon: 'Workflow',
-        title: 'Hazır sistemler iş akışınıza uymaz',
-        description: 'Süreçlerinize göre değil, yazılımın kurallarına göre çalışmak zorunda kalırsınız.',
+        icon: 'Building2',
+        title: 'Hazır paketlerle ihtiyacını karşılayamayan işletmeler',
+        description: 'Standart yazılımlar sürecinize uymuyorsa size özel mimari kurulur.',
       },
       {
-        icon: 'Layers',
-        title: 'Gereksiz özellikler süreci yavaşlatır',
-        description: 'Kullanılmayan modüller ekip verimliliğini düşürür ve eğitim maliyetini artırır.',
+        icon: 'Rocket',
+        title: 'Kendi SaaS ürününü geliştirmek isteyen girişimler',
+        description: 'Abonelik, lisans ve kullanıcı yönetimi olan ürün altyapıları.',
       },
       {
-        icon: 'Database',
-        title: 'Kritik veriler dağınık kalır',
-        description: 'Sipariş, stok ve müşteri verileri farklı araçlarda parçalanır; raporlama güçleşir.',
+        icon: 'Monitor',
+        title: 'Masaüstü programını modernleştirmek isteyen firmalar',
+        description: 'Windows tabanlı, lisanslı ve güvenli iş uygulamaları.',
       },
       {
-        icon: 'RefreshCw',
-        title: 'Manuel operasyon zaman kaybettirir',
-        description: 'Excel ve manuel adımlar büyüdükçe hata riski ve operasyon yükü katlanır.',
+        icon: 'FileSpreadsheet',
+        title: 'Excel veya manuel süreçlerden kurtulmak isteyen ekipler',
+        description: 'Tek panelde toplanan dijital operasyon akışları.',
+      },
+      {
+        icon: 'LayoutDashboard',
+        title: 'Sipariş, müşteri, ödeme ve lisans süreçlerini tek panelden yönetmek isteyenler',
+        description: 'Operasyonu uçtan uca dijitalleştiren yönetim sistemleri.',
+      },
+      {
+        icon: 'Link',
+        title: 'Mevcut sistemleri birbiriyle konuşturmak isteyen şirketler',
+        description: 'API ve entegrasyon katmanları ile veri akışı birleştirilir.',
       },
     ],
   },
   approach: {
-    title: 'İhtiyacınıza Özel Sistem Kuruyoruz',
+    title: 'İşletmenize özel, yönetilebilir yazılım sistemleri',
     description:
-      'Hazır şablonları zorlamak yerine sürecinizi analiz eder, işletmenize özel yönetilebilir bir yazılım altyapısı kurarız.',
-    bullets: [
-      'İş süreçlerinizi ve darboğazları analiz ederiz',
-      'Operasyonu dijital modele dönüştürürüz',
-      'Yönetilebilir ve ölçeklenebilir sistem kurarız',
-      'Performansı ölçülebilir hale getiririz',
-    ],
-    flowSteps: ['İhtiyaç', 'Analiz', 'Tasarım', 'Geliştirme', 'Yayın', 'Destek'],
+      'Woontegra, hazır kalıplar yerine işletmenin gerçek ihtiyacına göre tasarlanmış, ölçeklenebilir ve sürdürülebilir yazılım çözümleri geliştirir. Web tabanlı yönetim panelleri, masaüstü programlar, müşteri portalları, lisans sistemleri, ödeme altyapıları ve üçüncü parti entegrasyonlar tek bir plan dahilinde hazırlanır.',
+    bullets: [],
+    flowSteps: [],
   },
   scope: {
-    title: 'Geliştirdiğimiz Yazılım Türleri',
-    subtitle: 'İşletmenizin ihtiyacına göre modüler, entegre ve sürdürülebilir sistemler.',
+    title: 'Neler geliştiriyoruz?',
+    subtitle: 'Modüler, entegre ve uzun vadede yönetilebilir yazılım bileşenleri.',
     items: [
       {
-        icon: 'Settings',
-        title: 'Yönetim Panelleri',
-        description: 'Sipariş, stok, kullanıcı ve operasyon süreçlerini tek merkezden yönetin.',
+        icon: 'LayoutDashboard',
+        title: 'Web Tabanlı Yönetim Panelleri',
+        description: 'Sipariş, müşteri, ürün, ödeme, rapor ve operasyon süreçleri için özel admin panelleri.',
         gradient: 'from-emerald-500 to-teal-500',
       },
       {
-        icon: 'ShoppingCart',
-        title: 'E-Ticaret Altyapıları',
-        description: 'Satış, ödeme ve lojistik akışlarını entegre eden ölçeklenebilir mağaza sistemleri.',
+        icon: 'Monitor',
+        title: 'Masaüstü Yazılımlar',
+        description: 'Windows üzerinde çalışan, lisanslı veya yerel veriyle çalışan iş programları.',
         gradient: 'from-blue-500 to-cyan-500',
       },
       {
-        icon: 'Users',
-        title: 'CRM Sistemleri',
-        description: 'Müşteri ilişkilerini, teklif süreçlerini ve satış hunisini tek panelde toplayın.',
+        icon: 'Cloud',
+        title: 'SaaS Ürün Altyapıları',
+        description: 'Üyelik, abonelik, kullanıcı rolleri, lisans ve ödeme süreçleri bulunan bulut tabanlı sistemler.',
         gradient: 'from-violet-500 to-purple-500',
       },
       {
-        icon: 'Cloud',
-        title: 'SaaS Platformları',
-        description: 'Abonelik, kullanıcı yönetimi ve çok kiracılı mimari ile ürünleşmiş yazılımlar.',
-        gradient: 'from-sky-500 to-blue-600',
+        icon: 'Plug',
+        title: 'API ve Entegrasyonlar',
+        description: 'Ödeme, pazaryeri, muhasebe, kargo, lisans ve üçüncü parti servis bağlantıları.',
+        gradient: 'from-orange-500 to-red-500',
       },
       {
-        icon: 'Zap',
+        icon: 'Users',
+        title: 'Müşteri ve Bayi Portalları',
+        description: 'Kullanıcıların işlem yapabileceği güvenli hesap, takip ve destek ekranları.',
+        gradient: 'from-pink-500 to-rose-500',
+      },
+      {
+        icon: 'Workflow',
         title: 'Otomasyon Sistemleri',
-        description: 'Tekrarlayan işleri otomatikleştirerek ekip kapasitesini stratejik işlere ayırın.',
-        gradient: 'from-amber-500 to-orange-500',
-      },
-      {
-        icon: 'Boxes',
-        title: 'Entegrasyon Sistemleri',
-        description: 'ERP, pazar yeri, kargo ve muhasebe araçlarını tek veri akışında birleştirin.',
+        description: 'Tekrarlayan iş süreçlerini azaltan bildirim, takip, raporlama ve işlem akışları.',
         gradient: 'from-slate-600 to-slate-800',
       },
     ],
   },
   process: {
-    title: 'Nasıl Çalışıyoruz?',
-    subtitle: 'Keşiften yayına, ölçülebilir ve şeffaf bir geliştirme süreci.',
+    title: 'Nasıl çalışıyoruz?',
+    subtitle: 'Keşiften yayına, şeffaf ve ölçülebilir bir geliştirme süreci.',
     steps: [
-      { step: '01', title: 'Keşif ve Analiz', description: 'İhtiyaç, kullanıcı ve operasyon akışını birlikte haritalandırırız.' },
-      { step: '02', title: 'Sistem Planlama', description: 'Mimari, modüller ve entegrasyon noktalarını netleştiririz.' },
-      { step: '03', title: 'Arayüz ve Geliştirme', description: 'Kullanılabilir arayüzler ve güvenilir backend ile üretime geçeriz.' },
-      { step: '04', title: 'Test ve Yayın', description: 'Kalite kontrol sonrası canlıya alır, ekip eğitimini tamamlarız.' },
-      { step: '05', title: 'Destek ve Geliştirme', description: 'Yayın sonrası izleme, bakım ve yeni özellik geliştirmesi sağlarız.' },
+      { step: '01', title: 'Analiz', description: 'İhtiyacı, hedef kullanıcıyı ve mevcut süreci netleştiririz.' },
+      { step: '02', title: 'Planlama', description: 'Ekranları, modülleri, veri yapısını ve teknik altyapıyı çıkarırız.' },
+      { step: '03', title: 'Tasarım', description: 'Kullanılabilir, sade ve gerçek iş akışına uygun arayüzler hazırlarız.' },
+      { step: '04', title: 'Geliştirme', description: 'Frontend, backend, veritabanı, API ve entegrasyonları geliştiririz.' },
+      { step: '05', title: 'Test', description: 'Yetki, veri, ödeme, lisans, mail ve kullanıcı akışlarını test ederiz.' },
+      { step: '06', title: 'Yayın ve Bakım', description: 'Canlıya alma, iyileştirme, hata takibi ve geliştirme sürecini sürdürürüz.' },
     ],
   },
   whyUs: {
-    title: 'Neden Woontegra?',
+    title: 'Sadece yazılım yazmıyor, çalışan sistem kuruyoruz.',
     items: [
       {
-        title: 'Hazır şablon değil, size özel yapı',
-        description: 'İşletmenizin süreçlerine göre tasarlanan, esnek ve büyüyebilir sistemler kuruyoruz.',
+        title: 'Ürün deneyimi',
+        description:
+          'Kendi yazılım ürünlerimizi geliştirip işlettiğimiz için sadece kod değil, operasyon mantığı da kurarız.',
       },
       {
-        title: 'Kendi ürünlerini geliştiren ekip deneyimi',
-        description: 'Sadece müşteri projesi değil; kendi markalarımızda edindiğimiz ürün tecrübesini aktarıyoruz.',
+        title: 'Yönetilebilir yapı',
+        description:
+          'Teslim edilen sistemin panel, içerik, kullanıcı ve süreç yönetimi düşünülerek hazırlanmasına önem veririz.',
       },
       {
-        title: 'E-ticaret ve operasyon tecrübesi',
-        description: 'Gerçek satış, stok ve operasyon süreçlerinden gelen pratik bilgiyle geliştiriyoruz.',
+        title: 'Ölçeklenebilir altyapı',
+        description: 'Bugünün ihtiyacını çözerken yarının geliştirmelerine uygun temel oluştururuz.',
       },
       {
-        title: 'Yayın sonrası destek ve geliştirme',
-        description: 'Canlıya aldıktan sonra da yanınızdayız; sistem büyüdükçe birlikte geliştiriyoruz.',
+        title: 'Gerçek kullanım odağı',
+        description: 'Ekranları gösterişli ama kullanışsız değil, günlük iş akışına uygun olacak şekilde planlarız.',
       },
     ],
   },
   technology: {
-    title: 'Kurulan sistem sadece bugün için değil, büyüme için hazırlanır.',
-    description: 'Teknik altyapıyı sürdürülebilir, güvenli ve ölçeklenebilir şekilde kurgularız.',
+    title: 'Teknik kapsam',
+    description: 'Projeye göre esnek stack seçimi; aşağıdaki teknolojiler tipik Woontegra projelerinde kullanılır.',
     items: [
-      { icon: 'Settings', title: 'Yönetilebilir altyapı', description: 'Modüler yapı ile ekip içi kontrol ve hızlı güncelleme.' },
-      { icon: 'TrendingUp', title: 'Ölçeklenebilir yapı', description: 'Trafik ve iş hacmi arttıkça performansı koruyan mimari.' },
-      { icon: 'Shield', title: 'Güvenli veri akışı', description: 'Yetkilendirme, loglama ve veri bütünlüğü odaklı geliştirme.' },
-      { icon: 'Code2', title: 'Bakımı sürdürülebilir kod', description: 'Okunabilir, dokümante ve uzun vadeli desteklenebilir kod tabanı.' },
+      { icon: 'Code2', title: 'React / TypeScript frontend', description: 'Hızlı, bakımı kolay arayüz katmanı.' },
+      { icon: 'Server', title: 'Node.js / Express backend', description: 'API, iş kuralları ve entegrasyon servisleri.' },
+      { icon: 'Database', title: 'PostgreSQL / Prisma veri katmanı', description: 'Güvenilir ve ölçeklenebilir veri modeli.' },
+      { icon: 'Plug', title: 'API entegrasyonları', description: 'Ödeme, pazaryeri, kargo ve üçüncü parti servisler.' },
+      { icon: 'Shield', title: 'Rol ve yetki sistemi', description: 'Kullanıcı, admin ve operasyon erişim kontrolü.' },
+      { icon: 'LayoutDashboard', title: 'Admin panel', description: 'İşletme süreçlerini yöneten merkezi arayüz.' },
+      { icon: 'Image', title: 'Dosya ve medya yönetimi', description: 'Görsel, belge ve dijital içerik altyapısı.' },
+      { icon: 'CreditCard', title: 'Ödeme altyapısı', description: 'PayTR, havale ve abonelik tahsilat entegrasyonları.' },
+      { icon: 'Key', title: 'Lisans sistemi', description: 'Aktivasyon, süre ve kullanım hakları yönetimi.' },
+      { icon: 'Mail', title: 'Bildirim ve e-posta akışları', description: 'Transactional mail ve sistem bildirimleri.' },
+      { icon: 'BarChart3', title: 'Raporlama ekranları', description: 'Operasyon ve satış metriklerini izleme.' },
+      { icon: 'Smartphone', title: 'Responsive tasarım', description: 'Mobil ve masaüstünde tutarlı kullanıcı deneyimi.' },
+    ],
+  },
+  related: {
+    title: 'İlgili hizmet ve ürünler',
+    links: [
+      { label: 'SaaS Ürün Geliştirme', href: '/hizmetler/saas', description: 'Abonelik tabanlı ürün mimarisi' },
+      { label: 'E-Ticaret Çözümleri', href: '/hizmetler/e-ticaret', description: 'Satış odaklı mağaza altyapıları' },
+      { label: 'Web Tasarım', href: '/hizmetler/web-tasarim', description: 'Kurumsal web ve landing sayfaları' },
+      { label: 'Woontegra Yazılımlar', href: '/yazilimlar', description: 'Hazır yazılım ve SaaS ürünleri' },
     ],
   },
   cta: {
-    title: 'İşletmenize özel yazılım sistemi kuralım.',
+    title: 'Aklınızdaki yazılım fikrini birlikte netleştirelim.',
     description:
-      'Mevcut süreçlerinizi birlikte analiz edelim; size özel, yönetilebilir ve geliştirilebilir bir yazılım altyapısı oluşturalım.',
-    buttonText: 'Teklif Al',
-    buttonTo: '/teklif-al',
-    secondaryButtonText: 'İletişime Geç',
-    secondaryButtonTo: '/iletisim',
+      'İhtiyacınızı dinleyip hangi modüllerin, ekranların ve entegrasyonların gerektiğini birlikte planlayalım.',
+    buttonText: 'İletişime Geç',
+    buttonTo: '/iletisim',
   },
 }
 

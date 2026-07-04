@@ -34,8 +34,28 @@ function FeatureCard({
   )
 }
 
+function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div className="mx-auto max-w-3xl text-center">
+      <h2 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">{title}</h2>
+      {subtitle ? <p className="mt-3 text-base text-slate-600">{subtitle}</p> : null}
+    </div>
+  )
+}
+
 export function ServiceDetailLayout({ content, serviceLabel }: Props) {
   const label = serviceLabel ?? content.hero.title
+  const isAudience = content.problemsTone === 'audience'
+  const heroHighlights =
+    content.hero.highlights?.map((item) => ({
+      icon: resolveIcon(item.icon),
+      title: item.title,
+    })) ?? []
+  const hasApproachExtras =
+    content.approach.bullets.length > 0 || content.approach.flowSteps.length > 0
+  const hasProcess = content.process.steps.length > 0
+  const hasTechnology = content.technology.items.length > 0
+  const hasRelated = (content.related?.links.length ?? 0) > 0
 
   return (
     <div className="bg-white">
@@ -46,13 +66,14 @@ export function ServiceDetailLayout({ content, serviceLabel }: Props) {
         description={content.hero.description}
         image={content.hero.image}
         imageAlt={content.hero.imageAlt}
+        highlights={heroHighlights}
         breadcrumbs={[
           { label: 'Ana Sayfa', href: '/' },
           { label: 'Hizmetler', href: '/hizmetler' },
           { label },
         ]}
       >
-        <div className="mt-8 flex flex-wrap gap-3">
+        <div className="mt-6 flex flex-wrap gap-3">
           <Link
             to={content.hero.primaryCta.to}
             className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-3 text-sm font-medium text-white hover:bg-emerald-700"
@@ -69,18 +90,94 @@ export function ServiceDetailLayout({ content, serviceLabel }: Props) {
         </div>
       </PageHero>
 
-      <section className="bg-gradient-to-b from-slate-50 to-white py-20 md:py-24">
+      <section className="bg-gradient-to-b from-slate-50 to-white py-16 md:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{content.problems.title}</h2>
-            <p className="mt-4 text-base text-slate-600">{content.problems.subtitle}</p>
+          <div className={cn('mx-auto max-w-3xl', hasApproachExtras ? 'lg:max-w-none lg:grid lg:grid-cols-2 lg:items-start lg:gap-12' : 'text-center')}>
+            <div className={hasApproachExtras ? '' : 'mx-auto'}>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">{content.approach.title}</h2>
+              <p className="mt-3 text-base leading-relaxed text-slate-600">{content.approach.description}</p>
+              {content.approach.bullets.length > 0 ? (
+                <ul className="mt-6 space-y-3">
+                  {content.approach.bullets.map((bullet) => (
+                    <li key={bullet} className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
+                      <span className="text-base text-slate-700">{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+            {content.approach.flowSteps.length > 0 ? (
+              <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 md:p-8 lg:mt-0">
+                <p className="mb-5 text-center text-sm font-semibold uppercase tracking-wide text-slate-500">Süreç Akışı</p>
+                <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
+                  {content.approach.flowSteps.map((step, index) => (
+                    <div key={step} className="flex items-center gap-2 md:gap-3">
+                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-800">
+                        {step}
+                      </span>
+                      {index < content.approach.flowSteps.length - 1 ? (
+                        <ArrowRight className="hidden h-4 w-4 text-slate-400 sm:block" aria-hidden />
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        </div>
+      </section>
+
+      <section className="py-16 md:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeader title={content.scope.title} subtitle={content.scope.subtitle} />
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {content.scope.items.map((item) => (
+              <FeatureCard
+                key={item.title}
+                icon={item.icon}
+                title={item.title}
+                description={item.description}
+                gradient={item.gradient}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {hasProcess ? (
+        <section className="bg-gradient-to-b from-slate-50 to-white py-16 md:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <SectionHeader title={content.process.title} subtitle={content.process.subtitle} />
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {content.process.steps.map((step) => (
+                <div key={step.title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                    {step.step}
+                  </span>
+                  <h3 className="mt-4 text-base font-bold text-slate-900">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{step.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className={cn(hasProcess ? 'py-16 md:py-20' : 'bg-gradient-to-b from-slate-50 to-white py-16 md:py-20')}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SectionHeader title={content.problems.title} subtitle={content.problems.subtitle} />
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {content.problems.items.map((item) => {
               const Icon = resolveIcon(item.icon)
               return (
                 <div key={item.title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-500">
+                  <div
+                    className={cn(
+                      'mb-4 flex h-11 w-11 items-center justify-center rounded-xl',
+                      isAudience ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500',
+                    )}
+                  >
                     <Icon className="h-5 w-5" aria-hidden />
                   </div>
                   <h3 className="text-base font-bold text-slate-900">{item.title}</h3>
@@ -92,58 +189,34 @@ export function ServiceDetailLayout({ content, serviceLabel }: Props) {
         </div>
       </section>
 
-      <section className="py-20 md:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{content.approach.title}</h2>
-              <p className="mt-4 text-base text-slate-600">{content.approach.description}</p>
-              <ul className="mt-8 space-y-4">
-                {content.approach.bullets.map((bullet) => (
-                  <li key={bullet} className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
-                    <span className="text-base text-slate-700">{bullet}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-emerald-50/50 p-6 md:p-8">
-              <p className="mb-6 text-center text-sm font-semibold uppercase tracking-wide text-slate-500">Süreç Akışı</p>
-              <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
-                {content.approach.flowSteps.map((step, index) => (
-                  <div key={step} className="flex items-center gap-2 md:gap-3">
-                    <span className="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-sm font-semibold text-emerald-800 shadow-sm">
-                      {step}
-                    </span>
-                    {index < content.approach.flowSteps.length - 1 ? (
-                      <ArrowRight className="hidden h-4 w-4 text-slate-400 sm:block" aria-hidden />
-                    ) : null}
+      {hasTechnology ? (
+        <section className="bg-gradient-to-b from-slate-50 to-white py-16 md:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <SectionHeader title={content.technology.title} subtitle={content.technology.description} />
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {content.technology.items.map((item) => {
+                const Icon = resolveIcon(item.icon)
+                return (
+                  <div key={item.title} className="flex gap-4 rounded-xl border border-slate-200 bg-white p-5">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+                      <Icon className="h-5 w-5" aria-hidden />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-600">{item.description}</p>
+                    </div>
                   </div>
-                ))}
-              </div>
+                )
+              })}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
-      <section className="bg-gradient-to-b from-slate-50 to-white py-20 md:py-24">
+      <section className="bg-slate-950 py-16 md:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{content.scope.title}</h2>
-            <p className="mt-4 text-base text-slate-600">{content.scope.subtitle}</p>
-          </div>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {content.scope.items.map((item) => (
-              <FeatureCard key={item.title} icon={item.icon} title={item.title} description={item.description} gradient={item.gradient} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-slate-950 py-20 md:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-3xl font-bold tracking-tight text-white md:text-4xl">{content.whyUs.title}</h2>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2">
+          <h2 className="text-center text-2xl font-bold tracking-tight text-white md:text-3xl">{content.whyUs.title}</h2>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2">
             {content.whyUs.items.map((item) => (
               <div key={item.title} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
                 <h3 className="text-lg font-bold text-white">{item.title}</h3>
@@ -153,6 +226,26 @@ export function ServiceDetailLayout({ content, serviceLabel }: Props) {
           </div>
         </div>
       </section>
+
+      {hasRelated ? (
+        <section className="border-t border-slate-100 bg-slate-50 py-14 md:py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-xl font-bold text-slate-900 md:text-2xl">{content.related!.title}</h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {content.related!.links.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-emerald-200 hover:shadow-md"
+                >
+                  <h3 className="font-semibold text-slate-900 group-hover:text-emerald-700">{link.label}</h3>
+                  {link.description ? <p className="mt-1 text-sm text-slate-600">{link.description}</p> : null}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <SiteCtaSection
         title={content.cta.title}

@@ -1,10 +1,9 @@
 import type { BuilderBlock } from '@/builder/types/blocks'
 import type { HeroBlock } from '@/builder/types/hero'
-import type { CardGridBlock, CtaBlock, FaqBlock, RichTextBlock } from '@/builder/types/blockModels'
+import type { CardGridBlock, CtaBlock, RichTextBlock } from '@/builder/types/blockModels'
 import {
   createDefaultCardGridBlock,
   createDefaultCtaBlock,
-  createDefaultFaqBlock,
   createDefaultRichTextBlock,
 } from '@/builder/types/blockModels'
 import { createDefaultHeroBlock } from '@/builder/types/hero'
@@ -95,6 +94,13 @@ function compactHero(slug: string, content: ServiceDetailContent, order: number)
   if (hasImage) {
     hero.settings.desktopImage = { url: content.hero.image }
   }
+  if (content.hero.highlights?.length) {
+    hero.settings.highlights = content.hero.highlights.map((item, i) => ({
+      id: `${slug}-hl-${i}`,
+      icon: item.icon,
+      title: item.title,
+    }))
+  }
   hero.settings.buttons = [
     {
       id: `${slug}-btn-1`,
@@ -149,19 +155,34 @@ function cardGridFromItems(
   return grid
 }
 
-function faqBlock(slug: string, content: ServiceDetailContent, order: number): FaqBlock {
-  const faq = createDefaultFaqBlock(order)
-  faq.id = blockId(slug, 'faq')
-  faq.title = 'Sık sorulan sorular'
-  faq.settings.items =
-    content.technology.items.length > 0
-      ? content.technology.items.map((t, i) => ({
-          id: `${slug}-faq-${i}`,
-          question: t.title,
-          answer: t.description,
-        }))
-      : faq.settings.items
-  return faq
+function technologyGridBlock(slug: string, content: ServiceDetailContent, order: number): CardGridBlock {
+  return cardGridFromItems(
+    slug,
+    'technology',
+    content.technology.title,
+    content.technology.description,
+    order,
+    content.technology.items,
+    'default',
+  )
+}
+
+function relatedLinksBlock(slug: string, content: ServiceDetailContent, order: number): CardGridBlock | null {
+  if (!content.related?.links.length) return null
+  return cardGridFromItems(
+    slug,
+    'related',
+    content.related.title,
+    '',
+    order,
+    content.related.links.map((link, i) => ({
+      id: `${slug}-rel-${i}`,
+      title: link.label,
+      description: link.description ?? '',
+      icon: 'Link',
+    })),
+    'default',
+  )
 }
 
 function ctaBlock(slug: string, content: ServiceDetailContent, order: number): CtaBlock {
@@ -200,14 +221,19 @@ export function createServiceDetailEditableTemplate(
   blocks.push(compactHero(slug, content, order++))
   blocks.push(summaryBlock(slug, content, order++))
   blocks.push(
-    cardGridFromItems(slug, 'who-for', content.problems.title, content.problems.subtitle, order++, content.problems.items),
-  )
-  blocks.push(
     cardGridFromItems(slug, 'scope', content.scope.title, content.scope.subtitle, order++, content.scope.items, 'why'),
   )
+  if (content.process.steps.length > 0) {
+    blocks.push(
+      cardGridFromItems(slug, 'process', content.process.title, content.process.subtitle, order++, content.process.steps, 'steps'),
+    )
+  }
   blocks.push(
-    cardGridFromItems(slug, 'process', content.process.title, content.process.subtitle, order++, content.process.steps, 'steps'),
+    cardGridFromItems(slug, 'who-for', content.problems.title, content.problems.subtitle, order++, content.problems.items),
   )
+  if (content.technology.items.length > 0) {
+    blocks.push(technologyGridBlock(slug, content, order++))
+  }
   blocks.push(
     cardGridFromItems(
       slug,
@@ -219,7 +245,8 @@ export function createServiceDetailEditableTemplate(
       'why',
     ),
   )
-  blocks.push(faqBlock(slug, content, order++))
+  const related = relatedLinksBlock(slug, content, order++)
+  if (related) blocks.push(related)
   blocks.push(ctaBlock(slug, content, order++))
 
   return assignSortOrder(blocks)
