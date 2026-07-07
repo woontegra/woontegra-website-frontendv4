@@ -190,6 +190,7 @@ export function ImageTextSettingsPanel() {
           label="Görsel"
           value={settings.imageUrl ?? ''}
           onChange={(imageUrl) => update({ ...block, settings: { ...settings, imageUrl } })}
+          recommendedSize="1600x900 px (16:9)"
         />
       ),
     },

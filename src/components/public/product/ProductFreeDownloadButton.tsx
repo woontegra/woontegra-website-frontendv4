@@ -24,10 +24,10 @@ export function ProductFreeDownloadButton({ file, variant = 'primary' }: Props) 
     return (
       <span
         className={cn(
-          'inline-flex min-w-[160px] items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold',
+          'inline-flex w-full min-w-[160px] items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold',
           buttonVariant === 'secondary'
             ? 'border border-slate-200 bg-white text-slate-800'
-            : 'bg-emerald-600 text-white',
+            : 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-sky-500 text-white shadow-lg shadow-emerald-500/20',
         )}
         aria-hidden
       >
@@ -50,10 +50,13 @@ export function ProductFreeDownloadButton({ file, variant = 'primary' }: Props) 
   }
 
   return (
-    <div className="inline-flex flex-col gap-1">
+    <div className="flex w-full flex-col gap-1">
       <Button
         type="button"
-        className="min-w-[160px]"
+        className={cn(
+          'w-full min-w-[160px] rounded-2xl',
+          buttonVariant === 'secondary' ? 'border-slate-200 bg-white shadow-sm' : '!bg-gradient-to-r !from-emerald-600 !via-emerald-500 !to-sky-500 shadow-lg shadow-emerald-500/20',
+        )}
         variant={buttonVariant}
         disabled={loading}
         onClick={() => void handleClick()}

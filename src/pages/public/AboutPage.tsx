@@ -12,6 +12,7 @@ import {
   AboutWhatIs,
   AboutWorkApproach,
 } from '@/components/public/about/AboutSections'
+import { sanitizeAboutBuilderBlocks } from '@/builder/templates/aboutEditableTemplate'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { mergePageSeo } from '@/lib/siteSeo'
@@ -21,7 +22,8 @@ import { defaultAboutPageContent } from '@/types/aboutPageContent'
 import { PAGE_CONTENT_KEYS } from '@/types/pageContent'
 
 export function AboutPage() {
-  const { blocks } = usePublicPageBlocks(PAGE_CONTENT_KEYS.about)
+  const { blocks: rawBlocks } = usePublicPageBlocks(PAGE_CONTENT_KEYS.about)
+  const blocks = rawBlocks ? sanitizeAboutBuilderBlocks(rawBlocks) : []
   const { data: content = defaultAboutPageContent } = useQuery({
     queryKey: ['page-content', 'about'],
     queryFn: () => pageContentService.getAbout(),

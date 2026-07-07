@@ -343,6 +343,29 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
         return
       }
 
+      if (resolved.canvasMode === 'legacy-public' && def.key === 'about') {
+        const { blocks, report } = convertPageToBlocks(def, enriched ?? raw)
+        if (blocks.length > 0) {
+          applyLoadedPage(
+            {
+              pageKey: def.key,
+              pageTitle: def.title,
+              blocks,
+              source: 'builder-draft',
+              canvasMode: 'builder-blocks',
+              previewPath: def.previewPath,
+            },
+            set,
+          )
+          set({
+            isDirty: false,
+            conversionReport: report,
+            pageRawContent: enriched ?? raw,
+          })
+          return
+        }
+      }
+
       applyLoadedPage(
         {
           pageKey: resolved.pageKey,

@@ -223,6 +223,7 @@ export function ImageUrlField({
   placeholder = 'https://... veya /uploads/...',
   settingsFieldId,
   uploadFolder = 'builder',
+  recommendedSize,
 }: {
   label: string
   hint?: string
@@ -231,13 +232,17 @@ export function ImageUrlField({
   placeholder?: string
   settingsFieldId?: string
   uploadFolder?: string
+  recommendedSize?: string
 }) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const previewUrl = resolveMediaUrl(value)
+  const mergedHint = [hint, recommendedSize ? `Onerilen olcu: ${recommendedSize}` : '']
+    .filter(Boolean)
+    .join(' | ')
 
   return (
     <div className="relative" data-builder-settings-field={settingsFieldId}>
-      <FieldLabel label={label} hint={hint} tooltip="Medya kütüphanesinden seçin veya URL girin" />
+      <FieldLabel label={label} hint={mergedHint} tooltip="Medya kütüphanesinden seçin veya URL girin" />
       <div className="flex gap-2">
         <input
           type="text"

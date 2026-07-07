@@ -38,14 +38,14 @@ export function AboutWhatIs({ whatIs }: { whatIs: AboutPageContent['whatIs'] }) 
   const cards = enabledSimpleCards(whatIs.cards)
   if (!whatIs.title && whatIs.paragraphs.length === 0 && cards.length === 0) return null
   return (
-    <section className="bg-gradient-to-b from-slate-50 to-white py-20 md:py-24">
+    <section className="bg-gradient-to-b from-slate-50 to-white py-14 md:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
+        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(300px,0.95fr)] lg:gap-12">
           <div>
             {whatIs.title ? (
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{whatIs.title}</h2>
             ) : null}
-            <div className="mt-6 space-y-4 text-base leading-relaxed text-slate-600">
+            <div className="mt-5 space-y-3 text-base leading-relaxed text-slate-600">
               {whatIs.paragraphs.map((p) => (
                 <p key={p}>{p}</p>
               ))}
@@ -55,7 +55,7 @@ export function AboutWhatIs({ whatIs }: { whatIs: AboutPageContent['whatIs'] }) 
           {cards.length > 0 ? (
             <div className="grid gap-4">
               {cards.map((card) => (
-                <div key={card.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div key={card.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                   <h3 className="text-lg font-semibold text-slate-900">{card.title}</h3>
                   {card.text ? <p className="mt-2 text-sm leading-relaxed text-slate-600">{card.text}</p> : null}
                 </div>
@@ -72,7 +72,7 @@ export function AboutTimeline({ timeline }: { timeline: AboutPageContent['timeli
   const steps = enabledTimelineSteps(timeline.steps)
   if (!timeline.title && steps.length === 0) return null
   return (
-    <section className="py-20 md:py-24">
+    <section className="py-14 md:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           {timeline.title ? (
@@ -80,17 +80,17 @@ export function AboutTimeline({ timeline }: { timeline: AboutPageContent['timeli
           ) : null}
           {timeline.subtitle ? <p className="mt-4 text-base text-slate-600">{timeline.subtitle}</p> : null}
         </div>
-        <div className="mx-auto mt-14 max-w-3xl">
+        <div className="mx-auto mt-14 grid max-w-6xl gap-5 md:grid-cols-2">
           {steps.map((step, index) => {
             const Icon = resolveIcon(step.icon)
             return (
-              <div key={step.id} className="relative flex gap-5 pb-10 last:pb-0">
+              <div key={step.id} className="relative flex gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
                 <div className="relative z-10 flex shrink-0">
-                  <div className={cn('flex h-10 w-10 items-center justify-center rounded-full shadow-lg', step.color)}>
+                  <div className={cn('flex h-10 w-10 items-center justify-center rounded-2xl shadow-lg', step.color)}>
                     <Icon className="h-5 w-5 text-white" aria-hidden />
                   </div>
                 </div>
-                <div className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Adım {index + 1}</p>
                   <h3 className="mt-1 text-lg font-semibold text-slate-900">{step.title}</h3>
                   {step.text ? <p className="mt-2 text-sm leading-relaxed text-slate-600">{step.text}</p> : null}
@@ -108,7 +108,7 @@ export function AboutDifferentiators({ section }: { section: AboutPageContent['d
   const cards = enabledIconCards(section.cards)
   if (!section.title && cards.length === 0) return null
   return (
-    <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-20 md:py-24">
+    <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-14 md:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           {section.title ? (
@@ -116,13 +116,13 @@ export function AboutDifferentiators({ section }: { section: AboutPageContent['d
           ) : null}
           {section.subtitle ? <p className="mt-4 text-base text-slate-400">{section.subtitle}</p> : null}
         </div>
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {cards.map((item) => {
             const Icon = resolveIcon(item.icon)
             return (
               <div
                 key={item.id}
-                className="rounded-2xl border border-slate-700 bg-slate-800/80 p-8 transition hover:border-emerald-500/40"
+                className="rounded-2xl border border-slate-700 bg-slate-800/80 p-6 transition hover:border-emerald-500/40"
               >
                 <div className={cn('mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br', item.gradient)}>
                   <Icon className="h-7 w-7 text-white" aria-hidden />
@@ -142,7 +142,7 @@ export function AboutBrands({ brands }: { brands: AboutPageContent['brands'] }) 
   const cards = enabledBrands(brands.cards)
   if (!brands.title && cards.length === 0) return null
   return (
-    <section className="bg-gradient-to-b from-slate-50 to-white py-20 md:py-24">
+    <section className="bg-gradient-to-b from-slate-50 to-white py-14 md:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           {brands.title ? (
@@ -150,35 +150,51 @@ export function AboutBrands({ brands }: { brands: AboutPageContent['brands'] }) 
           ) : null}
           {brands.subtitle ? <p className="mt-4 text-base text-slate-600">{brands.subtitle}</p> : null}
         </div>
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
-          {cards.map((brand) => (
-            <a
-              key={brand.id}
-              href={brand.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-xl"
-            >
-              {brand.image ? (
-                <div className="relative h-48 overflow-hidden sm:h-52">
-                  <MediaImage
-                    src={brand.image}
-                    alt={brand.name}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent" />
+        <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {cards.map((brand) => {
+            const isInternal = brand.url.startsWith('/')
+            const cardClass =
+              'group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-md transition hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl'
+
+            const inner = (
+              <>
+                {brand.image ? (
+                  <div className="relative h-44 overflow-hidden">
+                    <MediaImage
+                      src={brand.image}
+                      alt={brand.name}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent" />
+                  </div>
+                ) : (
+                  <div className="relative flex h-44 items-end overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.16),transparent_36%),linear-gradient(180deg,#f8fafc,#e2e8f0)] p-5">
+                    <div className="rounded-2xl border border-white/70 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700 backdrop-blur">
+                      Woontegra Yazılım
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-1 flex-col p-5 md:p-6">
+                  <h3 className="text-lg font-bold text-slate-900">{brand.name}</h3>
+                  {brand.text ? <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{brand.text}</p> : null}
+                  <span className="mt-5 inline-flex items-center text-sm font-semibold text-emerald-700 group-hover:underline">
+                    İncele
+                    <ArrowRight className="ml-1 h-4 w-4" />
+                  </span>
                 </div>
-              ) : null}
-              <div className="flex flex-1 flex-col p-5 md:p-6">
-                <h3 className="text-lg font-bold text-slate-900">{brand.name}</h3>
-                {brand.text ? <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{brand.text}</p> : null}
-                <span className="mt-4 inline-flex items-center text-sm font-semibold text-emerald-700 group-hover:underline">
-                  Siteyi ziyaret et
-                  <ArrowRight className="ml-1 h-4 w-4" />
-                </span>
-              </div>
-            </a>
-          ))}
+              </>
+            )
+
+            return isInternal ? (
+              <Link key={brand.id} to={brand.url} className={cardClass}>
+                {inner}
+              </Link>
+            ) : (
+              <a key={brand.id} href={brand.url} target="_blank" rel="noopener noreferrer" className={cardClass}>
+                {inner}
+              </a>
+            )
+          })}
         </div>
       </div>
     </section>
@@ -189,7 +205,7 @@ export function AboutWorkApproach({ section }: { section: AboutPageContent['work
   const cards = enabledIconCards(section.cards)
   if (!section.title && cards.length === 0) return null
   return (
-    <section className="py-20 md:py-24">
+    <section className="py-14 md:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           {section.title ? (
@@ -220,21 +236,21 @@ export function AboutStructure({ section }: { section: AboutPageContent['structu
   const stats = enabledStats(section.stats)
   if (!section.title && section.paragraphs.length === 0 && stats.length === 0) return null
   return (
-    <section className="bg-slate-50 py-20 md:py-24">
+    <section className="bg-slate-50 py-14 md:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(320px,0.98fr)] lg:gap-12">
           <div>
             {section.title ? (
               <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{section.title}</h2>
             ) : null}
-            <div className="mt-6 space-y-4 text-base leading-relaxed text-slate-600">
+            <div className="mt-5 space-y-3 text-base leading-relaxed text-slate-600">
               {section.paragraphs.map((p) => (
                 <p key={p}>{p}</p>
               ))}
             </div>
           </div>
           {stats.length > 0 ? (
-            <div className="grid gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               {stats.map((stat) => {
                 const Icon = resolveIcon(stat.icon)
                 return (

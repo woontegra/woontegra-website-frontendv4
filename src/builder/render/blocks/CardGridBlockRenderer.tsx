@@ -380,7 +380,7 @@ function TimelineVariant({ block, cards }: { block: CardGridBlock; cards: CardGr
 function AboutBrandsVariant({ block, cards }: { block: CardGridBlock; cards: CardGridItem[] }) {
   return (
     <section
-      className="bg-gradient-to-b from-slate-50 to-white py-20 md:py-24"
+      className="bg-gradient-to-b from-slate-50 to-white py-14 md:py-16"
       style={{
         background: block.style.backgroundGradient ?? undefined,
         paddingTop: block.style.paddingTop?.desktop,
@@ -398,16 +398,16 @@ function AboutBrandsVariant({ block, cards }: { block: CardGridBlock; cards: Car
             </BuilderField>
           ) : null}
         </div>
-        <div className="mt-12 grid gap-6 md:grid-cols-2">
+        <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {cards.map((brand) => (
             <CardLinkShell
               key={brand.id}
               card={brand}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-xl"
+              className="group flex flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-md transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-xl"
             >
               {brand.imageUrl ? (
                 <BuilderField path={`card.${brand.id}.image`} label="Marka görseli" type="media" className="relative">
-                  <div className="relative h-48 overflow-hidden sm:h-52">
+                  <div className="relative h-44 overflow-hidden">
                     <MediaImage
                       src={resolveMediaUrl(brand.imageUrl)}
                       alt={brand.title}
@@ -416,7 +416,15 @@ function AboutBrandsVariant({ block, cards }: { block: CardGridBlock; cards: Car
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent" />
                   </div>
                 </BuilderField>
-              ) : null}
+              ) : (
+                <BuilderField path={`card.${brand.id}.image`} label="Kart görseli" type="media" className="relative">
+                  <div className="relative flex h-44 items-end overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.16),transparent_36%),linear-gradient(180deg,#f8fafc,#e2e8f0)] p-5">
+                    <div className="rounded-2xl border border-white/70 bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700 backdrop-blur">
+                      Woontegra Yazılım
+                    </div>
+                  </div>
+                </BuilderField>
+              )}
               <div className="flex flex-1 flex-col p-5 md:p-6">
                 <BuilderField path={`card.${brand.id}.title`} label="Marka adı" type="card" className="w-fit">
                   <h3 className="text-lg font-bold text-slate-900">{brand.title}</h3>
@@ -432,7 +440,7 @@ function AboutBrandsVariant({ block, cards }: { block: CardGridBlock; cards: Car
                   </BuilderField>
                 ) : null}
                 <BuilderField path={`card.${brand.id}.href`} label="Marka linki" type="text" className="w-fit">
-                  <CardButtonLabel card={brand} />
+                  <CardButtonLabel card={{ ...brand, buttonLabel: brand.buttonLabel || 'İncele' }} />
                 </BuilderField>
               </div>
             </CardLinkShell>

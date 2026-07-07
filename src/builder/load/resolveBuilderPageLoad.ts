@@ -5,6 +5,7 @@ import {
   parseBuilderBlocksFromRaw,
 } from '@/builder/load/parseBuilderBlocks'
 import { extractBlocksForPage } from '@/builder/load/pageContentPersistence'
+import { sanitizeAboutBuilderBlocks } from '@/builder/templates/aboutEditableTemplate'
 
 /** Builder store / canvas modu */
 export type BuilderCanvasMode = 'builder-blocks' | 'legacy-public'
@@ -36,10 +37,11 @@ export function resolveBuilderPageLoad(
   const builderBlocks = extractBlocksForPage(raw, def) ?? parseBuilderBlocksFromRaw(raw)
 
   if (builderBlocks && builderBlocks.length > 0) {
+    const normalizedBlocks = def.key === 'about' ? sanitizeAboutBuilderBlocks(builderBlocks) : builderBlocks
     return {
       pageKey: def.key,
       pageTitle: def.title,
-      blocks: builderBlocks,
+      blocks: normalizedBlocks,
       source: 'builder-json',
       canvasMode: 'builder-blocks',
       ...seo,

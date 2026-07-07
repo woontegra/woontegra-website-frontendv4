@@ -31,6 +31,36 @@ export const ABOUT_EDITABLE_BLOCK_IDS = {
   cta: 'about-block-cta',
 } as const
 
+const ABOUT_SOFTWARE_CARDS = [
+  {
+    title: 'Bilirkişi Hesap',
+    description: 'Hukuk ve aktüerya süreçlerinde profesyonel hesaplama ihtiyacına odaklanan uzman yazılım ürünü.',
+    href: 'https://www.bilirkisihesap.com/',
+  },
+  {
+    title: 'Müvekkil Kasa Defteri Masaüstü',
+    description: 'Lisanslı masaüstü kullanım için geliştirilen, güvenli kayıt ve düzenli iş akışı sunan masaüstü yazılım.',
+    href: '/yazilimlar/muvekkil-kasa-defteri-yazilimi',
+  },
+  {
+    title: 'Müvekkil Kasa Defteri Web Tabanlı',
+    description: 'Web tabanlı kullanım, yıllık erişim ve çoklu kullanıcı ihtiyaçları için geliştirilen çevrim içi çözüm.',
+    href: '/yazilimlar/muvekkil-kasa-defteri-web-tabanli',
+  },
+  {
+    title: 'Woontegra Şifre Kasası',
+    description: 'Ücretsiz kullanım sunan, temel güvenli kayıt ve erişim ihtiyacına odaklanan pratik yardımcı yazılım.',
+    href: '/yazilimlar/sifre-kasasi',
+  },
+] as const
+
+const FORBIDDEN_ABOUT_BRAND_TERMS = ['optimoon', 'datça', 'datca', 'tropikal', 'mercan'] as const
+
+function containsForbiddenBrandText(value: string): boolean {
+  const lower = value.toLocaleLowerCase('tr-TR')
+  return FORBIDDEN_ABOUT_BRAND_TERMS.some((term) => lower.includes(term))
+}
+
 function aboutHeroBlock(hero: AboutPageContent['hero'], order: number): HeroBlock {
   const block = createDefaultHeroBlock(ABOUT_EDITABLE_BLOCK_IDS.hero, order)
   block.title = hero.title
@@ -225,6 +255,48 @@ function aboutCtaBlock(cta: AboutPageContent['cta'], order: number): CtaBlock {
   return block
 }
 
+export function sanitizeAboutBuilderBlocks(blocks: BuilderBlock[]): BuilderBlock[] {
+  return blocks.map((block) => {
+    if (block.type !== 'card-grid' || block.id !== ABOUT_EDITABLE_BLOCK_IDS.brands) return block
+    const cardGrid = block as CardGridBlock
+    const cards = Array.isArray(cardGrid.settings.cards) ? cardGrid.settings.cards : []
+    const hasForbidden =
+      containsForbiddenBrandText(block.title || '') ||
+      containsForbiddenBrandText(block.description || '') ||
+      cards.some((card) =>
+        containsForbiddenBrandText(`${card.title || ''} ${card.description || ''} ${card.href || ''} ${card.imageUrl || ''}`),
+      )
+
+    if (!hasForbidden) {
+      return {
+        ...block,
+        title: 'Geliştirdiğimiz Yazılımlar',
+        description:
+          'Woontegra, hukuk, güvenli kayıt, lisans ve işletme süreçleri için kendi yazılım ürünlerini geliştiren bir teknoloji şirketidir.',
+      }
+    }
+
+    return {
+      ...cardGrid,
+      title: 'Geliştirdiğimiz Yazılımlar',
+      description:
+        'Woontegra, hukuk, güvenli kayıt, lisans ve işletme süreçleri için kendi yazılım ürünlerini geliştiren bir teknoloji şirketidir.',
+      settings: {
+        ...cardGrid.settings,
+        columns: 4,
+        cards: ABOUT_SOFTWARE_CARDS.map((card, index) => ({
+          id: `${ABOUT_EDITABLE_BLOCK_IDS.brands}-card-${index}`,
+          title: card.title,
+          description: card.description,
+          href: card.href,
+          imageUrl: '',
+          buttonLabel: 'İncele',
+        })),
+      },
+    }
+  })
+}
+
 export function createAboutEditableTemplate(raw: Record<string, unknown> | null): BuilderBlock[] {
   const content = normalizeAboutContent(raw)
   const blocks: BuilderBlock[] = [
@@ -238,5 +310,5 @@ export function createAboutEditableTemplate(raw: Record<string, unknown> | null)
     aboutVisionBlock(content.vision, 7),
     aboutCtaBlock(content.cta, 8),
   ]
-  return assignSortOrder(blocks)
+  return assignSortOrder(sanitizeAboutBuilderBlocks(blocks))
 }

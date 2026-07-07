@@ -110,12 +110,100 @@ export type AboutPageContent = {
   metaDescription?: string
 }
 
+const FORBIDDEN_ABOUT_TERMS = [
+  'optimoon',
+  'datça',
+  'datca',
+  'tropikal',
+  'mercan',
+  'aktif olarak yönettiğimiz markalar',
+  'dijital pazarlama & web tasarım danışmanlık',
+  'doğal taş takı',
+  'datça’dan sofranıza',
+] as const
+
 function uid(): string {
   return crypto.randomUUID()
 }
 
 function toStr(v: unknown, fb = ''): string {
   return v == null ? fb : String(v).trim()
+}
+
+function includesForbiddenAboutTerm(value: string): boolean {
+  const lower = value.toLocaleLowerCase('tr-TR')
+  return FORBIDDEN_ABOUT_TERMS.some((term) => lower.includes(term))
+}
+
+function createCanonicalAboutSoftwareCards(): AboutBrandCard[] {
+  return [
+    {
+      id: uid(),
+      name: 'Bilirkişi Hesap',
+      image: '',
+      text: 'Hukuk ve aktüerya süreçlerinde profesyonel hesaplama ihtiyacına odaklanan uzman yazılım ürünü.',
+      url: 'https://www.bilirkisihesap.com/',
+      order: 0,
+      enabled: true,
+    },
+    {
+      id: uid(),
+      name: 'Müvekkil Kasa Defteri Masaüstü',
+      image: '',
+      text: 'Lisanslı masaüstü kullanım için geliştirilen, güvenli kayıt ve düzenli iş akışı sunan masaüstü yazılım.',
+      url: '/yazilimlar/muvekkil-kasa-defteri-yazilimi',
+      order: 1,
+      enabled: true,
+    },
+    {
+      id: uid(),
+      name: 'Müvekkil Kasa Defteri Web Tabanlı',
+      image: '',
+      text: 'Web tabanlı kullanım, yıllık erişim ve çoklu kullanıcı ihtiyaçları için geliştirilen çevrim içi çözüm.',
+      url: '/yazilimlar/muvekkil-kasa-defteri-web-tabanli',
+      order: 2,
+      enabled: true,
+    },
+    {
+      id: uid(),
+      name: 'Woontegra Şifre Kasası',
+      image: '',
+      text: 'Ücretsiz kullanım sunan, temel güvenli kayıt ve erişim ihtiyacına odaklanan pratik yardımcı yazılım.',
+      url: '/yazilimlar/sifre-kasasi',
+      order: 3,
+      enabled: true,
+    },
+  ]
+}
+
+function sanitizeAboutBrandsSection(brands: AboutPageContent['brands']): AboutPageContent['brands'] {
+  const title = toStr(brands.title, 'Geliştirdiğimiz Yazılımlar')
+  const subtitle = toStr(
+    brands.subtitle,
+    'Woontegra, hukuk, güvenli kayıt, lisans ve işletme süreçleri için kendi yazılım ürünlerini geliştiren bir teknoloji şirketidir.',
+  )
+
+  const hasForbiddenTitle = includesForbiddenAboutTerm(title) || includesForbiddenAboutTerm(subtitle)
+  const cards = Array.isArray(brands.cards) ? brands.cards : []
+  const hasForbiddenCards = cards.some((card) =>
+    includesForbiddenAboutTerm(`${card.name} ${card.text} ${card.image} ${card.url}`),
+  )
+
+  if (hasForbiddenTitle || hasForbiddenCards || cards.length === 0) {
+    return {
+      title: 'Geliştirdiğimiz Yazılımlar',
+      subtitle:
+        'Woontegra, hukuk, güvenli kayıt, lisans ve işletme süreçleri için kendi yazılım ürünlerini geliştiren bir teknoloji şirketidir.',
+      cards: createCanonicalAboutSoftwareCards(),
+    }
+  }
+
+  return {
+    title: 'Geliştirdiğimiz Yazılımlar',
+    subtitle:
+      'Woontegra, hukuk, güvenli kayıt, lisans ve işletme süreçleri için kendi yazılım ürünlerini geliştiren bir teknoloji şirketidir.',
+    cards,
+  }
 }
 
 function toBool(v: unknown, fb: boolean): boolean {
@@ -130,15 +218,15 @@ export const defaultAboutPageContent: AboutPageContent = {
   version: ABOUT_PAGE_VERSION,
   hero: {
     eyebrow: 'Hakkımızda',
-    title: "Woontegra'yı Tanıyın",
+    title: 'Yazılım Üreten, Lisanslayan ve Geliştiren Woontegra',
     subtitle:
-      'Yazılım, e-ticaret ve dijital sistemler alanında kendi ürünlerini geliştiren, markalarını yöneten ve işletmelere sürdürülebilir dijital altyapılar sunan bir teknoloji şirketiyiz.',
+      'Woontegra; masaüstü yazılımlar, web tabanlı ürünler ve lisans yönetimli çözümler geliştiren, güvenli satış ve teslimat akışlarını tek çatı altında kurgulayan bir yazılım şirketidir.',
     image: '/images/hakkimizda-hero.jpg',
     highlights: [
       {
         id: uid(),
         icon: 'boxes',
-        title: 'Kendi ürünlerini geliştiren yapı',
+        title: 'Kendi yazılım ürünlerini geliştiren yapı',
         cardClass: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/20',
         iconClass: 'text-emerald-400',
         order: 0,
@@ -147,7 +235,7 @@ export const defaultAboutPageContent: AboutPageContent = {
       {
         id: uid(),
         icon: 'sparkles',
-        title: 'Gerçek kullanım deneyiminden doğan çözümler',
+        title: 'Gerçek kullanım senaryolarından doğan çözümler',
         cardClass: 'from-blue-500/20 to-blue-500/5 border-blue-500/20',
         iconClass: 'text-blue-400',
         order: 1,
@@ -158,30 +246,29 @@ export const defaultAboutPageContent: AboutPageContent = {
   whatIs: {
     title: 'Woontegra Nedir?',
     paragraphs: [
-      'Woontegra, klasik bir ajans ya da yalnızca hizmet sunan bir yapı değildir. Kendi markalarını kuran, ürünler geliştiren ve bu ürünleri aktif olarak yöneten bir teknoloji şirketidir.',
-      'Yazılım geliştirme, e-ticaret ve dijital sistemler alanında sadece müşteriler için değil, kendi projeleri için de üretim yapan bir yapı kurduk. Bu sayede teorik değil, gerçek kullanım üzerinden deneyim kazanan ve bunu projelere yansıtan bir sistem oluşturduk.',
+      'Woontegra; masaüstü, web tabanlı ve lisans yönetimli yazılım ürünleri geliştiren, bu ürünlerin satış ve teslimat sürecini tek merkezden yöneten bir teknoloji şirketidir.',
     ],
     highlight:
-      'Amacımız, işletmelere sadece bir hizmet sunmak değil, sürdürülebilir bir dijital yapı kurmalarını sağlamaktır.',
+      'Amacımız yalnızca yazılım teslim etmek değil; yönetilebilir ve sürdürülebilir ürün sistemleri kurmaktır.',
     cards: [
       {
         id: uid(),
-        title: 'Ürün Geliştiren Yapı',
-        text: 'Kendi markalarını ve dijital ürünlerini geliştiren, yalnızca müşteri işi yapan klasik ajans modelinden ayrılan yapı.',
+        title: 'Önce geliştiren yapı',
+        text: 'Kendi ürünlerini aktif olarak geliştirip yöneten bir yazılım şirketiyiz.',
         order: 0,
         enabled: true,
       },
       {
         id: uid(),
-        title: 'Gerçek Deneyim',
-        text: 'E-ticaret, yazılım ve dijital operasyon süreçlerinde kendi projelerinden kazandığı deneyimi müşterilerine aktarır.',
+        title: 'Gerçek deneyim',
+        text: 'Ürünleri gerçek kullanım, lisans ve teslimat deneyimiyle şekillendiririz.',
         order: 1,
         enabled: true,
       },
       {
         id: uid(),
-        title: 'Sürdürülebilir Sistem',
-        text: 'İşletmelere sadece web sitesi değil, yönetilebilir ve büyüyebilir dijital altyapılar kurmayı hedefler.',
+        title: 'Sürdürülebilir sistem',
+        text: 'Ürünlerin güncellenebilir ve uzun vadede sürdürülebilir kalmasına odaklanırız.',
         order: 2,
         enabled: true,
       },
@@ -189,13 +276,13 @@ export const defaultAboutPageContent: AboutPageContent = {
   },
   timeline: {
     title: 'Nasıl Başladık?',
-    subtitle: 'Woontegra, piyasadaki klasik ajans modelinin eksikliklerini gözlemleyerek ortaya çıktı.',
+    subtitle: 'Ürün yaklaşımımızı kısa ve net bir yolculukta özetliyoruz.',
     steps: [
       {
         id: uid(),
         icon: 'eye',
-        title: 'Klasik ajans modelinin eksikliklerini gördük',
-        text: 'Çoğu ajans müşteri projeleri üzerinde çalışır ancak kendi ürünlerini geliştirmez. Bu durum, gerçek kullanıcı deneyimi ve operasyonel zorlukları anlamayı zorlaştırır.',
+        title: 'İhtiyaçları sahada gördük',
+        text: 'Sahadaki tekrar eden ihtiyaçların yazılımla çözülebileceğini gördük.',
         color: 'bg-blue-500',
         order: 0,
         enabled: true,
@@ -203,8 +290,8 @@ export const defaultAboutPageContent: AboutPageContent = {
       {
         id: uid(),
         icon: 'rocket',
-        title: 'Kendi ürünlerimizi geliştirmeye başladık',
-        text: 'Farklı bir yol seçtik: Kendi ürünlerimizi geliştiren, markalarımızı yöneten ve bu süreçte edindiğimiz deneyimi müşteri projelerine aktaran bir yapı kurmak.',
+        title: 'İlk ürünlerimizi geliştirdik',
+        text: 'İlk masaüstü ve web tabanlı ürünlerimizi geliştirdik.',
         color: 'bg-purple-500',
         order: 1,
         enabled: true,
@@ -212,8 +299,8 @@ export const defaultAboutPageContent: AboutPageContent = {
       {
         id: uid(),
         icon: 'settings',
-        title: 'Gerçek operasyon deneyimini sisteme dönüştürdük',
-        text: 'Yazılım geliştirme, e-ticaret ve dijital sistemler alanında hem kendi markalarını yöneten hem de işletmelere çözümler sunan bir teknoloji yapısına dönüştük.',
+        title: 'Lisans ve teslimat altyapısını kurduk',
+        text: 'Lisans, teslimat ve güvenli satış altyapısını kurduk.',
         color: 'bg-emerald-500',
         order: 2,
         enabled: true,
@@ -221,8 +308,8 @@ export const defaultAboutPageContent: AboutPageContent = {
       {
         id: uid(),
         icon: 'building-2',
-        title: 'Bugün işletmelere sürdürülebilir dijital yapı sunuyoruz',
-        text: 'Sadece kod yazmıyor, sistem kuruyoruz. Sadece tasarım yapmıyor, marka oluşturuyoruz. Sadece danışmanlık vermiyor, gerçek projeler yönetiyoruz.',
+        title: 'Bugün ürünleri tek merkezden sunuyoruz',
+        text: 'Ürünleri bugün tek merkezden sunuyor ve geliştiriyoruz.',
         color: 'bg-orange-500',
         order: 3,
         enabled: true,
@@ -231,13 +318,13 @@ export const defaultAboutPageContent: AboutPageContent = {
   },
   differentiators: {
     title: 'Bizi Farklı Yapan Ne?',
-    subtitle: 'Klasik ajans modelinden ayrılan, ürün ve deneyim odaklı teknoloji yaklaşımımız.',
+    subtitle: 'Hizmet üretmenin ötesine geçen, doğrudan yazılım ürünü odağıyla çalışan yaklaşımımız.',
     cards: [
       {
         id: uid(),
         icon: 'package',
-        title: 'Sadece Hizmet Değil, Ürün',
-        text: 'Klasik ajanslar müşteri projeleri üzerinde çalışır. Biz ise kendi ürünlerimizi geliştiriyor, gerçek kullanıcılarla test ediyor ve piyasaya sunuyoruz. Bu deneyim, müşteri projelerinde de fark yaratıyor.',
+        title: 'Sadece hizmet değil, ürün',
+        text: 'Kendi yazılımlarımızı geliştiriyor ve gerçek geri bildirimle iyileştiriyoruz.',
         gradient: 'from-blue-500 to-cyan-500',
         order: 0,
         enabled: true,
@@ -245,8 +332,8 @@ export const defaultAboutPageContent: AboutPageContent = {
       {
         id: uid(),
         icon: 'award',
-        title: 'Gerçek Deneyim',
-        text: 'Kendi markalarımızı aktif olarak yönetiyoruz. E-ticaret, SaaS yazılım, danışmanlık gibi farklı sektörlerde operasyonel deneyime sahibiz. Teorik bilgi değil, gerçek iş deneyimi sunuyoruz.',
+        title: 'Merkezi lisans altyapısı',
+        text: 'Lisanslı kullanım ve kontrollü teslimat için güvenli altyapılar kuruyoruz.',
         gradient: 'from-purple-500 to-pink-500',
         order: 1,
         enabled: true,
@@ -254,95 +341,67 @@ export const defaultAboutPageContent: AboutPageContent = {
       {
         id: uid(),
         icon: 'layers',
-        title: 'Tek Yapı',
-        text: 'Yazılım geliştirme, satış süreçleri ve operasyonel yönetimi tek çatı altında birleştiriyoruz. Bu entegre yapı sayesinde projeler daha hızlı, daha verimli ve daha sürdürülebilir şekilde hayata geçiyor.',
+        title: 'Gerçek kullanım senaryoları',
+        text: 'Ürünleri kullanım, destek ve teslimat süreçleriyle birlikte tasarlıyoruz.',
         gradient: 'from-emerald-500 to-teal-500',
         order: 2,
         enabled: true,
       },
-    ],
-  },
-  brands: {
-    title: 'Aktif Olarak Yönettiğimiz Markalar',
-    subtitle:
-      'Woontegra yalnızca hizmet sunan bir yapı değil; kendi markalarını yöneten ve bu deneyimi müşterilerine aktaran bir teknoloji şirketidir.',
-    cards: [
       {
         id: uid(),
-        name: 'Bilirkişi',
-        image: '/images/brand-bilirkisi.jpg',
-        text: 'Hukuk ve aktüerya alanında kullanılan profesyonel hesaplama yazılımı. İşçi alacakları, kıdem-ihbar tazminatı ve tazminat hesaplamalarını otomatik gerçekleştirir.',
-        url: 'https://www.bilirkisihesap.com/',
-        order: 0,
-        enabled: true,
-      },
-      {
-        id: uid(),
-        name: 'Optimoon',
-        image: '/images/brand-optimoon.jpg',
-        text: 'Doğal taş takılar, kristaller ve özel tasarım ürünlerin satışını gerçekleştiren e-ticaret markası.',
-        url: 'https://optimoon.com/',
-        order: 1,
-        enabled: true,
-      },
-      {
-        id: uid(),
-        name: 'Datça Tropikal',
-        image: '/images/brand-datca.jpg',
-        text: "Datça'nın yerel üretim ve doğal ürünlerini satışa sunan e-ticaret markası.",
-        url: 'https://datcatropikal.com/',
-        order: 2,
-        enabled: true,
-      },
-      {
-        id: uid(),
-        name: 'Mercan Danışmanlık',
-        image: '/images/brand-mercan.jpg',
-        text: 'Marka tescil, patent başvuruları ve fikri mülkiyet haklarını profesyonel şekilde yöneten danışmanlık markası.',
-        url: 'https://mercandanismanlik.com/',
+        icon: 'refresh-cw',
+        title: 'Sürdürülebilir geliştirme',
+        text: 'Yayın sonrası bakım ve yeni sürümlerle ürünleri yaşayan sistemler olarak ele alıyoruz.',
+        gradient: 'from-orange-500 to-rose-500',
         order: 3,
         enabled: true,
       },
     ],
   },
+  brands: {
+    title: 'Geliştirdiğimiz Yazılımlar',
+    subtitle:
+      'Woontegra; hukuk, güvenli kayıt, lisans ve işletme süreçleri için kendi yazılım ürünlerini geliştiren bir ürün şirketidir.',
+    cards: createCanonicalAboutSoftwareCards(),
+  },
   workApproach: {
     title: 'Çalışma Yaklaşımımız',
-    subtitle: 'Projeleri yalnızca teslim etmek değil; ölçülebilir ve sürdürülebilir sistemler kurmak.',
+    subtitle: 'Yazılımı yalnızca geliştirmek değil, yayına ve kullanıma hazır hale getirmek.',
     cards: [
-      { id: uid(), icon: 'search', title: 'Analiz ederiz', text: 'İhtiyaçları, hedefleri ve mevcut yapıyı doğru şekilde değerlendiririz.', gradient: 'from-blue-500 to-cyan-500', order: 0, enabled: true },
-      { id: uid(), icon: 'wrench', title: 'Sistemi kurarız', text: 'Yazılım, e-ticaret ve dijital operasyon bileşenlerini entegre bir yapıda inşa ederiz.', gradient: 'from-purple-500 to-pink-500', order: 1, enabled: true },
-      { id: uid(), icon: 'bar-chart-3', title: 'Ölçer ve geliştiririz', text: 'Performansı izler, kullanıcı deneyimini ve iş sonuçlarını sürekli iyileştiririz.', gradient: 'from-emerald-500 to-teal-500', order: 2, enabled: true },
-      { id: uid(), icon: 'refresh-cw', title: 'Sürdürülebilir hale getiririz', text: 'Projeyi yayına almakla kalmaz; yönetilebilir ve büyüyebilir bir sistem olarak teslim ederiz.', gradient: 'from-orange-500 to-red-500', order: 3, enabled: true },
+      { id: uid(), icon: 'search', title: 'Analiz', text: 'İhtiyacı ve kullanım senaryosunu netleştiririz.', gradient: 'from-blue-500 to-cyan-500', order: 0, enabled: true },
+      { id: uid(), icon: 'pen-tool', title: 'Kurgu', text: 'Arayüzü, veri akışını ve ürün yapısını tasarlarız.', gradient: 'from-purple-500 to-pink-500', order: 1, enabled: true },
+      { id: uid(), icon: 'wrench', title: 'Geliştirme', text: 'Ürünü güvenli ve sürdürülebilir mimariyle inşa ederiz.', gradient: 'from-emerald-500 to-teal-500', order: 2, enabled: true },
+      { id: uid(), icon: 'shield-check', title: 'Teslimat ve destek', text: 'Lisans, test ve destek süreçlerini birlikte yürütürüz.', gradient: 'from-orange-500 to-red-500', order: 3, enabled: true },
     ],
   },
   structure: {
-    title: 'Nasıl Bir Yapı Kurduk?',
+    title: 'Nasıl Çalışıyoruz?',
     paragraphs: [
-      'Woontegra içinde, yazılım geliştirme, satış, operasyon ve marka yönetimi süreçlerini birbirinden bağımsız değil, tek bir sistem olarak ele alıyoruz.',
-      'Bu yaklaşım sayesinde geliştirilen projeler sadece teknik olarak değil, ticari olarak da sürdürülebilir hale gelir.',
+      'Ürün geliştirme, lisans yönetimi, güvenli ödeme, dijital teslimat ve destek süreçlerini tek bir ürün sistemi olarak ele alıyoruz.',
     ],
     stats: [
-      { id: uid(), icon: 'target', title: 'Kendi markalarını yöneten yapı', text: 'Aktif olarak geliştirdiğimiz ve yönettiğimiz markalar üzerinden gerçek operasyon deneyimi.', order: 0, enabled: true },
-      { id: uid(), icon: 'code-2', title: 'Yazılım + e-ticaret + dijital operasyon', text: 'Teknik geliştirme, satış ve operasyon süreçlerini birbirinden bağımsız değil, tek sistem olarak ele alıyoruz.', order: 1, enabled: true },
-      { id: uid(), icon: 'lightbulb', title: 'Ürün odaklı geliştirme yaklaşımı', text: 'Geliştirilen projeler sadece teknik olarak değil, ticari olarak da sürdürülebilir hale gelir.', order: 2, enabled: true },
+      { id: uid(), icon: 'code-2', title: 'Ürün geliştirme', text: 'Yazılımları fikirden yayına kadar içeride geliştiririz.', order: 0, enabled: true },
+      { id: uid(), icon: 'key-round', title: 'Lisans ve teslimat', text: 'Lisanslı erişim ve kontrollü teslimat aynı sistemde kurgulanır.', order: 1, enabled: true },
+      { id: uid(), icon: 'credit-card', title: 'Güvenli satış', text: 'Ödeme ve erişimi tek deneyim içinde ele alırız.', order: 2, enabled: true },
+      { id: uid(), icon: 'refresh-cw', title: 'Sürekli geliştirme', text: 'Ürünleri günceller, destekler ve büyütürüz.', order: 3, enabled: true },
     ],
   },
   vision: {
     title: 'Nereye Gidiyoruz?',
     paragraphs: [
-      "Woontegra'nın hedefi, yalnızca hizmet veren bir yapı olmak değil, kendi ürünleriyle büyüyen ve global ölçekte rekabet eden bir teknoloji şirketine dönüşmektir.",
-      'Her geliştirdiğimiz proje, bu yapının bir parçası olarak ilerler.',
+      "Woontegra'nın hedefi; masaüstü ve web tabanlı yazılım ürünlerini tek çatı altında büyüten, lisanslı ve sürdürülebilir ürün yaklaşımıyla güçlenen bir yazılım şirketi olmaktır.",
+      'Yeni ürünler geliştirirken mevcut çözümleri de daha güvenli, daha kullanışlı ve daha ölçeklenebilir hale getirmeye devam ediyoruz.',
     ],
   },
   cta: {
-    title: 'İşletmeniz için sürdürülebilir bir dijital yapı kuralım.',
+    title: 'Woontegra yazılımlarını yakından inceleyin.',
     subtitle:
-      'Web sitesi, e-ticaret altyapısı, özel yazılım ve dijital operasyon süreçlerinde size yalnızca hizmet değil, yönetilebilir bir sistem sunalım.',
-    buttonText: 'İletişime Geç',
-    buttonHref: '/iletisim',
+      'Masaüstü, web tabanlı ve ücretsiz ürünlerimizi inceleyin; ihtiyaçlarınıza en uygun çözüm için bizimle iletişime geçin.',
+    buttonText: 'Yazılımlarımızı İnceleyin',
+    buttonHref: '/yazilimlar',
   },
   metaDescription:
-    'Yazılım, e-ticaret ve dijital sistemler alanında kendi ürünlerini geliştiren, markalarını yöneten bir teknoloji şirketiyiz.',
+    'Woontegra; masaüstü, web tabanlı ve lisans yönetimli yazılım ürünleri geliştiren bir yazılım şirketidir.',
 }
 
 function mergeAbout(base: AboutPageContent, partial: Partial<AboutPageContent>): AboutPageContent {
@@ -414,18 +473,7 @@ function applyLegacyFlat(row: Record<string, unknown>, base: AboutPageContent): 
       next.differentiators.cards[i] = { ...next.differentiators.cards[i], title: toStr(d.t), text: toStr(d.d) || next.differentiators.cards[i].text }
     }
   })
-  if (toStr(row.brandsTitle)) next.brands.title = toStr(row.brandsTitle)
-  const brandRows = [
-    { n: row.brand1Name, d: row.brand1Desc1 },
-    { n: row.brand2Name, d: row.brand2Desc1 },
-    { n: row.brand3Name, d: row.brand3Desc1 },
-    { n: row.brand4Name, d: row.brand4Desc1 },
-  ]
-  brandRows.forEach((b, i) => {
-    if (toStr(b.n) && next.brands.cards[i]) {
-      next.brands.cards[i] = { ...next.brands.cards[i], name: toStr(b.n), text: toStr(b.d) || next.brands.cards[i].text }
-    }
-  })
+  next.brands = sanitizeAboutBrandsSection(next.brands)
   return next
 }
 
@@ -462,11 +510,11 @@ export function normalizeAboutContent(raw: unknown): AboutPageContent {
         ...(partial.differentiators ?? {}),
         cards: sortByOrder((partial.differentiators?.cards ?? fromBuilder.differentiators.cards).map((c, i) => normalizeIconCard(c, i)).filter(Boolean) as AboutIconCard[]),
       },
-      brands: {
+      brands: sanitizeAboutBrandsSection({
         ...fromBuilder.brands,
         ...(partial.brands ?? {}),
         cards: sortByOrder((partial.brands?.cards ?? fromBuilder.brands.cards).map((c, i) => normalizeBrand(c, i)).filter(Boolean) as AboutBrandCard[]),
-      },
+      }),
       workApproach: {
         ...fromBuilder.workApproach,
         ...(partial.workApproach ?? {}),
@@ -528,7 +576,7 @@ function normalizeBrand(raw: unknown, index: number): AboutBrandCard | null {
   const r = raw as Record<string, unknown>
   const name = toStr(r.name)
   if (!name) return null
-  return { id: toStr(r.id, uid()), name, text: toStr(r.text ?? r.desc), image: toStr(r.image, '/images/brand-bilirkisi.jpg'), url: toStr(r.url, '#'), order: toNum(r.order, index), enabled: toBool(r.enabled, true) }
+  return { id: toStr(r.id, uid()), name, text: toStr(r.text ?? r.desc), image: toStr(r.image), url: toStr(r.url, '#'), order: toNum(r.order, index), enabled: toBool(r.enabled, true) }
 }
 
 function normalizeStat(raw: unknown, index: number): AboutStatCard | null {

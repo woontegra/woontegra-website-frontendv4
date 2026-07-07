@@ -134,6 +134,7 @@ export function CardGridSettingsPanel() {
                 settingsFieldId={`card-${card.id}-image`}
                 value={card.imageUrl ?? ''}
                 onChange={(imageUrl) => updateCard(card.id, { imageUrl })}
+                recommendedSize="1200x900 px (4:3)"
               />
               <TextField
                 label="Buton metni"
