@@ -8,18 +8,24 @@ function galleryOverrideFromBlock(
   block: ProductDetailBlock,
 ): Pick<PublicProductDetail, 'coverImage' | 'galleryImages'> | null {
   const entries = block.settings.gallery
-    .map((g) => ({ id: g.id, url: g.url?.trim() ?? '' }))
+    .map((g) => ({
+      id: g.id,
+      url: g.url?.trim() ?? '',
+      alt: g.alt?.trim() ?? '',
+      title: g.title?.trim() ?? '',
+    }))
     .filter((g) => g.url)
 
   if (entries.length === 0) return null
 
-  const [cover, ...rest] = entries
   return {
-    coverImage: cover.url,
-    galleryImages: rest.map((g, i) => ({
+    coverImage: entries[0].url,
+    galleryImages: entries.map((g, i) => ({
       id: g.id || `builder-gal-${i}`,
       url: g.url,
       sortOrder: i,
+      alt: g.alt || undefined,
+      title: g.title || undefined,
     })),
   }
 }
@@ -55,12 +61,22 @@ export function publicProductToDetailBlock(
   pdp.settings.licenseInfo = ''
   pdp.settings.supportNote = ''
   pdp.settings.faqItems = []
-  pdp.settings.gallery = [
-    ...(product.coverImage ? [{ id: `${product.slug}-cover`, url: product.coverImage }] : []),
-    ...product.galleryImages
-      .filter((g) => g.url?.trim())
-      .map((g) => ({ id: g.id, url: g.url })),
-  ]
+  const galleryItems: ProductDetailBlock['settings']['gallery'] = []
+  if (product.coverImage?.trim()) {
+    galleryItems.push({ id: `${product.slug}-cover`, url: product.coverImage.trim() })
+  }
+  for (const g of product.galleryImages) {
+    const url = g.url?.trim()
+    if (!url) continue
+    if (galleryItems.some((item) => item.url === url)) continue
+    galleryItems.push({
+      id: g.id,
+      url,
+      alt: g.alt,
+      title: g.title,
+    })
+  }
+  pdp.settings.gallery = galleryItems
   return pdp
 }
 

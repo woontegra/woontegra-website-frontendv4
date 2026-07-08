@@ -29,6 +29,7 @@ import {
 } from '@/utils/productPurchase'
 
 import { cn } from '@/lib/cn'
+import { getPromotionalSoftwareMeta, isExternalSalesProduct } from '@/lib/publicSoftwareCatalog'
 
 
 
@@ -68,13 +69,17 @@ export function ProductCard({ product }: Props) {
 
   const detailHref = `/yazilimlar/${product.slug}`
 
+  const promotionalMeta = getPromotionalSoftwareMeta(product.slug)
+
+  const isExternalSales = isExternalSalesProduct(product)
+
   const hasPrice = Number.isFinite(product.price) && product.price > 0
 
-  const canPurchase = canPurchaseProduct(product)
+  const canPurchase = canPurchaseProduct(product) && !isExternalSales
 
   const isFreeDownload = isFreeDownloadProduct(product)
 
-  const showQuote = shouldShowQuoteCta(product)
+  const showQuote = shouldShowQuoteCta(product) && !isExternalSales
 
   const licenseNote = licenseListNote(product)
 
@@ -149,6 +154,18 @@ export function ProductCard({ product }: Props) {
 
           />
 
+        ) : isExternalSales ? (
+
+          <div className="flex aspect-[4/3] w-full flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-sky-950 to-emerald-900 px-6 text-center">
+
+            <span className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200/90">Woontegra Yazılımı</span>
+
+            <p className="mt-3 text-lg font-semibold text-white">{product.name}</p>
+
+            <p className="mt-2 text-sm text-slate-300">Web tabanlı · Harici satış · Resmi sitede lisans</p>
+
+          </div>
+
         ) : null}
 
       </Link>
@@ -163,17 +180,43 @@ export function ProductCard({ product }: Props) {
 
           ) : null}
 
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-700">
+          {promotionalMeta ? (
 
-            {productTypeLabel(product.productType)}
+            promotionalMeta.badges.map((badge) => (
 
-          </span>
+              <span
 
-          {product.category ? (
+                key={badge}
 
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-600">{product.category.name}</span>
+                className="rounded-full bg-sky-50 px-2 py-0.5 font-medium text-sky-800 ring-1 ring-sky-100"
 
-          ) : null}
+              >
+
+                {badge}
+
+              </span>
+
+            ))
+
+          ) : (
+
+            <>
+
+              <span className="rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-700">
+
+                {productTypeLabel(product.productType)}
+
+              </span>
+
+              {product.category ? (
+
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 font-medium text-slate-600">{product.category.name}</span>
+
+              ) : null}
+
+            </>
+
+          )}
 
           {campaignBadge ? (
 
@@ -210,6 +253,10 @@ export function ProductCard({ product }: Props) {
           {isFreeDownload ? (
 
             <p className="text-xl font-bold text-emerald-700">Ücretsiz</p>
+
+          ) : promotionalMeta ? (
+
+            <p className="text-sm font-medium text-sky-800">{promotionalMeta.priceNote}</p>
 
           ) : hasPrice ? (
 
@@ -259,7 +306,7 @@ export function ProductCard({ product }: Props) {
 
         ) : (
 
-          <div className={cn('grid gap-2', canPurchase || showQuote ? 'grid-cols-2' : 'grid-cols-1')}>
+          <div className={cn('grid gap-2', canPurchase || showQuote || isExternalSales ? 'grid-cols-2' : 'grid-cols-1')}>
 
             <Link
 
@@ -269,7 +316,7 @@ export function ProductCard({ product }: Props) {
 
             >
 
-              {isFreeDownload ? 'Detay & İndir' : 'Detay İncele'}
+              {isExternalSales ? promotionalMeta?.listCtaLabel ?? 'İncele' : isFreeDownload ? 'Detay & İndir' : 'Detay İncele'}
 
             </Link>
 
@@ -302,6 +349,24 @@ export function ProductCard({ product }: Props) {
                 Teklif Al
 
               </Link>
+
+            ) : isExternalSales && promotionalMeta ? (
+
+              <a
+
+                href={promotionalMeta.officialUrl}
+
+                target="_blank"
+
+                rel="noopener noreferrer"
+
+                className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+
+              >
+
+                {promotionalMeta.ctaLabel}
+
+              </a>
 
             ) : null}
 

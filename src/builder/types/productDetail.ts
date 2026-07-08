@@ -4,6 +4,8 @@ import type { ProductType } from '@/types/product'
 export type ProductDetailGalleryItem = {
   id: string
   url: string
+  alt?: string
+  title?: string
 }
 
 export type ProductDetailFeature = {

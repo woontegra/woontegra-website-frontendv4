@@ -6,23 +6,56 @@ import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 import { cn } from '@/lib/cn'
 import type { ProductType } from '@/types/product'
 
+type GalleryImage = {
+  id: string
+  url: string
+  alt?: string
+  title?: string
+}
+
 type Props = {
   name: string
   coverImage?: string | null
-  galleryImages?: { id: string; url: string }[]
+  galleryImages?: GalleryImage[]
   productType: ProductType
   isFreeDownload?: boolean
 }
 
-function collectGalleryUrls(coverImage: string | null | undefined, galleryImages: { url: string }[]): string[] {
-  const urls: string[] = []
-  const cover = pickProductCoverUrl({ coverImage })
-  if (cover) urls.push(cover)
+type GalleryEntry = {
+  url: string
+  alt: string
+}
+
+function collectGalleryEntries(
+  coverImage: string | null | undefined,
+  galleryImages: GalleryImage[],
+  fallbackAlt: string,
+): GalleryEntry[] {
+  const seen = new Set<string>()
+  const entries: GalleryEntry[] = []
+
+  const metaByUrl = new Map<string, GalleryImage>()
   for (const img of galleryImages) {
     const resolved = resolveMediaUrl(img.url)
-    if (resolved && !urls.includes(resolved)) urls.push(resolved)
+    if (resolved) metaByUrl.set(resolved, img)
   }
-  return urls
+
+  const add = (rawUrl: string, meta?: GalleryImage) => {
+    const resolved = resolveMediaUrl(rawUrl)
+    if (!resolved || seen.has(resolved)) return
+    seen.add(resolved)
+    const alt = meta?.alt?.trim() || meta?.title?.trim() || fallbackAlt
+    entries.push({ url: resolved, alt })
+  }
+
+  const cover = pickProductCoverUrl({ coverImage })
+  if (cover) add(cover, metaByUrl.get(cover))
+
+  for (const img of galleryImages) {
+    add(img.url, img)
+  }
+
+  return entries
 }
 
 function wrapIndex(index: number, length: number): number {
@@ -128,9 +161,10 @@ function ProductGalleryLightbox({ images, name, activeIndex, onClose, onChange }
 
 export function ProductGallery({ name, coverImage, galleryImages = [], productType, isFreeDownload = false }: Props) {
   const gallery = useMemo(
-    () => collectGalleryUrls(coverImage, galleryImages),
-    [coverImage, galleryImages],
+    () => collectGalleryEntries(coverImage, galleryImages, name),
+    [coverImage, galleryImages, name],
   )
+  const galleryUrls = useMemo(() => gallery.map((entry) => entry.url), [gallery])
   const [activeIndex, setActiveIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
 
@@ -147,7 +181,8 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
     return <ProductGalleryPlaceholder name={name} productType={productType} isFreeDownload={isFreeDownload} />
   }
 
-  const mainUrl = gallery[activeIndex] ?? gallery[0]
+  const mainEntry = gallery[activeIndex] ?? gallery[0]
+  const mainUrl = mainEntry.url
   const hasMultiple = gallery.length > 1
 
   return (
@@ -185,7 +220,7 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
           >
             <MediaImage
               src={mainUrl}
-              alt={name}
+              alt={mainEntry.alt}
               loading="eager"
               className="aspect-[4/3] w-full origin-center bg-[linear-gradient(180deg,rgba(248,250,252,0.86),rgba(226,232,240,0.55))] object-contain p-5 transition-transform duration-500 ease-out group-hover/main:scale-[1.04] sm:object-cover sm:p-0"
             />
@@ -199,9 +234,9 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
 
           {hasMultiple ? (
             <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full border border-white/15 bg-slate-950/35 px-3 py-2 backdrop-blur">
-              {gallery.map((url, index) => (
+              {gallery.map((entry, index) => (
                 <button
-                  key={url}
+                  key={entry.url}
                   type="button"
                   onClick={() => setActiveIndex(index)}
                   className={cn(
@@ -219,9 +254,9 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
 
         {hasMultiple ? (
           <div className="flex gap-3 overflow-x-auto pb-1 sm:grid sm:grid-cols-5 sm:overflow-visible sm:pb-0">
-            {gallery.map((url, index) => (
+            {gallery.map((entry, index) => (
               <button
-                key={url}
+                key={entry.url}
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 className={cn(
@@ -233,7 +268,7 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
                 aria-label={`Galeri görseli ${index + 1}`}
                 aria-current={index === activeIndex ? 'true' : undefined}
               >
-                <MediaImage src={url} alt="" loading="lazy" className="aspect-square w-full bg-slate-50 object-cover" />
+                <MediaImage src={entry.url} alt={entry.alt} loading="lazy" className="aspect-square w-full bg-slate-50 object-cover" />
               </button>
             ))}
           </div>
@@ -242,7 +277,7 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
 
       {lightboxOpen ? (
         <ProductGalleryLightbox
-          images={gallery}
+          images={galleryUrls}
           name={name}
           activeIndex={activeIndex}
           onClose={() => setLightboxOpen(false)}

@@ -139,10 +139,10 @@ function createCanonicalAboutSoftwareCards(): AboutBrandCard[] {
   return [
     {
       id: uid(),
-      name: 'Bilirkişi Hesap',
+      name: 'Bilirkişi Hesaplama Yazılımı',
       image: '',
-      text: 'Hukuk ve aktüerya süreçlerinde profesyonel hesaplama ihtiyacına odaklanan uzman yazılım ürünü.',
-      url: 'https://www.bilirkisihesap.com/',
+      text: 'Web tabanlı bilirkişi ve işçilik alacağı hesaplamaları için geliştirilen profesyonel hesaplama yazılımı.',
+      url: '/yazilimlar/bilirkisi-hesap',
       order: 0,
       enabled: true,
     },

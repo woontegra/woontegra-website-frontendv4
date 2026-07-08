@@ -48,6 +48,11 @@ export const BUILDER_MENU_SERVICES: BuilderNavService[] = [
 /** Yazılımlar alt menüsü — menüde görünen ürün detayları */
 export const BUILDER_MENU_PRODUCTS: BuilderNavProduct[] = [
   {
+    slug: 'bilirkisi-hesap',
+    title: 'Bilirkişi Hesaplama Yazılımı',
+    path: '/yazilimlar/bilirkisi-hesap',
+  },
+  {
     slug: 'muvekkil-kasa-defteri-yazilimi',
     title: 'Müvekkil Kasa Defteri Masaüstü',
     path: '/yazilimlar/muvekkil-kasa-defteri-yazilimi',

@@ -5,6 +5,7 @@ import {
   findServicesNavItem,
   serviceSlugFromHref,
 } from '@/data/canonicalServices'
+import { buildCanonicalSoftwareNavChildren } from '@/lib/publicSoftwareCatalog'
 import { resolvePublicNavHref } from '@/lib/publicNavUrl'
 import type { PublicNavigationMenuItem } from '@/types/navigationMenu'
 
@@ -42,6 +43,60 @@ function fixServiceChild(child: PublicNavigationMenuItem): PublicNavigationMenuI
     href,
     resolvedUrl: href,
     children: [],
+  }
+}
+
+function softwareSlugFromHref(href: string): string | null {
+  const match = resolvePublicNavHref(href).match(/^\/yazilimlar\/([^/?#]+)/)
+  return match?.[1] ?? null
+}
+
+function restoreSoftwareDropdown(item: PublicNavigationMenuItem): PublicNavigationMenuItem {
+  const canonicalChildren = buildCanonicalSoftwareNavChildren()
+  const bySlug = new Map<string, PublicNavigationMenuItem>()
+
+  for (const child of item.children) {
+    const href = resolvePublicNavHref(child.resolvedUrl || child.href)
+    const slug = softwareSlugFromHref(href)
+    if (slug) {
+      bySlug.set(slug, {
+        ...child,
+        href,
+        resolvedUrl: href,
+        children: [],
+      })
+    }
+  }
+
+  for (const child of canonicalChildren) {
+    const slug = softwareSlugFromHref(child.href)
+    if (!slug) continue
+    if (!bySlug.has(slug)) {
+      bySlug.set(slug, child)
+    } else {
+      const existing = bySlug.get(slug)!
+      bySlug.set(slug, {
+        ...existing,
+        label: child.label,
+        href: child.href,
+        resolvedUrl: child.resolvedUrl,
+        sortOrder: child.sortOrder,
+      })
+    }
+  }
+
+  const children = canonicalChildren
+    .map((child) => {
+      const slug = softwareSlugFromHref(child.href)
+      return slug ? bySlug.get(slug) ?? child : child
+    })
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+
+  return {
+    ...item,
+    href: '/yazilimlar',
+    resolvedUrl: '/yazilimlar',
+    children: children.length ? children : DEFAULT_PUBLIC_NAV.find((n) => n.id === 'software')!.children,
   }
 }
 
@@ -99,6 +154,13 @@ function mapNavItem(item: PublicNavigationMenuItem): PublicNavigationMenuItem | 
 
   if (isServices) {
     return restoreServicesDropdown({ ...item, href: '/hizmetler', resolvedUrl: '/hizmetler' })
+  }
+
+  const isSoftware =
+    href === '/yazilimlar' || normalizeLabel(label) === 'yazılımlar' || normalizeLabel(label) === 'yazilimlar'
+
+  if (isSoftware) {
+    return restoreSoftwareDropdown({ ...item, href: '/yazilimlar', resolvedUrl: '/yazilimlar' })
   }
 
   if (isBrokenHref(href) && !item.children.length) return null

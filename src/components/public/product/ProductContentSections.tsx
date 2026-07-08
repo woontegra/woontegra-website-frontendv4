@@ -1,6 +1,6 @@
 import { BadgeCheck, Check, Headset, Layers3, ShieldCheck } from 'lucide-react'
 import type { PublicProductDetail } from '@/types/product'
-
+import { getPromotionalSoftwareMeta, isExternalSalesProduct } from '@/lib/publicSoftwareCatalog'
 type Props = {
   product: PublicProductDetail
   bullets: string[]
@@ -8,6 +8,10 @@ type Props = {
 }
 
 function buildUseCases(product: PublicProductDetail, isFreeDownload: boolean): string[] {
+  if (isExternalSalesProduct(product)) {
+    return getPromotionalSoftwareMeta(product.slug)?.useCases ?? []
+  }
+
   const items: string[] = []
   if (product.productType === 'DOWNLOAD') items.push('Masaüstü kullanım ve hızlı kurulum akışı için uygundur.')
   if (product.productType === 'SAAS') items.push('Tarayıcı üzerinden yıllık kullanım ve ekip erişimi için uygundur.')
@@ -19,6 +23,17 @@ function buildUseCases(product: PublicProductDetail, isFreeDownload: boolean): s
 }
 
 function buildTechnicalRows(product: PublicProductDetail, galleryCount: number, isFreeDownload: boolean) {
+  if (isExternalSalesProduct(product)) {
+    const meta = getPromotionalSoftwareMeta(product.slug)
+    const rows = [
+      { label: 'Ürün tipi', value: meta?.publicProductTypeLabel ?? 'Web Tabanlı Yazılım' },
+      { label: 'Teslimat', value: 'Resmi sitede dijital erişim' },
+      { label: 'Lisans', value: meta?.licenseSummary ?? 'Resmi sitede' },
+    ]
+    if (galleryCount > 0) rows.push({ label: 'Galeri', value: `${galleryCount} görsel` })
+    return rows
+  }
+
   const rows = [
     { label: 'Ürün tipi', value: product.productType === 'SAAS' ? 'Web tabanlı / abonelik' : product.productType === 'SERVICE' ? 'Dijital hizmet' : 'Masaüstü yazılım' },
     { label: 'Teslimat', value: isFreeDownload ? 'Anında indirme' : product.productType === 'SERVICE' ? 'Planlı dijital teslimat' : 'Satın alma sonrası dijital teslimat' },
@@ -35,6 +50,8 @@ export function ProductContentSections({ product, bullets, isFreeDownload }: Pro
   const galleryCount = (product.galleryImages?.length ?? 0) + (product.coverImage ? 1 : 0)
   const useCases = buildUseCases(product, isFreeDownload)
   const technicalRows = buildTechnicalRows(product, galleryCount, isFreeDownload)
+  const promotionalMeta = getPromotionalSoftwareMeta(product.slug)
+  const isExternalSales = isExternalSalesProduct(product)
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
@@ -124,17 +141,22 @@ export function ProductContentSections({ product, bullets, isFreeDownload }: Pro
               </div>
             </div>
             <ul className="mt-5 space-y-3 text-sm leading-relaxed text-slate-700">
-              {product.licenseRequired ? (
+              {isExternalSales && promotionalMeta?.deliveryNotes.map((note) => (
+                <li key={note} className="rounded-2xl border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
+                  {note}
+                </li>
+              ))}
+              {!isExternalSales && product.licenseRequired ? (
                 <li className="rounded-2xl border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
                   Merkezi lisans yönetimi; aktivasyon bilgileri e-posta ile iletilir.
                 </li>
               ) : null}
-              {product.hasDownload ? (
+              {!isExternalSales && product.hasDownload ? (
                 <li className="rounded-2xl border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
                   Dijital indirme linki ödeme onayı sonrası paylaşılır.
                 </li>
               ) : null}
-              {product.productType === 'SERVICE' ? (
+              {!isExternalSales && product.productType === 'SERVICE' ? (
                 <li className="rounded-2xl border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
                   Hizmet teslimatı Woontegra ekibi tarafından planlanır.
                 </li>

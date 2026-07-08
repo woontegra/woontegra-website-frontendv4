@@ -1,6 +1,5 @@
 import { SettingsAccordion } from '@/builder/admin/ui/SettingsAccordion'
 import {
-  ImageUrlField,
   SelectField,
   TextAreaField,
   TextField,
@@ -13,6 +12,7 @@ import {
   SharedResponsiveSection,
   wrapSections,
 } from '@/builder/admin/settings/SharedSections'
+import { ProductDetailGallerySettings } from '@/builder/admin/settings/ProductDetailGallerySettings'
 import { useSelectedBlock } from '@/builder/admin/settings/useSelectedBlock'
 import type { ProductDetailBlock } from '@/builder/types/productDetail'
 import type { ProductType } from '@/types/product'
@@ -59,21 +59,9 @@ export function ProductDetailSettingsPanel() {
     },
     {
       id: 'media',
-      title: 'Galeri',
-      content: (
-        <ImageUrlField
-          label="Ana görsel"
-          uploadFolder="products"
-          value={settings.gallery[0]?.url ?? ''}
-          onChange={(url) =>
-            setSettings({
-              gallery: url
-                ? [{ id: settings.gallery[0]?.id ?? 'cover', url }, ...settings.gallery.slice(1)]
-                : settings.gallery.slice(1),
-            })
-          }
-        />
-      ),
+      title: 'Ürün galerisi',
+      description: `${settings.gallery.filter((g) => g.url?.trim()).length} görsel`,
+      content: <ProductDetailGallerySettings block={block} onChange={update} />,
     },
     {
       id: 'delivery',

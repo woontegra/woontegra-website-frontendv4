@@ -2,6 +2,7 @@ import { BadgeCheck, Monitor, ShieldCheck } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Breadcrumbs } from '@/components/public/Breadcrumbs'
 import { ProductGallery } from '@/components/public/product/ProductGallery'
+import { getPromotionalSoftwareMeta, isExternalSalesProduct } from '@/lib/publicSoftwareCatalog'
 import type { PublicProductDetail } from '@/types/product'
 import { productTypeLabel } from '@/types/product'
 import { licenseDisplayLabel } from '@/utils/productPurchase'
@@ -13,7 +14,17 @@ type Props = {
   children: ReactNode
 }
 
-function productMetaItems(product: PublicProductDetail, isFreeDownload: boolean) {
+function productMetaItems(product: PublicProductDetail, isFreeDownload: boolean, isExternalSales: boolean) {
+  if (isExternalSales) {
+    const meta = getPromotionalSoftwareMeta(product.slug)
+    return [
+      { label: 'Ürün tipi', value: meta?.publicProductTypeLabel ?? 'Web Tabanlı Yazılım' },
+      { label: 'Satış kanalı', value: 'Resmi site' },
+      { label: 'Lisans', value: meta?.licenseSummary ?? 'Resmi sitede' },
+      { label: 'Woontegra sepeti', value: 'Dahil değil' },
+    ]
+  }
+
   return [
     { label: 'Ürün tipi', value: productTypeLabel(product.productType) },
     {
@@ -29,7 +40,9 @@ function productMetaItems(product: PublicProductDetail, isFreeDownload: boolean)
 }
 
 export function ProductShowcaseHero({ product, lead, isFreeDownload, children }: Props) {
-  const metaItems = productMetaItems(product, isFreeDownload)
+  const isExternalSales = isExternalSalesProduct(product)
+  const promotionalMeta = getPromotionalSoftwareMeta(product.slug)
+  const metaItems = productMetaItems(product, isFreeDownload, isExternalSales)
 
   return (
     <section className="relative overflow-hidden border-b border-slate-200/60 bg-slate-950 text-white">
@@ -58,12 +71,25 @@ export function ProductShowcaseHero({ product, lead, isFreeDownload, children }:
           <div className="space-y-6">
             <div className="max-w-4xl">
               <div className="flex flex-wrap gap-2">
-                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-100 backdrop-blur">
-                  {productTypeLabel(product.productType)}
-                </span>
-                <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-100 backdrop-blur">
-                  {licenseDisplayLabel(product)}
-                </span>
+                {promotionalMeta ? (
+                  promotionalMeta.badges.map((badge) => (
+                    <span
+                      key={badge}
+                      className="rounded-full border border-sky-300/30 bg-sky-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-sky-100 backdrop-blur"
+                    >
+                      {badge}
+                    </span>
+                  ))
+                ) : (
+                  <>
+                    <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-100 backdrop-blur">
+                      {productTypeLabel(product.productType)}
+                    </span>
+                    <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-100 backdrop-blur">
+                      {licenseDisplayLabel(product)}
+                    </span>
+                  </>
+                )}
                 {product.isFeatured ? (
                   <span className="rounded-full border border-amber-300/25 bg-amber-400/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-100 backdrop-blur">
                     Öne çıkan
@@ -87,10 +113,17 @@ export function ProductShowcaseHero({ product, lead, isFreeDownload, children }:
               <p className="mt-4 max-w-3xl text-base leading-relaxed text-slate-300 sm:text-lg">{lead}</p>
 
               <div className="mt-5 flex flex-wrap gap-3">
-                <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-slate-200 backdrop-blur">
-                  <ShieldCheck className="h-4 w-4 text-emerald-300" aria-hidden />
-                  Güvenli dijital teslimat akışı
-                </div>
+                {isExternalSales ? (
+                  <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-slate-200 backdrop-blur">
+                    <ShieldCheck className="h-4 w-4 text-sky-300" aria-hidden />
+                    Woontegra geliştirdi · resmi sitede satış
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-slate-200 backdrop-blur">
+                    <ShieldCheck className="h-4 w-4 text-emerald-300" aria-hidden />
+                    Güvenli dijital teslimat akışı
+                  </div>
+                )}
                 {product.productType === 'DOWNLOAD' && product.version?.trim() ? (
                   <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-slate-200 backdrop-blur">
                     <Monitor className="h-4 w-4 text-sky-300" aria-hidden />

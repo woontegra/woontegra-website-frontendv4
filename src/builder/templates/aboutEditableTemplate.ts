@@ -33,9 +33,9 @@ export const ABOUT_EDITABLE_BLOCK_IDS = {
 
 const ABOUT_SOFTWARE_CARDS = [
   {
-    title: 'Bilirkişi Hesap',
-    description: 'Hukuk ve aktüerya süreçlerinde profesyonel hesaplama ihtiyacına odaklanan uzman yazılım ürünü.',
-    href: 'https://www.bilirkisihesap.com/',
+    title: 'Bilirkişi Hesaplama Yazılımı',
+    description: 'Web tabanlı bilirkişi ve işçilik alacağı hesaplamaları için geliştirilen profesyonel hesaplama yazılımı.',
+    href: '/yazilimlar/bilirkisi-hesap',
   },
   {
     title: 'Müvekkil Kasa Defteri Masaüstü',
@@ -255,6 +255,34 @@ function aboutCtaBlock(cta: AboutPageContent['cta'], order: number): CtaBlock {
   return block
 }
 
+function normalizeAboutCardTitle(value: string): string {
+  return value.trim().toLocaleLowerCase('tr-TR')
+}
+
+function mergeAboutSoftwareCards(
+  existing: Array<{ id?: string; title?: string; description?: string; href?: string; imageUrl?: string; buttonLabel?: string }>,
+) {
+  return ABOUT_SOFTWARE_CARDS.map((canonical, index) => {
+    const match = existing.find((card) => {
+      const cardTitle = normalizeAboutCardTitle(card.title || '')
+      const canonicalTitle = normalizeAboutCardTitle(canonical.title)
+      if (cardTitle === canonicalTitle) return true
+      if (canonicalTitle.includes('bilirkişi') && (cardTitle.includes('bilirkişi') || cardTitle.includes('bilirkisi'))) {
+        return true
+      }
+      return false
+    })
+    return {
+      id: match?.id || `${ABOUT_EDITABLE_BLOCK_IDS.brands}-card-${index}`,
+      title: canonical.title,
+      description: match?.description?.trim() || canonical.description,
+      href: canonical.href,
+      imageUrl: match?.imageUrl ?? '',
+      buttonLabel: match?.buttonLabel?.trim() || 'İncele',
+    }
+  })
+}
+
 export function sanitizeAboutBuilderBlocks(blocks: BuilderBlock[]): BuilderBlock[] {
   return blocks.map((block) => {
     if (block.type !== 'card-grid' || block.id !== ABOUT_EDITABLE_BLOCK_IDS.brands) return block
@@ -267,15 +295,6 @@ export function sanitizeAboutBuilderBlocks(blocks: BuilderBlock[]): BuilderBlock
         containsForbiddenBrandText(`${card.title || ''} ${card.description || ''} ${card.href || ''} ${card.imageUrl || ''}`),
       )
 
-    if (!hasForbidden) {
-      return {
-        ...block,
-        title: 'Geliştirdiğimiz Yazılımlar',
-        description:
-          'Woontegra, hukuk, güvenli kayıt, lisans ve işletme süreçleri için kendi yazılım ürünlerini geliştiren bir teknoloji şirketidir.',
-      }
-    }
-
     return {
       ...cardGrid,
       title: 'Geliştirdiğimiz Yazılımlar',
@@ -284,14 +303,7 @@ export function sanitizeAboutBuilderBlocks(blocks: BuilderBlock[]): BuilderBlock
       settings: {
         ...cardGrid.settings,
         columns: 4,
-        cards: ABOUT_SOFTWARE_CARDS.map((card, index) => ({
-          id: `${ABOUT_EDITABLE_BLOCK_IDS.brands}-card-${index}`,
-          title: card.title,
-          description: card.description,
-          href: card.href,
-          imageUrl: '',
-          buttonLabel: 'İncele',
-        })),
+        cards: hasForbidden ? mergeAboutSoftwareCards([]) : mergeAboutSoftwareCards(cards),
       },
     }
   })

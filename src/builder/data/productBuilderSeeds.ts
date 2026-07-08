@@ -20,6 +20,33 @@ export type ProductBuilderSeed = {
 }
 
 export const PRODUCT_BUILDER_SEEDS: Record<string, ProductBuilderSeed> = {
+  'bilirkisi-hesap': {
+    slug: 'bilirkisi-hesap',
+    name: 'Bilirkişi Hesaplama Yazılımı',
+    shortDescription:
+      'İşçilik alacakları, kıdem-ihbar tazminatı, fazla mesai, yıllık izin ve benzeri bilirkişi hesaplamalarını web tabanlı olarak hazırlamak için geliştirilen profesyonel hesaplama yazılımı.',
+    productType: 'SERVICE',
+    price: 0,
+    currency: 'TRY',
+    licenseMonths: 12,
+    version: '1.0.0',
+    coverImage: null,
+    gallery: [],
+    description:
+      '<p>Bilirkişi Hesaplama Yazılımı; iş hukuku ve bilirkişilik süreçlerinde kullanılan hesaplama kalemlerini tek merkezde toplayan, web tabanlı bir hesaplama yazılımıdır. Satın alma, lisans ve destek süreçleri resmi site üzerinden yürütülür.</p>',
+    featureBullets: [
+      'İşçilik alacakları',
+      'Kıdem ve ihbar tazminatı',
+      'Fazla mesai',
+      'Yıllık izin',
+      'Bilirkişi raporlarına uygun hesaplama',
+      '40\'dan fazla hesaplama sayfası',
+      'Web tabanlı erişim',
+    ],
+    systemRequirements: 'Modern tarayıcı, internet bağlantısı',
+    deliveryInfo: 'Satış ve lisans işlemleri resmi sitede yürütülür.',
+    licenseInfo: 'Lisans üretimi Bilirkişi Hesaplama Yazılımı resmi sitesi üzerinden yapılır.',
+  },
   'muvekkil-kasa-defteri-yazilimi': {
     slug: 'muvekkil-kasa-defteri-yazilimi',
     name: 'Müvekkil Kasa Defteri Masaüstü',

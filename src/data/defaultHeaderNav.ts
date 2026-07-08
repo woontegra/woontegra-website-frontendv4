@@ -1,4 +1,5 @@
 import { CANONICAL_PUBLIC_SERVICES } from '@/data/canonicalServices'
+import { buildCanonicalSoftwareNavChildren } from '@/lib/publicSoftwareCatalog'
 import type { PublicNavigationMenuItem } from '@/types/navigationMenu'
 
 /** API menüsü eksik/bozuk olduğunda kullanılan header menüsü */
@@ -54,7 +55,7 @@ export const DEFAULT_PUBLIC_NAV: PublicNavigationMenuItem[] = [
     resolvedUrl: '/yazilimlar',
     openInNewTab: false,
     sortOrder: 4,
-    children: [],
+    children: buildCanonicalSoftwareNavChildren(),
   },
   {
     id: 'blog',

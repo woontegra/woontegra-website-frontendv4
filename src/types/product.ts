@@ -19,6 +19,8 @@ export type PublicProductGalleryImage = {
   id: string
   url: string
   sortOrder: number
+  alt?: string
+  title?: string
 }
 
 export type PublicProductListItem = {
@@ -117,11 +119,16 @@ function normalizeGalleryImages(raw: unknown): PublicProductGalleryImage[] {
       const row = item as Record<string, unknown>
       const url = toString(row.url)
       if (!url) return null
-      return {
+      const image: PublicProductGalleryImage = {
         id: toString(row.id, `gallery-${index}`),
         url,
         sortOrder: toNumber(row.sortOrder, index),
       }
+      const alt = row.alt == null || row.alt === '' ? undefined : toString(row.alt)
+      const title = row.title == null || row.title === '' ? undefined : toString(row.title)
+      if (alt) image.alt = alt
+      if (title) image.title = title
+      return image
     })
     .filter((x): x is PublicProductGalleryImage => x !== null)
     .sort((a, b) => a.sortOrder - b.sortOrder)

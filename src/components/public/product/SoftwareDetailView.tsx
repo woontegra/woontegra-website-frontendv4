@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 import { ProductContentSections } from '@/components/public/product/ProductContentSections'
+import { ExternalProductPurchasePanel } from '@/components/public/product/ExternalProductPurchasePanel'
 import { ProductPurchasePanel } from '@/components/public/product/ProductPurchasePanel'
 import { ProductShowcaseHero } from '@/components/public/product/ProductShowcaseHero'
 import { addToCart } from '@/lib/cartStorage'
@@ -11,6 +12,7 @@ import {
 } from '@/utils/productPurchase'
 import type { PublicProductDetail } from '@/types/product'
 import { trackAddToCart, trackViewContent } from '@/integrations/trackingEvents'
+import { isExternalSalesProduct } from '@/lib/publicSoftwareCatalog'
 
 const TYPE_LEAD = {
   DOWNLOAD: 'Masaüstü kullanım için hazırlanmış yazılım.',
@@ -37,7 +39,8 @@ export function SoftwareDetailView({ product: data }: Props) {
 
   const lead = data.shortDescription?.trim() || TYPE_LEAD[data.productType]
   const isFreeDownload = isFreeDownloadProduct(data)
-  const canPurchase = canPurchaseProduct(data)
+  const isExternalSales = isExternalSalesProduct(data)
+  const canPurchase = canPurchaseProduct(data) && !isExternalSales
   const isSaas = isSaasSubscriptionProduct(data.productType)
 
   useEffect(() => {
@@ -84,14 +87,18 @@ export function SoftwareDetailView({ product: data }: Props) {
         lead={lead}
         isFreeDownload={isFreeDownload}
       >
-        <ProductPurchasePanel
-          product={data}
-          webUsageYears={webUsageYears}
-          onWebUsageYearsChange={setWebUsageYears}
-          feedback={feedback}
-          onFeedbackDismiss={() => setFeedback(null)}
-          onAddToCart={handleAddToCart}
-        />
+        {isExternalSales ? (
+          <ExternalProductPurchasePanel product={data} />
+        ) : (
+          <ProductPurchasePanel
+            product={data}
+            webUsageYears={webUsageYears}
+            onWebUsageYearsChange={setWebUsageYears}
+            feedback={feedback}
+            onFeedbackDismiss={() => setFeedback(null)}
+            onAddToCart={handleAddToCart}
+          />
+        )}
       </ProductShowcaseHero>
 
       <ProductContentSections product={data} bullets={bullets} isFreeDownload={isFreeDownload} />

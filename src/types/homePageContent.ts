@@ -159,7 +159,7 @@ export const defaultHomePageContent: HomePageContent = {
     title: 'Woontegra Çatısı Altında Geliştirilen Markalar',
     subtitle: 'Gerçek projelerle kanıtlanmış deneyim',
     cards: [
-      { id: 'br-1', name: 'Bilirkişi Hesap', image: '/images/brand-bilirkisi.jpg', text: 'Hukuk ve aktüerya alanında profesyonel hesaplama yazılımı.', url: 'https://www.bilirkisihesap.com/', order: 0, enabled: true },
+      { id: 'br-1', name: 'Bilirkişi Hesaplama Yazılımı', image: '/images/brand-bilirkisi.jpg', text: 'Web tabanlı bilirkişi ve işçilik alacağı hesaplamaları için geliştirilen profesyonel hesaplama yazılımı.', url: '/yazilimlar/bilirkisi-hesap', order: 0, enabled: true },
       { id: 'br-2', name: 'Optimoon', image: '/images/brand-optimoon.jpg', text: 'Doğal taş ve özel tasarım ürünler e-ticaret markası.', url: 'https://optimoon.com/', order: 1, enabled: true },
       { id: 'br-3', name: 'Datça Tropikal', image: '/images/brand-datca.jpg', text: 'Yerel üretim ve doğal ürünler e-ticaret markası.', url: 'https://datcatropikal.com/', order: 2, enabled: true },
     ],
