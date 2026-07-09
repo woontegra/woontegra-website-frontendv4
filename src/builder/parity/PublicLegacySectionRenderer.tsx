@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react'
 import { PageHero } from '@/components/public/PageHero'
 import {
   AboutBrands,
@@ -16,9 +17,6 @@ import { SiteCtaSection } from '@/components/public/SiteCtaSection'
 import { SolutionCard } from '@/components/public/SolutionCard'
 import { ServiceDetailLayout } from '@/components/public/services/ServiceDetailLayout'
 import { SolutionDetailLayout } from '@/components/public/solutions/SolutionDetailLayout'
-import { SoftwareListPage } from '@/pages/public/SoftwareListPage'
-import { BlogListPage } from '@/pages/public/BlogListPage'
-import { ContactPage } from '@/pages/public/ContactPage'
 import { SoftwareDetailView } from '@/components/public/product/SoftwareDetailView'
 import { BlogDetailView } from '@/components/public/blog/BlogDetailView'
 import { LegalCookieView } from '@/components/public/legal/LegalCookieView'
@@ -32,6 +30,20 @@ import type { PublicProductDetail } from '@/types/product'
 import type { PublicBlogPost } from '@/types/blog'
 import type { LegalPageContent } from '@/data/legalPageDefaults'
 import { resolveIcon } from '@/lib/iconRegistry'
+
+const SoftwareListPageLazy = lazy(() =>
+  import('@/pages/public/SoftwareListPage').then((m) => ({ default: m.SoftwareListPage })),
+)
+const BlogListPageLazy = lazy(() =>
+  import('@/pages/public/BlogListPage').then((m) => ({ default: m.BlogListPage })),
+)
+const ContactPageLazy = lazy(() =>
+  import('@/pages/public/ContactPage').then((m) => ({ default: m.ContactPage })),
+)
+
+function LegacyPageFallback() {
+  return <div className="min-h-[240px] w-full" aria-hidden />
+}
 
 const SERVICES_PROCESS = [
   { step: '01', title: 'Analiz', desc: 'İhtiyaçları ve hedefleri netleştiririz.', color: 'from-blue-500 to-cyan-500' },
@@ -310,11 +322,23 @@ export function PublicLegacySectionRenderer({ sectionKey, payload }: Props) {
     case 'solution-detail.page':
       return <SolutionDetailLayout content={payload as SolutionDetailContent} />
     case 'software-list.page':
-      return <SoftwareListPage />
+      return (
+        <Suspense fallback={<LegacyPageFallback />}>
+          <SoftwareListPageLazy />
+        </Suspense>
+      )
     case 'blog-list.page':
-      return <BlogListPage />
+      return (
+        <Suspense fallback={<LegacyPageFallback />}>
+          <BlogListPageLazy />
+        </Suspense>
+      )
     case 'contact.page':
-      return <ContactPage />
+      return (
+        <Suspense fallback={<LegacyPageFallback />}>
+          <ContactPageLazy />
+        </Suspense>
+      )
     case 'product-detail.page':
       return <SoftwareDetailView product={payload as PublicProductDetail} />
     case 'blog-detail.page':

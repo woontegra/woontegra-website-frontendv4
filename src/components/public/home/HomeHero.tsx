@@ -75,6 +75,7 @@ export function HomeHero({ hero }: Props) {
                   src={imageUrl}
                   alt="Woontegra Teknoloji"
                   loading="eager"
+                  fetchPriority="high"
                   className="aspect-[8/5] w-full object-cover"
                 />
               ) : (

@@ -8,6 +8,7 @@ type Props = {
   alt?: string
   className?: string
   loading?: 'eager' | 'lazy'
+  fetchPriority?: 'high' | 'low' | 'auto'
   fill?: boolean
 }
 
@@ -41,6 +42,7 @@ export function HeroResponsiveImage({
   alt = '',
   className,
   loading = 'eager',
+  fetchPriority,
   fill = false,
 }: Props) {
   const isMobile = useNarrowViewport(640)
@@ -93,6 +95,7 @@ export function HeroResponsiveImage({
           alt={alt}
           loading={loading}
           decoding="async"
+          fetchPriority={fetchPriority ?? (loading === 'eager' ? 'high' : undefined)}
           className={className}
           onError={handleError}
         />
@@ -106,6 +109,7 @@ export function HeroResponsiveImage({
       alt={alt}
       className={className}
       loading={loading}
+      fetchPriority={fetchPriority ?? (loading === 'eager' ? 'high' : undefined)}
       onError={handleError}
     />
   )

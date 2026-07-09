@@ -42,6 +42,35 @@ export default defineConfig(({ mode }) => {  const env = loadEnv(mode, process.c
         '@': path.resolve(__dirname, './src'),
       },
     },
+    build: {
+      target: 'es2020',
+      cssMinify: true,
+      sourcemap: false,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) {
+              if (
+                id.includes('/src/pages/admin/') ||
+                id.includes('/src/builder/admin/') ||
+                id.includes('/src/builder/store/') ||
+                id.includes('/src/builder/load/')
+              ) {
+                return 'admin'
+              }
+              return undefined
+            }
+            if (id.includes('react-dom') || id.includes('/react/')) return 'vendor-react'
+            if (id.includes('react-router')) return 'vendor-router'
+            if (id.includes('@tanstack/react-query')) return 'vendor-query'
+            if (id.includes('lucide-react')) return 'vendor-icons'
+            if (id.includes('axios')) return 'vendor-axios'
+            if (id.includes('zustand')) return 'vendor-zustand'
+            return 'vendor-misc'
+          },
+        },
+      },
+    },
     server: {
       port: 5174,
       proxy: {

@@ -48,6 +48,7 @@ function HeroImageAside({
           src={resolvedImage}
           alt={imageAlt}
           loading="eager"
+          fetchPriority="high"
           className="aspect-[4/3] w-full rounded-xl object-cover"
         />
       </div>

@@ -6,8 +6,6 @@ import { AppRouteErrorBoundary } from '@/components/common/AppRouteErrorBoundary
 import { LazyChunkErrorBoundary } from '@/components/common/LazyChunkErrorBoundary'
 import { ScrollToTop } from '@/components/common/ScrollToTop'
 import { clearChunkReloadAttemptFlag } from '@/lib/chunkLoadError'
-import { AdminLayout } from '@/layouts/AdminLayout'
-import { AccountLayout } from '@/layouts/AccountLayout'
 import { SiteLayout } from '@/layouts/SiteLayout'
 import { PublicRouteSkeleton } from '@/components/public/PublicRouteSkeleton'
 
@@ -66,6 +64,8 @@ const RefundPolicyPage = lazy(() =>
   import('@/pages/public/LegalPublicPages').then((m) => ({ default: m.RefundPolicyPage })),
 )
 const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage').then((m) => ({ default: m.NotFoundPage })))
+const AdminLayout = lazy(() => import('@/layouts/AdminLayout').then((m) => ({ default: m.AdminLayout })))
+const AccountLayout = lazy(() => import('@/layouts/AccountLayout').then((m) => ({ default: m.AccountLayout })))
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage').then((m) => ({ default: m.LoginPage })))
 const CustomerLoginPage = lazy(() =>
   import('@/pages/account/CustomerLoginPage').then((m) => ({ default: m.CustomerLoginPage })),
@@ -278,7 +278,11 @@ export const router = createBrowserRouter([
         children: [
           {
             path: 'hesabim',
-            element: <AccountLayout />,
+            element: (
+              <LazyPage>
+                <AccountLayout />
+              </LazyPage>
+            ),
             children: [
               { index: true, element: <LazyPage><AccountDashboardPage /></LazyPage> },
               { path: 'siparisler', element: <LazyPage><AccountOrdersPage /></LazyPage> },
@@ -314,7 +318,11 @@ export const router = createBrowserRouter([
     children: [
       {
         path: 'admin',
-        element: <AdminLayout />,
+        element: (
+          <LazyPage>
+            <AdminLayout />
+          </LazyPage>
+        ),
         children: [
           { index: true, element: <LazyPage><AdminDashboardPage /></LazyPage> },
           { path: 'orders', element: <LazyPage><AdminOrdersPage /></LazyPage> },

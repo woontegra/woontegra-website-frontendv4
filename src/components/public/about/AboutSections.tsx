@@ -163,6 +163,7 @@ export function AboutBrands({ brands }: { brands: AboutPageContent['brands'] }) 
                     <MediaImage
                       src={brand.image}
                       alt={brand.name}
+                      loading="lazy"
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent" />
