@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
-import { HeroResponsiveImage } from '@/media/components/HeroResponsiveImage'
-import { resolveMediaUrl } from '@/media/resolveMediaUrl'
+import { PublicHeroImage } from '@/media/components/PublicHeroImage'
+import { hasPublicImage } from '@/media/resolvePublicImage'
 import type { HomePageContent } from '@/types/homePageContent'
+import { cn } from '@/lib/cn'
 
 type Props = { hero: HomePageContent['hero'] }
 
@@ -15,13 +16,13 @@ function scrollToHash(href: string) {
 export function HomeHero({ hero }: Props) {
   if (!hero.enabled) return null
 
-  const imageUrl = hero.image?.trim() ? resolveMediaUrl(hero.image) : ''
+  const hasImage = hasPublicImage({ image: hero.image, heroImage: hero.image })
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-green-900 py-12 sm:py-16 lg:py-20">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,197,94,0.2),transparent_70%)]" />
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
+        <div className={cn('grid items-center gap-10 lg:gap-12', hasImage ? 'lg:grid-cols-2' : 'max-w-3xl')}>
           <div className="text-white">
             {hero.tag ? (
               <div className="mb-4 inline-block rounded-full bg-green-500/20 px-3 py-1.5">
@@ -66,26 +67,23 @@ export function HomeHero({ hero }: Props) {
             </div>
           </div>
 
-          <div className="group relative">
-            <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-br from-green-500/30 to-blue-500/30 blur-3xl" />
-            <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-green-500 to-blue-500 opacity-20 blur transition duration-500 group-hover:opacity-40" />
-            <div className="relative overflow-hidden rounded-xl border border-white/10 shadow-xl transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-2xl">
-              {imageUrl ? (
-                <HeroResponsiveImage
-                  sources={{ desktop: imageUrl, tablet: imageUrl, mobile: imageUrl }}
+          {hasImage ? (
+            <div className="group relative">
+              <div className="absolute inset-0 animate-pulse rounded-full bg-gradient-to-br from-green-500/30 to-blue-500/30 blur-3xl" />
+              <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-green-500 to-blue-500 opacity-20 blur transition duration-500 group-hover:opacity-40" />
+              <div className="relative overflow-hidden rounded-xl border border-white/10 shadow-xl transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-2xl">
+                <PublicHeroImage
+                  input={{ image: hero.image, heroImage: hero.image }}
                   alt="Woontegra Teknoloji"
                   loading="eager"
                   fetchPriority="high"
-                  className="aspect-[8/5] w-full object-cover"
+                  framed={false}
+                  darkFrame
+                  imageClassName="aspect-[8/5] w-full object-cover"
                 />
-              ) : (
-                <div
-                  className="aspect-[8/5] w-full bg-gradient-to-br from-emerald-600/40 via-slate-800 to-blue-900/50"
-                  aria-hidden
-                />
-              )}
+              </div>
             </div>
-          </div>
+          ) : null}
         </div>
       </div>
     </section>

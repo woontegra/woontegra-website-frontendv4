@@ -4,6 +4,7 @@ import { BuilderField } from '@/builder/edit/BuilderField'
 import { BlockSectionHeader } from '@/builder/render/SectionBlockShell'
 import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
 import { renderIfText } from '@/builder/render/renderRules'
+import { resolvePublicImage } from '@/media/resolvePublicImage'
 import { cn } from '@/lib/cn'
 import type { CtaBlock } from '@/builder/types'
 
@@ -25,10 +26,13 @@ export function CtaBlockRenderer({ block }: BlockRendererProps) {
   const bgStyle: CSSProperties = {}
   if (b.settings.backgroundType === 'gradient' && b.settings.gradient) {
     bgStyle.background = b.settings.gradient
-  } else if (b.settings.backgroundType === 'image' && b.settings.imageUrl) {
-    bgStyle.backgroundImage = `url(${b.settings.imageUrl})`
-    bgStyle.backgroundSize = 'cover'
-    bgStyle.backgroundPosition = 'center'
+  } else if (b.settings.backgroundType === 'image') {
+    const bgImage = resolvePublicImage(b.settings)
+    if (bgImage) {
+      bgStyle.backgroundImage = `url(${bgImage})`
+      bgStyle.backgroundSize = 'cover'
+      bgStyle.backgroundPosition = 'center'
+    }
   } else if (b.style.backgroundColor) {
     bgStyle.backgroundColor = b.style.backgroundColor
   }

@@ -1,6 +1,6 @@
 import type { MediaRef } from '@/builder/types/common'
 import type { HeroImageFit, HeroSettings, HeroSlide } from '@/builder/types/hero'
-import { resolveMediaUrl } from '@/media/resolveMediaUrl'
+import { resolvePublicImage, resolvePublicImageSources } from '@/media/resolvePublicImage'
 
 export type HeroImageSources = {
   desktop: string
@@ -11,8 +11,7 @@ export type HeroImageSources = {
 type SlideLike = HeroSlide & Record<string, unknown>
 
 export function resolveHeroMediaUrl(ref?: MediaRef | null): string {
-  if (!ref?.url) return ''
-  return resolveMediaUrl(ref.url) || ''
+  return resolvePublicImage(ref)
 }
 
 function normalizeMediaRef(value: unknown): MediaRef | undefined {
@@ -135,6 +134,9 @@ export function getHeroSettingsImageSources(settings: HeroSettings): HeroImageSo
     if (!slide) return null
     return getHeroSlideImageSources(slide)
   }
+
+  const fromSettings = resolvePublicImageSources(settings)
+  if (fromSettings) return fromSettings
 
   return pickHeroImageSourcesFromRefs(
     settings.desktopImage ?? settings.slides[0]?.desktopImage,

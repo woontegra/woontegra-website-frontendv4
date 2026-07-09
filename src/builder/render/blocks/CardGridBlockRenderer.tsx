@@ -4,7 +4,7 @@ import { BlockSectionHeader, SectionBlockShell } from '@/builder/render/SectionB
 import { renderIfText } from '@/builder/render/renderRules'
 import { MediaImage } from '@/media/components/MediaImage'
 import { HomeIcon } from '@/lib/homeIcons'
-import { resolveMediaUrl } from '@/media/resolveMediaUrl'
+import { hasPublicImage } from '@/media/resolvePublicImage'
 import { cn } from '@/lib/cn'
 import type { CardGridBlock, CardGridItem } from '@/builder/types'
 import { CardButtonLabel, CardLinkShell } from '@/builder/render/blocks/CardGridCardLink'
@@ -16,7 +16,7 @@ export function CardGridBlockRenderer({ block }: BlockRendererProps) {
 
   const variant = b.settings.variant ?? 'default'
   const cards = b.settings.cards.filter(
-    (c) => renderIfText(c.title) || renderIfText(c.description) || c.imageUrl,
+    (c) => renderIfText(c.title) || renderIfText(c.description) || hasPublicImage(c),
   )
 
   if (variant === 'intro') return <IntroVariant block={b} cards={cards} />
@@ -180,10 +180,12 @@ function LogoVariant({ block, cards }: { block: CardGridBlock; cards: CardGridIt
             card={card}
             className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
           >
-            {card.imageUrl ? (
+            {hasPublicImage(card) ? (
               <MediaImage
-                src={resolveMediaUrl(card.imageUrl)}
+                input={card}
                 alt={card.title}
+                loading="lazy"
+                optimizeWidth={640}
                 className="mb-4 aspect-video w-full rounded-lg object-cover"
               />
             ) : null}
@@ -405,12 +407,14 @@ function AboutBrandsVariant({ block, cards }: { block: CardGridBlock; cards: Car
               card={brand}
               className="group flex flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-md transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-xl"
             >
-              {brand.imageUrl ? (
+              {hasPublicImage(brand) ? (
                 <BuilderField path={`card.${brand.id}.image`} label="Marka görseli" type="media" className="relative">
                   <div className="relative h-44 overflow-hidden">
                     <MediaImage
-                      src={resolveMediaUrl(brand.imageUrl)}
+                      input={brand}
                       alt={brand.title}
+                      loading="lazy"
+                      optimizeWidth={640}
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 via-transparent to-transparent" />

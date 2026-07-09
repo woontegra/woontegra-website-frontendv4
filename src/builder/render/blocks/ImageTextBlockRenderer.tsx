@@ -2,7 +2,7 @@ import { MediaImage } from '@/media/components/MediaImage'
 import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { BlockSectionHeader, SectionBlockShell } from '@/builder/render/SectionBlockShell'
 import { renderIfMediaUrl, renderIfText, shouldShowField } from '@/builder/render/renderRules'
-import { resolveMediaUrl } from '@/media/resolveMediaUrl'
+import { hasPublicImage, resolvePublicImage } from '@/media/resolvePublicImage'
 import { cn } from '@/lib/cn'
 import type { ImageTextBlock } from '@/builder/types'
 
@@ -11,10 +11,8 @@ export function ImageTextBlockRenderer({ block }: BlockRendererProps) {
   const b = block as ImageTextBlock
   if (!b.visibility.enabled) return null
 
-  const imageUrl = renderIfMediaUrl(
-    b.settings.imageUrl ? resolveMediaUrl(b.settings.imageUrl) : null,
-  )
-  const showImage = b.visibility.showImage !== false && Boolean(imageUrl)
+  const imageUrl = renderIfMediaUrl(resolvePublicImage(b.settings))
+  const showImage = b.visibility.showImage !== false && hasPublicImage(b.settings)
   const btn = b.settings.button
   const showBtn =
     b.visibility.showButton !== false &&
@@ -33,9 +31,11 @@ export function ImageTextBlockRenderer({ block }: BlockRendererProps) {
   const imageEl =
     showImage && imageUrl ? (
       <MediaImage
-        src={imageUrl}
+        input={b.settings}
         alt={b.settings.imageAlt ?? b.title ?? ''}
         className="h-auto w-full rounded-xl object-cover"
+        loading="lazy"
+        optimizeWidth={1024}
       />
     ) : null
 
@@ -63,7 +63,7 @@ export function ImageTextBlockRenderer({ block }: BlockRendererProps) {
       <div
         className={cn(
           'grid items-center gap-8',
-          showImage ? 'md:grid-cols-2' : 'grid-cols-1',
+          showImage && imageEl ? 'md:grid-cols-2' : 'grid-cols-1',
         )}
       >
         {imageFirst ? (

@@ -1,7 +1,7 @@
 import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { BuilderField } from '@/builder/edit/BuilderField'
 import { MediaImage } from '@/media/components/MediaImage'
-import { resolveMediaUrl } from '@/media/resolveMediaUrl'
+import { hasPublicImage } from '@/media/resolvePublicImage'
 import type { BlogArticleBlock } from '@/builder/types/blogArticle'
 
 export function BlogArticleBlockRenderer({ block }: BlockRendererProps) {
@@ -33,12 +33,14 @@ export function BlogArticleBlockRenderer({ block }: BlockRendererProps) {
         <p className="text-lg text-slate-600">{b.description}</p>
       </BuilderField>
 
-      {s.coverImageUrl?.trim() ? (
+      {hasPublicImage(s) ? (
         <BuilderField path="coverImage" label="Kapak görseli" type="media" className="mt-6">
           <MediaImage
-            src={resolveMediaUrl(s.coverImageUrl)}
+            input={s}
             alt={b.title ?? ''}
             className="w-full rounded-xl object-cover"
+            loading="eager"
+            optimizeWidth={1200}
           />
         </BuilderField>
       ) : null}

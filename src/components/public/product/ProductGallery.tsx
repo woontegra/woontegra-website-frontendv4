@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, Download, Globe, ImageIcon, Layers3, MonitorSmartphone, X } from 'lucide-react'
 import { MediaImage } from '@/media/components/MediaImage'
 import { pickProductCoverUrl } from '@/lib/publicContentImages'
-import { resolveMediaUrl } from '@/media/resolveMediaUrl'
+import { resolvePublicImage } from '@/media/resolvePublicImage'
 import { cn } from '@/lib/cn'
 import type { ProductType } from '@/types/product'
 
@@ -36,12 +36,12 @@ function collectGalleryEntries(
 
   const metaByUrl = new Map<string, GalleryImage>()
   for (const img of galleryImages) {
-    const resolved = resolveMediaUrl(img.url)
+    const resolved = resolvePublicImage(img)
     if (resolved) metaByUrl.set(resolved, img)
   }
 
   const add = (rawUrl: string, meta?: GalleryImage) => {
-    const resolved = resolveMediaUrl(rawUrl)
+    const resolved = resolvePublicImage(rawUrl)
     if (!resolved || seen.has(resolved)) return
     seen.add(resolved)
     const alt = meta?.alt?.trim() || meta?.title?.trim() || fallbackAlt
@@ -52,7 +52,7 @@ function collectGalleryEntries(
   if (cover) add(cover, metaByUrl.get(cover))
 
   for (const img of galleryImages) {
-    add(img.url, img)
+    add(resolvePublicImage(img) || img.url, img)
   }
 
   return entries

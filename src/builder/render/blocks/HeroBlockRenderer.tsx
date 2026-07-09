@@ -4,6 +4,8 @@ import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { renderIfText, shouldShowField } from '@/builder/render/renderRules'
 import { getHeroSettingsImageSources, heroHasRenderableImage, heroUsesMobileNaturalImageLayout } from '@/builder/render/heroResponsiveImage'
 import { HeroResponsiveImage } from '@/media/components/HeroResponsiveImage'
+import { PublicHeroImage } from '@/media/components/PublicHeroImage'
+import { hasPublicImage } from '@/media/resolvePublicImage'
 import { resolveIcon } from '@/lib/iconRegistry'
 import { cn } from '@/lib/cn'
 import type { BlockButton, HeroBlock } from '@/builder/types'
@@ -106,7 +108,8 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
     settings.mode !== 'solid-color' &&
     settings.mode !== 'video' &&
     visibility.showImage !== false &&
-    heroHasRenderableImage(settings)
+    heroHasRenderableImage(settings) &&
+    hasPublicImage(settings)
 
   const visibleButtons = (settings.buttons ?? []).filter(
     (b) => b.visible !== false && renderIfText(b.label) && renderIfText(b.href),
@@ -326,15 +329,15 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
             </div>
             {showImage && imageSources ? (
               <BuilderField path="image" label="Görsel" type="media" className="relative mx-auto w-full max-w-xl lg:max-w-none">
-                <div className="pointer-events-none absolute -inset-4 rounded-3xl bg-gradient-to-br from-emerald-500/20 to-blue-500/15 blur-2xl" />
-                <div className="relative overflow-hidden rounded-2xl border border-white/15 bg-slate-900/40 p-2 shadow-2xl">
-                  <HeroResponsiveImage
-                    sources={imageSources}
-                    alt={hero.title ?? ''}
-                    className={heroAboutImageClass(naturalMobileImage)}
-                    loading="eager"
-                  />
-                </div>
+                <PublicHeroImage
+                  input={settings}
+                  alt={hero.title ?? ''}
+                  imageClassName={heroAboutImageClass(naturalMobileImage)}
+                  loading="eager"
+                  fetchPriority="high"
+                  framed
+                  darkFrame
+                />
               </BuilderField>
             ) : null}
           </div>

@@ -3,6 +3,7 @@ import type { HeroBlock } from '@/builder/types/hero'
 import type { BuilderPageDefinition } from '@/builder/pages/builderPageRegistry'
 import { assignSortOrder } from '@/builder/load/parseBuilderBlocks'
 import { parseBuilderBlocksFromRaw } from '@/builder/load/parseBuilderBlocks'
+import { resolvePublicImage } from '@/media/resolvePublicImage'
 
 function cloneRaw(raw: Record<string, unknown> | null): Record<string, unknown> {
   if (!raw) return {}
@@ -12,10 +13,7 @@ function cloneRaw(raw: Record<string, unknown> | null): Record<string, unknown> 
 function heroImageFromBlock(block: BuilderBlock): string | undefined {
   if (block.type !== 'hero') return undefined
   const hero = block as HeroBlock
-  const url =
-    hero.settings.desktopImage?.url?.trim() ||
-    hero.settings.slides.find((s) => s.enabled !== false)?.desktopImage?.url?.trim() ||
-    hero.settings.slides[0]?.desktopImage?.url?.trim()
+  const url = resolvePublicImage(hero.settings) || resolvePublicImage(hero)
   return url || undefined
 }
 
