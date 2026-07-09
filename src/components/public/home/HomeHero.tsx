@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
-import { MediaImage } from '@/media/components/MediaImage'
+import { HeroResponsiveImage } from '@/media/components/HeroResponsiveImage'
 import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 import type { HomePageContent } from '@/types/homePageContent'
 
@@ -71,8 +71,8 @@ export function HomeHero({ hero }: Props) {
             <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-green-500 to-blue-500 opacity-20 blur transition duration-500 group-hover:opacity-40" />
             <div className="relative overflow-hidden rounded-xl border border-white/10 shadow-xl transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-2xl">
               {imageUrl ? (
-                <MediaImage
-                  src={imageUrl}
+                <HeroResponsiveImage
+                  sources={{ desktop: imageUrl, tablet: imageUrl, mobile: imageUrl }}
                   alt="Woontegra Teknoloji"
                   loading="eager"
                   fetchPriority="high"

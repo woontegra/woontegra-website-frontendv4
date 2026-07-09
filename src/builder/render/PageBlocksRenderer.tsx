@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo, type ComponentType } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
 import type { BuilderBlock } from '@/builder/types'
 import { getBlockRendererLoader, type BlockRendererProps } from '@/builder/registry/renderRegistry'
 
@@ -55,14 +55,80 @@ function BlockSlot({
   )
 }
 
+function DeferredBlockSlot({
+  block,
+  mode,
+  annotateBlocks,
+}: {
+  block: BuilderBlock
+  mode: 'public' | 'preview'
+  annotateBlocks: boolean
+}) {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el) return
+
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisible(true)
+          obs.disconnect()
+        }
+      },
+      { rootMargin: '280px 0px', threshold: 0.01 },
+    )
+
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  return (
+    <div ref={rootRef} className="w-full">
+      {visible ? (
+        <BlockSlot block={block} mode={mode} annotateBlocks={annotateBlocks} />
+      ) : (
+        <BlockRenderFallback />
+      )}
+    </div>
+  )
+}
+
 export function PageBlocksRenderer({ blocks, mode = 'public', annotateBlocks = false }: Props) {
-  const sorted = [...blocks].sort((a, b) => a.sortOrder - b.sortOrder)
+  const sorted = useMemo(() => [...blocks].sort((a, b) => a.sortOrder - b.sortOrder), [blocks])
+  const deferBelowFold = mode === 'public' && !annotateBlocks
+
+  if (!deferBelowFold) {
+    return (
+      <>
+        {sorted.map((block) => (
+          <BlockSlot key={block.id} block={block} mode={mode} annotateBlocks={annotateBlocks} />
+        ))}
+      </>
+    )
+  }
+
+  const [first, ...rest] = sorted
+  if (!first) return null
 
   return (
     <>
-      {sorted.map((block) => (
-        <BlockSlot key={block.id} block={block} mode={mode} annotateBlocks={annotateBlocks} />
+      <BlockSlot block={first} mode={mode} annotateBlocks={annotateBlocks} />
+      {rest.map((block) => (
+        <DeferredBlockSlot
+          key={block.id}
+          block={block}
+          mode={mode}
+          annotateBlocks={annotateBlocks}
+        />
       ))}
     </>
   )
+}
+
+/** Ana sayfa hero chunk'ını API beklerken paralel indirmeye başlatır. */
+export function prefetchHeroBlockRenderer(): void {
+  void getBlockRendererLoader('hero')()
 }

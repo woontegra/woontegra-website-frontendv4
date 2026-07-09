@@ -149,6 +149,7 @@ export function ProductCard({ product }: Props) {
             alt={product.name}
 
             loading="lazy"
+            optimizeWidth={640}
 
             className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
 

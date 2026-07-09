@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+@source not '../src/pages/admin/**';
+@source not '../src/builder/admin/**';
+
 @theme {
   --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
   --color-brand-50: #f0fdf4;

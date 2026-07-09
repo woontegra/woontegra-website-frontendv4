@@ -367,7 +367,8 @@ export function HeroCarouselSection({ hero }: Props) {
               ? heroSplitImageClass(slideNaturalMobile)
               : heroCenteredImageClass(slideNaturalMobile)
           }
-          loading={slideIndex === 0 ? 'eager' : 'lazy'}
+          loading="eager"
+          fetchPriority={slideIndex === 0 ? 'high' : 'auto'}
           fill={!isSplit && !slideNaturalMobile && !useMobileFlowLayout}
         />
       </>
@@ -454,26 +455,18 @@ export function HeroCarouselSection({ hero }: Props) {
           {/* Banner görselleri aynı grid hücresinde üst üste (crossfade); her biri
               doğal oranıyla (object-contain, h-auto) → hiçbir ekranda kırpılmaz. */}
           <div className="relative grid w-full">
-            {slides.map((slide, i) => {
-              const active = i === safeIndex
+            {(() => {
+              const slide = slides[safeIndex]
+              if (!slide) return null
               const sources = getHeroSlideImageSources(slide)
               if (!sources) return null
               const overlay = slideOverlay(slide, hero)
               const imageAlt = getSlideText(slide, hero, 'title') ?? hero.title ?? ''
               const link = getSlideLink(slide)
               return (
-                <div
-                  key={slide.id}
-                  className={cn(
-                    '[grid-area:1/1] w-full',
-                    transitionClass,
-                    isCarousel && !active && 'pointer-events-none opacity-0',
-                    isCarousel && active && 'opacity-100',
-                  )}
-                  aria-hidden={isCarousel && !active}
-                >
+                <div key={slide.id} className="[grid-area:1/1] w-full">
                   <BuilderField
-                    path={`slides.${i}.image`}
+                    path={`slides.${safeIndex}.image`}
                     label="Görsel"
                     type="media"
                     className="block w-full"
@@ -488,7 +481,8 @@ export function HeroCarouselSection({ hero }: Props) {
                           sources={sources}
                           alt={imageAlt}
                           className="block h-auto w-full object-contain object-center"
-                          loading={i === 0 ? 'eager' : 'lazy'}
+                          loading="eager"
+                          fetchPriority={safeIndex === 0 ? 'high' : 'auto'}
                         />
                         {overlay ? (
                           <div
@@ -504,7 +498,7 @@ export function HeroCarouselSection({ hero }: Props) {
                   </BuilderField>
                 </div>
               )
-            })}
+            })()}
             {!slideOverlay(currentSlide, hero) && style.overlay?.enabled ? (
               <div
                 className="pointer-events-none absolute inset-0 z-[1]"
@@ -542,19 +536,7 @@ export function HeroCarouselSection({ hero }: Props) {
                   hideContentOnMobile && 'max-[640px]:order-first',
                 )}
               >
-                {slides.map((slide, i) => (
-                  <div
-                    key={slide.id}
-                    className={cn(
-                      transitionClass,
-                      isCarousel && i !== safeIndex && 'pointer-events-none absolute inset-0 opacity-0',
-                      isCarousel && i === safeIndex && 'relative opacity-100',
-                      !isCarousel && 'relative',
-                    )}
-                  >
-                    {renderSlideImage(slide, i, i === safeIndex)}
-                  </div>
-                ))}
+                {slides[safeIndex] ? renderSlideImage(slides[safeIndex], safeIndex, true) : null}
               </div>
             </div>
           </div>

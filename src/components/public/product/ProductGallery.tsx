@@ -223,6 +223,7 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
               alt={mainEntry.alt}
               loading="eager"
               fetchPriority="high"
+              optimizeWidth={1024}
               className="aspect-[4/3] w-full origin-center bg-[linear-gradient(180deg,rgba(248,250,252,0.86),rgba(226,232,240,0.55))] object-contain p-5 transition-transform duration-500 ease-out group-hover/main:scale-[1.04] sm:object-cover sm:p-0"
             />
           </button>

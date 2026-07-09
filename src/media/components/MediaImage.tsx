@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { resolveMediaUrl } from '@/media/resolveMediaUrl'
+import { buildOptimizedMediaUrl } from '@/media/optimizeMediaUrl'
 import { cn } from '@/lib/cn'
 
 type Props = {
@@ -10,6 +11,8 @@ type Props = {
   loading?: 'eager' | 'lazy'
   fetchPriority?: 'high' | 'low' | 'auto'
   sizes?: string
+  /** Production'da Vercel Image Optimization ile genişlik sınırı uygular */
+  optimizeWidth?: number
   onError?: () => void
 }
 
@@ -24,20 +27,24 @@ export function MediaImage({
   loading = 'lazy',
   fetchPriority,
   sizes,
+  optimizeWidth,
   onError,
 }: Props) {
   const resolved = resolveMediaUrl(src)
+  const displaySrc = optimizeWidth
+    ? buildOptimizedMediaUrl(resolved, { width: optimizeWidth }) || resolved
+    : resolved
   const [failed, setFailed] = useState(false)
 
   useEffect(() => {
     setFailed(false)
-  }, [resolved])
+  }, [displaySrc])
 
-  if (!resolved || failed) return null
+  if (!displaySrc || failed) return null
 
   return (
     <img
-      src={resolved}
+      src={displaySrc}
       alt={alt}
       loading={loading}
       decoding="async"

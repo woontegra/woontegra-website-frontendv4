@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 import { pickPageHeroImage } from '@/lib/publicContentImages'
-import { MediaImage } from '@/media/components/MediaImage'
+import { HeroResponsiveImage } from '@/media/components/HeroResponsiveImage'
 import { Breadcrumbs, type BreadcrumbItem } from '@/components/public/Breadcrumbs'
 
 export type PageHeroHighlight = {
@@ -44,8 +44,8 @@ function HeroImageAside({
           isDark ? 'border-white/15 bg-slate-900/40' : 'border-slate-200 bg-white',
         )}
       >
-        <MediaImage
-          src={resolvedImage}
+        <HeroResponsiveImage
+          sources={{ desktop: resolvedImage, tablet: resolvedImage, mobile: resolvedImage }}
           alt={imageAlt}
           loading="eager"
           fetchPriority="high"

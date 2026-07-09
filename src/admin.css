@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+
+@source '../src/pages/admin/**';
+@source '../src/builder/admin/**';
+@source '../src/builder/edit/**';
+@source '../src/builder/store/**';

@@ -1,17 +1,23 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { PageBlocksRenderer } from '@/builder/render/PageBlocksRenderer'
+import { PageBlocksRenderer, prefetchHeroBlockRenderer } from '@/builder/render/PageBlocksRenderer'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { HomePageHeroSkeleton } from '@/components/public/home/HomePageHeroSkeleton'
 import { HomePageView } from '@/components/public/home/HomePageView'
+import { useLcpImagePreload } from '@/hooks/useLcpImagePreload'
 import { usePageMeta } from '@/hooks/usePageMeta'
-import { homePlanSeo, resolveHomeRenderPlan } from '@/lib/homePageAdapter'
+import { extractHomeHeroShell, homePlanSeo, resolveHomeRenderPlan } from '@/lib/homePageAdapter'
+import { preloadImage } from '@/lib/preloadImage'
 import { mergePageSeo, webSiteSchema } from '@/lib/siteSeo'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { pageContentService } from '@/services/pageContentService'
 import { HOME_PAGE_KEY } from '@/types/homePageContent'
 
 export function HomePage() {
+  useEffect(() => {
+    prefetchHeroBlockRenderer()
+  }, [])
+
   const { data: raw, isPending } = useQuery({
     queryKey: ['page-content', HOME_PAGE_KEY, 'raw'],
     queryFn: () => pageContentService.getRawByKey(HOME_PAGE_KEY),
@@ -19,9 +25,19 @@ export function HomePage() {
   })
 
   const plan = useMemo(
-    () => (isPending ? null : resolveHomeRenderPlan(raw ?? null)),
-    [raw, isPending],
+    () => (raw !== undefined ? resolveHomeRenderPlan(raw ?? null) : null),
+    [raw],
   )
+  const heroShell = useMemo(() => (plan ? extractHomeHeroShell(plan) : null), [plan])
+
+  useLcpImagePreload(heroShell?.preload)
+
+  useEffect(() => {
+    const href = heroShell?.preload?.href
+    if (!href) return
+    void preloadImage(href)
+  }, [heroShell?.preload?.href])
+
   const seo = plan ? homePlanSeo(plan) : {}
   const meta = mergePageSeo('/', seo)
   const websiteSchema = useMemo(() => webSiteSchema(), [])
@@ -32,7 +48,9 @@ export function HomePage() {
     canonicalPath: '/',
   })
 
-  const pageBody = isPending ? (
+  const showSkeleton = plan === null && isPending
+
+  const pageBody = showSkeleton ? (
     <HomePageHeroSkeleton layout="split" minHeight="520px" />
   ) : plan?.mode === 'builder' ? (
     <div className="bg-white">

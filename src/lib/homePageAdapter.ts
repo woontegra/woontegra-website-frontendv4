@@ -1,15 +1,23 @@
 import type { BuilderBlock } from '@/builder/types'
 import type { HeroBlock } from '@/builder/types/hero'
-import { getHeroSettingsImageSources } from '@/builder/render/heroResponsiveImage'
+import { getHeroSettingsImageSources, getHeroSlideImageSources } from '@/builder/render/heroResponsiveImage'
+import { buildHeroPreloadBundle, buildSingleImagePreloadBundle } from '@/media/optimizeMediaUrl'
 import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 import type { HomePageContent } from '@/types/homePageContent'
 import { defaultHomePageContent, normalizeHomePageContent } from '@/types/homePageContent'
 export type HomeHeroShellLayout = 'split' | 'fullscreen' | 'compact' | 'none'
 
+export type HomeHeroPreloadBundle = {
+  href: string
+  imageSrcSet: string
+  imageSizes: string
+}
+
 export type HomeHeroShell = {
   layout: HomeHeroShellLayout
   minHeight: string
   imageUrl: string | null
+  preload?: HomeHeroPreloadBundle | null
 }
 
 export type HomeRenderPlan =
@@ -76,14 +84,23 @@ export function homePlanSeo(plan: HomeRenderPlan): { title?: string; description
   return { title: plan.seoTitle, description: plan.seoDescription }
 }
 
-function heroImageFromBlock(hero: HeroBlock): string | null {
+function heroPreloadFromBlock(hero: HeroBlock): HomeHeroPreloadBundle | null {
   const { settings } = hero
   if (settings.mode === 'gradient' || settings.mode === 'solid-color' || settings.mode === 'video') {
     return null
   }
 
+  if (settings.mode === 'carousel') {
+    const slide = [...settings.slides]
+      .filter((s) => s.enabled !== false)
+      .sort((a, b) => a.sortOrder - b.sortOrder)[0]
+    if (!slide) return null
+    const sources = getHeroSlideImageSources(slide)
+    return sources ? buildHeroPreloadBundle(sources) : null
+  }
+
   const sources = getHeroSettingsImageSources(settings)
-  return sources?.desktop || null
+  return sources ? buildHeroPreloadBundle(sources) : null
 }
 
 function heroLayoutFromBlock(hero: HeroBlock): HomeHeroShellLayout {  if (hero.settings.layout === 'compact') return 'compact'
@@ -108,6 +125,7 @@ export function extractHomeHeroShell(plan: HomeRenderPlan): HomeHeroShell {
       layout: 'split',
       minHeight: '520px',
       imageUrl,
+      preload: buildSingleImagePreloadBundle(plan.content.hero.image),
     }
   }
 
@@ -116,9 +134,12 @@ export function extractHomeHeroShell(plan: HomeRenderPlan): HomeHeroShell {
     return { layout: 'none', minHeight: '0px', imageUrl: null }
   }
 
+  const preload = heroPreloadFromBlock(hero)
+
   return {
     layout: heroLayoutFromBlock(hero),
     minHeight: hero.settings.height?.desktop ?? (hero.settings.layout === 'compact' ? '280px' : '520px'),
-    imageUrl: heroImageFromBlock(hero),
+    imageUrl: preload?.href ?? null,
+    preload,
   }
 }
