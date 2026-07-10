@@ -185,9 +185,17 @@ export function AdminPaymentSettingsPage() {
                 <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
                 PayTR aktif (veritabanı ayarlarını kullan)
               </label>
+              {dto?.effectiveTestMode != null ? (
+                <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+                  Backend şu an{' '}
+                  <strong>{dto.effectiveTestMode ? 'TEST' : 'CANLI'}</strong> mod kullanıyor
+                  {dto.effectiveConfigSource ? ` (${dto.effectiveConfigSource === 'database' ? 'veritabanı' : 'ortam değişkeni'})` : ''}.
+                  Canlı ödeme için &ldquo;Test modu&rdquo; kutusunun <strong>işaretli olmaması</strong> gerekir.
+                </p>
+              ) : null}
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={testMode} onChange={(e) => setTestMode(e.target.checked)} />
-                Test modu
+                Test modu (işaretli = sandbox)
               </label>
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={debugOn} onChange={(e) => setDebugOn(e.target.checked)} />

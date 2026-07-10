@@ -28,6 +28,8 @@ export type AdminPaytrSettings = {
   failUrl: string | null
   debugOn: boolean
   callbackPath: string
+  effectiveTestMode?: boolean | null
+  effectiveConfigSource?: 'database' | 'env' | null
 }
 
 export type PatchPaytrSettings = Partial<{
@@ -58,5 +60,13 @@ export function normalizeAdminPaytrSettings(raw: unknown): AdminPaytrSettings {
     failUrl: nullableStr(o.failUrl),
     debugOn: bool(o.debugOn, true),
     callbackPath: str(o.callbackPath, '/api/payments/paytr/callback'),
+    effectiveTestMode:
+      typeof o.effectiveTestMode === 'boolean' || o.effectiveTestMode === null
+        ? (o.effectiveTestMode as boolean | null)
+        : null,
+    effectiveConfigSource:
+      o.effectiveConfigSource === 'database' || o.effectiveConfigSource === 'env'
+        ? o.effectiveConfigSource
+        : null,
   }
 }

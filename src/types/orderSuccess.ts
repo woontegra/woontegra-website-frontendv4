@@ -34,6 +34,8 @@ export type OrderSuccessPaidItem = {
   downloadUrl: string | null
 }
 
+export type OrderDeliveryState = 'pending' | 'delivered' | 'blocked' | 'not_applicable'
+
 export type OrderSuccessPaid = {
   status: 'PAID' | 'PROCESSING'
   orderNo: string
@@ -48,6 +50,9 @@ export type OrderSuccessPaid = {
   requiresEmail?: boolean
   message?: string
   paymentProvider?: string
+  deliveryState?: OrderDeliveryState
+  deliveryMessage?: string
+  downloadEmailSentAt?: string | null
 }
 
 export type OrderSuccessData = OrderSuccessPending | OrderSuccessFailed | OrderSuccessPaid

@@ -25,9 +25,24 @@ export function resolveSaasSuccessKind(
   return null
 }
 
-export function saasSuccessNotice(kind: SaasSuccessKind): string {
+export function saasSuccessNotice(kind: SaasSuccessKind, paidConfirmed: boolean): string {
   if (kind === 'renewal') {
-    return 'Ödeme onaylandıktan sonra Müvekkil Kasa üyelik süreniz 1 yıl uzatılacaktır.'
+    return paidConfirmed
+      ? 'Müvekkil Kasa üyelik süreniz ödeme onayı sonrası uzatılacaktır; bilgiler e-posta ile iletilecektir.'
+      : 'Havale/EFT onayı sonrası Müvekkil Kasa üyelik süreniz uzatılacaktır.'
   }
-  return 'Ödeme onaylandıktan sonra yazılım hesabınız oluşturulacaktır.'
+  return paidConfirmed
+    ? 'Web tabanlı ürün erişiminiz hazırlanıyor veya oluşturuldu; giriş bilgileri e-posta ile iletilecektir.'
+    : 'Ödeme onayı sonrası web tabanlı ürün hesabınız oluşturulacak; giriş bilgileri e-posta ile iletilecektir.'
+}
+
+export function paidDeliveryNotice(orderData: OrderSuccessData | null): string | null {
+  if (!orderData || (orderData.status !== 'PAID' && orderData.status !== 'PROCESSING')) return null
+  if ('deliveryMessage' in orderData && orderData.deliveryMessage?.trim()) {
+    return orderData.deliveryMessage.trim()
+  }
+  if ('deliveryState' in orderData && orderData.deliveryState === 'delivered') {
+    return 'Lisans ve erişim bilgileriniz e-posta ile gönderildi.'
+  }
+  return null
 }

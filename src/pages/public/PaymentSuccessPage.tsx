@@ -24,8 +24,9 @@ import { usePageMeta } from '@/hooks/usePageMeta'
 import { useCustomerSession } from '@/hooks/useCustomerSession'
 import { trackPurchase } from '@/integrations/trackingEvents'
 import { clearCart } from '@/lib/cartStorage'
-import { resolveSaasSuccessKind, saasSuccessNotice } from '@/lib/orderSuccessSaas'
+import { resolveSaasSuccessKind, saasSuccessNotice, paidDeliveryNotice } from '@/lib/orderSuccessSaas'
 import { SAAS_RENEW_ORDER_KEY } from '@/types/orderSuccess'
+import type { OrderSuccessData } from '@/types/orderSuccess'
 
 function buildSuccessActions(orderNo: string, authed: boolean): PaymentResultAction[] {
   const actions: PaymentResultAction[] = [
@@ -53,21 +54,29 @@ function buildSuccessActions(orderNo: string, authed: boolean): PaymentResultAct
   return actions
 }
 
-function buildNextSteps(isBankTransfer: boolean, saasKind: ReturnType<typeof resolveSaasSuccessKind>): string[] {
+function buildNextSteps(
+  isBankTransfer: boolean,
+  saasKind: ReturnType<typeof resolveSaasSuccessKind>,
+  orderData: OrderSuccessData | null,
+  paidConfirmed: boolean,
+): string[] {
+  const deliveryNote = paidDeliveryNotice(orderData)
+
   if (saasKind === 'renewal') {
-    const steps = [saasSuccessNotice('renewal')]
+    const steps = [saasSuccessNotice('renewal', paidConfirmed)]
+    if (deliveryNote && paidConfirmed) steps.push(deliveryNote)
     if (isBankTransfer) {
       steps.push('Havale/EFT ödemeniz onaylandığında üyelik süreniz otomatik uzatılır.')
     }
     return steps
   }
   if (saasKind === 'first_purchase') {
-    return [
-      saasSuccessNotice('first_purchase'),
-      isBankTransfer
-        ? 'Havale/EFT ödemeniz onaylandığında yazılım hesabınız oluşturulur ve giriş bilgileri e-posta ile gönderilir.'
-        : 'Ödeme onayı sonrası yazılım hesabınız oluşturulur; giriş bilgileri e-posta ile iletilir.',
-    ]
+    const steps = [saasSuccessNotice('first_purchase', paidConfirmed)]
+    if (deliveryNote && paidConfirmed) steps.push(deliveryNote)
+    if (isBankTransfer) {
+      steps.push('Havale/EFT ödemeniz onaylandığında web tabanlı ürün erişiminiz aktifleştirilir.')
+    }
+    return steps
   }
 
   if (isBankTransfer) {
@@ -78,9 +87,18 @@ function buildNextSteps(isBankTransfer: boolean, saasKind: ReturnType<typeof res
     ]
   }
 
+  if (paidConfirmed) {
+    const steps = ['Siparişiniz onaylandı.']
+    if (deliveryNote) steps.push(deliveryNote)
+    else steps.push('Lisans veya indirme ürünlerinde teslimat birkaç dakika içinde tamamlanır.')
+    if (!deliveryNote?.includes('e-posta')) {
+      steps.push(CENTRAL_LICENSE_EMAIL_MESSAGE)
+    }
+    return steps
+  }
+
   return [
-    'Sipariş onayınız ve fatura bilgileriniz e-posta adresinize gönderildi.',
-    'Lisans veya indirme ürünlerinde teslimat birkaç dakika içinde tamamlanır.',
+    'Ödeme onayı bekleniyor. Onay sonrası lisans ve teslimat bilgileri e-posta ile iletilecektir.',
     CENTRAL_LICENSE_EMAIL_MESSAGE,
   ]
 }
@@ -94,7 +112,7 @@ export function PaymentSuccessPage() {
   const cartCleared = useRef<string | null>(null)
   const ordersInvalidated = useRef<string | null>(null)
 
-  const { orderNo, orderData, orderLoading } = ctx
+  const { orderNo, orderData, orderLoading, refetchOrder } = ctx
   const saasKind = resolveSaasSuccessKind(orderNo || orderData?.orderNo || '', orderData)
   const isPaidLike =
     orderData?.status === 'PAID' || orderData?.status === 'PROCESSING'
@@ -136,6 +154,16 @@ export function PaymentSuccessPage() {
     void queryClient.invalidateQueries({ queryKey: ['customer', 'orders'] })
     void queryClient.invalidateQueries({ queryKey: ['customer', 'licenses'] })
   }, [authed, isPaidLike, orderNo, queryClient])
+
+  useEffect(() => {
+    if (!orderNo || !orderData || !isPaidLike) return
+    if (orderData.status !== 'PAID' && orderData.status !== 'PROCESSING') return
+    if (orderData.deliveryState !== 'pending') return
+    const timer = window.setInterval(() => {
+      refetchOrder()
+    }, 8000)
+    return () => window.clearInterval(timer)
+  }, [orderNo, orderData, isPaidLike, refetchOrder])
 
   useEffect(() => {
     if (!orderNo || !orderData || !isPaidLike) return
@@ -207,12 +235,21 @@ export function PaymentSuccessPage() {
       <PaymentOrderSummary ctx={ctx} />
 
       <PaymentResultPanel title="Sonraki adımlar" className="mt-4">
-        <PaymentResultSteps items={buildNextSteps(Boolean(isBankTransfer), saasKind)} />
+        <PaymentResultSteps items={buildNextSteps(Boolean(isBankTransfer), saasKind, orderData, isPaidLike)} />
       </PaymentResultPanel>
 
-      {saasKind ? (
+      {saasKind && isPaidLike ? (
         <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-900">
-          {saasSuccessNotice(saasKind)}
+          {saasSuccessNotice(saasKind, true)}
+        </p>
+      ) : null}
+
+      {orderData &&
+      (orderData.status === 'PAID' || orderData.status === 'PROCESSING') &&
+      orderData.deliveryState === 'blocked' ? (
+        <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-950">
+          {orderData.deliveryMessage ||
+            'Siparişiniz ödendi ancak teslimat için ek kontrol gerekiyor. Ekibimiz bilgilendirildi.'}
         </p>
       ) : null}
 
