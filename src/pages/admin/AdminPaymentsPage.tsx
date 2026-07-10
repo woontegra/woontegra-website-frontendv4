@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Eye, RefreshCw } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
@@ -23,7 +23,8 @@ import {
 } from '@/utils/adminOrderUi'
 
 export function AdminPaymentsPage() {
-  const [customerQuery, setCustomerQuery] = useState('')
+  const [searchParams] = useSearchParams()
+  const [customerQuery, setCustomerQuery] = useState(searchParams.get('customerQuery') ?? '')
   const [paymentProvider, setPaymentProvider] = useState('')
 
   const params = useMemo(

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { KeyRound, Mail, ShieldCheck } from 'lucide-react'
 import { CartAddedFeedback } from '@/components/public/CartAddedFeedback'
 import { ProductFreeDownloadButton } from '@/components/public/product/ProductFreeDownloadButton'
+import { SifreKasasiDownloadCounter } from '@/components/public/product/SifreKasasiDownloadCounter'
 import { useBuilderEditContext } from '@/builder/edit/BuilderEditContext'
 import type { PublicProductDetail } from '@/types/product'
 import { formatMoney } from '@/types/product'
@@ -155,6 +156,8 @@ export function ProductPurchasePanel({
           Ücretsiz indirme bağlantısı henüz tanımlı değil.
         </p>
       ) : null}
+
+      {isFreeDownload && product.slug === 'sifre-kasasi' ? <SifreKasasiDownloadCounter /> : null}
 
       <div className="relative mt-6 space-y-3">
         {isFreeDownload && publicDownloadFiles.length > 0 ? (

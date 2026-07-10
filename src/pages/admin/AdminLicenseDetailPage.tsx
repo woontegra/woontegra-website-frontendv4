@@ -88,7 +88,7 @@ export function AdminLicenseDetailPage() {
       <div className="w-full min-w-0 space-y-6">
         <Link to="/admin/licenses" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800">
           <ArrowLeft className="h-4 w-4" />
-          Lisans kayıtları
+          Masaüstü lisans özetleri
         </Link>
         <EmptyState
           title="Lisans bulunamadı"
@@ -104,12 +104,12 @@ export function AdminLicenseDetailPage() {
     <div className="w-full min-w-0 space-y-6">
       <Link to="/admin/licenses" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800">
         <ArrowLeft className="h-4 w-4" />
-        Lisans kayıtları
+        Masaüstü lisans özetleri
       </Link>
 
       <PageHeader
-        title="Lisans detayı"
-        description="Website veritabanındaki lisans takip kaydı — görüntüleme ve e-posta operasyonları."
+        title="Masaüstü lisans özeti"
+        description="Merkezi lisans sisteminde yönetilen masaüstü lisans için website sipariş kayıt özeti."
         actions={
           license.orderId ? (
             <Link to={`/admin/orders/${license.orderId}`}>
@@ -219,7 +219,8 @@ export function AdminLicenseDetailPage() {
         <CardBody className="space-y-2">
           <h2 className="text-sm font-semibold text-sky-950">Merkezi Lisans Server bilgisi</h2>
           <p className="text-sm text-sky-900">
-            Bu kayıt website veritabanındaki lisans takip satırıdır. Lisans üretimi website içinde yapılmaz;{' '}
+            Bu kayıt website veritabanındaki lisans takip satırıdır. Lisans üretimi ve cihaz aktivasyonu website
+            içinde yapılmaz;{' '}
             <strong>licenseRequired</strong> ürünlerde merkezi Woontegra Lisans Server devreye girer.
           </p>
           <p className="text-sm text-sky-800">Merkezi lisans server referansı backend yanıtında bulunmuyor.</p>

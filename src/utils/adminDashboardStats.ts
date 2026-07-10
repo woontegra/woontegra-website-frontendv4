@@ -1,4 +1,5 @@
 import type { ContactMessage } from '@/services/adminContactMessagesService'
+import type { AdminSaasMembershipListItem } from '@/types/adminSaasMembership'
 import type { AdminLicenseListItem } from '@/types/license'
 import {
   computeDashboardStats,
@@ -44,6 +45,8 @@ export type AdminDashboardData = {
   avgOrderValue: number
   avgOrderCurrency: string
   activeLicenses: number
+  activeSaasMemberships: number
+  expiringSoonSaasMemberships: number
   totalProducts: number
   activeProducts: number
   inactiveProducts: number
@@ -140,11 +143,12 @@ function sortMessagesDesc(messages: ContactMessage[]): ContactMessage[] {
 export function buildAdminDashboardData(input: {
   orders: AdminOrderListItem[]
   licenses: AdminLicenseListItem[]
+  saasMemberships: AdminSaasMembershipListItem[]
   products: AdminProduct[]
   messages: ContactMessage[]
   siteSettings?: AdminSiteSettings | null
 }): AdminDashboardData {
-  const { orders, licenses, products, messages, siteSettings } = input
+  const { orders, licenses, saasMemberships, products, messages, siteSettings } = input
   const now = new Date()
   const baseStats = computeDashboardStats(orders, licenses.length)
 
@@ -208,6 +212,10 @@ export function buildAdminDashboardData(input: {
   const ordersWithLicenseCount = sorted.filter((o) => licenseByOrderId.has(o.id)).length
 
   const activeLicenses = licenses.filter((l) => l.status === 'ACTIVE').length
+  const activeSaasMemberships = saasMemberships.filter((m) => m.effectiveStatus === 'ACTIVE').length
+  const expiringSoonSaasMemberships = saasMemberships.filter(
+    (m) => m.effectiveStatus === 'ACTIVE' && m.kalanGun != null && m.kalanGun >= 0 && m.kalanGun <= 7,
+  ).length
   const activeProducts = products.filter((p) => p.isActive !== false).length
   const inactiveProducts = products.length - activeProducts
   const noPriceProducts = products.filter((p) => p.isActive !== false && (!p.price || p.price <= 0))
@@ -287,6 +295,8 @@ export function buildAdminDashboardData(input: {
     avgOrderValue,
     avgOrderCurrency,
     activeLicenses,
+    activeSaasMemberships,
+    expiringSoonSaasMemberships,
     totalProducts: products.length,
     activeProducts,
     inactiveProducts,

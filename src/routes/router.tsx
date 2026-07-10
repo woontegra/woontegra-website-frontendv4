@@ -163,6 +163,36 @@ const AdminOrderDetailPage = lazy(() =>
 const AdminPaymentsPage = lazy(() =>
   import('@/pages/admin/AdminPaymentsPage').then((m) => ({ default: m.AdminPaymentsPage })),
 )
+const AdminLicensesPage = lazy(() =>
+  import('@/pages/admin/AdminLicensesPage').then((m) => ({ default: m.AdminLicensesPage })),
+)
+const AdminLicenseDetailPage = lazy(() =>
+  import('@/pages/admin/AdminLicenseDetailPage').then((m) => ({ default: m.AdminLicenseDetailPage })),
+)
+const AdminLicenseSettingsPage = lazy(() =>
+  import('@/pages/admin/AdminLicenseSettingsPage').then((m) => ({ default: m.AdminLicenseSettingsPage })),
+)
+const AdminSaasMembershipsPage = lazy(() =>
+  import('@/pages/admin/AdminSaasMembershipsPage').then((m) => ({ default: m.AdminSaasMembershipsPage })),
+)
+const AdminSaasMembershipDetailPage = lazy(() =>
+  import('@/pages/admin/AdminSaasMembershipDetailPage').then((m) => ({ default: m.AdminSaasMembershipDetailPage })),
+)
+const AdminSaasMembershipCreatePage = lazy(() =>
+  import('@/pages/admin/AdminSaasMembershipCreatePage').then((m) => ({ default: m.AdminSaasMembershipCreatePage })),
+)
+const AdminDownloadStatsPage = lazy(() =>
+  import('@/pages/admin/AdminDownloadStatsPage').then((m) => ({ default: m.AdminDownloadStatsPage })),
+)
+const AdminCustomersPage = lazy(() =>
+  import('@/pages/admin/AdminCustomersPage').then((m) => ({ default: m.AdminCustomersPage })),
+)
+const AdminCustomerDetailPage = lazy(() =>
+  import('@/pages/admin/AdminCustomerDetailPage').then((m) => ({ default: m.AdminCustomerDetailPage })),
+)
+const AdminCustomerEditPage = lazy(() =>
+  import('@/pages/admin/AdminCustomerEditPage').then((m) => ({ default: m.AdminCustomerEditPage })),
+)
 
 function LazyPage({ children }: { children: ReactNode }) {
   return (
@@ -328,11 +358,20 @@ export const router = createBrowserRouter([
           { path: 'orders', element: <LazyPage><AdminOrdersPage /></LazyPage> },
           { path: 'orders/:id', element: <LazyPage><AdminOrderDetailPage /></LazyPage> },
           { path: 'payments', element: <LazyPage><AdminPaymentsPage /></LazyPage> },
+          { path: 'customers', element: <LazyPage><AdminCustomersPage /></LazyPage> },
+          { path: 'customers/:id/edit', element: <LazyPage><AdminCustomerEditPage /></LazyPage> },
+          { path: 'customers/:id', element: <LazyPage><AdminCustomerDetailPage /></LazyPage> },
+          { path: 'saas-subscriptions', element: <LazyPage><AdminSaasMembershipsPage /></LazyPage> },
+          { path: 'saas-subscriptions/new', element: <LazyPage><AdminSaasMembershipCreatePage /></LazyPage> },
+          { path: 'saas-subscriptions/:id', element: <LazyPage><AdminSaasMembershipDetailPage /></LazyPage> },
+          { path: 'licenses', element: <LazyPage><AdminLicensesPage /></LazyPage> },
+          { path: 'licenses/:id', element: <LazyPage><AdminLicenseDetailPage /></LazyPage> },
           { path: 'builder', element: <LazyPage><AdminBuilderPage /></LazyPage> },
           { path: 'builder-preview', element: <LazyPage><BuilderSavedPreviewPage /></LazyPage> },
           { path: 'products', element: <LazyPage><AdminProductListPage /></LazyPage> },
           { path: 'products/new', element: <LazyPage><AdminProductFormPage /></LazyPage> },
           { path: 'products/:id/edit', element: <LazyPage><AdminProductFormPage /></LazyPage> },
+          { path: 'download-stats', element: <LazyPage><AdminDownloadStatsPage /></LazyPage> },
           { path: 'campaigns', element: <LazyPage><AdminCampaignListPage /></LazyPage> },
           { path: 'campaigns/new', element: <LazyPage><AdminCampaignFormPage /></LazyPage> },
           { path: 'campaigns/:id/edit', element: <LazyPage><AdminCampaignFormPage /></LazyPage> },
@@ -352,6 +391,7 @@ export const router = createBrowserRouter([
               { path: 'email', element: <LazyPage><AdminEmailSettingsPage /></LazyPage> },
               { path: 'appearance', element: <LazyPage><AdminAppearanceSettingsPage /></LazyPage> },
               { path: 'users', element: <LazyPage><AdminUserSettingsPage /></LazyPage> },
+              { path: 'licenses', element: <LazyPage><AdminLicenseSettingsPage /></LazyPage> },
             ],
           },
         ],

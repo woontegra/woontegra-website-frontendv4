@@ -27,7 +27,7 @@ export function AdminOrdersPage() {
   const [status, setStatus] = useState(searchParams.get('status') ?? '')
   const [paymentProvider, setPaymentProvider] = useState('')
   const [paymentStatus, setPaymentStatus] = useState('')
-  const [customerQuery, setCustomerQuery] = useState('')
+  const [customerQuery, setCustomerQuery] = useState(searchParams.get('customerQuery') ?? '')
   const [orderNo, setOrderNo] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')

@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { BarChart3, CreditCard, Mail, Palette, Settings, Users } from 'lucide-react'
+import { BarChart3, CreditCard, KeyRound, Mail, Palette, Settings, Users } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
 const SECTIONS = [
@@ -9,6 +9,7 @@ const SECTIONS = [
   { to: '/admin/settings/email', label: 'E-posta', icon: Mail },
   { to: '/admin/settings/appearance', label: 'Görünüm', icon: Palette },
   { to: '/admin/settings/users', label: 'Kullanıcı', icon: Users },
+  { to: '/admin/settings/licenses', label: 'Merkezi Lisans', icon: KeyRound },
 ] as const
 
 export function AdminSettingsLayout() {

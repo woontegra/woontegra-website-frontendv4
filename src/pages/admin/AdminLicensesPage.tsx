@@ -62,8 +62,8 @@ export function AdminLicensesPage() {
   return (
     <div className="w-full min-w-0 space-y-6">
       <PageHeader
-        title="Lisans kayıtları"
-        description="Website veritabanındaki lisans takip kayıtları — görüntüleme ve e-posta operasyonları."
+        title="Masaüstü Lisans Özetleri"
+        description="Merkezi lisans sisteminde yönetilen masaüstü lisanslar için website siparişlerinden oluşan özet kayıtlar."
         actions={
           <Button variant="secondary" size="sm" onClick={() => void refetch()} disabled={isFetching}>
             <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
@@ -72,7 +72,7 @@ export function AdminLicensesPage() {
         }
       />
 
-      <CentralLicenseInfoBanner extra="licenseRequired ürünlerin merkezi lisansları Woontegra Lisans Server'da yönetilir; bu listede yalnızca website kayıtları görünür." />
+      <CentralLicenseInfoBanner extra="Masaüstü lisansların gerçek yönetimi Woontegra Lisans Server'dadır; bu listede yalnızca website siparişinden oluşan kayıt özeti ve e-posta operasyonları görünür." />
 
       <Card>
         <CardBody className="grid gap-3 sm:grid-cols-2">

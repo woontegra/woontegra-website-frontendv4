@@ -1,12 +1,16 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import '@/admin.css'
 import {
+  Cloud,
+  Download,
   ImageIcon,
+  KeyRound,
   LayoutDashboard,
   Megaphone,
   Package,
   Settings,
   ShoppingBag,
+  Users,
   Wallet,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
@@ -34,12 +38,22 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/admin/orders', label: 'Siparişler' },
       { to: '/admin/payments', label: 'Ödemeler' },
+      { to: '/admin/customers', label: 'Müşteriler' },
+    ],
+  },
+  {
+    title: 'Lisans & Erişim',
+    items: [
+      { to: '/admin/saas-subscriptions', label: 'SaaS Abonelikleri' },
+      { to: '/admin/saas-subscriptions/new', label: 'Manuel Abonelik Oluştur' },
+      { to: '/admin/licenses', label: 'Masaüstü Lisans Özetleri' },
     ],
   },
   {
     title: 'Katalog',
     items: [
       { to: '/admin/products', label: 'Ürünler / Yazılımlar' },
+      { to: '/admin/download-stats', label: 'İndirme İstatistikleri' },
       { to: '/admin/media', label: 'Medya Kütüphanesi' },
     ],
   },
@@ -59,6 +73,10 @@ const NAV_GROUPS: NavGroup[] = [
 function groupIcon(label: string) {
   if (label === 'Siparişler') return ShoppingBag
   if (label === 'Ödemeler') return Wallet
+  if (label === 'Müşteriler') return Users
+  if (label.includes('SaaS')) return Cloud
+  if (label.includes('İndirme')) return Download
+  if (label.includes('Lisans')) return KeyRound
   if (label.includes('Ürün')) return Package
   if (label.includes('Medya')) return ImageIcon
   if (label.includes('Kampanya')) return Megaphone

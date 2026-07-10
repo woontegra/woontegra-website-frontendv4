@@ -10,8 +10,8 @@ export function AdminLicenseSettingsPage() {
   return (
     <div className="w-full min-w-0 space-y-6">
       <PageHeader
-        title="Lisans ayarları"
-        description="Website ile merkezi Woontegra Lisans Server entegrasyon mantığı."
+        title="Merkezi lisans özeti"
+        description="Website ile merkezi Woontegra Lisans Server arasındaki masaüstü lisans entegrasyon mantığı."
       />
 
       <CentralLicenseInfoBanner />
@@ -25,7 +25,7 @@ export function AdminLicenseSettingsPage() {
               <strong>licenseRequired</strong> ürünlerde lisans üretimi website içinde yapılmaz; backend ödeme
               sonrası merkezi sunucuya bildirir.
             </li>
-            <li>Admin panelde görünen lisans listesi website veritabanı kayıtlarıdır (eski/indirme modeli).</li>
+            <li>Admin panelde görünen masaüstü lisans ekranı gerçek yönetim paneli değil, website kayıt özetidir.</li>
             <li>Merkezi lisans takibi için Woontegra Lisans Server admin paneli kullanılır.</li>
           </ul>
         </CardBody>

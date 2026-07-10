@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Banknote,
   Boxes,
+  Cloud,
   CreditCard,
   Eye,
   Image,
@@ -26,6 +27,9 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/Table'
 import { adminOrdersService } from '@/services/adminOrdersService'
 import { adminLicensesService } from '@/services/adminLicensesService'
+import { adminSaasMembershipsService } from '@/services/adminSaasMembershipsService'
+import { adminDownloadStatsService } from '@/services/adminDownloadStatsService'
+import { adminCustomersService } from '@/services/adminCustomersService'
 import { adminProductsService } from '@/services/adminProductsService'
 import { adminContactMessagesService } from '@/services/adminContactMessagesService'
 import { siteSettingsService } from '@/services/siteSettingsService'
@@ -41,6 +45,7 @@ import { buildAdminDashboardData, truncateText } from '@/utils/adminDashboardSta
 import { cn } from '@/lib/cn'
 
 const QUICK_ACTIONS = [
+  { label: 'SaaS abonelikleri', href: '/admin/saas-subscriptions', icon: Cloud },
   { label: 'Yeni ürün ekle', href: '/admin/products/new', icon: Package },
   { label: 'Ürünleri yönet', href: '/admin/products', icon: Boxes },
   { label: 'Siparişleri gör', href: '/admin/orders', icon: ShoppingBag },
@@ -95,6 +100,12 @@ export function AdminDashboardPage() {
     retry: 1,
   })
 
+  const saasMembershipsQuery = useQuery({
+    queryKey: ['admin', 'saas-memberships', 'dashboard'],
+    queryFn: () => adminSaasMembershipsService.list(),
+    retry: 1,
+  })
+
   const productsQuery = useQuery({
     queryKey: ['admin', 'products', 'dashboard'],
     queryFn: () => adminProductsService.list(),
@@ -113,43 +124,71 @@ export function AdminDashboardPage() {
     retry: 1,
   })
 
+  const downloadStatsQuery = useQuery({
+    queryKey: ['admin', 'download-stats', 'dashboard'],
+    queryFn: () => adminDownloadStatsService.list(),
+    retry: 1,
+  })
+
+  const customersSummaryQuery = useQuery({
+    queryKey: ['admin', 'customers', 'summary', 'dashboard'],
+    queryFn: () => adminCustomersService.getSummary(),
+    retry: 1,
+  })
+
   const loading =
     ordersQuery.isLoading &&
     licensesQuery.isLoading &&
+    saasMembershipsQuery.isLoading &&
     productsQuery.isLoading &&
     messagesQuery.isLoading
 
   const refetchAll = () => {
     void ordersQuery.refetch()
     void licensesQuery.refetch()
+    void saasMembershipsQuery.refetch()
     void productsQuery.refetch()
     void messagesQuery.refetch()
     void settingsQuery.refetch()
+    void downloadStatsQuery.refetch()
+    void customersSummaryQuery.refetch()
   }
 
   const isFetching =
     ordersQuery.isFetching ||
     licensesQuery.isFetching ||
+    saasMembershipsQuery.isFetching ||
     productsQuery.isFetching ||
     messagesQuery.isFetching ||
-    settingsQuery.isFetching
+    settingsQuery.isFetching ||
+    downloadStatsQuery.isFetching ||
+    customersSummaryQuery.isFetching
 
   const dashboard = useMemo(() => {
-    if (!ordersQuery.data && !licensesQuery.data && !productsQuery.data && !messagesQuery.data) {
+    if (!ordersQuery.data && !licensesQuery.data && !saasMembershipsQuery.data && !productsQuery.data && !messagesQuery.data) {
       return null
     }
     return buildAdminDashboardData({
       orders: ordersQuery.data ?? [],
       licenses: licensesQuery.data ?? [],
+      saasMemberships: saasMembershipsQuery.data ?? [],
       products: productsQuery.data ?? [],
       messages: messagesQuery.data ?? [],
       siteSettings: settingsQuery.data ?? null,
     })
-  }, [ordersQuery.data, licensesQuery.data, productsQuery.data, messagesQuery.data, settingsQuery.data])
+  }, [ordersQuery.data, licensesQuery.data, saasMembershipsQuery.data, productsQuery.data, messagesQuery.data, settingsQuery.data])
+
+  const sifreKasasiDownloadTotal = useMemo(() => {
+    const row = (downloadStatsQuery.data ?? []).find(
+      (item) => item.productKey === 'sifre-kasasi' || item.slug === 'sifre-kasasi',
+    )
+    return row?.total ?? 0
+  }, [downloadStatsQuery.data])
 
   const allFailed =
     ordersQuery.isError &&
     licensesQuery.isError &&
+    saasMembershipsQuery.isError &&
     productsQuery.isError &&
     messagesQuery.isError
 
@@ -157,7 +196,7 @@ export function AdminDashboardPage() {
     <div className="w-full min-w-0 space-y-5">
       <PageHeader
         title="Dashboard"
-        description="Satış, sipariş, lisans ve site yönetimi özeti."
+        description="Satış, sipariş, SaaS erişim ve merkezi lisans özetleri."
         actions={
           <Button variant="secondary" size="sm" onClick={refetchAll} disabled={isFetching}>
             <RefreshCw className={cn('h-4 w-4', isFetching && 'animate-spin')} />
@@ -236,7 +275,36 @@ export function AdminDashboardPage() {
             />
             <StatCard label="Ödenen sipariş" value={String(dashboard.baseStats.paidOrders)} href="/admin/orders" />
             <StatCard label="Toplam ürün" value={String(dashboard.totalProducts)} href="/admin/products" />
-            <StatCard label="Aktif lisans kayıtları" value={String(dashboard.activeLicenses)} />
+            <StatCard
+              label="Aktif SaaS Abonelikleri"
+              value={String(dashboard.activeSaasMemberships)}
+              href="/admin/saas-subscriptions"
+            />
+            <StatCard
+              label="Süresi Dolmak Üzere Olan SaaS Abonelikleri"
+              value={String(dashboard.expiringSoonSaasMemberships)}
+              href="/admin/saas-subscriptions"
+            />
+            <StatCard
+              label="Masaüstü Lisans Özetleri"
+              value={String(dashboard.activeLicenses)}
+              href="/admin/licenses"
+            />
+            <StatCard
+              label="Şifre Kasası toplam indirme"
+              value={downloadStatsQuery.isError ? '—' : String(sifreKasasiDownloadTotal.toLocaleString('tr-TR'))}
+              href="/admin/download-stats"
+            />
+            <StatCard
+              label="Toplam müşteri"
+              value={customersSummaryQuery.isError ? '—' : String(customersSummaryQuery.data?.totalCustomers ?? 0)}
+              href="/admin/customers"
+            />
+            <StatCard
+              label="Aktif SaaS müşterileri"
+              value={customersSummaryQuery.isError ? '—' : String(customersSummaryQuery.data?.activeSaasCustomers ?? 0)}
+              href="/admin/customers?filter=has_saas"
+            />
             <StatCard
               label="Okunmamış talepler"
               value={String(dashboard.unreadMessages)}
@@ -488,21 +556,21 @@ export function AdminDashboardPage() {
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-brand-600" />
                   <div>
-                    <h2 className="text-sm font-semibold text-slate-900">Lisans ve teslimat</h2>
-                    <p className="text-xs text-slate-500">Merkezi lisans kaydı durumu</p>
+                    <h2 className="text-sm font-semibold text-slate-900">Masaüstü lisans özetleri</h2>
+                    <p className="text-xs text-slate-500">Merkezi lisans sistemiyle ilişkili website kayıt özeti</p>
                   </div>
                 </div>
 
                 {licensesQuery.isError ? <SectionError label="Lisanslar" /> : null}
 
                 <div className="rounded-lg border border-brand-100 bg-brand-50/40 px-3 py-2 text-xs text-slate-600">
-                  Lisans üretimi bu panelde yapılmaz. Kayıtlar merkezi Woontegra lisans sunucusu ile senkronize
-                  edilir; teslimat ve e-posta durumu sipariş detayından takip edilir.
+                  Masaüstü program lisanslarının gerçek yönetimi merkezi Woontegra lisans sistemindedir. Bu panelde
+                  yalnızca website siparişlerinden oluşan özet kayıtlar ve teslimat durumu izlenir.
                 </div>
 
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div className="rounded-lg bg-slate-50 px-3 py-2">
-                    <p className="text-xs text-slate-500">Lisans kayıtlı sipariş</p>
+                    <p className="text-xs text-slate-500">Özet kaydı olan sipariş</p>
                     <p className="text-lg font-semibold">{dashboard.ordersWithLicenseCount}</p>
                   </div>
                   <div className="rounded-lg bg-slate-50 px-3 py-2">
@@ -653,8 +721,8 @@ export function AdminDashboardPage() {
                 <Badge tone="brand">Woontegra</Badge>
               </div>
               <p className="text-sm text-slate-600">
-                Ürünler, siparişler, ödemeler, lisanslar, blog ve içerikler bu panelden yönetilir. Toplam{' '}
-                {dashboard.baseStats.licenseRecords} lisans kaydı listeleniyor.
+                Ürünler, siparişler, ödemeler, SaaS abonelikleri, blog ve içerikler bu panelden yönetilir. Masaüstü
+                lisans tarafında toplam {dashboard.baseStats.licenseRecords} website özet kaydı listeleniyor.
               </p>
             </CardBody>
           </Card>
