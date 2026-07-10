@@ -1,14 +1,20 @@
-import { isChunkLoadError } from '@/lib/chunkLoadError'
+import { isAssetChunkUrl, isChunkLoadError } from '@/lib/chunkLoadError'
 import { cacheBustReload } from '@/lib/cacheBustReload'
 
 let initialized = false
 
-function isAssetScript(target: EventTarget | null): target is HTMLScriptElement {
-  return (
-    target instanceof HTMLScriptElement &&
-    Boolean(target.src) &&
-    (target.src.includes('/assets/') || target.type === 'module')
-  )
+function isFailedAssetElement(target: EventTarget | null): target is HTMLScriptElement | HTMLLinkElement {
+  if (target instanceof HTMLScriptElement) {
+    return Boolean(target.src) && isAssetChunkUrl(target.src)
+  }
+  if (target instanceof HTMLLinkElement) {
+    return Boolean(target.href) && isAssetChunkUrl(target.href)
+  }
+  return false
+}
+
+function assetElementUrl(target: HTMLScriptElement | HTMLLinkElement): string {
+  return target instanceof HTMLScriptElement ? target.src : target.href
 }
 
 function tryRecoverFromChunkError(reason: unknown): void {
@@ -16,7 +22,7 @@ function tryRecoverFromChunkError(reason: unknown): void {
   cacheBustReload()
 }
 
-/** Lazy/entry chunk hatalarında tek seferlik cache-bust — DOM kilitlemez. */
+/** Lazy/entry chunk hatalarında tek seferlik cache-bust — UI kilitlemez. */
 export function initChunkLoadRecovery(): void {
   if (initialized || typeof window === 'undefined') return
   initialized = true
@@ -28,8 +34,8 @@ export function initChunkLoadRecovery(): void {
   window.addEventListener(
     'error',
     (event) => {
-      if (isAssetScript(event.target)) {
-        tryRecoverFromChunkError(`Failed to fetch dynamically imported module: ${event.target.src}`)
+      if (isFailedAssetElement(event.target)) {
+        tryRecoverFromChunkError(`Failed to fetch dynamically imported module: ${assetElementUrl(event.target)}`)
       }
     },
     true,

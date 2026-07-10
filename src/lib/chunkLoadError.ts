@@ -9,7 +9,11 @@ const CHUNK_ERROR_PATTERNS = [
   'Loading chunk',
   'ChunkLoadError',
   'error loading dynamically imported module',
+  'Unable to preload CSS',
+  'Failed to load module script',
 ] as const
+
+const ASSET_URL_PATTERN = /\/assets\/[^\s"'<>]+\.(?:js|css)/i
 
 function collectErrorText(error: unknown): string {
   const parts: string[] = []
@@ -27,10 +31,16 @@ function collectErrorText(error: unknown): string {
   return parts.filter(Boolean).join(' ')
 }
 
+export function isAssetChunkUrl(url: string): boolean {
+  return ASSET_URL_PATTERN.test(url)
+}
+
 export function isChunkLoadError(error: unknown): boolean {
   const message = collectErrorText(error)
   if (!message) return false
-  return CHUNK_ERROR_PATTERNS.some((pattern) => message.includes(pattern))
+  if (CHUNK_ERROR_PATTERNS.some((pattern) => message.includes(pattern))) return true
+  if (ASSET_URL_PATTERN.test(message)) return true
+  return false
 }
 
 export function clearChunkReloadAttemptFlag(): void {

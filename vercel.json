@@ -104,12 +104,6 @@
       ]
     },
     {
-      "source": "/(.*\\.(?:js|css|woff2?|svg|png|jpg|jpeg|webp|gif|ico))",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    },
-    {
       "source": "/index.html",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
@@ -118,14 +112,29 @@
       ]
     },
     {
-      "source": "/:path*",
-      "has": [
-        { "type": "header", "key": "accept", "value": ".*text/html.*" }
-      ],
+      "source": "/((?!assets/|uploads/|favicon\\.svg|sitemap\\.xml|robots\\.txt|.*\\..*).*)",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
         { "key": "Pragma", "value": "no-cache" },
         { "key": "Expires", "value": "0" }
+      ]
+    },
+    {
+      "source": "/favicon.svg",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    },
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
       ]
     }
   ],
@@ -159,4 +168,3 @@
   ]
 
 }
-

@@ -7,7 +7,8 @@
     "dev": "vite",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
     "test:gallery": "vitest run src/media/normalizeProductGalleryImages.test.ts",
-    "build": "npm run generate:sitemap && npm run test:gallery && tsc -b && vite build",
+    "build": "npm run generate:sitemap && npm run test:gallery && tsc -b && vite build && npm run verify:assets",
+    "verify:assets": "node scripts/verify-build-assets.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

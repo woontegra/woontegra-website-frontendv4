@@ -12,6 +12,7 @@ import { Table, TBody, TD, TH, THead, TR } from '@/components/ui/Table'
 import { Input } from '@/components/ui/Input'
 import { getErrorMessage } from '@/api/client'
 import { adminSaasMembershipsService } from '@/services/adminSaasMembershipsService'
+import { invalidateAdminSidebarBadges } from '@/services/adminSidebarBadgesService'
 import {
   adminSaasMembershipStatusLabel,
   adminSaasMembershipStatusTone,
@@ -57,6 +58,7 @@ export function AdminSaasMembershipDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'saas-memberships'] }),
       queryClient.invalidateQueries({ queryKey: ['admin', 'saas-membership', id] }),
     ])
+    invalidateAdminSidebarBadges(queryClient)
   }
 
   const statusMutation = useMutation({

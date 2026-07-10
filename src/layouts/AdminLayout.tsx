@@ -13,14 +13,18 @@ import {
   Users,
   Wallet,
 } from 'lucide-react'
+import { AdminSidebarBadge } from '@/components/admin/AdminSidebarBadge'
+import { useAdminSidebarBadges } from '@/hooks/useAdminSidebarBadges'
 import { useAuthStore } from '@/store/authStore'
 import { usePrivatePageMeta } from '@/hooks/usePageMeta'
 import { cn } from '@/lib/cn'
+import { getSidebarBadgeCount, type AdminSidebarBadgeKey } from '@/types/adminSidebarBadges'
 
 type NavItem = {
   to: string
   label: string
   end?: boolean
+  badgeKey?: AdminSidebarBadgeKey
 }
 
 type NavGroup = {
@@ -36,15 +40,15 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Satış',
     items: [
-      { to: '/admin/orders', label: 'Siparişler' },
-      { to: '/admin/payments', label: 'Ödemeler' },
+      { to: '/admin/orders', label: 'Siparişler', badgeKey: 'ordersPending' },
+      { to: '/admin/payments', label: 'Ödemeler', badgeKey: 'paymentsPending' },
       { to: '/admin/customers', label: 'Müşteriler' },
     ],
   },
   {
     title: 'Lisans & Erişim',
     items: [
-      { to: '/admin/saas-subscriptions', label: 'SaaS Abonelikleri' },
+      { to: '/admin/saas-subscriptions', label: 'SaaS Abonelikleri', end: true, badgeKey: 'saasExpiringSoon' },
       { to: '/admin/saas-subscriptions/new', label: 'Manuel Abonelik Oluştur' },
       { to: '/admin/licenses', label: 'Masaüstü Lisans Özetleri' },
     ],
@@ -94,6 +98,7 @@ export function AdminLayout() {
   usePrivatePageMeta('Woontegra Admin')
   const location = useLocation()
   const clearSession = useAuthStore((s) => s.clearAdminSession)
+  const { data: badges } = useAdminSidebarBadges()
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -109,6 +114,7 @@ export function AdminLayout() {
                 {group.items.map((item) => {
                   const active = isNavActive(location.pathname, item.to, item.end)
                   const Icon = groupIcon(item.label)
+                  const badgeCount = item.badgeKey ? getSidebarBadgeCount(badges, item.badgeKey) : 0
                   return (
                     <Link
                       key={item.to}
@@ -121,7 +127,8 @@ export function AdminLayout() {
                       )}
                     >
                       <Icon className="h-4 w-4 shrink-0 opacity-70" />
-                      {item.label}
+                      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                      {item.badgeKey ? <AdminSidebarBadge count={badgeCount} /> : null}
                     </Link>
                   )
                 })}

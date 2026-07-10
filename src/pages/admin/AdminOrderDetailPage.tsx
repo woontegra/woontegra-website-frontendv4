@@ -16,6 +16,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CENTRAL_LICENSE_PENDING_ADMIN } from '@/constants/centralLicenseServer'
 import { isIndividualBillingType } from '@/utils/checkoutBilling'
 import { adminOrdersService } from '@/services/adminOrdersService'
+import { invalidateAdminSidebarBadges } from '@/services/adminSidebarBadgesService'
 import { getErrorMessage } from '@/api/client'
 import { isSaasOrderDeliveryUrl } from '@/lib/accountHelpers'
 import { formatMoney } from '@/utils/formatMoney'
@@ -75,6 +76,7 @@ export function AdminOrderDetailPage() {
     onSuccess: () => {
       setToast('Sipariş güncellendi.')
       void queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] })
+      invalidateAdminSidebarBadges(queryClient)
     },
     onError: (err) => setFormError(getErrorMessage(err)),
   })
@@ -91,6 +93,7 @@ export function AdminOrderDetailPage() {
       setToast('Havale/EFT ödemesi onaylandı.')
       void queryClient.invalidateQueries({ queryKey: ['admin', 'orders', id] })
       void queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] })
+      invalidateAdminSidebarBadges(queryClient)
     },
     onError: (err) => setFormError(getErrorMessage(err)),
   })

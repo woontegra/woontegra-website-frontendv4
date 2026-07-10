@@ -55,7 +55,7 @@ export function ChunkErrorFallback({ error }: Props) {
     if (autoReloading) {
       return (
         <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-          <p className="text-sm text-slate-600">Sayfa güncelleniyor…</p>
+          <p className="text-sm text-slate-600">Sayfa yenileniyor…</p>
         </div>
       )
     }
@@ -69,8 +69,8 @@ export function ChunkErrorFallback({ error }: Props) {
 
     return (
       <ErrorScreen
-        title="Sayfa güncellendi"
-        message="Woontegra'nın yeni sürümü yayınlandı. Devam etmek için sayfayı yenileyin; oturum ve sepet bilgileriniz korunur."
+        title="Sayfa yüklenemedi"
+        message="Güncel sürüm yüklenirken bir dosya bulunamadı. Sayfayı yenileyin; oturum ve sepet bilgileriniz korunur."
         detail={detail}
         onReload={() => performCleanRecoveryReload()}
       />
