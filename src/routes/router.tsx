@@ -325,6 +325,7 @@ export const router = createBrowserRouter([
               { path: 'indirmeler', element: <LazyPage><AccountDownloadsPage /></LazyPage> },
               { path: 'profil', element: <LazyPage><AccountProfilePage /></LazyPage> },
               { path: 'fatura', element: <LazyPage><AccountBillingPage /></LazyPage> },
+              { path: 'adresler', element: <LazyPage><AccountBillingPage /></LazyPage> },
               { path: 'guvenlik', element: <LazyPage><AccountSecurityPage /></LazyPage> },
               { path: 'destek', element: <LazyPage><AccountSupportPage /></LazyPage> },
             ],

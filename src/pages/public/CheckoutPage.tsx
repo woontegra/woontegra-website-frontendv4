@@ -38,6 +38,12 @@ import { resolveCheckoutTaxNumber, validateCheckoutBilling } from '@/utils/check
 import { checkoutLegalConsentsOk, resolveOrderLegalConsentFlags } from '@/utils/orderLegalRequirements'
 import { isSaasSubscriptionProduct } from '@/utils/productPurchase'
 import { legalTypeToPublicHref } from '@/lib/legalSlugs'
+import {
+  checkoutFormMatchesAddress,
+  defaultSaveAddressChecked,
+  shouldOfferSaveAddressToBook,
+} from '@/lib/checkoutAddressBook'
+import { useToastStore } from '@/store/toastStore'
 
 const LEGAL = {
   pre: legalTypeToPublicHref('PRE_INFORMATION'),
@@ -105,22 +111,25 @@ type CheckoutFormState = {
 
 function mergeAddressIntoCheckoutForm(base: CheckoutFormState, addr: CustomerAddress): CheckoutFormState {
   const hasCompany = Boolean(addr.companyName?.trim())
+  const tax = addr.taxNumber?.trim() ?? ''
   return {
     ...base,
     customerName: addr.fullName.trim() || base.customerName,
     customerPhone: addr.phone?.trim() || base.customerPhone,
     companyName: addr.companyName?.trim() ?? '',
     taxOffice: addr.taxOffice?.trim() ?? '',
-    taxNumber: addr.taxNumber?.trim() ?? '',
+    taxNumber: hasCompany ? tax : '',
+    identityNumber: hasCompany ? '' : tax,
     deliveryCity: addr.city,
     deliveryDistrict: addr.district ?? '',
     deliveryLine: addr.addressLine,
-    billingType: hasCompany ? 'Kurumsal' : base.billingType,
+    billingType: hasCompany ? 'Kurumsal' : 'Bireysel',
   }
 }
 
 export function CheckoutPage() {
   const navigate = useNavigate()
+  const toast = useToastStore((s) => s.show)
   const { authed } = useCustomerSession()
   const [lines, setLines] = useState<CartLine[]>(() => readCart())
   const productIds = useMemo(() => lines.map((l) => l.productId), [lines])
@@ -192,6 +201,9 @@ export function CheckoutPage() {
     deliveryLine: '',
   })
   const [prefilled, setPrefilled] = useState(false)
+  const [savedAddresses, setSavedAddresses] = useState<CustomerAddress[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
+  const [saveToAddressBook, setSaveToAddressBook] = useState(false)
 
   useEffect(() => {
     if (prefilled || !authed) return
@@ -201,6 +213,7 @@ export function CheckoutPage() {
         const me = await customersService.getMe()
         const addresses = await customersService.listAddresses()
         if (cancelled) return
+        setSavedAddresses(addresses)
         const profileBase: CheckoutFormState = {
           customerName: me.name || '',
           customerEmail: me.email || '',
@@ -215,7 +228,13 @@ export function CheckoutPage() {
           deliveryLine: '',
         }
         const preferred = addresses.find((a) => a.isDefault) ?? addresses[0]
-        setForm(preferred ? mergeAddressIntoCheckoutForm(profileBase, preferred) : profileBase)
+        if (preferred) {
+          setSelectedAddressId(preferred.id)
+          setForm(mergeAddressIntoCheckoutForm(profileBase, preferred))
+        } else {
+          setForm(profileBase)
+        }
+        setSaveToAddressBook(defaultSaveAddressChecked({ authed: true, savedAddresses: addresses }))
         setPrefilled(true)
       } catch {
         if (!cancelled) setPrefilled(true)
@@ -225,6 +244,51 @@ export function CheckoutPage() {
       cancelled = true
     }
   }, [authed, prefilled])
+
+  const offerSaveToBook = useMemo(
+    () =>
+      shouldOfferSaveAddressToBook({
+        authed,
+        savedAddresses,
+        selectedAddressId,
+        form,
+      }),
+    [authed, savedAddresses, selectedAddressId, form],
+  )
+
+  useEffect(() => {
+    if (!authed) {
+      setSaveToAddressBook(false)
+      return
+    }
+    if (!offerSaveToBook) {
+      setSaveToAddressBook(false)
+    } else if (savedAddresses.length === 0) {
+      setSaveToAddressBook(true)
+    }
+  }, [authed, offerSaveToBook, savedAddresses.length])
+
+  useEffect(() => {
+    if (!selectedAddressId) return
+    const selected = savedAddresses.find((a) => a.id === selectedAddressId)
+    if (selected && !checkoutFormMatchesAddress(form, selected)) {
+      setSelectedAddressId(null)
+      setSaveToAddressBook(true)
+    }
+  }, [form, selectedAddressId, savedAddresses])
+
+  const onSavedAddressSelect = (value: string) => {
+    if (!value) {
+      setSelectedAddressId(null)
+      setSaveToAddressBook(true)
+      return
+    }
+    const addr = savedAddresses.find((a) => a.id === value)
+    if (!addr) return
+    setSelectedAddressId(addr.id)
+    setForm((current) => mergeAddressIntoCheckoutForm(current, addr))
+    setSaveToAddressBook(false)
+  }
 
   const [paymentMethod, setPaymentMethod] = useState<'PAYTR' | 'BANK_TRANSFER'>('PAYTR')
   const [acceptPre, setAcceptPre] = useState(false)
@@ -361,7 +425,13 @@ export function CheckoutPage() {
         marketingConsent,
         explicitConsent,
         paymentMethod,
+        saveToAddressBook: authed && offerSaveToBook && saveToAddressBook,
+        selectedAddressId: selectedAddressId || undefined,
       })
+
+      if (created.addressBookWarning) {
+        toast(created.addressBookWarning, 'error')
+      }
 
       sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, form.customerEmail.trim().toLowerCase())
       if (cartHasMkSaas) {
@@ -458,6 +528,27 @@ export function CheckoutPage() {
             ) : (
               <p className="mt-3 text-sm text-slate-600">Hesabınıza kayıtlı bilgiler otomatik dolduruldu.</p>
             )}
+            {authed && savedAddresses.length > 0 ? (
+              <div className="mt-4 space-y-1.5">
+                <label htmlFor="checkout-saved-address" className="block text-sm font-medium text-slate-700">
+                  Kayıtlı adres
+                </label>
+                <select
+                  id="checkout-saved-address"
+                  value={selectedAddressId ?? ''}
+                  onChange={(e) => onSavedAddressSelect(e.target.value)}
+                  className={checkoutSelectCls}
+                >
+                  <option value="">Yeni adres gir</option>
+                  {savedAddresses.map((addr) => (
+                    <option key={addr.id} value={addr.id}>
+                      {addr.title}
+                      {addr.isDefault ? ' (varsayılan)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <Input
                 label="Ad soyad *"
@@ -531,6 +622,31 @@ export function CheckoutPage() {
               value={form.deliveryLine}
               onChange={(e) => setForm((f) => ({ ...f, deliveryLine: e.target.value }))}
             />
+            {authed && offerSaveToBook ? (
+              <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-3.5">
+                <input
+                  type="checkbox"
+                  checked={saveToAddressBook}
+                  onChange={(e) => setSaveToAddressBook(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-slate-900">Bu adresi adres defterime kaydet</span>
+                  <span className="mt-0.5 block text-xs leading-relaxed text-slate-600">
+                    Sonraki siparişlerinizde bu adresi hızlıca seçebilirsiniz.
+                  </span>
+                </span>
+              </label>
+            ) : null}
+            {!authed && !saasLoginRequired ? (
+              <p className="mt-5 text-xs leading-relaxed text-slate-500">
+                Adres kaydetmek için{' '}
+                <Link to={`/giris?return=${encodeURIComponent('/odeme')}`} className="font-semibold text-emerald-700 underline">
+                  giriş yapmalısınız
+                </Link>
+                .
+              </p>
+            ) : null}
           </section>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">

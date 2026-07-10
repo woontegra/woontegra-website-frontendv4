@@ -29,6 +29,8 @@ export type CreateOrderBody = {
   marketingConsent?: boolean
   explicitConsent?: boolean
   paymentMethod?: 'PAYTR' | 'BANK_TRANSFER'
+  saveToAddressBook?: boolean
+  selectedAddressId?: string | null
 }
 
 export type CreateOrderResponse = {
@@ -38,6 +40,7 @@ export type CreateOrderResponse = {
   total: number
   currency: string
   paymentProvider: string
+  addressBookWarning?: string
 }
 
 export type CartPreviewRow = {
