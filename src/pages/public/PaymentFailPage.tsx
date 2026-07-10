@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   AlertTriangle,
@@ -9,6 +10,7 @@ import {
   RefreshCw,
   ShoppingCart,
 } from 'lucide-react'
+import { PaytrIframe } from '@/components/payment/PaymentPanels'
 import { PaymentOrderSummary } from '@/components/public/payment/PaymentOrderSummary'
 import {
   PaymentResultLayout,
@@ -19,6 +21,9 @@ import {
 import { LoadingState } from '@/components/public/LoadingState'
 import { usePaymentResultContext } from '@/hooks/usePaymentResultContext'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { getErrorMessage } from '@/api/client'
+import { savePaytrRetryOrder } from '@/lib/paytrCheckoutStorage'
+import { paymentsService } from '@/services/paymentsService'
 
 const FAILURE_REASONS = [
   'Ödeme işlemi iptal edilmiş olabilir.',
@@ -27,31 +32,74 @@ const FAILURE_REASONS = [
 ]
 
 const RECOVERY_STEPS = [
-  'Kart bilgilerinizi kontrol ederek ödemeyi tekrar deneyin.',
+  'Aynı sipariş numarası ile ödemeyi tekrar deneyin (yeni sipariş oluşturulmaz).',
   'Mümkünse farklı bir kart veya ödeme yöntemi kullanın.',
   'Sorun devam ederse sipariş referansınızla destek ekibimize yazın.',
 ]
 
-function buildFailActions(): PaymentResultAction[] {
-  return [
-    { to: '/odeme', label: 'Ödemeyi tekrar dene', variant: 'primary', icon: RefreshCw },
+function buildFailActions(onRetry?: () => void, retrying?: boolean): PaymentResultAction[] {
+  const actions: PaymentResultAction[] = []
+  if (onRetry) {
+    actions.push({
+      label: retrying ? 'Ödeme açılıyor…' : 'Ödemeyi tekrar dene',
+      variant: 'primary',
+      icon: RefreshCw,
+      onClick: onRetry,
+      disabled: retrying,
+    })
+  } else {
+    actions.push({ to: '/odeme', label: 'Ödemeye dön', variant: 'primary', icon: RefreshCw })
+  }
+  actions.push(
     { to: '/sepet', label: 'Sepete dön', variant: 'secondary', icon: ShoppingCart },
     { to: '/yazilimlar', label: 'Yazılımlara dön', variant: 'secondary', icon: Package },
     { to: '/iletisim', label: 'İletişim', variant: 'secondary', icon: Headphones },
     { to: '/', label: 'Ana sayfa', variant: 'ghost', icon: Home },
-  ]
+  )
+  return actions
 }
 
 export function PaymentFailPage() {
   const ctx = usePaymentResultContext()
   const { orderNo, orderData, orderLoading } = ctx
+  const resolvedOrderNo = orderData?.orderNo || orderNo || null
+  const [retrying, setRetrying] = useState(false)
+  const [retryError, setRetryError] = useState<string | null>(null)
+  const [iframeToken, setIframeToken] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!resolvedOrderNo) return
+    savePaytrRetryOrder(resolvedOrderNo)
+  }, [resolvedOrderNo])
 
   usePageMeta({
-    title: orderNo ? `Ödeme başarısız — ${orderNo}` : 'Ödeme başarısız',
+    title: resolvedOrderNo ? `Ödeme başarısız — ${resolvedOrderNo}` : 'Ödeme başarısız',
     description: 'Ödeme tamamlanamadı. Tekrar deneyebilir veya destek ekibimizle iletişime geçebilirsiniz.',
   })
 
-  if (orderNo && orderLoading && !orderData) {
+  async function handleRetryPaytr() {
+    if (!resolvedOrderNo || retrying) return
+    setRetrying(true)
+    setRetryError(null)
+    try {
+      const token = await paymentsService.startPaytr(resolvedOrderNo)
+      setIframeToken(token)
+    } catch (err) {
+      setRetryError(getErrorMessage(err, 'Ödeme ekranı açılamadı. Lütfen tekrar deneyin.'))
+    } finally {
+      setRetrying(false)
+    }
+  }
+
+  if (iframeToken && resolvedOrderNo) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:py-10">
+        <PaytrIframe orderNo={resolvedOrderNo} token={iframeToken} />
+      </div>
+    )
+  }
+
+  if (resolvedOrderNo && orderLoading && !orderData) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-gradient-to-b from-amber-50/60 to-white px-4 py-16">
         <LoadingState label="Sipariş bilgisi kontrol ediliyor…" />
@@ -97,11 +145,16 @@ export function PaymentFailPage() {
       title="Ödeme tamamlanamadı"
       description={
         <>
-          Endişelenmeyin — kartınızdan tahsilat yapılmamış olabilir. Aşağıdaki adımlarla işlemi yeniden
-          deneyebilir veya destek alabilirsiniz.
+          Endişelenmeyin — kartınızdan tahsilat yapılmamış olabilir. Aynı sipariş numarası ile tekrar deneyebilirsiniz;
+          yeni sipariş oluşturulmaz.
           {backendMessage ? (
             <span className="mt-3 block rounded-lg border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-sm text-amber-950">
               {backendMessage}
+            </span>
+          ) : null}
+          {retryError ? (
+            <span className="mt-3 block rounded-lg border border-red-200/80 bg-red-50/80 px-3 py-2 text-sm text-red-900">
+              {retryError}
             </span>
           ) : null}
         </>
@@ -115,7 +168,7 @@ export function PaymentFailPage() {
         {
           icon: RefreshCw,
           title: 'Tekrar deneyin',
-          description: 'Çoğu durumda birkaç dakika sonra veya farklı kartla işlem tamamlanır.',
+          description: 'Aynı sipariş üzerinden PayTR ekranı yeniden açılır; merchant_oid her denemede benzersiz olur.',
         },
         {
           icon: Headphones,
@@ -123,7 +176,7 @@ export function PaymentFailPage() {
           description: 'Referans numaranızla iletişime geçerseniz ekibimiz süreci birlikte tamamlar.',
         },
       ]}
-      actions={buildFailActions()}
+      actions={buildFailActions(resolvedOrderNo ? handleRetryPaytr : undefined, retrying)}
     >
       <PaymentOrderSummary ctx={ctx} />
 
@@ -144,10 +197,10 @@ export function PaymentFailPage() {
         </PaymentResultPanel>
       </div>
 
-      {orderNo || orderData?.orderNo ? (
+      {resolvedOrderNo ? (
         <p className="mt-4 text-center text-xs text-slate-500">
           Destek talebinde referans:{' '}
-          <span className="font-mono font-semibold text-slate-700">{orderData?.orderNo || orderNo}</span>
+          <span className="font-mono font-semibold text-slate-700">{resolvedOrderNo}</span>
           {' · '}
           <Link to="/iletisim" className="font-medium text-emerald-700 hover:underline">
             İletişim formu

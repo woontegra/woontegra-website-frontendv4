@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { CreditCard, KeyRound, Lock, ShieldCheck } from 'lucide-react'
@@ -44,6 +44,13 @@ import {
   shouldOfferSaveAddressToBook,
 } from '@/lib/checkoutAddressBook'
 import { useToastStore } from '@/store/toastStore'
+import {
+  buildPaytrCartKey,
+  clearPaytrPendingOrder,
+  readPaytrPendingOrder,
+  readPaytrRetryOrder,
+  savePaytrPendingOrder,
+} from '@/lib/paytrCheckoutStorage'
 
 const LEGAL = {
   pre: legalTypeToPublicHref('PRE_INFORMATION'),
@@ -307,6 +314,18 @@ export function CheckoutPage() {
   const [iframeToken, setIframeToken] = useState<string | null>(null)
   const [orderNo, setOrderNo] = useState<string | null>(null)
   const [checkoutSuccessOrderNo, setCheckoutSuccessOrderNo] = useState<string | null>(null)
+  const [paytrRetryOrderNo, setPaytrRetryOrderNo] = useState<string | null>(null)
+  const submitLockRef = useRef(false)
+
+  const cartKey = useMemo(() => buildPaytrCartKey(productIds), [productIds])
+
+  useEffect(() => {
+    const stored = readPaytrPendingOrder(cartKey) ?? readPaytrRetryOrder()
+    if (stored) {
+      setPaytrRetryOrderNo(stored)
+      savePaytrPendingOrder(stored, cartKey)
+    }
+  }, [cartKey])
 
   const bankQuery = useQuery({
     queryKey: ['payments', 'bank-transfer-display'],
@@ -368,6 +387,7 @@ export function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (submitLockRef.current) return
     if (lines.length === 0 || merged.length === 0) return
     if (saasLoginRequired) {
       setFormError(SAAS_LOGIN_REQUIRED_MESSAGE)
@@ -396,61 +416,167 @@ export function CheckoutPage() {
       return
     }
 
+    submitLockRef.current = true
     setSubmitting(true)
     setFormError(null)
     try {
-      const created = await ordersService.create({
-        items: merged.map((m) => ({ productId: m.id, quantity: m.quantity })),
-        customerName: form.customerName.trim(),
-        customerEmail: form.customerEmail.trim(),
-        customerPhone: form.customerPhone.trim() || undefined,
-        billingType: form.billingType || undefined,
-        companyName: form.companyName.trim() || undefined,
-        taxOffice: form.taxOffice.trim() || undefined,
-        taxNumber: resolveCheckoutTaxNumber(form),
-        identityNumber: form.billingType === 'Bireysel' ? form.identityNumber.trim() || undefined : undefined,
-        deliveryCity: matchProvinceName(form.deliveryCity) || form.deliveryCity.trim() || undefined,
-        deliveryDistrict:
-          matchDistrictName(form.deliveryCity, form.deliveryDistrict) ||
-          form.deliveryDistrict.trim() ||
-          undefined,
-        deliveryLine: form.deliveryLine.trim() || undefined,
-        acceptPreInfo: acceptPre,
-        acceptDistanceSales: acceptDistance,
-        acceptKvkk: acceptKvkk,
-        acceptSoftwareLicense: legalFlags.needsSoftwareLicense ? acceptSoftwareLicense : undefined,
-        acceptSaasSubscription: legalFlags.needsSaasSubscription ? acceptSaasSubscription : undefined,
-        acceptDigitalProductWaiver: legalFlags.needsDigitalProductWaiver ? acceptDigitalProductWaiver : undefined,
-        acceptDigitalServiceWaiver: legalFlags.needsDigitalServiceWaiver ? acceptDigitalServiceWaiver : undefined,
-        marketingConsent,
-        explicitConsent,
-        paymentMethod,
-        saveToAddressBook: authed && offerSaveToBook && saveToAddressBook,
-        selectedAddressId: selectedAddressId || undefined,
-      })
+      if (paymentMethod === 'BANK_TRANSFER') {
+        const created = await ordersService.create({
+          items: merged.map((m) => ({ productId: m.id, quantity: m.quantity })),
+          customerName: form.customerName.trim(),
+          customerEmail: form.customerEmail.trim(),
+          customerPhone: form.customerPhone.trim() || undefined,
+          billingType: form.billingType || undefined,
+          companyName: form.companyName.trim() || undefined,
+          taxOffice: form.taxOffice.trim() || undefined,
+          taxNumber: resolveCheckoutTaxNumber(form),
+          identityNumber: form.billingType === 'Bireysel' ? form.identityNumber.trim() || undefined : undefined,
+          deliveryCity: matchProvinceName(form.deliveryCity) || form.deliveryCity.trim() || undefined,
+          deliveryDistrict:
+            matchDistrictName(form.deliveryCity, form.deliveryDistrict) ||
+            form.deliveryDistrict.trim() ||
+            undefined,
+          deliveryLine: form.deliveryLine.trim() || undefined,
+          acceptPreInfo: acceptPre,
+          acceptDistanceSales: acceptDistance,
+          acceptKvkk: acceptKvkk,
+          acceptSoftwareLicense: legalFlags.needsSoftwareLicense ? acceptSoftwareLicense : undefined,
+          acceptSaasSubscription: legalFlags.needsSaasSubscription ? acceptSaasSubscription : undefined,
+          acceptDigitalProductWaiver: legalFlags.needsDigitalProductWaiver ? acceptDigitalProductWaiver : undefined,
+          acceptDigitalServiceWaiver: legalFlags.needsDigitalServiceWaiver ? acceptDigitalServiceWaiver : undefined,
+          marketingConsent,
+          explicitConsent,
+          paymentMethod,
+          saveToAddressBook: authed && offerSaveToBook && saveToAddressBook,
+          selectedAddressId: selectedAddressId || undefined,
+        })
 
-      if (created.addressBookWarning) {
-        toast(created.addressBookWarning, 'error')
+        if (created.addressBookWarning) {
+          toast(created.addressBookWarning, 'error')
+        }
+
+        sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, form.customerEmail.trim().toLowerCase())
+        if (cartHasMkSaas) {
+          sessionStorage.setItem(MK_SAAS_CHECKOUT_ORDER_KEY, created.orderNo)
+        }
+
+        clearPaytrPendingOrder()
+        setPaytrRetryOrderNo(null)
+
+        if (paymentMethod === 'BANK_TRANSFER' || created.paymentProvider === 'BANK_TRANSFER') {
+          setCheckoutSuccessOrderNo(created.orderNo)
+          navigate(`/odeme/basarili/${encodeURIComponent(created.orderNo)}`)
+          clearCart()
+          return
+        }
       }
 
-      sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, form.customerEmail.trim().toLowerCase())
-      if (cartHasMkSaas) {
-        sessionStorage.setItem(MK_SAAS_CHECKOUT_ORDER_KEY, created.orderNo)
+      // PayTR: mevcut pending sipariş varsa yeniden kullan; yoksa tek sipariş oluştur.
+      let orderNoToPay = paytrRetryOrderNo ?? readPaytrPendingOrder(cartKey)
+      if (orderNoToPay) {
+        try {
+          const existing = await ordersService.getSuccess(orderNoToPay, form.customerEmail.trim())
+          if (existing.status === 'PAID' || existing.status === 'PROCESSING') {
+            clearPaytrPendingOrder()
+            setPaytrRetryOrderNo(null)
+            navigate(`/odeme/basarili/${encodeURIComponent(orderNoToPay)}`)
+            return
+          }
+          if (existing.status !== 'PENDING' && existing.status !== 'FAILED') {
+            orderNoToPay = null
+            clearPaytrPendingOrder()
+            setPaytrRetryOrderNo(null)
+          }
+        } catch {
+          orderNoToPay = null
+          clearPaytrPendingOrder()
+          setPaytrRetryOrderNo(null)
+        }
       }
 
-      if (paymentMethod === 'BANK_TRANSFER' || created.paymentProvider === 'BANK_TRANSFER') {
-        setCheckoutSuccessOrderNo(created.orderNo)
-        navigate(`/odeme/basarili/${encodeURIComponent(created.orderNo)}`)
-        clearCart()
-        return
+      if (!orderNoToPay) {
+        const created = await ordersService.create({
+          items: merged.map((m) => ({ productId: m.id, quantity: m.quantity })),
+          customerName: form.customerName.trim(),
+          customerEmail: form.customerEmail.trim(),
+          customerPhone: form.customerPhone.trim() || undefined,
+          billingType: form.billingType || undefined,
+          companyName: form.companyName.trim() || undefined,
+          taxOffice: form.taxOffice.trim() || undefined,
+          taxNumber: resolveCheckoutTaxNumber(form),
+          identityNumber: form.billingType === 'Bireysel' ? form.identityNumber.trim() || undefined : undefined,
+          deliveryCity: matchProvinceName(form.deliveryCity) || form.deliveryCity.trim() || undefined,
+          deliveryDistrict:
+            matchDistrictName(form.deliveryCity, form.deliveryDistrict) ||
+            form.deliveryDistrict.trim() ||
+            undefined,
+          deliveryLine: form.deliveryLine.trim() || undefined,
+          acceptPreInfo: acceptPre,
+          acceptDistanceSales: acceptDistance,
+          acceptKvkk: acceptKvkk,
+          acceptSoftwareLicense: legalFlags.needsSoftwareLicense ? acceptSoftwareLicense : undefined,
+          acceptSaasSubscription: legalFlags.needsSaasSubscription ? acceptSaasSubscription : undefined,
+          acceptDigitalProductWaiver: legalFlags.needsDigitalProductWaiver ? acceptDigitalProductWaiver : undefined,
+          acceptDigitalServiceWaiver: legalFlags.needsDigitalServiceWaiver ? acceptDigitalServiceWaiver : undefined,
+          marketingConsent,
+          explicitConsent,
+          paymentMethod: 'PAYTR',
+          saveToAddressBook: authed && offerSaveToBook && saveToAddressBook,
+          selectedAddressId: selectedAddressId || undefined,
+        })
+
+        if (created.addressBookWarning) {
+          toast(created.addressBookWarning, 'error')
+        }
+
+        sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, form.customerEmail.trim().toLowerCase())
+        if (cartHasMkSaas) {
+          sessionStorage.setItem(MK_SAAS_CHECKOUT_ORDER_KEY, created.orderNo)
+        }
+
+        orderNoToPay = created.orderNo
+        savePaytrPendingOrder(orderNoToPay, cartKey)
+        setPaytrRetryOrderNo(orderNoToPay)
       }
 
-      setOrderNo(created.orderNo)
-      const token = await paymentsService.startPaytr(created.orderNo)
-      setIframeToken(token)
+      setOrderNo(orderNoToPay)
+      try {
+        const token = await paymentsService.startPaytr(orderNoToPay)
+        setIframeToken(token)
+        setPaytrRetryOrderNo(null)
+      } catch (paytrErr) {
+        setPaytrRetryOrderNo(orderNoToPay)
+        savePaytrPendingOrder(orderNoToPay, cartKey)
+        setFormError(
+          getErrorMessage(
+            paytrErr,
+            'Siparişiniz oluşturuldu ancak ödeme ekranı açılamadı. Lütfen tekrar deneyin.',
+          ),
+        )
+      }
     } catch (err) {
       setFormError(getErrorMessage(err, 'Sipariş veya ödeme başlatılamadı'))
     } finally {
+      submitLockRef.current = false
+      setSubmitting(false)
+    }
+  }
+
+  const handlePaytrRetry = async () => {
+    const orderNoToPay = paytrRetryOrderNo ?? readPaytrPendingOrder(cartKey)
+    if (!orderNoToPay || submitLockRef.current) return
+    submitLockRef.current = true
+    setSubmitting(true)
+    setFormError(null)
+    try {
+      setOrderNo(orderNoToPay)
+      const token = await paymentsService.startPaytr(orderNoToPay)
+      setIframeToken(token)
+      setPaytrRetryOrderNo(null)
+    } catch (err) {
+      setFormError(getErrorMessage(err, 'Ödeme ekranı açılamadı. Lütfen tekrar deneyin.'))
+    } finally {
+      submitLockRef.current = false
       setSubmitting(false)
     }
   }
@@ -491,6 +617,28 @@ export function CheckoutPage() {
       {formError ? (
         <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
           {formError}
+          {paytrRetryOrderNo && paymentMethod === 'PAYTR' ? (
+            <p className="mt-3 text-xs text-red-800">
+              Sipariş no: <span className="font-mono font-semibold">{paytrRetryOrderNo}</span>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {paytrRetryOrderNo && paymentMethod === 'PAYTR' && !iframeToken ? (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          <p className="font-medium">Bekleyen sipariş: {paytrRetryOrderNo}</p>
+          <p className="mt-1 text-xs text-amber-900">
+            Yeni sipariş oluşturulmadan aynı sipariş üzerinden ödeme denenebilir.
+          </p>
+          <button
+            type="button"
+            onClick={() => void handlePaytrRetry()}
+            disabled={submitting}
+            className="mt-3 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+          >
+            {submitting ? 'Ödeme açılıyor…' : 'Ödemeyi tekrar dene'}
+          </button>
         </div>
       ) : null}
 
@@ -752,7 +900,13 @@ export function CheckoutPage() {
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 disabled:opacity-60"
           >
             <ShieldCheck className="h-5 w-5" aria-hidden />
-            {submitting ? 'İşleniyor…' : paymentMethod === 'BANK_TRANSFER' ? 'Siparişi oluştur' : 'Ödemeye geç'}
+            {submitting
+              ? 'İşleniyor…'
+              : paymentMethod === 'BANK_TRANSFER'
+                ? 'Siparişi oluştur'
+                : paytrRetryOrderNo
+                  ? 'Ödemeye geç (mevcut sipariş)'
+                  : 'Ödemeye geç'}
           </button>
         </form>
 

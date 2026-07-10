@@ -4,10 +4,12 @@ import { Link } from 'react-router-dom'
 import { cn } from '@/lib/cn'
 
 export type PaymentResultAction = {
-  to: string
+  to?: string
   label: string
   variant?: 'primary' | 'secondary' | 'ghost'
   icon?: LucideIcon
+  onClick?: () => void
+  disabled?: boolean
 }
 
 export type PaymentResultTrustCard = {
@@ -35,15 +37,24 @@ const ACTION_STYLES = {
   ghost: 'text-slate-600 hover:bg-slate-100 focus-visible:ring-slate-400',
 } as const
 
-function ResultAction({ to, label, variant = 'primary', icon: Icon }: PaymentResultAction) {
+function ResultAction({ to, label, variant = 'primary', icon: Icon, onClick, disabled }: PaymentResultAction) {
+  const className = cn(
+    'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:w-auto',
+    ACTION_STYLES[variant],
+    disabled && 'pointer-events-none opacity-60',
+  )
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} disabled={disabled} className={className}>
+        {Icon ? <Icon className="h-4 w-4 shrink-0" aria-hidden /> : null}
+        {label}
+      </button>
+    )
+  }
+
   return (
-    <Link
-      to={to}
-      className={cn(
-        'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:w-auto',
-        ACTION_STYLES[variant],
-      )}
-    >
+    <Link to={to ?? '/'} className={className}>
       {Icon ? <Icon className="h-4 w-4 shrink-0" aria-hidden /> : null}
       {label}
     </Link>
@@ -139,7 +150,7 @@ export function PaymentResultLayout({
 
           <div className="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             {actions.map((action) => (
-              <ResultAction key={`${action.to}-${action.label}`} {...action} />
+              <ResultAction key={`${action.to ?? 'action'}-${action.label}`} {...action} />
             ))}
           </div>
         </div>

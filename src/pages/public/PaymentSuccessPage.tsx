@@ -24,6 +24,7 @@ import { usePageMeta } from '@/hooks/usePageMeta'
 import { useCustomerSession } from '@/hooks/useCustomerSession'
 import { trackPurchase } from '@/integrations/trackingEvents'
 import { clearCart } from '@/lib/cartStorage'
+import { clearPaytrPendingOrder } from '@/lib/paytrCheckoutStorage'
 import { resolveSaasSuccessKind, saasSuccessNotice, paidDeliveryNotice } from '@/lib/orderSuccessSaas'
 import { SAAS_RENEW_ORDER_KEY } from '@/types/orderSuccess'
 import type { OrderSuccessData } from '@/types/orderSuccess'
@@ -153,6 +154,7 @@ export function PaymentSuccessPage() {
     if (cartCleared.current === orderNo) return
     cartCleared.current = orderNo
     clearCart()
+    clearPaytrPendingOrder()
   }, [orderNo, isPaidLike])
 
   useEffect(() => {
