@@ -1,4 +1,6 @@
-export const CHUNK_RELOAD_SESSION_KEY = 'woontegra_chunk_reload_attempted'
+import { CHUNK_RELOAD_SESSION_KEY, clearRecoverySessionState } from '@/lib/recoveryStorage'
+
+export { CHUNK_RELOAD_SESSION_KEY } from '@/lib/recoveryStorage'
 
 const CHUNK_ERROR_PATTERNS = [
   'Failed to fetch dynamically imported module',
@@ -7,7 +9,6 @@ const CHUNK_ERROR_PATTERNS = [
   'Loading chunk',
   'ChunkLoadError',
   'error loading dynamically imported module',
-  'Unable to preload CSS',
 ] as const
 
 function collectErrorText(error: unknown): string {
@@ -29,16 +30,11 @@ function collectErrorText(error: unknown): string {
 export function isChunkLoadError(error: unknown): boolean {
   const message = collectErrorText(error)
   if (!message) return false
-  if (CHUNK_ERROR_PATTERNS.some((pattern) => message.includes(pattern))) return true
-  return /\/assets\/[^?\s"']+\.js/i.test(message)
+  return CHUNK_ERROR_PATTERNS.some((pattern) => message.includes(pattern))
 }
 
 export function clearChunkReloadAttemptFlag(): void {
-  try {
-    sessionStorage.removeItem(CHUNK_RELOAD_SESSION_KEY)
-  } catch {
-    /* ignore */
-  }
+  clearRecoverySessionState()
 }
 
 /** İlk denemede true döner ve flag set eder; daha önce denendiyse false. */

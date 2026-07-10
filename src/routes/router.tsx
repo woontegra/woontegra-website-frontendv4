@@ -6,6 +6,7 @@ import { AppRouteErrorBoundary } from '@/components/common/AppRouteErrorBoundary
 import { LazyChunkErrorBoundary } from '@/components/common/LazyChunkErrorBoundary'
 import { ScrollToTop } from '@/components/common/ScrollToTop'
 import { clearChunkReloadAttemptFlag } from '@/lib/chunkLoadError'
+import { applyRecoveryBypassOnBoot, clearRecoverySessionState } from '@/lib/recoveryStorage'
 import { SiteLayout } from '@/layouts/SiteLayout'
 import { PublicRouteSkeleton } from '@/components/public/PublicRouteSkeleton'
 
@@ -225,6 +226,8 @@ function LegacyOrderFailRedirect() {
 
 function RootLayout() {
   useEffect(() => {
+    applyRecoveryBypassOnBoot()
+    clearRecoverySessionState()
     clearChunkReloadAttemptFlag()
   }, [])
 

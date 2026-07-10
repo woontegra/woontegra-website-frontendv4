@@ -1,23 +1,22 @@
 import { isChunkLoadError } from '@/lib/chunkLoadError'
-import { cacheBustReload, showPreReactBootMessage } from '@/lib/cacheBustReload'
+import { cacheBustReload } from '@/lib/cacheBustReload'
 
 let initialized = false
 
-function tryRecoverFromChunkError(reason: unknown): void {
-  if (!isChunkLoadError(reason)) return
-
-  if (cacheBustReload()) {
-    showPreReactBootMessage('Site güncellendi', 'Woontegra yeni sürüme geçiyor, sayfa yenileniyor…')
-    return
-  }
-
-  showPreReactBootMessage(
-    'Site güncellendi',
-    'Woontegra\'nın yeni sürümü yayınlandı. Devam etmek için sayfayı yenileyin.',
+function isAssetScript(target: EventTarget | null): target is HTMLScriptElement {
+  return (
+    target instanceof HTMLScriptElement &&
+    Boolean(target.src) &&
+    (target.src.includes('/assets/') || target.type === 'module')
   )
 }
 
-/** Script/module yükleme hatalarında tek seferlik cache-bust yenileme. */
+function tryRecoverFromChunkError(reason: unknown): void {
+  if (!isChunkLoadError(reason)) return
+  cacheBustReload()
+}
+
+/** Lazy/entry chunk hatalarında tek seferlik cache-bust — DOM kilitlemez. */
 export function initChunkLoadRecovery(): void {
   if (initialized || typeof window === 'undefined') return
   initialized = true
@@ -29,16 +28,9 @@ export function initChunkLoadRecovery(): void {
   window.addEventListener(
     'error',
     (event) => {
-      const target = event.target
-      if (target instanceof HTMLScriptElement && target.src) {
-        tryRecoverFromChunkError(`Failed to fetch dynamically imported module: ${target.src}`)
-        return
+      if (isAssetScript(event.target)) {
+        tryRecoverFromChunkError(`Failed to fetch dynamically imported module: ${event.target.src}`)
       }
-      if (target instanceof HTMLLinkElement && target.rel === 'stylesheet' && target.href) {
-        tryRecoverFromChunkError(`Unable to preload CSS for ${target.href}`)
-        return
-      }
-      tryRecoverFromChunkError(event.error ?? event.message)
     },
     true,
   )
