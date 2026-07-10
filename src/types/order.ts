@@ -134,8 +134,16 @@ export type AdminOrderDetail = {
   paymentConfirmedAt: string | null
   paymentConfirmedByEmail: string | null
   downloadEmailSentAt: string | null
-  deliveryEmailStatus?: 'not_sent' | 'partial' | 'complete'
+  deliveryEmailStatus?: 'not_sent' | 'pending_info' | 'complete' | 'failed'
   deliveryEmailStatusLabel?: string
+  saasDeliveryStatus?: {
+    paymentReceived: boolean
+    saasAccessCreated: boolean
+    saasAccessPending: boolean
+    saasProvisionFailed: boolean
+    activationEmailSent: boolean
+    pendingInfoEmailSent: boolean
+  } | null
   canRetryDigitalDelivery?: boolean
   digitalDeliveryEmailAlert?: string | null
   preInfoAcceptedAt: string | null
@@ -333,12 +341,26 @@ export function normalizeAdminOrderDetail(raw: unknown): AdminOrderDetail | null
     downloadEmailSentAt: toNullableString(row.downloadEmailSentAt),
     deliveryEmailStatus:
       row.deliveryEmailStatus === 'not_sent' ||
-      row.deliveryEmailStatus === 'partial' ||
-      row.deliveryEmailStatus === 'complete'
+      row.deliveryEmailStatus === 'pending_info' ||
+      row.deliveryEmailStatus === 'complete' ||
+      row.deliveryEmailStatus === 'failed'
         ? row.deliveryEmailStatus
         : undefined,
     deliveryEmailStatusLabel:
       row.deliveryEmailStatusLabel == null ? undefined : toString(row.deliveryEmailStatusLabel),
+    saasDeliveryStatus: (() => {
+      const raw = row.saasDeliveryStatus
+      if (!raw || typeof raw !== 'object') return null
+      const s = raw as Record<string, unknown>
+      return {
+        paymentReceived: s.paymentReceived === true,
+        saasAccessCreated: s.saasAccessCreated === true,
+        saasAccessPending: s.saasAccessPending === true,
+        saasProvisionFailed: s.saasProvisionFailed === true,
+        activationEmailSent: s.activationEmailSent === true,
+        pendingInfoEmailSent: s.pendingInfoEmailSent === true,
+      }
+    })(),
     canRetryDigitalDelivery:
       row.canRetryDigitalDelivery === true ? true : row.canRetryDigitalDelivery === false ? false : undefined,
     digitalDeliveryEmailAlert: toNullableString(row.digitalDeliveryEmailAlert),

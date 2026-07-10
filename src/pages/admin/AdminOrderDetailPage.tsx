@@ -33,6 +33,24 @@ import {
   showHavaleConfirmButton,
 } from '@/utils/adminOrderUi'
 
+function SaasStatusRow({ label, active, tone }: { label: string; active: boolean; tone?: 'ok' | 'warn' | 'err' | 'muted' }) {
+  const toneClass =
+    tone === 'ok'
+      ? 'text-emerald-800'
+      : tone === 'warn'
+        ? 'text-amber-800'
+        : tone === 'err'
+          ? 'text-red-700'
+          : 'text-slate-500'
+  return (
+    <InfoRow
+      label={label}
+      value={active ? 'Evet' : 'Hayır'}
+      valueClassName={active ? toneClass : 'text-slate-500'}
+    />
+  )
+}
+
 function InfoRow({
   label,
   value,
@@ -147,11 +165,14 @@ export function AdminOrderDetailPage() {
     data.deliveryEmailStatusLabel ??
     (data.downloadEmailSentAt ? 'Gönderildi' : 'Henüz gönderilmedi')
   const deliveryEmailTone =
-    data.deliveryEmailStatus === 'partial'
+    data.deliveryEmailStatus === 'pending_info'
       ? 'text-amber-800'
-      : data.deliveryEmailStatus === 'complete'
-        ? 'text-emerald-800'
-        : 'text-slate-700'
+      : data.deliveryEmailStatus === 'failed'
+        ? 'text-red-700'
+        : data.deliveryEmailStatus === 'complete'
+          ? 'text-emerald-800'
+          : 'text-slate-700'
+  const saas = data.saasDeliveryStatus
 
   return (
     <div className="w-full min-w-0 space-y-6">
@@ -230,7 +251,21 @@ export function AdminOrderDetailPage() {
               value={deliveryEmailLabel}
               valueClassName={deliveryEmailTone}
             />
-            <InfoRow label="Son gönderim" value={formatDateTime(data.downloadEmailSentAt)} />
+            <InfoRow
+              label="Tam aktivasyon maili"
+              value={formatDateTime(data.downloadEmailSentAt)}
+            />
+            {saas ? (
+              <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Müvekkil Kasa SaaS teslimat</p>
+                <SaasStatusRow label="Ödeme alındı" active={saas.paymentReceived} tone="ok" />
+                <SaasStatusRow label="SaaS erişimi oluşturuldu" active={saas.saasAccessCreated} tone="ok" />
+                <SaasStatusRow label="SaaS erişimi bekliyor" active={saas.saasAccessPending} tone="warn" />
+                <SaasStatusRow label="SaaS provision hata aldı" active={saas.saasProvisionFailed} tone="err" />
+                <SaasStatusRow label="Tam aktivasyon maili gönderildi" active={saas.activationEmailSent} tone="ok" />
+                <SaasStatusRow label="Bilgilendirme/pending mail gönderildi" active={saas.pendingInfoEmailSent} tone="warn" />
+              </div>
+            ) : null}
             {data.paymentConfirmedByEmail ? (
               <InfoRow label="Havale onaylayan" value={data.paymentConfirmedByEmail} />
             ) : null}
@@ -250,7 +285,7 @@ export function AdminOrderDetailPage() {
                     }}
                   >
                     <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${retryDeliveryMutation.isPending ? 'animate-spin' : ''}`} />
-                    Lisans teslimatını yeniden dene
+                    Teslimatı tekrar dene
                   </Button>
                 ) : null}
               </div>
@@ -310,11 +345,13 @@ export function AdminOrderDetailPage() {
                       : '—'}
                   </TD>
                   <TD className="text-xs">
-                    {item.licenseRequired ? (
+                    {item.licenseRequired || isSaasOrderDeliveryUrl(item.downloadUrl ?? '') ? (
                       item.licenseServerLastError?.trim() ? (
                         <span className="text-red-700">{item.licenseServerLastError.trim()}</span>
                       ) : (item.licenseServerUnitsNotified ?? 0) >= item.quantity ? (
-                        <span className="text-emerald-700">Oluşturuldu ({item.licenseServerUnitsNotified}/{item.quantity})</span>
+                        <span className="text-emerald-700">
+                          {isSaasOrderDeliveryUrl(item.downloadUrl ?? '') ? 'SaaS erişimi oluşturuldu' : `Oluşturuldu (${item.licenseServerUnitsNotified}/${item.quantity})`}
+                        </span>
                       ) : paidLike ? (
                         <span className="text-amber-800">Bekleniyor</span>
                       ) : (

@@ -1,13 +1,17 @@
 import { Link } from 'react-router-dom'
-import { KeyRound, Mail, ShieldCheck } from 'lucide-react'
+import { useState } from 'react'
+import { KeyRound, Mail, ShieldCheck, Sparkles } from 'lucide-react'
 import { CartAddedFeedback } from '@/components/public/CartAddedFeedback'
 import { ProductFreeDownloadButton } from '@/components/public/product/ProductFreeDownloadButton'
 import { SifreKasasiDownloadCounter } from '@/components/public/product/SifreKasasiDownloadCounter'
+import { MkSaasDemoRequestModal } from '@/components/public/product/MkSaasDemoRequestModal'
 import { useBuilderEditContext } from '@/builder/edit/BuilderEditContext'
+import { useCustomerSession } from '@/hooks/useCustomerSession'
 import type { PublicProductDetail } from '@/types/product'
 import { formatMoney } from '@/types/product'
 import { formatCampaignDate } from '@/types/campaign'
 import { getPublicProductDownloadFiles } from '@/lib/freeProductDownload'
+import { isMuvekkilKasaSaasProduct } from '@/lib/muvekkilKasaSaasProduct'
 import {
   canPurchaseProduct,
   isFreeDownloadProduct,
@@ -34,7 +38,13 @@ export function ProductPurchasePanel({
   onAddToCart,
 }: Props) {
   const { annotateFields } = useBuilderEditContext()
+  const { authed, profile } = useCustomerSession()
+  const [demoOpen, setDemoOpen] = useState(false)
   const canPurchase = canPurchaseProduct(product)
+  const isMkSaas = isMuvekkilKasaSaasProduct({
+    slug: product.slug,
+    productType: product.productType,
+  })
   const isFreeDownload = isFreeDownloadProduct(product)
   const showQuote = shouldShowQuoteCta(product)
   const isSaas = isSaasSubscriptionProduct(product.productType)
@@ -203,6 +213,17 @@ export function ProductPurchasePanel({
           )
         ) : null}
 
+        {isMkSaas && canPurchase && !feedback && !annotateFields ? (
+          <button
+            type="button"
+            onClick={() => setDemoOpen(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3.5 text-sm font-semibold text-sky-900 shadow-sm transition hover:border-sky-300 hover:bg-sky-100"
+          >
+            <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
+            Demo Talep Et
+          </button>
+        ) : null}
+
         {canPurchase && !feedback && !annotateFields ? (
           <Link to="/sepet" className="block text-center text-sm font-medium text-emerald-700 underline-offset-4 hover:underline">
             Sepete git
@@ -215,6 +236,14 @@ export function ProductPurchasePanel({
           Dijital ürün teslimatı e-posta ile yapılır. Ödeme adımında fatura ve yasal onaylar tamamlanır.
         </p>
       ) : null}
+
+      <MkSaasDemoRequestModal
+        open={demoOpen}
+        onClose={() => setDemoOpen(false)}
+        defaultEmail={authed ? profile?.email ?? '' : ''}
+        defaultName={authed ? profile?.name ?? '' : ''}
+        defaultPhone={authed ? profile?.phone ?? '' : ''}
+      />
     </div>
   )
 }
