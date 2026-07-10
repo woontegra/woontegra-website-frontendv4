@@ -133,6 +133,9 @@ const AdminCampaignFormPage = lazy(() =>
 const AdminMediaLibraryPage = lazy(() =>
   import('@/pages/admin/AdminMediaLibraryPage').then((m) => ({ default: m.AdminMediaLibraryPage })),
 )
+const AdminTestDataCleanupPage = lazy(() =>
+  import('@/pages/admin/AdminTestDataCleanupPage').then((m) => ({ default: m.AdminTestDataCleanupPage })),
+)
 const AdminSiteSettingsPage = lazy(() =>
   import('@/pages/admin/AdminSiteSettingsPage').then((m) => ({ default: m.AdminSiteSettingsPage })),
 )
@@ -376,6 +379,7 @@ export const router = createBrowserRouter([
           { path: 'campaigns/new', element: <LazyPage><AdminCampaignFormPage /></LazyPage> },
           { path: 'campaigns/:id/edit', element: <LazyPage><AdminCampaignFormPage /></LazyPage> },
           { path: 'media', element: <LazyPage><AdminMediaLibraryPage /></LazyPage> },
+          { path: 'test-data-cleanup', element: <LazyPage><AdminTestDataCleanupPage /></LazyPage> },
           {
             path: 'settings',
             element: (

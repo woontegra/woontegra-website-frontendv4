@@ -10,6 +10,7 @@ import {
   Package,
   Settings,
   ShoppingBag,
+  Trash2,
   Users,
   Wallet,
 } from 'lucide-react'
@@ -70,6 +71,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/admin/builder', label: 'Page Builder' },
       { to: '/admin/settings', label: 'Site Ayarları' },
+      { to: '/admin/test-data-cleanup', label: 'Test Verisi Temizleme' },
     ],
   },
 ]
@@ -85,6 +87,7 @@ function groupIcon(label: string) {
   if (label.includes('Medya')) return ImageIcon
   if (label.includes('Kampanya')) return Megaphone
   if (label.includes('Builder')) return LayoutDashboard
+  if (label.includes('Test Verisi')) return Trash2
   if (label.includes('Ayar')) return Settings
   return LayoutDashboard
 }
