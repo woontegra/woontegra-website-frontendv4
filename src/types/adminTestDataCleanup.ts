@@ -18,6 +18,37 @@ export const EMPTY_CLEANUP_OPTIONS: TestDataCleanupOptions = {
   deleteContactMessages: false,
 }
 
+export type MkSaasEmailLookupRecord = {
+  userId: string
+  kullaniciAdi: string
+  ownerEmail: string
+  role: string
+  userActive: boolean
+  tenant: {
+    tenantId: string
+    tenantSlug: string
+    tenantName: string
+    tenantActive: boolean
+    licenseStatus: string
+    licenseKey: string | null
+    externalOrderId: string | null
+    externalCustomerId: string | null
+    licenseStartDate: string | null
+    licenseEndDate: string | null
+    createdAt: string
+  } | null
+}
+
+export type MkSaasEmailLookupView = {
+  configured: boolean
+  reachable: boolean
+  found: boolean
+  email: string
+  records: MkSaasEmailLookupRecord[]
+  error: string | null
+  manualCleanupHint: string | null
+}
+
 export type TestDataCleanupPreview = {
   email: string
   normalizedEmail: string
@@ -82,6 +113,7 @@ export type TestDataCleanupPreview = {
     status: string
     source: string
   }>
+  mkSaasLookup?: MkSaasEmailLookupView
   warnings: string[]
 }
 
@@ -100,6 +132,8 @@ export type TestDataCleanupResult = {
   skipped: {
     protectedPaytrOrders: number
   }
+  mkSaasLookupAfterCleanup?: MkSaasEmailLookupView | null
+  mkSaasStillRegistered?: boolean
   warnings: string[]
 }
 
@@ -116,6 +150,48 @@ function toNullableString(v: unknown): string | null {
   if (typeof v !== 'string') return null
   const s = v.trim()
   return s || null
+}
+
+function normalizeMkSaasLookup(raw: unknown): MkSaasEmailLookupView | undefined {
+  if (!raw || typeof raw !== 'object') return undefined
+  const row = raw as Record<string, unknown>
+  const recordsRaw = Array.isArray(row.records) ? row.records : []
+  return {
+    configured: row.configured === true,
+    reachable: row.reachable === true,
+    found: row.found === true,
+    email: String(row.email ?? ''),
+    records: recordsRaw.map((item) => {
+      const r = item as Record<string, unknown>
+      const tenantRaw = r.tenant
+      const tenant =
+        tenantRaw && typeof tenantRaw === 'object'
+          ? {
+              tenantId: String((tenantRaw as Record<string, unknown>).tenantId ?? ''),
+              tenantSlug: String((tenantRaw as Record<string, unknown>).tenantSlug ?? ''),
+              tenantName: String((tenantRaw as Record<string, unknown>).tenantName ?? ''),
+              tenantActive: (tenantRaw as Record<string, unknown>).tenantActive === true,
+              licenseStatus: String((tenantRaw as Record<string, unknown>).licenseStatus ?? ''),
+              licenseKey: toNullableString((tenantRaw as Record<string, unknown>).licenseKey),
+              externalOrderId: toNullableString((tenantRaw as Record<string, unknown>).externalOrderId),
+              externalCustomerId: toNullableString((tenantRaw as Record<string, unknown>).externalCustomerId),
+              licenseStartDate: toNullableString((tenantRaw as Record<string, unknown>).licenseStartDate),
+              licenseEndDate: toNullableString((tenantRaw as Record<string, unknown>).licenseEndDate),
+              createdAt: String((tenantRaw as Record<string, unknown>).createdAt ?? ''),
+            }
+          : null
+      return {
+        userId: String(r.userId ?? ''),
+        kullaniciAdi: String(r.kullaniciAdi ?? ''),
+        ownerEmail: String(r.ownerEmail ?? ''),
+        role: String(r.role ?? ''),
+        userActive: r.userActive === true,
+        tenant,
+      }
+    }),
+    error: toNullableString(row.error),
+    manualCleanupHint: toNullableString(row.manualCleanupHint),
+  }
 }
 
 export function normalizeTestDataCleanupPreview(raw: unknown): TestDataCleanupPreview | null {
@@ -220,6 +296,7 @@ export function normalizeTestDataCleanupPreview(raw: unknown): TestDataCleanupPr
         })
       : [],
     warnings: Array.isArray(row.warnings) ? row.warnings.map(String) : [],
+    mkSaasLookup: normalizeMkSaasLookup(row.mkSaasLookup),
   }
 }
 
@@ -244,5 +321,7 @@ export function normalizeTestDataCleanupResult(raw: unknown): TestDataCleanupRes
       protectedPaytrOrders: toCount(skipped.protectedPaytrOrders),
     },
     warnings: Array.isArray(row.warnings) ? row.warnings.map(String) : [],
+    mkSaasLookupAfterCleanup: normalizeMkSaasLookup(row.mkSaasLookupAfterCleanup) ?? null,
+    mkSaasStillRegistered: row.mkSaasStillRegistered === true,
   }
 }

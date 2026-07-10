@@ -13,6 +13,7 @@ import { adminTestDataCleanupService } from '@/services/adminTestDataCleanupServ
 import { invalidateAdminSidebarBadges } from '@/services/adminSidebarBadgesService'
 import {
   EMPTY_CLEANUP_OPTIONS,
+  type MkSaasEmailLookupView,
   type TestDataCleanupOptions,
   type TestDataCleanupPreview,
   type TestDataCleanupResult,
@@ -53,6 +54,55 @@ function SummaryRow({ label, value }: { label: string; value: React.ReactNode })
       <span className="text-slate-500">{label}</span>
       <span className="font-medium text-slate-900">{value}</span>
     </div>
+  )
+}
+
+function MkSaasLookupPanel({ lookup }: { lookup: MkSaasEmailLookupView }) {
+  const primary = lookup.records[0]
+  const tenant = primary?.tenant
+
+  return (
+    <Card className={lookup.found ? 'border-amber-300 bg-amber-50' : 'border-slate-200'}>
+      <CardBody className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-lg font-semibold text-slate-900">MK SaaS (harici tenant)</h2>
+          {lookup.found ? (
+            <Badge tone="warning">MK tarafında kayıtlı</Badge>
+          ) : lookup.reachable ? (
+            <Badge tone="brand">MK kaydı yok</Badge>
+          ) : (
+            <Badge tone="default">Lookup erişilemedi</Badge>
+          )}
+        </div>
+
+        <SummaryRow label="API yapılandırması" value={lookup.configured ? 'Var' : 'Yok'} />
+        <SummaryRow label="API erişimi" value={lookup.reachable ? 'Erişilebilir' : 'Erişilemedi'} />
+        <SummaryRow label="MK tenant durumu" value={lookup.found ? 'Kayıt var' : 'Kayıt yok'} />
+        <SummaryRow label="MK kullanıcı durumu" value={primary ? (primary.userActive ? 'Aktif' : 'Pasif') : '—'} />
+
+        {tenant ? (
+          <>
+            <SummaryRow label="tenantSlug" value={tenant.tenantSlug || '—'} />
+            <SummaryRow label="tenantId" value={<span className="font-mono text-xs">{tenant.tenantId}</span>} />
+            <SummaryRow label="licenseKey" value={tenant.licenseKey || '—'} />
+            <SummaryRow label="externalCustomerId" value={tenant.externalCustomerId || '—'} />
+            <SummaryRow label="externalOrderId" value={tenant.externalOrderId || '—'} />
+            <SummaryRow label="Lisans durumu" value={tenant.licenseStatus} />
+          </>
+        ) : null}
+
+        {lookup.error ? <p className="text-sm text-red-700">{lookup.error}</p> : null}
+        {lookup.found ? (
+          <p className="text-sm font-medium text-amber-900">
+            Bu e-posta MK SaaS tarafında hâlâ kayıtlı. Tekrar test yapmadan önce MK kaydı temizlenmeli veya
+            Woontegra customerId ile eşleştirilmeli.
+          </p>
+        ) : null}
+        {lookup.manualCleanupHint ? (
+          <p className="text-xs text-amber-900">{lookup.manualCleanupHint}</p>
+        ) : null}
+      </CardBody>
+    </Card>
   )
 }
 
@@ -213,6 +263,8 @@ export function AdminTestDataCleanupPage() {
             </CardBody>
           </Card>
 
+          {preview.mkSaasLookup ? <MkSaasLookupPanel lookup={preview.mkSaasLookup} /> : null}
+
           {preview.previewOrders.length > 0 ? (
             <Card>
               <CardBody className="overflow-x-auto p-0">
@@ -327,12 +379,24 @@ export function AdminTestDataCleanupPage() {
       ) : null}
 
       {result ? (
-        <Card className="border-emerald-200 bg-emerald-50">
+        <Card className={result.mkSaasStillRegistered ? 'border-amber-300 bg-amber-50' : 'border-emerald-200 bg-emerald-50'}>
           <CardBody className="space-y-4">
-            <h2 className="text-lg font-semibold text-emerald-900">Temizlik tamamlandı</h2>
-            <p className="text-sm text-emerald-800">
-              Bu e-posta ile yeniden test siparişi verebilirsiniz.
+            <h2 className={`text-lg font-semibold ${result.mkSaasStillRegistered ? 'text-amber-900' : 'text-emerald-900'}`}>
+              Temizlik tamamlandı
+            </h2>
+            <p className={`text-sm ${result.mkSaasStillRegistered ? 'text-amber-900' : 'text-emerald-800'}`}>
+              {result.mkSaasStillRegistered
+                ? 'Woontegra website verileri temizlendi ancak MK SaaS tarafında bu e-posta kayıtlı kalıyor. Aynı e-posta ile tekrar test yaparsanız duplicate e-posta (409) hatası alırsınız.'
+                : 'Woontegra website verileri temizlendi. MK SaaS tarafında kayıt görünmüyorsa aynı e-posta ile yeni test yapılabilir.'}
             </p>
+            {result.warnings.map((w) => (
+              <p key={w} className="text-sm text-amber-900">
+                {w}
+              </p>
+            ))}
+            {result.mkSaasLookupAfterCleanup ? (
+              <MkSaasLookupPanel lookup={result.mkSaasLookupAfterCleanup} />
+            ) : null}
             <div className="grid gap-2 text-sm text-emerald-900 sm:grid-cols-2">
               <p>Silinen sipariş: {result.deleted.orders}</p>
               <p>Silinen ödeme kaydı: {result.deleted.paymentTransactions}</p>
