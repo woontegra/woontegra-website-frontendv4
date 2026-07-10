@@ -33,11 +33,19 @@ import {
   showHavaleConfirmButton,
 } from '@/utils/adminOrderUi'
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({
+  label,
+  value,
+  valueClassName,
+}: {
+  label: string
+  value: string
+  valueClassName?: string
+}) {
   return (
     <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-4">
       <dt className="w-40 shrink-0 text-xs font-medium uppercase tracking-wide text-slate-500">{label}</dt>
-      <dd className="text-sm text-slate-900">{value || '—'}</dd>
+      <dd className={`text-sm ${valueClassName ?? 'text-slate-900'}`}>{value || '—'}</dd>
     </div>
   )
 }
@@ -134,9 +142,16 @@ export function AdminOrderDetailPage() {
   const paidLike = data.status === 'PAID' || data.status === 'PROCESSING'
   const centralLicenseItems = data.items.filter((i) => i.licenseRequired)
   const centralLicenseErrors = centralLicenseItems.filter((i) => i.licenseServerLastError?.trim())
-  const canRetryDelivery =
-    paidLike &&
-    (centralLicenseErrors.length > 0 || (centralLicenseItems.length > 0 && !data.downloadEmailSentAt))
+  const canRetryDelivery = paidLike && data.canRetryDigitalDelivery === true
+  const deliveryEmailLabel =
+    data.deliveryEmailStatusLabel ??
+    (data.downloadEmailSentAt ? 'Gönderildi' : 'Henüz gönderilmedi')
+  const deliveryEmailTone =
+    data.deliveryEmailStatus === 'partial'
+      ? 'text-amber-800'
+      : data.deliveryEmailStatus === 'complete'
+        ? 'text-emerald-800'
+        : 'text-slate-700'
 
   return (
     <div className="w-full min-w-0 space-y-6">
@@ -212,7 +227,8 @@ export function AdminOrderDetailPage() {
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">E-posta izleri</h2>
             <InfoRow
               label="Teslimat e-postası"
-              value={data.downloadEmailSentAt ? 'Gönderildi' : 'Henüz gönderilmedi'}
+              value={deliveryEmailLabel}
+              valueClassName={deliveryEmailTone}
             />
             <InfoRow label="Son gönderim" value={formatDateTime(data.downloadEmailSentAt)} />
             {data.paymentConfirmedByEmail ? (

@@ -134,6 +134,9 @@ export type AdminOrderDetail = {
   paymentConfirmedAt: string | null
   paymentConfirmedByEmail: string | null
   downloadEmailSentAt: string | null
+  deliveryEmailStatus?: 'not_sent' | 'partial' | 'complete'
+  deliveryEmailStatusLabel?: string
+  canRetryDigitalDelivery?: boolean
   digitalDeliveryEmailAlert?: string | null
   preInfoAcceptedAt: string | null
   distanceSalesAcceptedAt: string | null
@@ -328,6 +331,16 @@ export function normalizeAdminOrderDetail(raw: unknown): AdminOrderDetail | null
     paymentConfirmedAt: toNullableString(row.paymentConfirmedAt),
     paymentConfirmedByEmail: toNullableString(row.paymentConfirmedByEmail),
     downloadEmailSentAt: toNullableString(row.downloadEmailSentAt),
+    deliveryEmailStatus:
+      row.deliveryEmailStatus === 'not_sent' ||
+      row.deliveryEmailStatus === 'partial' ||
+      row.deliveryEmailStatus === 'complete'
+        ? row.deliveryEmailStatus
+        : undefined,
+    deliveryEmailStatusLabel:
+      row.deliveryEmailStatusLabel == null ? undefined : toString(row.deliveryEmailStatusLabel),
+    canRetryDigitalDelivery:
+      row.canRetryDigitalDelivery === true ? true : row.canRetryDigitalDelivery === false ? false : undefined,
     digitalDeliveryEmailAlert: toNullableString(row.digitalDeliveryEmailAlert),
     preInfoAcceptedAt: toNullableString(row.preInfoAcceptedAt),
     distanceSalesAcceptedAt: toNullableString(row.distanceSalesAcceptedAt),

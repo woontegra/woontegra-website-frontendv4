@@ -41,6 +41,9 @@ export function paidDeliveryNotice(orderData: OrderSuccessData | null): string |
   if ('deliveryMessage' in orderData && orderData.deliveryMessage?.trim()) {
     return orderData.deliveryMessage.trim()
   }
+  if ('deliveryState' in orderData && orderData.deliveryState === 'blocked') {
+    return null
+  }
   if ('deliveryState' in orderData && orderData.deliveryState === 'delivered') {
     return 'Lisans ve erişim bilgileriniz e-posta ile gönderildi.'
   }

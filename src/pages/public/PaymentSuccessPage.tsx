@@ -71,6 +71,14 @@ function buildNextSteps(
     return steps
   }
   if (saasKind === 'first_purchase') {
+    if (
+      orderData &&
+      (orderData.status === 'PAID' || orderData.status === 'PROCESSING') &&
+      orderData.deliveryState === 'blocked' &&
+      orderData.deliveryMessage?.trim()
+    ) {
+      return [orderData.deliveryMessage.trim()]
+    }
     const steps = [saasSuccessNotice('first_purchase', paidConfirmed)]
     if (deliveryNote && paidConfirmed) steps.push(deliveryNote)
     if (isBankTransfer) {
@@ -238,7 +246,7 @@ export function PaymentSuccessPage() {
         <PaymentResultSteps items={buildNextSteps(Boolean(isBankTransfer), saasKind, orderData, isPaidLike)} />
       </PaymentResultPanel>
 
-      {saasKind && isPaidLike ? (
+      {saasKind && isPaidLike && orderData?.deliveryState !== 'blocked' ? (
         <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-900">
           {saasSuccessNotice(saasKind, true)}
         </p>
