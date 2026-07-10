@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/Button'
-import { isChunkLoadError, markChunkReloadAttempted } from '@/lib/chunkLoadError'
+import { cacheBustReload } from '@/lib/cacheBustReload'
+import { isChunkLoadError } from '@/lib/chunkLoadError'
 
 function reloadPage() {
   window.location.reload()
@@ -40,9 +41,8 @@ export function ChunkErrorFallback({ error }: Props) {
 
   useEffect(() => {
     if (!chunkError) return
-    if (markChunkReloadAttempted()) {
+    if (cacheBustReload()) {
       setAutoReloading(true)
-      reloadPage()
     }
   }, [chunkError])
 

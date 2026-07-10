@@ -12,8 +12,8 @@ type State = {
   autoReloading: boolean
 }
 
-/** Lazy/Suspense chunk hatalarını route errorElement'ten önce yakalar. */
-export class LazyChunkErrorBoundary extends Component<Props, State> {
+/** React root seviyesinde yakalanmayan render hataları — tam beyaz ekranı engeller. */
+export class AppRootErrorBoundary extends Component<Props, State> {
   state: State = { error: null, autoReloading: false }
 
   static getDerivedStateFromError(error: unknown): Partial<State> {
@@ -21,7 +21,7 @@ export class LazyChunkErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: unknown, info: ErrorInfo) {
-    console.error('[LazyChunkErrorBoundary]', error, info.componentStack)
+    console.error('[AppRootErrorBoundary]', error, info.componentStack)
     if (isChunkLoadError(error) && cacheBustReload()) {
       this.setState({ autoReloading: true })
     }
@@ -31,7 +31,7 @@ export class LazyChunkErrorBoundary extends Component<Props, State> {
     if (this.state.autoReloading) {
       return (
         <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-          <p className="text-sm text-slate-600">Sayfa güncelleniyor…</p>
+          <p className="text-sm text-slate-600">Site güncellendi, sayfa yenileniyor…</p>
         </div>
       )
     }

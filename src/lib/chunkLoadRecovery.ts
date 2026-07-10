@@ -1,20 +1,29 @@
-import { isChunkLoadError, markChunkReloadAttempted } from '@/lib/chunkLoadError'
+import { isChunkLoadError } from '@/lib/chunkLoadError'
+import { cacheBustReload, showPreReactBootMessage } from '@/lib/cacheBustReload'
 
 let initialized = false
 
-function tryReloadForChunkError(reason: unknown): void {
+function tryRecoverFromChunkError(reason: unknown): void {
   if (!isChunkLoadError(reason)) return
-  if (!markChunkReloadAttempted()) return
-  window.location.reload()
+
+  if (cacheBustReload()) {
+    showPreReactBootMessage('Site güncellendi', 'Woontegra yeni sürüme geçiyor, sayfa yenileniyor…')
+    return
+  }
+
+  showPreReactBootMessage(
+    'Site güncellendi',
+    'Woontegra\'nın yeni sürümü yayınlandı. Devam etmek için sayfayı yenileyin.',
+  )
 }
 
-/** Script/module yükleme hatalarında tek seferlik otomatik yenileme. */
+/** Script/module yükleme hatalarında tek seferlik cache-bust yenileme. */
 export function initChunkLoadRecovery(): void {
   if (initialized || typeof window === 'undefined') return
   initialized = true
 
   window.addEventListener('unhandledrejection', (event) => {
-    tryReloadForChunkError(event.reason)
+    tryRecoverFromChunkError(event.reason)
   })
 
   window.addEventListener(
@@ -22,10 +31,14 @@ export function initChunkLoadRecovery(): void {
     (event) => {
       const target = event.target
       if (target instanceof HTMLScriptElement && target.src) {
-        tryReloadForChunkError(`Failed to fetch dynamically imported module: ${target.src}`)
+        tryRecoverFromChunkError(`Failed to fetch dynamically imported module: ${target.src}`)
         return
       }
-      tryReloadForChunkError(event.error ?? event.message)
+      if (target instanceof HTMLLinkElement && target.rel === 'stylesheet' && target.href) {
+        tryRecoverFromChunkError(`Unable to preload CSS for ${target.href}`)
+        return
+      }
+      tryRecoverFromChunkError(event.error ?? event.message)
     },
     true,
   )
