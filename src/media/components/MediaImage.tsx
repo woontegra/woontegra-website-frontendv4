@@ -36,19 +36,19 @@ export function MediaImage({
     [input, src],
   )
 
-  const [useOptimized, setUseOptimized] = useState(Boolean(optimizeWidth))
+  const [preferOptimized, setPreferOptimized] = useState(Boolean(optimizeWidth))
   const [failed, setFailed] = useState(false)
 
   const displaySrc = useMemo(() => {
     if (!resolved) return ''
-    if (!optimizeWidth || !useOptimized) return resolved
+    if (!optimizeWidth || !preferOptimized) return resolved
     return buildOptimizedMediaUrl(resolved, { width: optimizeWidth }) || resolved
-  }, [optimizeWidth, resolved, useOptimized])
+  }, [optimizeWidth, preferOptimized, resolved])
 
   useEffect(() => {
     setFailed(false)
-    setUseOptimized(Boolean(optimizeWidth))
-  }, [displaySrc, optimizeWidth, resolved])
+    setPreferOptimized(Boolean(optimizeWidth))
+  }, [optimizeWidth, resolved])
 
   if (!displaySrc || failed) return null
 
@@ -63,8 +63,8 @@ export function MediaImage({
       className={cn(className)}
       style={style}
       onError={() => {
-        if (optimizeWidth && useOptimized) {
-          setUseOptimized(false)
+        if (optimizeWidth && preferOptimized) {
+          setPreferOptimized(false)
           return
         }
         if (onError) {

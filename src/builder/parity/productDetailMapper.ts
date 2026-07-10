@@ -1,31 +1,24 @@
 import type { ProductDetailBlock } from '@/builder/types/productDetail'
 import { createDefaultProductDetailBlock } from '@/builder/types/productDetail'
 import { renderIfText } from '@/builder/render/renderRules'
+import { normalizeProductGalleryImages } from '@/media/normalizeProductGalleryImages'
 import type { PublicProductDetail } from '@/types/product'
 import { canPurchaseProduct } from '@/utils/productPurchase'
 
 function galleryOverrideFromBlock(
   block: ProductDetailBlock,
 ): Pick<PublicProductDetail, 'coverImage' | 'galleryImages'> | null {
-  const entries = block.settings.gallery
-    .map((g) => ({
-      id: g.id,
-      url: g.url?.trim() ?? '',
-      alt: g.alt?.trim() ?? '',
-      title: g.title?.trim() ?? '',
-    }))
-    .filter((g) => g.url)
-
+  const entries = normalizeProductGalleryImages({ gallery: block.settings.gallery })
   if (entries.length === 0) return null
 
   return {
     coverImage: entries[0].url,
     galleryImages: entries.map((g, i) => ({
-      id: g.id || `builder-gal-${i}`,
+      id: block.settings.gallery[i]?.id || `builder-gal-${i}`,
       url: g.url,
       sortOrder: i,
-      alt: g.alt || undefined,
-      title: g.title || undefined,
+      alt: g.alt,
+      title: g.title,
     })),
   }
 }

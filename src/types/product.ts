@@ -117,7 +117,7 @@ function normalizeGalleryImages(raw: unknown): PublicProductGalleryImage[] {
     .map((item, index) => {
       if (!item || typeof item !== 'object') return null
       const row = item as Record<string, unknown>
-      const url = toString(row.url)
+      const url = toString(row.url || row.imageUrl || row.src || row.image)
       if (!url) return null
       const image: PublicProductGalleryImage = {
         id: toString(row.id, `gallery-${index}`),

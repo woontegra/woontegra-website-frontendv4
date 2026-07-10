@@ -1,61 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, Download, Globe, ImageIcon, Layers3, MonitorSmartphone, X } from 'lucide-react'
 import { MediaImage } from '@/media/components/MediaImage'
-import { pickProductCoverUrl } from '@/lib/publicContentImages'
-import { resolvePublicImage } from '@/media/resolvePublicImage'
+import { buildProductGalleryEntries, type NormalizedGalleryImage } from '@/media/normalizeProductGalleryImages'
 import { cn } from '@/lib/cn'
 import type { ProductType } from '@/types/product'
-
-type GalleryImage = {
-  id: string
-  url: string
-  alt?: string
-  title?: string
-}
 
 type Props = {
   name: string
   coverImage?: string | null
-  galleryImages?: GalleryImage[]
+  galleryImages?: unknown
   productType: ProductType
   isFreeDownload?: boolean
-}
-
-type GalleryEntry = {
-  url: string
-  alt: string
-}
-
-function collectGalleryEntries(
-  coverImage: string | null | undefined,
-  galleryImages: GalleryImage[],
-  fallbackAlt: string,
-): GalleryEntry[] {
-  const seen = new Set<string>()
-  const entries: GalleryEntry[] = []
-
-  const metaByUrl = new Map<string, GalleryImage>()
-  for (const img of galleryImages) {
-    const resolved = resolvePublicImage(img)
-    if (resolved) metaByUrl.set(resolved, img)
-  }
-
-  const add = (rawUrl: string, meta?: GalleryImage) => {
-    const resolved = resolvePublicImage(rawUrl)
-    if (!resolved || seen.has(resolved)) return
-    seen.add(resolved)
-    const alt = meta?.alt?.trim() || meta?.title?.trim() || fallbackAlt
-    entries.push({ url: resolved, alt })
-  }
-
-  const cover = pickProductCoverUrl({ coverImage })
-  if (cover) add(cover, metaByUrl.get(cover))
-
-  for (const img of galleryImages) {
-    add(resolvePublicImage(img) || img.url, img)
-  }
-
-  return entries
 }
 
 function wrapIndex(index: number, length: number): number {
@@ -64,7 +19,7 @@ function wrapIndex(index: number, length: number): number {
 }
 
 type LightboxProps = {
-  images: string[]
+  images: NormalizedGalleryImage[]
   name: string
   activeIndex: number
   onClose: () => void
@@ -93,7 +48,7 @@ function ProductGalleryLightbox({ images, name, activeIndex, onClose, onChange }
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [goNext, goPrev, onClose])
 
-  const currentUrl = images[activeIndex] ?? images[0] ?? ''
+  const current = images[activeIndex] ?? images[0]
 
   return (
     <div
@@ -139,16 +94,15 @@ function ProductGalleryLightbox({ images, name, activeIndex, onClose, onChange }
         </>
       ) : null}
 
-      <div
-        className="relative flex max-h-full max-w-5xl flex-col items-center"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <MediaImage
-          src={currentUrl}
-          alt={name}
-          loading="eager"
-          className="max-h-[calc(100vh-8rem)] w-full object-contain"
-        />
+      <div className="relative flex max-h-full max-w-5xl flex-col items-center" onClick={(e) => e.stopPropagation()}>
+        {current ? (
+          <MediaImage
+            src={current.url}
+            alt={current.alt ?? name}
+            loading="eager"
+            className="max-h-[calc(100vh-8rem)] w-full object-contain"
+          />
+        ) : null}
         {images.length > 1 ? (
           <p className="mt-4 text-sm text-white/70">
             {activeIndex + 1} / {images.length}
@@ -161,10 +115,14 @@ function ProductGalleryLightbox({ images, name, activeIndex, onClose, onChange }
 
 export function ProductGallery({ name, coverImage, galleryImages = [], productType, isFreeDownload = false }: Props) {
   const gallery = useMemo(
-    () => collectGalleryEntries(coverImage, galleryImages, name),
+    () =>
+      buildProductGalleryEntries({
+        coverImage,
+        galleryImages,
+        fallbackAlt: name,
+      }),
     [coverImage, galleryImages, name],
   )
-  const galleryUrls = useMemo(() => gallery.map((entry) => entry.url), [gallery])
   const [activeIndex, setActiveIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
 
@@ -182,7 +140,6 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
   }
 
   const mainEntry = gallery[activeIndex] ?? gallery[0]
-  const mainUrl = mainEntry.url
   const hasMultiple = gallery.length > 1
 
   return (
@@ -191,67 +148,60 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
         <div className="relative rounded-[2rem] bg-gradient-to-br from-emerald-500/20 via-sky-500/10 to-violet-500/15 p-[1px] shadow-[0_30px_80px_-40px_rgba(15,23,42,0.5)]">
           <div className="pointer-events-none absolute inset-6 rounded-[1.75rem] bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.16),transparent_44%)] blur-2xl" />
           <div className="group/main relative overflow-hidden rounded-[calc(2rem-1px)] border border-white/70 bg-white/90 backdrop-blur-xl">
-          {hasMultiple ? (
-            <>
-              <button
-                type="button"
-                onClick={() => goTo(activeIndex - 1)}
-                className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/70 bg-white/85 p-2 text-slate-700 shadow-lg shadow-slate-900/10 opacity-0 backdrop-blur transition hover:bg-white group-hover/main:opacity-100 focus:opacity-100 sm:left-5"
-                aria-label="Önceki görsel"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => goTo(activeIndex + 1)}
-                className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/70 bg-white/85 p-2 text-slate-700 shadow-lg shadow-slate-900/10 opacity-0 backdrop-blur transition hover:bg-white group-hover/main:opacity-100 focus:opacity-100 sm:right-5"
-                aria-label="Sonraki görsel"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </>
-          ) : null}
-
-          <button
-            type="button"
-            onClick={() => setLightboxOpen(true)}
-            className="block w-full cursor-zoom-in overflow-hidden"
-            aria-label="Görseli büyüt"
-          >
-            <MediaImage
-              src={mainUrl}
-              alt={mainEntry.alt}
-              loading="eager"
-              fetchPriority="high"
-              optimizeWidth={1024}
-              className="aspect-[4/3] w-full origin-center bg-[linear-gradient(180deg,rgba(248,250,252,0.86),rgba(226,232,240,0.55))] object-contain p-5 transition-transform duration-500 ease-out group-hover/main:scale-[1.04] sm:object-cover sm:p-0"
-            />
-          </button>
-
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950/35 via-slate-900/5 to-transparent" />
-          <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur sm:left-5 sm:top-5">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
-            Ürün önizleme
-          </div>
-
-          {hasMultiple ? (
-            <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full border border-white/15 bg-slate-950/35 px-3 py-2 backdrop-blur">
-              {gallery.map((entry, index) => (
+            {hasMultiple ? (
+              <>
                 <button
-                  key={entry.url}
                   type="button"
-                  onClick={() => setActiveIndex(index)}
-                  className={cn(
-                    'h-2 w-2 rounded-full transition',
-                    index === activeIndex ? 'scale-110 bg-emerald-400' : 'bg-white/70 hover:bg-white',
-                  )}
-                  aria-label={`Görsel ${index + 1}`}
-                  aria-current={index === activeIndex ? 'true' : undefined}
-                />
-              ))}
+                  onClick={() => goTo(activeIndex - 1)}
+                  className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/70 bg-white/85 p-2 text-slate-700 shadow-lg shadow-slate-900/10 opacity-0 backdrop-blur transition hover:bg-white group-hover/main:opacity-100 focus:opacity-100 sm:left-5"
+                  aria-label="Önceki görsel"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo(activeIndex + 1)}
+                  className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full border border-white/70 bg-white/85 p-2 text-slate-700 shadow-lg shadow-slate-900/10 opacity-0 backdrop-blur transition hover:bg-white group-hover/main:opacity-100 focus:opacity-100 sm:right-5"
+                  aria-label="Sonraki görsel"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+              className="block w-full cursor-zoom-in overflow-hidden"
+              aria-label="Görseli büyüt"
+            >
+              <GalleryMainImage entry={mainEntry} name={name} />
+            </button>
+
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950/35 via-slate-900/5 to-transparent" />
+            <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur sm:left-5 sm:top-5">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
+              Ürün önizleme
             </div>
-          ) : null}
-        </div>
+
+            {hasMultiple ? (
+              <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full border border-white/15 bg-slate-950/35 px-3 py-2 backdrop-blur">
+                {gallery.map((entry, index) => (
+                  <button
+                    key={entry.url}
+                    type="button"
+                    onClick={() => setActiveIndex(index)}
+                    className={cn(
+                      'h-2 w-2 rounded-full transition',
+                      index === activeIndex ? 'scale-110 bg-emerald-400' : 'bg-white/70 hover:bg-white',
+                    )}
+                    aria-label={`Görsel ${index + 1}`}
+                    aria-current={index === activeIndex ? 'true' : undefined}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </div>
         </div>
 
         {hasMultiple ? (
@@ -270,7 +220,7 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
                 aria-label={`Galeri görseli ${index + 1}`}
                 aria-current={index === activeIndex ? 'true' : undefined}
               >
-                <MediaImage src={entry.url} alt={entry.alt} loading="lazy" className="aspect-square w-full bg-slate-50 object-cover" />
+                <MediaImage src={entry.url} alt={entry.alt ?? name} loading="lazy" className="aspect-square w-full bg-slate-50 object-cover" />
               </button>
             ))}
           </div>
@@ -279,7 +229,7 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
 
       {lightboxOpen ? (
         <ProductGalleryLightbox
-          images={galleryUrls}
+          images={gallery}
           name={name}
           activeIndex={activeIndex}
           onClose={() => setLightboxOpen(false)}
@@ -287,6 +237,41 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
         />
       ) : null}
     </>
+  )
+}
+
+function GalleryMainImage({ entry, name }: { entry: NormalizedGalleryImage; name: string }) {
+  const [forceDirect, setForceDirect] = useState(false)
+  const [failed, setFailed] = useState(false)
+
+  if (failed) {
+    return (
+      <div className="flex aspect-[4/3] w-full items-center justify-center bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(226,232,240,0.72))] p-8 text-center">
+        <div>
+          <ImageIcon className="mx-auto h-10 w-10 text-slate-400" aria-hidden />
+          <p className="mt-3 text-sm font-medium text-slate-700">Görsel yüklenemedi</p>
+          <p className="mt-1 text-xs text-slate-500">Önizleme geçici olarak kullanılamıyor.</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <MediaImage
+      src={entry.url}
+      alt={entry.alt ?? name}
+      loading="eager"
+      fetchPriority="high"
+      optimizeWidth={forceDirect ? undefined : 1024}
+      onError={() => {
+        if (!forceDirect) {
+          setForceDirect(true)
+          return
+        }
+        setFailed(true)
+      }}
+      className="aspect-[4/3] w-full origin-center bg-[linear-gradient(180deg,rgba(248,250,252,0.86),rgba(226,232,240,0.55))] object-contain p-5 transition-transform duration-500 ease-out group-hover/main:scale-[1.04] sm:object-cover sm:p-0"
+    />
   )
 }
 
