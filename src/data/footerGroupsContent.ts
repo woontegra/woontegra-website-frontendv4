@@ -169,7 +169,14 @@ export const defaultFooterGroupsBundle: FooterGroupsBundle = {
           order: 7,
           enabled: true,
         },
-        { id: 'f-prefs', label: 'Çerez Tercihleri', action: 'cookie-preferences', order: 8, enabled: true },
+        {
+          id: 'f-data-deletion',
+          label: 'Veri Silme Talebi',
+          href: '/veri-silme-talebi',
+          order: 8,
+          enabled: true,
+        },
+        { id: 'f-prefs', label: 'Çerez Tercihleri', action: 'cookie-preferences', order: 9, enabled: true },
       ],
     },
     {

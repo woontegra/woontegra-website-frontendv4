@@ -43,6 +43,7 @@ const STATIC_ENTRIES = [
   { path: '/yazilimlar', priority: '0.9', changefreq: 'weekly' },
   { path: '/blog', priority: '0.9', changefreq: 'weekly' },
   { path: '/iletisim', priority: '0.8', changefreq: 'monthly' },
+  { path: '/veri-silme-talebi', priority: '0.6', changefreq: 'yearly' },
 ]
 
 /** Sitemap'e girmemesi gereken path'ler (redirect kaynakları, private, legacy) */

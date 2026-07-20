@@ -52,6 +52,11 @@ export const PAGE_SEO_BY_PATH: Record<string, PageSeo> = {
     description:
       'Woontegra özel yazılım ile işletmenize özel panel, entegrasyon ve operasyon sistemleri geliştirir.',
   },
+  '/veri-silme-talebi': {
+    title: 'Kullanıcı Verilerinin Silinmesi | Woontegra MailCenter',
+    description:
+      'MailCenter ve Meta WhatsApp bağlantıları kapsamında saklanan kullanıcı verilerinin silinmesi için izlenecek adımlar.',
+  },
 }
 
 /** Sitemap’e girmemesi gereken path önekleri */
