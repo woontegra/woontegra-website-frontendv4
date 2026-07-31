@@ -1,4 +1,10 @@
-import { CHUNK_RELOAD_SESSION_KEY, clearRecoverySessionState } from '@/lib/recoveryStorage'
+import {
+  CHUNK_RELOAD_AT_KEY,
+  CHUNK_RELOAD_SESSION_KEY,
+  clearChunkReloadAttemptFlagSafe,
+  clearRecoverySessionState,
+  isWithinChunkReloadCooldown,
+} from '@/lib/recoveryStorage'
 
 export { CHUNK_RELOAD_SESSION_KEY } from '@/lib/recoveryStorage'
 
@@ -44,16 +50,28 @@ export function isChunkLoadError(error: unknown): boolean {
 }
 
 export function clearChunkReloadAttemptFlag(): void {
+  clearChunkReloadAttemptFlagSafe()
+}
+
+/** Test / manuel reset — cooldown dahil tüm recovery state. */
+export function resetChunkReloadRecoveryState(): void {
   clearRecoverySessionState()
 }
 
-/** İlk denemede true döner ve flag set eder; daha önce denendiyse false. */
+/**
+ * İlk denemede true döner ve cooldown başlatır.
+ * Cooldown içinde veya storage hatasında false (otomatik reload yok).
+ */
 export function markChunkReloadAttempted(): boolean {
   try {
+    if (isWithinChunkReloadCooldown()) return false
     if (sessionStorage.getItem(CHUNK_RELOAD_SESSION_KEY) === '1') return false
+
+    sessionStorage.setItem(CHUNK_RELOAD_AT_KEY, String(Date.now()))
     sessionStorage.setItem(CHUNK_RELOAD_SESSION_KEY, '1')
     return true
   } catch {
+    // Safari private / engelli storage → otomatik reload yapma (döngü riski)
     return false
   }
 }

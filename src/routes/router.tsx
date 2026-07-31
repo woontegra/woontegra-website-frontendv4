@@ -229,9 +229,18 @@ function LegacyOrderFailRedirect() {
   )
 }
 
+/**
+ * Chunk recovery bayrağını ancak uygulama gerçekten ayağa kalktıktan sonra temizle.
+ * Erken clear → Safari/Mac'te asset hatası tekrarlanınca sonsuz reload döngüsü oluşuyordu.
+ */
+const CHUNK_FLAG_CLEAR_DELAY_MS = 45_000
+
 function RootLayout() {
   useEffect(() => {
-    clearChunkReloadAttemptFlag()
+    const id = window.setTimeout(() => {
+      clearChunkReloadAttemptFlag()
+    }, CHUNK_FLAG_CLEAR_DELAY_MS)
+    return () => window.clearTimeout(id)
   }, [])
 
   return (

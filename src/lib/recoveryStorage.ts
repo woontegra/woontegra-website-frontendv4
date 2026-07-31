@@ -1,7 +1,11 @@
 export const CHUNK_RELOAD_SESSION_KEY = 'woontegra_chunk_reload_attempted'
+export const CHUNK_RELOAD_AT_KEY = 'woontegra_chunk_reload_at'
+
+/** Otomatik yenileme cooldown — sonsuz reload döngüsünü engeller (özellikle Safari). */
+export const CHUNK_RELOAD_COOLDOWN_MS = 5 * 60 * 1000
 
 /** Yalnızca deploy/chunk recovery bayrakları — auth/sepet key'leri burada olmamalı. */
-export const RECOVERY_SESSION_KEYS = [CHUNK_RELOAD_SESSION_KEY] as const
+export const RECOVERY_SESSION_KEYS = [CHUNK_RELOAD_SESSION_KEY, CHUNK_RELOAD_AT_KEY] as const
 
 export const RECOVERY_URL_PARAMS = ['__v', '__reload', '__recovery', '_fresh', 'fresh'] as const
 
@@ -14,6 +18,29 @@ export function clearRecoverySessionState(): void {
     }
   } catch {
     /* ignore */
+  }
+}
+
+/**
+ * Başarılı boot sonrası yalnızca "attempted" bayrağını temizler.
+ * Cooldown timestamp kalır — kısa sürede ikinci otomatik reload olmaz.
+ */
+export function clearChunkReloadAttemptFlagSafe(): void {
+  try {
+    sessionStorage.removeItem(CHUNK_RELOAD_SESSION_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
+export function isWithinChunkReloadCooldown(): boolean {
+  try {
+    const at = Number(sessionStorage.getItem(CHUNK_RELOAD_AT_KEY) || '0')
+    if (!Number.isFinite(at) || at <= 0) return false
+    return Date.now() - at < CHUNK_RELOAD_COOLDOWN_MS
+  } catch {
+    // Storage yoksa otomatik reload yapma (sonsuz döngü riski)
+    return true
   }
 }
 
