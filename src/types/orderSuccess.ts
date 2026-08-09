@@ -53,6 +53,7 @@ export type OrderSuccessPaid = {
   deliveryState?: OrderDeliveryState
   deliveryMessage?: string
   downloadEmailSentAt?: string | null
+  mkSaasLicensePurchase?: MkSaasLicensePurchaseSuccessMeta
 }
 
 export type OrderSuccessData = OrderSuccessPending | OrderSuccessFailed | OrderSuccessPaid
@@ -60,6 +61,17 @@ export type OrderSuccessData = OrderSuccessPending | OrderSuccessFailed | OrderS
 export const LAST_ORDER_EMAIL_KEY = 'woontegra_last_order_email'
 export const SAAS_RENEW_ORDER_KEY = 'woontegra_saas_renew_order'
 export const MK_SAAS_CHECKOUT_ORDER_KEY = 'woontegra_mk_saas_checkout_order'
+export const MK_SAAS_LICENSE_PURCHASE_ORDER_KEY = 'woontegra_mk_saas_license_purchase_order'
+
+export type MkSaasLicensePurchaseSuccessMeta = {
+  purchaseContext: string
+  purpose?: 'DEMO_CONVERSION' | 'LICENSE_RENEWAL' | 'LICENSE_PURCHASE'
+  musteriNo: string | null
+  buroAdi: string | null
+  previousEndDate?: string | null
+  newEndDate?: string | null
+  message: string
+}
 
 export type PaymentResultLocationState = {
   orderNo?: string

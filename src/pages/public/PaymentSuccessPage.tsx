@@ -27,13 +27,30 @@ import { clearCart } from '@/lib/cartStorage'
 import { clearPaytrPendingOrder } from '@/lib/paytrCheckoutStorage'
 import { resolveSaasSuccessKind, saasSuccessNotice, paidDeliveryNotice } from '@/lib/orderSuccessSaas'
 import { SAAS_RENEW_ORDER_KEY } from '@/types/orderSuccess'
+import { MUVEKKIL_KASA_APP_LOGIN_URL } from '@/lib/mkSaasLicensePurchase'
 import type { OrderSuccessData } from '@/types/orderSuccess'
 
-function buildSuccessActions(orderNo: string, authed: boolean): PaymentResultAction[] {
-  const actions: PaymentResultAction[] = [
-    { to: '/yazilimlar', label: 'Yazılımlara dön', variant: 'primary', icon: Package },
-    { to: '/', label: 'Ana sayfa', variant: 'secondary', icon: Home },
-  ]
+function buildSuccessActions(
+  orderNo: string,
+  authed: boolean,
+  saasKind: ReturnType<typeof resolveSaasSuccessKind>,
+): PaymentResultAction[] {
+  const actions: PaymentResultAction[] = []
+
+  if (saasKind === 'existing_account_license' || saasKind === 'license_renewal') {
+    actions.push({
+      label: 'Uygulamaya Dön',
+      variant: 'primary',
+      icon: KeyRound,
+      onClick: () => {
+        window.location.href = MUVEKKIL_KASA_APP_LOGIN_URL
+      },
+    })
+  } else {
+    actions.push({ to: '/yazilimlar', label: 'Yazılımlara dön', variant: 'primary', icon: Package })
+  }
+
+  actions.push({ to: '/', label: 'Ana sayfa', variant: 'secondary', icon: Home })
 
   if (authed) {
     actions.push({
@@ -68,6 +85,22 @@ function buildNextSteps(
     if (deliveryNote && paidConfirmed) steps.push(deliveryNote)
     if (isBankTransfer) {
       steps.push('Havale/EFT ödemeniz onaylandığında üyelik süreniz otomatik uzatılır.')
+    }
+    return steps
+  }
+  if (saasKind === 'existing_account_license') {
+    const steps = [saasSuccessNotice('existing_account_license', paidConfirmed)]
+    if (deliveryNote && paidConfirmed) steps.push(deliveryNote)
+    if (isBankTransfer) {
+      steps.push('Havale/EFT onayı sonrası lisansınız mevcut hesabınıza tanımlanacaktır.')
+    }
+    return steps
+  }
+  if (saasKind === 'license_renewal') {
+    const steps = [saasSuccessNotice('license_renewal', paidConfirmed)]
+    if (deliveryNote && paidConfirmed) steps.push(deliveryNote)
+    if (isBankTransfer) {
+      steps.push('Havale/EFT onayı sonrası lisans süreniz uzatılacaktır.')
     }
     return steps
   }
@@ -240,7 +273,7 @@ export function PaymentSuccessPage() {
           description: 'Sorularınız için iletişim kanallarımızdan bize ulaşabilirsiniz.',
         },
       ]}
-      actions={buildSuccessActions(orderNo || orderData?.orderNo || '', authed)}
+      actions={buildSuccessActions(orderNo || orderData?.orderNo || '', authed, saasKind)}
     >
       <PaymentOrderSummary ctx={ctx} />
 

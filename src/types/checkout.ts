@@ -31,6 +31,7 @@ export type CreateOrderBody = {
   paymentMethod?: 'PAYTR' | 'BANK_TRANSFER'
   saveToAddressBook?: boolean
   selectedAddressId?: string | null
+  renewalToken?: string
 }
 
 export type CreateOrderResponse = {

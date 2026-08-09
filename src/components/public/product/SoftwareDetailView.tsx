@@ -13,6 +13,11 @@ import {
 import type { PublicProductDetail } from '@/types/product'
 import { trackAddToCart, trackViewContent } from '@/integrations/trackingEvents'
 import { isExternalSalesProduct } from '@/lib/publicSoftwareCatalog'
+import { MkSaasLicensePurchasePanel } from '@/components/public/product/MkSaasLicensePurchasePanel'
+import {
+  isMkSaasLicenseRenewalContext,
+  type MkSaasLicensePurchaseView,
+} from '@/lib/mkSaasLicensePurchase'
 
 const TYPE_LEAD = {
   DOWNLOAD: 'Masaüstü kullanım için hazırlanmış yazılım.',
@@ -22,9 +27,11 @@ const TYPE_LEAD = {
 
 type Props = {
   product: PublicProductDetail
+  licensePurchase?: MkSaasLicensePurchaseView | null
+  licensePurchaseLoading?: boolean
 }
 
-export function SoftwareDetailView({ product: data }: Props) {
+export function SoftwareDetailView({ product: data, licensePurchase, licensePurchaseLoading }: Props) {
   const [webUsageYears, setWebUsageYears] = useState(1)
   const [feedback, setFeedback] = useState<'added' | 'in-cart' | null>(null)
 
@@ -42,6 +49,15 @@ export function SoftwareDetailView({ product: data }: Props) {
   const isExternalSales = isExternalSalesProduct(data)
   const canPurchase = canPurchaseProduct(data) && !isExternalSales
   const isSaas = isSaasSubscriptionProduct(data.productType)
+  const licenseDaysPerUnit = Math.max(1, data.licenseDays ?? 365)
+  const renewalDaysForCart = isSaas ? webUsageYears * licenseDaysPerUnit : licenseDaysPerUnit
+  const renewalLabel = isSaas
+    ? webUsageYears === 1
+      ? licenseDaysPerUnit >= 360
+        ? '1 Yıl'
+        : `${licenseDaysPerUnit} Gün`
+      : `${webUsageYears} Yıl`
+    : null
 
   useEffect(() => {
     trackViewContent({
@@ -90,7 +106,23 @@ export function SoftwareDetailView({ product: data }: Props) {
         {isExternalSales ? (
           <ExternalProductPurchasePanel product={data} />
         ) : (
-          <ProductPurchasePanel
+          <>
+            {licensePurchaseLoading ? (
+              <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                Hesap bilgileri doğrulanıyor…
+              </div>
+            ) : licensePurchase ? (
+              <MkSaasLicensePurchasePanel
+                data={licensePurchase}
+                renewalDays={
+                  isMkSaasLicenseRenewalContext(licensePurchase) ? renewalDaysForCart : undefined
+                }
+                renewalLabel={
+                  isMkSaasLicenseRenewalContext(licensePurchase) ? renewalLabel : undefined
+                }
+              />
+            ) : null}
+            <ProductPurchasePanel
             product={data}
             webUsageYears={webUsageYears}
             onWebUsageYearsChange={setWebUsageYears}
@@ -98,6 +130,7 @@ export function SoftwareDetailView({ product: data }: Props) {
             onFeedbackDismiss={() => setFeedback(null)}
             onAddToCart={handleAddToCart}
           />
+          </>
         )}
       </ProductShowcaseHero>
 

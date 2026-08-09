@@ -26,12 +26,18 @@ import {
 } from '@/lib/cartStorage'
 import { matchDistrictName, matchProvinceName } from '@/data/turkeyLocation'
 import { isMuvekkilKasaSaasProduct, SAAS_LOGIN_REQUIRED_MESSAGE } from '@/lib/muvekkilKasaSaasProduct'
+import { MkSaasLicensePurchasePanel } from '@/components/public/product/MkSaasLicensePurchasePanel'
+import {
+  readMkSaasRenewalToken,
+  type MkSaasLicensePurchaseView,
+} from '@/lib/mkSaasLicensePurchase'
+import { mkSaasLicensePurchaseService } from '@/services/mkSaasLicensePurchaseService'
 import { checkoutService } from '@/services/checkoutService'
 import { customersService } from '@/services/customersService'
 import { getErrorMessage } from '@/api/client'
 import { ordersService } from '@/services/ordersService'
 import { paymentsService } from '@/services/paymentsService'
-import { LAST_ORDER_EMAIL_KEY, MK_SAAS_CHECKOUT_ORDER_KEY } from '@/types/orderSuccess'
+import { LAST_ORDER_EMAIL_KEY, MK_SAAS_CHECKOUT_ORDER_KEY, MK_SAAS_LICENSE_PURCHASE_ORDER_KEY } from '@/types/orderSuccess'
 import type { CustomerAddress } from '@/types/customerAddress'
 import { formatMoney } from '@/utils/formatMoney'
 import { resolveCheckoutTaxNumber, validateCheckoutBilling } from '@/utils/checkoutBilling'
@@ -192,7 +198,15 @@ export function CheckoutPage() {
     () => merged.some((m) => isMuvekkilKasaSaasProduct({ slug: m.slug, productType: m.productType })),
     [merged],
   )
-  const saasLoginRequired = cartHasMkSaas && !authed
+  const mkRenewalToken = useMemo(() => readMkSaasRenewalToken(), [])
+  const licensePurchaseQuery = useQuery({
+    queryKey: ['checkout', 'mk-license-purchase', mkRenewalToken],
+    queryFn: () => mkSaasLicensePurchaseService.resolve(mkRenewalToken!),
+    enabled: Boolean(mkRenewalToken) && cartHasMkSaas,
+    retry: false,
+  })
+  const licensePurchase: MkSaasLicensePurchaseView | null = licensePurchaseQuery.data ?? null
+  const saasLoginRequired = cartHasMkSaas && !authed && !licensePurchase
 
   const [form, setForm] = useState<CheckoutFormState>({
     customerName: '',
@@ -251,6 +265,16 @@ export function CheckoutPage() {
       cancelled = true
     }
   }, [authed, prefilled])
+
+  useEffect(() => {
+    if (prefilled || !licensePurchase?.ownerEmail) return
+    setForm((prev) => ({
+      ...prev,
+      customerEmail: prev.customerEmail.trim() || licensePurchase.ownerEmail || '',
+    }))
+  }, [licensePurchase, prefilled])
+
+  const checkoutRenewalToken = licensePurchase ? mkRenewalToken : null
 
   const offerSaveToBook = useMemo(
     () =>
@@ -449,6 +473,7 @@ export function CheckoutPage() {
           paymentMethod,
           saveToAddressBook: authed && offerSaveToBook && saveToAddressBook,
           selectedAddressId: selectedAddressId || undefined,
+          renewalToken: checkoutRenewalToken || undefined,
         })
 
         if (created.addressBookWarning) {
@@ -456,7 +481,9 @@ export function CheckoutPage() {
         }
 
         sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, form.customerEmail.trim().toLowerCase())
-        if (cartHasMkSaas) {
+        if (licensePurchase) {
+          sessionStorage.setItem(MK_SAAS_LICENSE_PURCHASE_ORDER_KEY, created.orderNo)
+        } else if (cartHasMkSaas) {
           sessionStorage.setItem(MK_SAAS_CHECKOUT_ORDER_KEY, created.orderNo)
         }
 
@@ -523,6 +550,7 @@ export function CheckoutPage() {
           paymentMethod: 'PAYTR',
           saveToAddressBook: authed && offerSaveToBook && saveToAddressBook,
           selectedAddressId: selectedAddressId || undefined,
+          renewalToken: checkoutRenewalToken || undefined,
         })
 
         if (created.addressBookWarning) {
@@ -530,7 +558,9 @@ export function CheckoutPage() {
         }
 
         sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, form.customerEmail.trim().toLowerCase())
-        if (cartHasMkSaas) {
+        if (licensePurchase) {
+          sessionStorage.setItem(MK_SAAS_LICENSE_PURCHASE_ORDER_KEY, created.orderNo)
+        } else if (cartHasMkSaas) {
           sessionStorage.setItem(MK_SAAS_CHECKOUT_ORDER_KEY, created.orderNo)
         }
 
@@ -653,6 +683,13 @@ export function CheckoutPage() {
             kayıt olun
           </Link>
           .
+        </div>
+      ) : null}
+
+      {licensePurchase ? <MkSaasLicensePurchasePanel data={licensePurchase} /> : null}
+      {mkRenewalToken && cartHasMkSaas && licensePurchaseQuery.isError ? (
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+          Satın alma bağlantısı geçersiz veya süresi dolmuş. Müvekkil Kasa uygulamasından yeni bağlantı oluşturun.
         </div>
       ) : null}
 

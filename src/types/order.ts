@@ -161,6 +161,11 @@ export type AdminOrderDetail = {
   createdAt: string
   updatedAt: string
   adminNote?: string | null
+  mkSaasPurchaseContext?: string | null
+  mkSaasPurchaseMusteriNo?: string | null
+  mkSaasPurchaseBuroAdi?: string | null
+  mkSaasPurchasePreviousEndDate?: string | null
+  mkSaasPurchaseNewEndDate?: string | null
   customer: {
     customerName: string
     customerEmail: string
@@ -379,6 +384,11 @@ export function normalizeAdminOrderDetail(raw: unknown): AdminOrderDetail | null
     createdAt: toString(row.createdAt),
     updatedAt: toString(row.updatedAt),
     adminNote: toNullableString(row.adminNote),
+    mkSaasPurchaseContext: toNullableString(row.mkSaasPurchaseContext),
+    mkSaasPurchaseMusteriNo: toNullableString(row.mkSaasPurchaseMusteriNo),
+    mkSaasPurchaseBuroAdi: toNullableString(row.mkSaasPurchaseBuroAdi),
+    mkSaasPurchasePreviousEndDate: toNullableString(row.mkSaasPurchasePreviousEndDate),
+    mkSaasPurchaseNewEndDate: toNullableString(row.mkSaasPurchaseNewEndDate),
     customer: {
       customerName: toString(customerRaw.customerName),
       customerEmail: toString(customerRaw.customerEmail),

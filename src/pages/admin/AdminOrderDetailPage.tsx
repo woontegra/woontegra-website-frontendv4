@@ -220,6 +220,46 @@ export function AdminOrderDetailPage() {
           </CardBody>
         </Card>
 
+        {data.mkSaasPurchaseContext === 'EXISTING_ACCOUNT_LICENSE' ||
+        data.mkSaasPurchaseContext === 'DEMO_CONVERSION' ||
+        data.mkSaasPurchaseContext === 'LICENSE_RENEWAL' ? (
+          <Card>
+            <CardBody className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Müvekkil Kasa lisanslama</h2>
+              <InfoRow
+                label="Satın alma tipi"
+                value={
+                  data.mkSaasPurchaseContext === 'LICENSE_RENEWAL'
+                    ? 'Mevcut Hesap Lisans Yenileme'
+                    : 'Mevcut Hesap Lisanslama (Demo → Ücretli)'
+                }
+              />
+              <InfoRow label="Müşteri No" value={data.mkSaasPurchaseMusteriNo ?? '—'} />
+              <InfoRow label="Hedef büro" value={data.mkSaasPurchaseBuroAdi ?? '—'} />
+              {data.mkSaasPurchaseContext === 'LICENSE_RENEWAL' ? (
+                <>
+                  <InfoRow
+                    label="Önceki bitiş"
+                    value={
+                      data.mkSaasPurchasePreviousEndDate
+                        ? formatDateTime(data.mkSaasPurchasePreviousEndDate)
+                        : '—'
+                    }
+                  />
+                  <InfoRow
+                    label="Yeni bitiş"
+                    value={
+                      data.mkSaasPurchaseNewEndDate
+                        ? formatDateTime(data.mkSaasPurchaseNewEndDate)
+                        : '—'
+                    }
+                  />
+                </>
+              ) : null}
+            </CardBody>
+          </Card>
+        ) : null}
+
         <Card>
           <CardBody className="space-y-3">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Alıcı</h2>
