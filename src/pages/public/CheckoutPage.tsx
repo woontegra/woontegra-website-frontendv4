@@ -28,6 +28,8 @@ import { matchDistrictName, matchProvinceName } from '@/data/turkeyLocation'
 import { isMuvekkilKasaSaasProduct, SAAS_LOGIN_REQUIRED_MESSAGE } from '@/lib/muvekkilKasaSaasProduct'
 import { MkSaasLicensePurchasePanel } from '@/components/public/product/MkSaasLicensePurchasePanel'
 import {
+  isMkSaasExistingAccountCheckoutContext,
+  mergeMkSaasCheckoutPrefill,
   readMkSaasRenewalToken,
   type MkSaasLicensePurchaseView,
 } from '@/lib/mkSaasLicensePurchase'
@@ -206,6 +208,14 @@ export function CheckoutPage() {
     retry: false,
   })
   const licensePurchase: MkSaasLicensePurchaseView | null = licensePurchaseQuery.data ?? null
+  const isExistingAccountCheckout = Boolean(
+    licensePurchase && isMkSaasExistingAccountCheckoutContext(licensePurchase),
+  )
+  const isExistingAccountFlow = Boolean(
+    mkRenewalToken && cartHasMkSaas && (licensePurchaseQuery.isPending || isExistingAccountCheckout),
+  )
+  const showExistingAccountCheckoutUi =
+    isExistingAccountCheckout || (isExistingAccountFlow && licensePurchaseQuery.isPending)
   const saasLoginRequired = cartHasMkSaas && !authed && !licensePurchase
 
   const [form, setForm] = useState<CheckoutFormState>({
@@ -227,7 +237,7 @@ export function CheckoutPage() {
   const [saveToAddressBook, setSaveToAddressBook] = useState(false)
 
   useEffect(() => {
-    if (prefilled || !authed) return
+    if (prefilled || !authed || isExistingAccountCheckout) return
     let cancelled = false
     void (async () => {
       try {
@@ -264,15 +274,12 @@ export function CheckoutPage() {
     return () => {
       cancelled = true
     }
-  }, [authed, prefilled])
+  }, [authed, prefilled, isExistingAccountCheckout])
 
   useEffect(() => {
-    if (prefilled || !licensePurchase?.ownerEmail) return
-    setForm((prev) => ({
-      ...prev,
-      customerEmail: prev.customerEmail.trim() || licensePurchase.ownerEmail || '',
-    }))
-  }, [licensePurchase, prefilled])
+    if (!licensePurchase || !isMkSaasExistingAccountCheckoutContext(licensePurchase)) return
+    setForm((prev) => mergeMkSaasCheckoutPrefill(prev, licensePurchase))
+  }, [licensePurchase])
 
   const checkoutRenewalToken = licensePurchase ? mkRenewalToken : null
 
@@ -417,14 +424,26 @@ export function CheckoutPage() {
       setFormError(SAAS_LOGIN_REQUIRED_MESSAGE)
       return
     }
-    if (!form.customerName.trim() || !form.customerEmail.trim()) {
+    if (!form.customerName.trim() && !isExistingAccountCheckout) {
       setFormError('Ad soyad ve e-posta zorunludur.')
       return
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customerEmail.trim())) {
+    const customerName =
+      form.customerName.trim() || (isExistingAccountCheckout ? licensePurchase?.ownerName?.trim() : '') || ''
+    const customerEmail =
+      form.customerEmail.trim() || (isExistingAccountCheckout ? licensePurchase?.ownerEmail?.trim() : '') || ''
+    if (!customerName.trim() || !customerEmail.trim()) {
+      setFormError('Ad soyad ve e-posta zorunludur.')
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
       setFormError('Geçerli bir e-posta adresi girin.')
       return
     }
+    const customerPhone =
+      form.customerPhone.trim() ||
+      (isExistingAccountCheckout ? licensePurchase?.ownerPhone?.trim() : '') ||
+      undefined
     const billingErr = validateCheckoutBilling(form)
     if (billingErr) {
       setIdentityNumberError(billingErr)
@@ -447,9 +466,9 @@ export function CheckoutPage() {
       if (paymentMethod === 'BANK_TRANSFER') {
         const created = await ordersService.create({
           items: merged.map((m) => ({ productId: m.id, quantity: m.quantity })),
-          customerName: form.customerName.trim(),
-          customerEmail: form.customerEmail.trim(),
-          customerPhone: form.customerPhone.trim() || undefined,
+          customerName,
+          customerEmail,
+          customerPhone,
           billingType: form.billingType || undefined,
           companyName: form.companyName.trim() || undefined,
           taxOffice: form.taxOffice.trim() || undefined,
@@ -480,7 +499,7 @@ export function CheckoutPage() {
           toast(created.addressBookWarning, 'error')
         }
 
-        sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, form.customerEmail.trim().toLowerCase())
+        sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, customerEmail.toLowerCase())
         if (licensePurchase) {
           sessionStorage.setItem(MK_SAAS_LICENSE_PURCHASE_ORDER_KEY, created.orderNo)
         } else if (cartHasMkSaas) {
@@ -502,7 +521,7 @@ export function CheckoutPage() {
       let orderNoToPay = paytrRetryOrderNo ?? readPaytrPendingOrder(cartKey)
       if (orderNoToPay) {
         try {
-          const existing = await ordersService.getSuccess(orderNoToPay, form.customerEmail.trim())
+          const existing = await ordersService.getSuccess(orderNoToPay, customerEmail)
           if (existing.status === 'PAID' || existing.status === 'PROCESSING') {
             clearPaytrPendingOrder()
             setPaytrRetryOrderNo(null)
@@ -524,9 +543,9 @@ export function CheckoutPage() {
       if (!orderNoToPay) {
         const created = await ordersService.create({
           items: merged.map((m) => ({ productId: m.id, quantity: m.quantity })),
-          customerName: form.customerName.trim(),
-          customerEmail: form.customerEmail.trim(),
-          customerPhone: form.customerPhone.trim() || undefined,
+          customerName,
+          customerEmail,
+          customerPhone,
           billingType: form.billingType || undefined,
           companyName: form.companyName.trim() || undefined,
           taxOffice: form.taxOffice.trim() || undefined,
@@ -557,7 +576,7 @@ export function CheckoutPage() {
           toast(created.addressBookWarning, 'error')
         }
 
-        sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, form.customerEmail.trim().toLowerCase())
+        sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, customerEmail.toLowerCase())
         if (licensePurchase) {
           sessionStorage.setItem(MK_SAAS_LICENSE_PURCHASE_ORDER_KEY, created.orderNo)
         } else if (cartHasMkSaas) {
@@ -696,9 +715,17 @@ export function CheckoutPage() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] lg:items-start">
         <form className="min-w-0 space-y-6" onSubmit={(e) => void handleSubmit(e)}>
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
-            <h2 className="text-lg font-semibold text-slate-900">Müşteri bilgileri</h2>
+            <h2 className="text-lg font-semibold text-slate-900">
+              {showExistingAccountCheckoutUi ? 'Fatura bilgileri' : 'Müşteri bilgileri'}
+            </h2>
+            {isExistingAccountCheckout ? (
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                Lisanslanacak hesap Müvekkil Kasa panelinden doğrulandı. Aşağıdaki iletişim bilgileri hesabınızdan
+                alınmıştır; fatura ve sipariş kaydı için gerekli adres bilgilerini tamamlayın.
+              </p>
+            ) : null}
             {!authed ? (
-              saasLoginRequired ? null : (
+              saasLoginRequired || isExistingAccountFlow ? null : (
                 <p className="mt-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700">
                   Hesabınız var mı?{' '}
                   <Link
@@ -710,10 +737,10 @@ export function CheckoutPage() {
                   . Üye olmadan da devam edebilirsiniz.
                 </p>
               )
-            ) : (
+            ) : isExistingAccountCheckout ? null : (
               <p className="mt-3 text-sm text-slate-600">Hesabınıza kayıtlı bilgiler otomatik dolduruldu.</p>
             )}
-            {authed && savedAddresses.length > 0 ? (
+            {authed && savedAddresses.length > 0 && !showExistingAccountCheckoutUi ? (
               <div className="mt-4 space-y-1.5">
                 <label htmlFor="checkout-saved-address" className="block text-sm font-medium text-slate-700">
                   Kayıtlı adres
@@ -734,6 +761,34 @@ export function CheckoutPage() {
                 </select>
               </div>
             ) : null}
+            {showExistingAccountCheckoutUi && licensePurchaseQuery.isPending ? (
+              <div className="mt-4">
+                <LoadingState label="Hesap bilgileri doğrulanıyor…" />
+              </div>
+            ) : isExistingAccountCheckout && licensePurchase ? (
+              <dl className="mt-4 space-y-2 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-800">
+                <div className="flex flex-wrap gap-x-2">
+                  <dt className="font-medium text-slate-600">Ad soyad:</dt>
+                  <dd>{form.customerName.trim() || licensePurchase.ownerName || '—'}</dd>
+                </div>
+                <div className="flex flex-wrap gap-x-2">
+                  <dt className="font-medium text-slate-600">E-posta:</dt>
+                  <dd>{form.customerEmail.trim() || licensePurchase.ownerEmail || '—'}</dd>
+                </div>
+                <div className="flex flex-wrap gap-x-2">
+                  <dt className="font-medium text-slate-600">Telefon:</dt>
+                  <dd>{form.customerPhone.trim() || licensePurchase.ownerPhone || '—'}</dd>
+                </div>
+                <div className="flex flex-wrap gap-x-2">
+                  <dt className="font-medium text-slate-600">Müşteri No:</dt>
+                  <dd>{licensePurchase.musteriNo}</dd>
+                </div>
+                <div className="flex flex-wrap gap-x-2">
+                  <dt className="font-medium text-slate-600">Büro:</dt>
+                  <dd>{licensePurchase.buroAdi}</dd>
+                </div>
+              </dl>
+            ) : (
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <Input
                 label="Ad soyad *"
@@ -775,6 +830,30 @@ export function CheckoutPage() {
                 </select>
               </div>
             </div>
+            )}
+            {showExistingAccountCheckoutUi && !licensePurchaseQuery.isPending ? (
+              <div className="mt-4 space-y-1.5">
+                <label className="block text-sm font-medium text-slate-700">Fatura tipi</label>
+                <select
+                  value={form.billingType}
+                  onChange={(e) => {
+                    const billingType = e.target.value as '' | 'Bireysel' | 'Kurumsal'
+                    setForm((f) => ({
+                      ...f,
+                      billingType,
+                      ...(billingType === 'Kurumsal' ? { identityNumber: '' } : {}),
+                      ...(billingType === 'Bireysel' ? { companyName: '', taxOffice: '', taxNumber: '' } : {}),
+                    }))
+                    setIdentityNumberError(null)
+                  }}
+                  className={checkoutSelectCls}
+                >
+                  <option value="">Seçin</option>
+                  <option value="Bireysel">Bireysel</option>
+                  <option value="Kurumsal">Kurumsal</option>
+                </select>
+              </div>
+            ) : null}
             {form.billingType === 'Bireysel' ? (
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <BillingIdentityNumberField
@@ -823,7 +902,7 @@ export function CheckoutPage() {
                 </span>
               </label>
             ) : null}
-            {!authed && !saasLoginRequired ? (
+            {!authed && !saasLoginRequired && !showExistingAccountCheckoutUi ? (
               <p className="mt-5 text-xs leading-relaxed text-slate-500">
                 Adres kaydetmek için{' '}
                 <Link to={`/giris?return=${encodeURIComponent('/odeme')}`} className="font-semibold text-emerald-700 underline">

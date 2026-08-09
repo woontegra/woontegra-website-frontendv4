@@ -14,7 +14,12 @@ export type MkSaasLicensePurchaseView = {
   lisansBitisTarihi: string | null
   lisansBaslangicTarihi: string | null
   extensionBaseDate: string
+  ownerName: string | null
   ownerEmail: string | null
+  ownerPhone: string | null
+  tenantAdres: string | null
+  tenantVergiNo: string | null
+  tenantVergiDairesi: string | null
   expiresAt: string
   status: string
   boundExternalOrderId: string | null
@@ -66,6 +71,44 @@ export function clearMkSaasRenewalToken(): void {
 }
 
 export const MUVEKKIL_KASA_APP_LOGIN_URL = 'https://muvekkil.woontegra.com/login'
+
+export function isMkSaasExistingAccountCheckoutContext(data: MkSaasLicensePurchaseView): boolean {
+  return isMkSaasLicenseRenewalContext(data) || isMkSaasDemoConversionContext(data)
+}
+
+export type MkSaasCheckoutPrefillFields = {
+  customerName: string
+  customerEmail: string
+  customerPhone: string
+  billingType: '' | 'Bireysel' | 'Kurumsal'
+  companyName: string
+  taxOffice: string
+  taxNumber: string
+  identityNumber: string
+  deliveryLine: string
+}
+
+export function mergeMkSaasCheckoutPrefill<T extends MkSaasCheckoutPrefillFields>(
+  base: T,
+  data: MkSaasLicensePurchaseView,
+): T {
+  const hasVergi = Boolean(data.tenantVergiNo?.trim())
+  return {
+    ...base,
+    customerName: data.ownerName?.trim() || base.customerName,
+    customerEmail: data.ownerEmail?.trim() || base.customerEmail,
+    customerPhone: data.ownerPhone?.trim() || base.customerPhone,
+    deliveryLine: data.tenantAdres?.trim() || base.deliveryLine,
+    ...(hasVergi
+      ? {
+          billingType: base.billingType || ('Kurumsal' as const),
+          companyName: base.companyName.trim() || data.buroAdi,
+          taxOffice: base.taxOffice.trim() || data.tenantVergiDairesi?.trim() || '',
+          taxNumber: base.taxNumber.trim() || data.tenantVergiNo?.trim() || '',
+        }
+      : {}),
+  }
+}
 
 export function formatLicenseDateTr(iso: string | null | undefined): string {
   if (!iso) return '—'
