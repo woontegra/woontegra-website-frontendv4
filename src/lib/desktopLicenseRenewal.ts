@@ -27,6 +27,27 @@ export function isDesktopLicenseRenewalContext(data: DesktopLicenseRenewalView):
   return data.purpose === 'DESKTOP_LICENSE_RENEWAL' || data.purchaseContext === 'DESKTOP_LICENSE_RENEWAL'
 }
 
+export function isDesktopLicenseRenewalCheckoutContext(data: DesktopLicenseRenewalView): boolean {
+  return isDesktopLicenseRenewalContext(data)
+}
+
+export type DesktopCheckoutPrefillFields = {
+  customerName: string
+  customerEmail: string
+  customerPhone: string
+}
+
+/** Yalnız session'da mevcut gerçek alanları doldurur; uydurma yapılmaz. */
+export function mergeDesktopRenewalCheckoutPrefill<T extends DesktopCheckoutPrefillFields>(
+  base: T,
+  data: DesktopLicenseRenewalView,
+): T {
+  return {
+    ...base,
+    customerName: data.customerName?.trim() || base.customerName,
+  }
+}
+
 export function saveDesktopRenewalToken(token: string): void {
   try {
     sessionStorage.setItem(DESKTOP_RENEWAL_TOKEN_KEY, token.trim())

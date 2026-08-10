@@ -35,7 +35,11 @@ import {
   readMkSaasRenewalToken,
   type MkSaasLicensePurchaseView,
 } from '@/lib/mkSaasLicensePurchase'
-import { readDesktopRenewalToken } from '@/lib/desktopLicenseRenewal'
+import {
+  isDesktopLicenseRenewalCheckoutContext,
+  mergeDesktopRenewalCheckoutPrefill,
+  readDesktopRenewalToken,
+} from '@/lib/desktopLicenseRenewal'
 import { mkSaasLicensePurchaseService } from '@/services/mkSaasLicensePurchaseService'
 import { desktopLicenseRenewalService } from '@/services/desktopLicenseRenewalService'
 import { checkoutService } from '@/services/checkoutService'
@@ -239,6 +243,17 @@ export function CheckoutPage() {
   )
   const showExistingAccountCheckoutUi =
     isExistingAccountCheckout || (isExistingAccountFlow && licensePurchaseQuery.isPending)
+  const isDesktopRenewalCheckout = Boolean(
+    desktopLicenseRenewal && isDesktopLicenseRenewalCheckoutContext(desktopLicenseRenewal),
+  )
+  const isDesktopRenewalFlow = Boolean(
+    desktopRenewalToken && cartHasMkDesktop && !cartHasMkSaas && (desktopRenewalQuery.isPending || isDesktopRenewalCheckout),
+  )
+  const isRenewalAccountCheckout = isExistingAccountCheckout || isDesktopRenewalCheckout
+  const showContextAwareBillingUi = showExistingAccountCheckoutUi || isDesktopRenewalFlow
+  const contextBillingLoading =
+    (showExistingAccountCheckoutUi && licensePurchaseQuery.isPending) ||
+    (isDesktopRenewalFlow && desktopRenewalQuery.isPending)
   const saasLoginRequired = cartHasMkSaas && !authed && !licensePurchase
 
   const [form, setForm] = useState<CheckoutFormState>({
@@ -260,7 +275,7 @@ export function CheckoutPage() {
   const [saveToAddressBook, setSaveToAddressBook] = useState(false)
 
   useEffect(() => {
-    if (prefilled || !authed || isExistingAccountCheckout) return
+    if (prefilled || !authed || isRenewalAccountCheckout) return
     let cancelled = false
     void (async () => {
       try {
@@ -297,12 +312,17 @@ export function CheckoutPage() {
     return () => {
       cancelled = true
     }
-  }, [authed, prefilled, isExistingAccountCheckout])
+  }, [authed, prefilled, isRenewalAccountCheckout])
 
   useEffect(() => {
     if (!licensePurchase || !isMkSaasExistingAccountCheckoutContext(licensePurchase)) return
     setForm((prev) => mergeMkSaasCheckoutPrefill(prev, licensePurchase))
   }, [licensePurchase])
+
+  useEffect(() => {
+    if (!desktopLicenseRenewal || !isDesktopRenewalCheckout) return
+    setForm((prev) => mergeDesktopRenewalCheckoutPrefill(prev, desktopLicenseRenewal))
+  }, [desktopLicenseRenewal, isDesktopRenewalCheckout])
 
   const checkoutRenewalToken = licensePurchase ? mkRenewalToken : desktopLicenseRenewal ? desktopRenewalToken : null
 
@@ -447,12 +467,15 @@ export function CheckoutPage() {
       setFormError(SAAS_LOGIN_REQUIRED_MESSAGE)
       return
     }
-    if (!form.customerName.trim() && !isExistingAccountCheckout) {
+    if (!form.customerName.trim() && !isRenewalAccountCheckout) {
       setFormError('Ad soyad ve e-posta zorunludur.')
       return
     }
     const customerName =
-      form.customerName.trim() || (isExistingAccountCheckout ? licensePurchase?.ownerName?.trim() : '') || ''
+      form.customerName.trim() ||
+      (isExistingAccountCheckout ? licensePurchase?.ownerName?.trim() : '') ||
+      (isDesktopRenewalCheckout ? desktopLicenseRenewal?.customerName?.trim() : '') ||
+      ''
     const customerEmail =
       form.customerEmail.trim() || (isExistingAccountCheckout ? licensePurchase?.ownerEmail?.trim() : '') || ''
     if (!customerName.trim() || !customerEmail.trim()) {
@@ -735,21 +758,31 @@ export function CheckoutPage() {
           Satın alma bağlantısı geçersiz veya süresi dolmuş. Müvekkil Kasa uygulamasından yeni bağlantı oluşturun.
         </div>
       ) : null}
+      {desktopRenewalToken && cartHasMkDesktop && !cartHasMkSaas && desktopRenewalQuery.isError ? (
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
+          Yenileme bağlantısı geçersiz veya süresi dolmuş. Müvekkil Kasa Defteri uygulamasından yeni bağlantı oluşturun.
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)] lg:items-start">
         <form className="min-w-0 space-y-6" onSubmit={(e) => void handleSubmit(e)}>
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
             <h2 className="text-lg font-semibold text-slate-900">
-              {showExistingAccountCheckoutUi ? 'Fatura bilgileri' : 'Müşteri bilgileri'}
+              {showContextAwareBillingUi ? 'Fatura bilgileri' : 'Müşteri bilgileri'}
             </h2>
             {isExistingAccountCheckout ? (
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 Lisanslanacak hesap Müvekkil Kasa panelinden doğrulandı. Aşağıdaki iletişim bilgileri hesabınızdan
                 alınmıştır; fatura ve sipariş kaydı için gerekli adres bilgilerini tamamlayın.
               </p>
+            ) : isDesktopRenewalCheckout ? (
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                Yenilenecek masaüstü lisans uygulama üzerinden doğrulandı. Aşağıda yalnızca fatura ve ödeme için gerekli
+                bilgileri tamamlayın; lisans hedefi değişmez.
+              </p>
             ) : null}
             {!authed ? (
-              saasLoginRequired || isExistingAccountFlow ? null : (
+              saasLoginRequired || isExistingAccountFlow || isDesktopRenewalFlow ? null : (
                 <p className="mt-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700">
                   Hesabınız var mı?{' '}
                   <Link
@@ -761,10 +794,10 @@ export function CheckoutPage() {
                   . Üye olmadan da devam edebilirsiniz.
                 </p>
               )
-            ) : isExistingAccountCheckout ? null : (
+            ) : isExistingAccountCheckout ? (
               <p className="mt-3 text-sm text-slate-600">Hesabınıza kayıtlı bilgiler otomatik dolduruldu.</p>
-            )}
-            {authed && savedAddresses.length > 0 && !showExistingAccountCheckoutUi ? (
+            ) : null}
+            {authed && savedAddresses.length > 0 && !showContextAwareBillingUi ? (
               <div className="mt-4 space-y-1.5">
                 <label htmlFor="checkout-saved-address" className="block text-sm font-medium text-slate-700">
                   Kayıtlı adres
@@ -785,9 +818,9 @@ export function CheckoutPage() {
                 </select>
               </div>
             ) : null}
-            {showExistingAccountCheckoutUi && licensePurchaseQuery.isPending ? (
+            {contextBillingLoading ? (
               <div className="mt-4">
-                <LoadingState label="Hesap bilgileri doğrulanıyor…" />
+                <LoadingState label={isDesktopRenewalFlow ? 'Lisans bilgileri doğrulanıyor…' : 'Hesap bilgileri doğrulanıyor…'} />
               </div>
             ) : isExistingAccountCheckout && licensePurchase ? (
               <dl className="mt-4 space-y-2 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-800">
@@ -812,6 +845,33 @@ export function CheckoutPage() {
                   <dd>{licensePurchase.buroAdi}</dd>
                 </div>
               </dl>
+            ) : isDesktopRenewalCheckout && desktopLicenseRenewal ? (
+              <>
+                <dl className="mt-4 space-y-2 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-800">
+                  <div className="flex flex-wrap gap-x-2">
+                    <dt className="font-medium text-slate-600">Lisans sahibi:</dt>
+                    <dd>{desktopLicenseRenewal.customerName?.trim() || '—'}</dd>
+                  </div>
+                  <div className="flex flex-wrap gap-x-2">
+                    <dt className="font-medium text-slate-600">Lisans No:</dt>
+                    <dd>{desktopLicenseRenewal.licenseKeyMasked}</dd>
+                  </div>
+                </dl>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Input
+                    label="Fatura e-postası *"
+                    type="email"
+                    value={form.customerEmail}
+                    onChange={(e) => setForm((f) => ({ ...f, customerEmail: e.target.value }))}
+                    required
+                  />
+                  <Input
+                    label="Telefon"
+                    value={form.customerPhone}
+                    onChange={(e) => setForm((f) => ({ ...f, customerPhone: e.target.value }))}
+                  />
+                </div>
+              </>
             ) : (
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <Input
@@ -855,7 +915,7 @@ export function CheckoutPage() {
               </div>
             </div>
             )}
-            {showExistingAccountCheckoutUi && !licensePurchaseQuery.isPending ? (
+            {showContextAwareBillingUi && !contextBillingLoading ? (
               <div className="mt-4 space-y-1.5">
                 <label className="block text-sm font-medium text-slate-700">Fatura tipi</label>
                 <select
@@ -926,7 +986,7 @@ export function CheckoutPage() {
                 </span>
               </label>
             ) : null}
-            {!authed && !saasLoginRequired && !showExistingAccountCheckoutUi ? (
+            {!authed && !saasLoginRequired && !showContextAwareBillingUi ? (
               <p className="mt-5 text-xs leading-relaxed text-slate-500">
                 Adres kaydetmek için{' '}
                 <Link to={`/giris?return=${encodeURIComponent('/odeme')}`} className="font-semibold text-emerald-700 underline">
