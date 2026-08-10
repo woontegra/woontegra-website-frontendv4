@@ -14,10 +14,12 @@ import type { PublicProductDetail } from '@/types/product'
 import { trackAddToCart, trackViewContent } from '@/integrations/trackingEvents'
 import { isExternalSalesProduct } from '@/lib/publicSoftwareCatalog'
 import { MkSaasLicensePurchasePanel } from '@/components/public/product/MkSaasLicensePurchasePanel'
+import { DesktopLicenseRenewalPanel } from '@/components/public/product/DesktopLicenseRenewalPanel'
 import {
   isMkSaasLicenseRenewalContext,
   type MkSaasLicensePurchaseView,
 } from '@/lib/mkSaasLicensePurchase'
+import { isDesktopLicenseRenewalContext, type DesktopLicenseRenewalView } from '@/lib/desktopLicenseRenewal'
 
 const TYPE_LEAD = {
   DOWNLOAD: 'Masaüstü kullanım için hazırlanmış yazılım.',
@@ -29,9 +31,17 @@ type Props = {
   product: PublicProductDetail
   licensePurchase?: MkSaasLicensePurchaseView | null
   licensePurchaseLoading?: boolean
+  desktopLicenseRenewal?: DesktopLicenseRenewalView | null
+  desktopLicenseRenewalLoading?: boolean
 }
 
-export function SoftwareDetailView({ product: data, licensePurchase, licensePurchaseLoading }: Props) {
+export function SoftwareDetailView({
+  product: data,
+  licensePurchase,
+  licensePurchaseLoading,
+  desktopLicenseRenewal,
+  desktopLicenseRenewalLoading,
+}: Props) {
   const [webUsageYears, setWebUsageYears] = useState(1)
   const [feedback, setFeedback] = useState<'added' | 'in-cart' | null>(null)
 
@@ -57,7 +67,9 @@ export function SoftwareDetailView({ product: data, licensePurchase, licensePurc
         ? '1 Yıl'
         : `${licenseDaysPerUnit} Gün`
       : `${webUsageYears} Yıl`
-    : null
+    : licenseDaysPerUnit >= 360
+      ? '1 Yıl'
+      : `${licenseDaysPerUnit} Gün`
 
   useEffect(() => {
     trackViewContent({
@@ -107,9 +119,9 @@ export function SoftwareDetailView({ product: data, licensePurchase, licensePurc
           <ExternalProductPurchasePanel product={data} />
         ) : (
           <>
-            {licensePurchaseLoading ? (
+            {licensePurchaseLoading || desktopLicenseRenewalLoading ? (
               <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                Hesap bilgileri doğrulanıyor…
+                Lisans bilgileri doğrulanıyor…
               </div>
             ) : licensePurchase ? (
               <MkSaasLicensePurchasePanel
@@ -119,6 +131,16 @@ export function SoftwareDetailView({ product: data, licensePurchase, licensePurc
                 }
                 renewalLabel={
                   isMkSaasLicenseRenewalContext(licensePurchase) ? renewalLabel : undefined
+                }
+              />
+            ) : desktopLicenseRenewal ? (
+              <DesktopLicenseRenewalPanel
+                data={desktopLicenseRenewal}
+                renewalDays={
+                  isDesktopLicenseRenewalContext(desktopLicenseRenewal) ? renewalDaysForCart : undefined
+                }
+                renewalLabel={
+                  isDesktopLicenseRenewalContext(desktopLicenseRenewal) ? renewalLabel : undefined
                 }
               />
             ) : null}

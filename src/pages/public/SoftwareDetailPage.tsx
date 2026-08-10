@@ -12,7 +12,10 @@ import { productsService } from '@/services/productsService'
 import { mkSaasLicensePurchaseService } from '@/services/mkSaasLicensePurchaseService'
 import { getErrorMessage } from '@/api/client'
 import { isMuvekkilKasaSaasProduct } from '@/lib/muvekkilKasaSaasProduct'
+import { isMuvekkilKasaDesktopCentralLicenseProduct } from '@/lib/muvekkilKasaDesktopProduct'
 import { saveMkSaasRenewalToken } from '@/lib/mkSaasLicensePurchase'
+import { saveDesktopRenewalToken } from '@/lib/desktopLicenseRenewal'
+import { desktopLicenseRenewalService } from '@/services/desktopLicenseRenewalService'
 
 import { PRODUCT_PAGES_CONTENT_KEY } from '@/lib/builderPageContentKeys'
 
@@ -31,6 +34,10 @@ export function SoftwareDetailPage() {
   })
 
   const isMkSaasProduct = isMuvekkilKasaSaasProduct({ slug })
+  const isMkDesktopProduct = isMuvekkilKasaDesktopCentralLicenseProduct({
+    slug,
+    licenseRequired: true,
+  })
   const licensePurchaseQuery = useQuery({
     ...publicQueryOptions,
     queryKey: ['mk-saas-license-purchase', renewalToken],
@@ -39,6 +46,17 @@ export function SoftwareDetailPage() {
       return mkSaasLicensePurchaseService.resolve(renewalToken)
     },
     enabled: Boolean(renewalToken) && isMkSaasProduct,
+    retry: false,
+  })
+
+  const desktopRenewalQuery = useQuery({
+    ...publicQueryOptions,
+    queryKey: ['desktop-license-renewal', renewalToken],
+    queryFn: async () => {
+      saveDesktopRenewalToken(renewalToken)
+      return desktopLicenseRenewalService.resolve(renewalToken)
+    },
+    enabled: Boolean(renewalToken) && isMkDesktopProduct && !isMkSaasProduct,
     retry: false,
   })
 
@@ -58,11 +76,11 @@ export function SoftwareDetailPage() {
           Yazılımlara dön
         </Link>
       </div>
-    ) : renewalToken && licensePurchaseQuery.isError ? (
+    ) : renewalToken && (licensePurchaseQuery.isError || desktopRenewalQuery.isError) ? (
       <div className="mx-auto max-w-3xl px-6 py-24">
-        <ErrorState message="Satın alma bağlantısı geçersiz veya süresi dolmuş." />
+        <ErrorState message="Yenileme bağlantısı geçersiz veya süresi dolmuş." />
         <p className="mt-4 text-sm text-slate-600">
-          Müvekkil Kasa uygulamasından yeni bir &quot;Lisans Satın Al&quot; bağlantısı oluşturun.
+          Müvekkil Kasa Defteri uygulamasından &quot;Lisansı Yenile&quot; ile yeni bağlantı oluşturun.
         </p>
       </div>
     ) : (
@@ -70,6 +88,8 @@ export function SoftwareDetailPage() {
         product={data}
         licensePurchase={licensePurchaseQuery.data ?? null}
         licensePurchaseLoading={Boolean(renewalToken) && licensePurchaseQuery.isPending}
+        desktopLicenseRenewal={desktopRenewalQuery.data ?? null}
+        desktopLicenseRenewalLoading={Boolean(renewalToken) && desktopRenewalQuery.isPending}
       />
     )
 

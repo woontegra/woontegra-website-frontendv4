@@ -26,14 +26,18 @@ import {
 } from '@/lib/cartStorage'
 import { matchDistrictName, matchProvinceName } from '@/data/turkeyLocation'
 import { isMuvekkilKasaSaasProduct, SAAS_LOGIN_REQUIRED_MESSAGE } from '@/lib/muvekkilKasaSaasProduct'
+import { isMuvekkilKasaDesktopCentralLicenseProduct } from '@/lib/muvekkilKasaDesktopProduct'
 import { MkSaasLicensePurchasePanel } from '@/components/public/product/MkSaasLicensePurchasePanel'
+import { DesktopLicenseRenewalPanel } from '@/components/public/product/DesktopLicenseRenewalPanel'
 import {
   isMkSaasExistingAccountCheckoutContext,
   mergeMkSaasCheckoutPrefill,
   readMkSaasRenewalToken,
   type MkSaasLicensePurchaseView,
 } from '@/lib/mkSaasLicensePurchase'
+import { readDesktopRenewalToken } from '@/lib/desktopLicenseRenewal'
 import { mkSaasLicensePurchaseService } from '@/services/mkSaasLicensePurchaseService'
+import { desktopLicenseRenewalService } from '@/services/desktopLicenseRenewalService'
 import { checkoutService } from '@/services/checkoutService'
 import { customersService } from '@/services/customersService'
 import { getErrorMessage } from '@/api/client'
@@ -200,14 +204,33 @@ export function CheckoutPage() {
     () => merged.some((m) => isMuvekkilKasaSaasProduct({ slug: m.slug, productType: m.productType })),
     [merged],
   )
+  const cartHasMkDesktop = useMemo(
+    () =>
+      merged.some((m) =>
+        isMuvekkilKasaDesktopCentralLicenseProduct({
+          slug: m.slug,
+          productType: m.productType,
+          licenseRequired: true,
+        }),
+      ),
+    [merged],
+  )
   const mkRenewalToken = useMemo(() => readMkSaasRenewalToken(), [])
+  const desktopRenewalToken = useMemo(() => readDesktopRenewalToken(), [])
   const licensePurchaseQuery = useQuery({
     queryKey: ['checkout', 'mk-license-purchase', mkRenewalToken],
     queryFn: () => mkSaasLicensePurchaseService.resolve(mkRenewalToken!),
     enabled: Boolean(mkRenewalToken) && cartHasMkSaas,
     retry: false,
   })
+  const desktopRenewalQuery = useQuery({
+    queryKey: ['checkout', 'desktop-license-renewal', desktopRenewalToken],
+    queryFn: () => desktopLicenseRenewalService.resolve(desktopRenewalToken!),
+    enabled: Boolean(desktopRenewalToken) && cartHasMkDesktop && !cartHasMkSaas,
+    retry: false,
+  })
   const licensePurchase: MkSaasLicensePurchaseView | null = licensePurchaseQuery.data ?? null
+  const desktopLicenseRenewal = desktopRenewalQuery.data ?? null
   const isExistingAccountCheckout = Boolean(
     licensePurchase && isMkSaasExistingAccountCheckoutContext(licensePurchase),
   )
@@ -281,7 +304,7 @@ export function CheckoutPage() {
     setForm((prev) => mergeMkSaasCheckoutPrefill(prev, licensePurchase))
   }, [licensePurchase])
 
-  const checkoutRenewalToken = licensePurchase ? mkRenewalToken : null
+  const checkoutRenewalToken = licensePurchase ? mkRenewalToken : desktopLicenseRenewal ? desktopRenewalToken : null
 
   const offerSaveToBook = useMemo(
     () =>
@@ -706,6 +729,7 @@ export function CheckoutPage() {
       ) : null}
 
       {licensePurchase ? <MkSaasLicensePurchasePanel data={licensePurchase} /> : null}
+      {desktopLicenseRenewal ? <DesktopLicenseRenewalPanel data={desktopLicenseRenewal} /> : null}
       {mkRenewalToken && cartHasMkSaas && licensePurchaseQuery.isError ? (
         <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
           Satın alma bağlantısı geçersiz veya süresi dolmuş. Müvekkil Kasa uygulamasından yeni bağlantı oluşturun.
