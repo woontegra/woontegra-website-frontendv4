@@ -13,6 +13,7 @@ import {
 import type { PublicProductDetail } from '@/types/product'
 import { trackAddToCart, trackViewContent } from '@/integrations/trackingEvents'
 import { isExternalSalesProduct } from '@/lib/publicSoftwareCatalog'
+import { isMuvekkilKasaSaasProduct } from '@/lib/muvekkilKasaSaasProduct'
 import { MkSaasLicensePurchasePanel } from '@/components/public/product/MkSaasLicensePurchasePanel'
 import { DesktopLicenseRenewalPanel } from '@/components/public/product/DesktopLicenseRenewalPanel'
 import {
@@ -106,6 +107,17 @@ export function SoftwareDetailView({
         quantity: 1,
       })
     }
+  }
+
+  const isMkSaas = isMuvekkilKasaSaasProduct({
+    slug: data.slug,
+  })
+  const inRenewalFlow = Boolean(
+    licensePurchaseLoading || licensePurchase || desktopLicenseRenewalLoading || desktopLicenseRenewal,
+  )
+
+  if (isMkSaas && !inRenewalFlow) {
+    return null
   }
 
   return (

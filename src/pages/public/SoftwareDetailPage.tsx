@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { SoftwareDetailView } from '@/components/public/product/SoftwareDetailView'
+import { MuvekkilKasaSaasSalesPage } from '@/components/public/product/MuvekkilKasaSaasSalesPage'
+import { MkSaasProductPageProvider, useMkSaasProductPageContext } from '@/components/public/product/MkSaasProductPageProvider'
 import { PublicDetailSkeleton } from '@/components/public/PublicRouteSkeleton'
 import { ErrorState } from '@/components/public/ErrorState'
 import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocksPage'
@@ -11,7 +13,7 @@ import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { productsService } from '@/services/productsService'
 import { mkSaasLicensePurchaseService } from '@/services/mkSaasLicensePurchaseService'
 import { getErrorMessage } from '@/api/client'
-import { isMuvekkilKasaSaasProduct } from '@/lib/muvekkilKasaSaasProduct'
+import { isMuvekkilKasaSaasProduct, resolveMkSaasBlocksSlug } from '@/lib/muvekkilKasaSaasProduct'
 import { isMuvekkilKasaDesktopCentralLicenseProduct } from '@/lib/muvekkilKasaDesktopProduct'
 import { saveMkSaasRenewalToken } from '@/lib/mkSaasLicensePurchase'
 import { saveDesktopRenewalToken } from '@/lib/desktopLicenseRenewal'
@@ -19,12 +21,31 @@ import { desktopLicenseRenewalService } from '@/services/desktopLicenseRenewalSe
 
 import { PRODUCT_PAGES_CONTENT_KEY } from '@/lib/builderPageContentKeys'
 
+function MkSaasSalesFallbackView() {
+  const ctx = useMkSaasProductPageContext()
+  if (!ctx.product) return null
+  return (
+    <MuvekkilKasaSaasSalesPage
+      product={ctx.product}
+      webUsageYears={ctx.webUsageYears}
+      onWebUsageYearsChange={ctx.onWebUsageYearsChange}
+      feedback={ctx.feedback}
+      onFeedbackDismiss={ctx.onFeedbackDismiss}
+      onAddToCart={ctx.onAddToCart}
+      onOpenDemo={ctx.onOpenDemo}
+    />
+  )
+}
+
 export function SoftwareDetailPage() {
   const { slug: paramSlug = '' } = useParams()
   const slug = usePreviewOrParamSlug(paramSlug)
   const [searchParams] = useSearchParams()
   const renewalToken = searchParams.get('renewalToken')?.trim() || ''
-  const { blocks } = usePublicPageBlocks(PRODUCT_PAGES_CONTENT_KEY, slug)
+
+  const isMkSaasProduct = isMuvekkilKasaSaasProduct({ slug })
+  const blocksSlug = isMkSaasProduct ? resolveMkSaasBlocksSlug(slug) : slug
+  const { blocks, isPending: blocksPending } = usePublicPageBlocks(PRODUCT_PAGES_CONTENT_KEY, blocksSlug)
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ['products', slug],
@@ -33,7 +54,6 @@ export function SoftwareDetailPage() {
     ...publicQueryOptions,
   })
 
-  const isMkSaasProduct = isMuvekkilKasaSaasProduct({ slug })
   const isMkDesktopProduct = isMuvekkilKasaDesktopCentralLicenseProduct({
     slug,
     licenseRequired: true,
@@ -92,6 +112,33 @@ export function SoftwareDetailPage() {
         desktopLicenseRenewalLoading={Boolean(renewalToken) && desktopRenewalQuery.isPending}
       />
     )
+
+  if (isMkSaasProduct && renewalToken) {
+    return legacyView
+  }
+
+  if (isMkSaasProduct && data && !isPending && !isError) {
+    const hasPublishedBuilder = Boolean(blocks && blocks.length > 0)
+    const mkFallback = <MkSaasSalesFallbackView />
+
+    if (blocksPending) {
+      return <PublicDetailSkeleton />
+    }
+
+    if (hasPublishedBuilder) {
+      return (
+        <MkSaasProductPageProvider product={data}>
+          <PublicBuilderBlocksPage
+            blocks={blocks}
+            fallback={mkFallback}
+            className="overflow-x-hidden bg-slate-50"
+          />
+        </MkSaasProductPageProvider>
+      )
+    }
+
+    return <MkSaasProductPageProvider product={data}>{mkFallback}</MkSaasProductPageProvider>
+  }
 
   return <PublicBuilderBlocksPage blocks={blocks} fallback={legacyView} />
 }

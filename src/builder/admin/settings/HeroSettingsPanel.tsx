@@ -80,6 +80,20 @@ export function HeroSettingsPanel() {
               update({ ...block, visibility: { ...visibility, showBadge } })
             }
           />
+          <ToggleField
+            label="Ürün fiyatını göster (API)"
+            hint="MK SaaS ürün sayfası — fiyat API'den gelir"
+            checked={settings.showProductPrice === true}
+            onChange={(showProductPrice) => setSettings({ showProductPrice })}
+          />
+          {settings.showProductPrice ? (
+            <TextField
+              label="Fiyat sonrası metin"
+              hint="Örn. / 1 yıl"
+              value={settings.priceSuffix ?? '/ 1 yıl'}
+              onChange={(priceSuffix) => setSettings({ priceSuffix })}
+            />
+          ) : null}
           {settings.layout === 'about' ? (
             <ToggleField
               label="Breadcrumb göster"
@@ -151,42 +165,49 @@ export function HeroSettingsPanel() {
     },
     {
       id: 'highlights',
-      title: 'Hero kartları',
-      description: settings.layout === 'about' ? `${highlights.length} vurgu kartı` : 'About layout için',
+      title: settings.showProductPrice ? 'Hero maddeleri' : 'Hero kartları',
+      description:
+        settings.layout === 'about' || settings.showProductPrice
+          ? `${highlights.length} madde`
+          : 'About veya ürün hero için',
       content:
-        settings.layout === 'about' ? (
+        settings.layout === 'about' || settings.showProductPrice ? (
           <div className="space-y-2">
             {highlights.map((h, i) => (
               <CollapsibleItem
                 key={h.id}
-                title={`Kart ${i + 1}`}
+                title={`Madde ${i + 1}`}
                 subtitle={h.title || 'Başlıksız'}
                 open={openHighlightId === h.id}
                 onToggle={() => setOpenHighlightId(openHighlightId === h.id ? null : h.id)}
               >
                 <TextField
-                  label="Başlık"
+                  label="Metin"
                   settingsFieldId={`highlight-${h.id}-title`}
                   value={h.title}
                   onChange={(title) => updateHighlight(h.id, { title })}
                 />
-                <TextField
-                  label="İkon"
-                  hint="Lucide ikon adı"
-                  value={h.icon}
-                  onChange={(icon) => updateHighlight(h.id, { icon })}
-                />
-                <TextField
-                  label="Kart sınıfı"
-                  hint="Tailwind gradient/border sınıfları"
-                  value={h.cardClass ?? ''}
-                  onChange={(cardClass) => updateHighlight(h.id, { cardClass })}
-                />
-                <TextField
-                  label="İkon rengi"
-                  value={h.iconClass ?? ''}
-                  onChange={(iconClass) => updateHighlight(h.id, { iconClass })}
-                />
+                {settings.layout === 'about' ? (
+                  <>
+                    <TextField
+                      label="İkon"
+                      hint="Lucide ikon adı"
+                      value={h.icon}
+                      onChange={(icon) => updateHighlight(h.id, { icon })}
+                    />
+                    <TextField
+                      label="Kart sınıfı"
+                      hint="Tailwind gradient/border sınıfları"
+                      value={h.cardClass ?? ''}
+                      onChange={(cardClass) => updateHighlight(h.id, { cardClass })}
+                    />
+                    <TextField
+                      label="İkon rengi"
+                      value={h.iconClass ?? ''}
+                      onChange={(iconClass) => updateHighlight(h.id, { iconClass })}
+                    />
+                  </>
+                ) : null}
               </CollapsibleItem>
             ))}
             <AddItemButton
@@ -197,21 +218,21 @@ export function HeroSettingsPanel() {
                     ...highlights,
                     {
                       id,
-                      icon: 'sparkles',
-                      title: 'Yeni kart',
-                      cardClass: 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/20',
-                      iconClass: 'text-emerald-400',
+                      icon: 'check',
+                      title: settings.showProductPrice ? 'Yeni madde' : 'Yeni kart',
+                      cardClass: settings.layout === 'about' ? 'from-emerald-500/20 to-emerald-500/5 border-emerald-500/20' : undefined,
+                      iconClass: settings.layout === 'about' ? 'text-emerald-400' : undefined,
                     },
                   ],
                 })
                 setOpenHighlightId(id)
               }}
             >
-              Kart ekle
+              {settings.showProductPrice ? 'Madde ekle' : 'Kart ekle'}
             </AddItemButton>
           </div>
         ) : (
-          <p className="text-sm text-slate-500">Hero kartları yalnızca Hakkımızda yerleşiminde kullanılır.</p>
+          <p className="text-xs text-slate-500">Ürün fiyatı veya About layout ile kullanılabilir.</p>
         ),
     },
     {

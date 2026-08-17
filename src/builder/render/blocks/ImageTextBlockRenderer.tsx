@@ -6,13 +6,15 @@ import { hasPublicImage, resolvePublicImage } from '@/media/resolvePublicImage'
 import { cn } from '@/lib/cn'
 import type { ImageTextBlock } from '@/builder/types'
 
-export function ImageTextBlockRenderer({ block }: BlockRendererProps) {
+export function ImageTextBlockRenderer({ block, mode = 'public' }: BlockRendererProps) {
   if (block.type !== 'image-text') return null
   const b = block as ImageTextBlock
   if (!b.visibility.enabled) return null
 
   const imageUrl = renderIfMediaUrl(resolvePublicImage(b.settings))
-  const showImage = b.visibility.showImage !== false && hasPublicImage(b.settings)
+  const wantsImage = b.visibility.showImage !== false
+  const showImage = wantsImage && hasPublicImage(b.settings)
+  const isPreview = mode === 'preview'
   const btn = b.settings.button
   const showBtn =
     b.visibility.showButton !== false &&
@@ -24,7 +26,7 @@ export function ImageTextBlockRenderer({ block }: BlockRendererProps) {
     shouldShowField(b.visibility.showTitle, renderIfText(b.title)) ||
     shouldShowField(b.visibility.showDescription, renderIfText(b.description))
 
-  if (!showImage && !hasHeader && !showBtn) return null
+  if (!showImage && !hasHeader && !showBtn && !(isPreview && wantsImage)) return null
 
   const imageFirst = b.settings.imagePosition !== 'right'
 
@@ -37,6 +39,10 @@ export function ImageTextBlockRenderer({ block }: BlockRendererProps) {
         loading="lazy"
         optimizeWidth={1024}
       />
+    ) : isPreview && wantsImage ? (
+      <div className="flex min-h-[240px] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
+        Görsel henüz eklenmedi — blok ayarlarından yükleyin veya medya kütüphanesinden seçin.
+      </div>
     ) : null
 
   const textEl = (
@@ -63,7 +69,7 @@ export function ImageTextBlockRenderer({ block }: BlockRendererProps) {
       <div
         className={cn(
           'grid items-center gap-8',
-          showImage && imageEl ? 'md:grid-cols-2' : 'grid-cols-1',
+          (showImage && imageEl) || (isPreview && wantsImage) ? 'md:grid-cols-2' : 'grid-cols-1',
         )}
       >
         {imageFirst ? (

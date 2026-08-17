@@ -1,8 +1,22 @@
+export const MK_SAAS_CANONICAL_SLUG = 'muvekkil-kasa-defteri-web-tabanli'
+
 const MK_SAAS_SLUGS = new Set([
   'muvekkil-kasa-saas',
   'muvekkil-kasa-defteri-saas',
-  'muvekkil-kasa-defteri-web-tabanli',
+  MK_SAAS_CANONICAL_SLUG,
 ])
+
+export function resolveMkSaasBlocksSlug(slug?: string | null): string {
+  if (!slug) return MK_SAAS_CANONICAL_SLUG
+  return isMuvekkilKasaSaasProduct({ slug }) ? MK_SAAS_CANONICAL_SLUG : slug
+}
+
+export function isMkSaasBuilderPageKey(pageKey?: string | null): boolean {
+  if (!pageKey) return false
+  const key = pageKey.trim().toLowerCase()
+  if (!key.startsWith('product-')) return false
+  return isMuvekkilKasaSaasProduct({ slug: key.slice('product-'.length) })
+}
 
 export type MuvekkilKasaSaasProductRef = {
   slug?: string | null

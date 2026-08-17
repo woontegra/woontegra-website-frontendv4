@@ -16,6 +16,8 @@ import { createServiceDetailEditableTemplate } from '@/builder/templates/service
 import { createSolutionDetailEditableTemplate } from '@/builder/templates/solutionDetailEditableTemplate'
 import { createProductDetailEditableTemplate } from '@/builder/templates/productDetailEditableTemplate'
 import { createBlogDetailEditableTemplate } from '@/builder/templates/blogDetailEditableTemplate'
+import { MK_SAAS_CANONICAL_SLUG } from '@/lib/muvekkilKasaSaasProduct'
+import { createMkSaasSalesBuilderTemplate } from '@/builder/templates/mkSaasSalesBuilderTemplate'
 import { emptyParityReport } from '@/builder/parity/pushLegacy'
 
 function editableResult(pageKey: string, blocks: BuilderBlock[]): { blocks: BuilderBlock[]; report: ConversionReport } {
@@ -59,6 +61,9 @@ export function convertPageParityBlocks(
         createSolutionDetailEditableTemplate(def.slug ?? '', def.title, raw),
       )
     case 'product-detail':
+      if (def.slug === MK_SAAS_CANONICAL_SLUG) {
+        return editableResult(def.key, createMkSaasSalesBuilderTemplate())
+      }
       return editableResult(def.key, createProductDetailEditableTemplate(def.slug ?? '', raw))
     case 'blog-detail':
       return editableResult(def.key, createBlogDetailEditableTemplate(def.slug ?? '', def.title, raw))

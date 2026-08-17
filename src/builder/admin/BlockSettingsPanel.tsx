@@ -32,6 +32,8 @@ import {
 import { LegacySectionSettingsPanel } from '@/builder/admin/settings/LegacySectionSettingsPanel'
 import { ProductDetailSettingsPanel } from '@/builder/admin/settings/ProductDetailSettingsPanel'
 import { BlogArticleSettingsPanel } from '@/builder/admin/settings/BlogArticleSettingsPanel'
+import { MkSaasPurchaseSettingsPanel } from '@/builder/admin/settings/MkSaasPurchaseSettingsPanel'
+import { WhatsAppGuideSettingsPanel } from '@/builder/admin/settings/WhatsAppGuideSettingsPanel'
 
 export function BlockSettingsPanel() {
   const canvasMode = useBuilderStore((s) => s.canvasMode)
@@ -257,6 +259,14 @@ function BlockSettingsRouter({ type }: { type: string }) {
     case 'blog-article':
 
       return <BlogArticleSettingsPanel />
+
+    case 'mk-saas-purchase':
+
+      return <MkSaasPurchaseSettingsPanel />
+
+    case 'whatsapp-guide':
+
+      return <WhatsAppGuideSettingsPanel />
 
     default:
 

@@ -10,6 +10,8 @@ import {
 import { extractBlocksForPage } from '@/builder/load/pageContentPersistence'
 import { pageContentService } from '@/services/pageContentService'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
+import { MkSaasBuilderPreviewProvider } from '@/components/public/product/MkSaasProductPageProvider'
+import { isMkSaasBuilderPageKey } from '@/lib/muvekkilKasaSaasProduct'
 
 /** Kaydedilmiş API JSON'undan builder önizlemesi — store kullanmaz */
 export function BuilderSavedPreviewPage() {
@@ -46,12 +48,18 @@ export function BuilderSavedPreviewPage() {
     )
   }
 
-  return (
+  const needsMkProvider =
+    isMkSaasBuilderPageKey(pageKey) ||
+    blocks.some((b) => b.type === 'mk-saas-purchase' || b.type === 'whatsapp-guide')
+
+  const preview = (
     <div className="min-h-screen bg-white">
       <div className="border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-800">
         Kaydedilmiş içerik önizlemesi — {def.title}
       </div>
-      <PageBlocksRenderer blocks={blocks} mode="public" />
+      <PageBlocksRenderer blocks={blocks} mode="preview" />
     </div>
   )
+
+  return needsMkProvider ? <MkSaasBuilderPreviewProvider>{preview}</MkSaasBuilderPreviewProvider> : preview
 }

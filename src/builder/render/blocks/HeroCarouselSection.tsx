@@ -7,10 +7,15 @@ import {
   type CSSProperties,
   type MouseEvent,
 } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { BuilderField } from '@/builder/edit/BuilderField'
 import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
+import { HeroProductPrice } from '@/builder/render/HeroProductPrice'
+import { isMkSaasHero } from '@/builder/render/mkSaasBuilderVisuals'
 import { HeroSlideLinkShell } from '@/builder/render/HeroSlideLinkShell'
+import { MkSaasHeroScreenCarousel } from '@/components/public/product/MkSaasHeroScreenCarousel'
+import { useMkSaasProductPageContextOptional } from '@/components/public/product/MkSaasProductPageProvider'
+import type { NormalizedGalleryImage } from '@/media/normalizeProductGalleryImages'
 import {
   carouselHasDistinctMobileImage,
   getHeroSlideImageSources,
@@ -70,8 +75,67 @@ function heroHeightVars(settings: HeroBlock['settings'], desktopDefault: string)
   }
 }
 
-function heroButtonClass(variant: BlockButton['variant'], outlineClass: string, primaryClass: string) {
-  return variant === 'outline' ? outlineClass : primaryClass
+function heroHasBlockLevelContent(hero: HeroBlock): boolean {
+  const { settings, visibility } = hero
+  const hasButtons = (settings.buttons ?? []).some(
+    (b) => b.visible !== false && renderIfText(b.label) && (renderIfText(b.href) || Boolean(b.actionKey)),
+  )
+  return (
+    shouldShowField(visibility.showTitle, renderIfText(hero.title)) ||
+    shouldShowField(visibility.showDescription, renderIfText(hero.description)) ||
+    (visibility.showBadge !== false && Boolean(renderIfText(settings.badge))) ||
+    hasButtons ||
+    settings.showProductPrice === true ||
+    (settings.highlights ?? []).some((h) => renderIfText(h.title))
+  )
+}
+
+function MkSaasHeroMedia({ hero }: { hero: HeroBlock }) {
+  const ctx = useMkSaasProductPageContextOptional()
+  const extraImages = sortedEnabledSlides(hero.settings.slides)
+    .map((slide): NormalizedGalleryImage | null => {
+      const sources = getHeroSlideImageSources(slide)
+      if (!sources) return null
+      return { url: sources.desktop, alt: hero.title ?? '' }
+    })
+    .filter((entry): entry is NormalizedGalleryImage => Boolean(entry))
+
+  if (extraImages.length === 0) {
+    return (
+      <div className="flex min-h-[280px] w-full items-center justify-center rounded-2xl border border-dashed border-white/20 bg-white/5 px-6 py-10 text-center text-sm leading-relaxed text-slate-300">
+        Hero carousel görseli Page Builder&apos;dan yüklenir.
+        <br />
+        Hero bloğu → Görseller → Slide listesine ekran görüntüsü ekleyin. Ürün kapağı burada kullanılmaz.
+      </div>
+    )
+  }
+
+  return (
+    <MkSaasHeroScreenCarousel
+      product={ctx?.product ?? { name: hero.title ?? 'Müvekkil Kasası' }}
+      extraImages={extraImages}
+      includeProductGallery={false}
+    />
+  )
+}
+
+function renderMkSaasHighlights(hero: HeroBlock) {
+  const items = (hero.settings.highlights ?? []).filter((h) => renderIfText(h.title))
+  const labels =
+    items.length > 0
+      ? items.map((item) => item.title)
+      : ['Kurulum gerektirmez', 'Çoklu kullanıcı', 'Her yerden güvenli erişim']
+
+  return (
+    <ul className="pointer-events-auto mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6">
+      {labels.map((label) => (
+        <li key={label} className="flex items-center gap-2 text-sm text-slate-300">
+          <Check className="h-4 w-4 shrink-0 text-cyan-400" aria-hidden />
+          {label}
+        </li>
+      ))}
+    </ul>
+  )
 }
 
 function sortedEnabledSlides(slides: HeroSlide[]): HeroSlide[] {
@@ -90,13 +154,23 @@ function getSlideText(
 }
 
 function getSlideButtons(slide: HeroSlide, block: HeroBlock): BlockButton[] {
-  const slideButtons = (slide.buttons ?? []).filter(
-    (b) => b.visible !== false && renderIfText(b.label) && renderIfText(b.href),
-  )
+  const isValid = (b: BlockButton) =>
+    b.visible !== false && renderIfText(b.label) && (renderIfText(b.href) || Boolean(b.actionKey))
+  const slideButtons = (slide.buttons ?? []).filter(isValid)
+  const blockButtons = (block.settings.buttons ?? []).filter(isValid)
+
+  if (isMkSaasHero(block) && blockButtons.length > 0) {
+    const onlyDefaultSlideCtas =
+      slideButtons.length === 0 ||
+      slideButtons.every((b) => {
+        const label = (b.label ?? '').trim().toLowerCase()
+        return label === 'keşfet' || label === 'iletişim' || label === 'iletisim'
+      })
+    if (onlyDefaultSlideCtas) return blockButtons
+  }
+
   if (slideButtons.length > 0) return slideButtons
-  return (block.settings.buttons ?? []).filter(
-    (b) => b.visible !== false && renderIfText(b.label) && renderIfText(b.href),
-  )
+  return blockButtons
 }
 
 function slideOverlay(slide: HeroSlide, block: HeroBlock) {
@@ -130,6 +204,20 @@ function heroSplitImageClass(naturalMobile: boolean): string {
   return 'aspect-[8/5] w-full object-cover object-center'
 }
 
+function heroButtonClass(
+  variant: BlockButton['variant'],
+  outlineClass: string,
+  primaryClass: string,
+  mkSaas?: boolean,
+) {
+  if (mkSaas) {
+    return variant === 'outline'
+      ? 'inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/15'
+      : 'inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 px-6 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-sky-500/25 transition hover:brightness-105'
+  }
+  return variant === 'outline' ? outlineClass : primaryClass
+}
+
 export function HeroCarouselSection({ hero }: Props) {
   const { settings, style, visibility } = hero
   const sectionRef = useRef<HTMLElement>(null)
@@ -141,6 +229,8 @@ export function HeroCarouselSection({ hero }: Props) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const layout = settings.layout ?? 'centered'
   const isSplit = layout === 'split'
+  const mkSaas = isMkSaasHero(hero)
+  const hasBlockContent = heroHasBlockLevelContent(hero)
 
   const slides = useMemo(() => sortedEnabledSlides(settings.slides), [settings.slides])
   const isCarousel = slides.length > 1
@@ -160,9 +250,6 @@ export function HeroCarouselSection({ hero }: Props) {
   const currentSlide = slides[safeIndex]
 
   const carouselMobileNatural = carouselHasDistinctMobileImage(settings)
-  const currentSlideNaturalMobile = currentSlide
-    ? slideUsesMobileNaturalLayout(currentSlide, settings)
-    : false
   const useMobileFlowLayout = !isSplit && isMobileViewport && carouselMobileNatural
 
   const goTo = useCallback(
@@ -228,11 +315,14 @@ export function HeroCarouselSection({ hero }: Props) {
   // Centered (banner) carousel artık görselin doğal oranını korur; yükseklik
   // genişliğe göre otomatik oluşur (sabit px yok → kırpma yok). Split hero eski
   // davranışını korur.
-  const sectionHeightClass = isSplit
-    ? carouselMobileNatural
-      ? 'max-[640px]:min-h-[200px] sm:py-12 sm:min-h-[var(--hero-h-mobile,var(--hero-h,520px))] lg:py-20'
-      : 'py-12 sm:py-16 lg:py-20 min-h-[var(--hero-h-mobile,var(--hero-h,520px))] lg:min-h-[var(--hero-h,520px)]'
-    : ''
+  const sectionHeightClass =
+    mkSaas && isSplit
+      ? 'py-10 sm:py-14 lg:py-16'
+      : isSplit
+        ? carouselMobileNatural
+          ? 'max-[640px]:min-h-[200px] sm:py-12 sm:min-h-[var(--hero-h-mobile,var(--hero-h,520px))] lg:py-20'
+          : 'py-12 sm:py-16 lg:py-20 min-h-[var(--hero-h-mobile,var(--hero-h,520px))] lg:min-h-[var(--hero-h,520px)]'
+        : ''
 
   const renderSlideContent = (slide: HeroSlide, slideIndex: number, active: boolean) => {
     const title = getSlideText(slide, hero, 'title')
@@ -245,8 +335,12 @@ export function HeroCarouselSection({ hero }: Props) {
     const showBadge = slideVisibility.showBadge !== false && Boolean(badge)
     const visibleButtons = getSlideButtons(slide, hero)
     const showButtons = slideVisibility.showButton !== false && visibleButtons.length > 0
+    const showHighlights = mkSaas && (hero.settings.highlights ?? []).some((h) => renderIfText(h.title))
+    const showPrice = mkSaas && settings.showProductPrice === true
 
-    if (!showTitle && !showDescription && !showBadge && !showButtons) return null
+    if (!showTitle && !showDescription && !showBadge && !showButtons && !showHighlights && !showPrice) return null
+
+    const contentPaddingClass = mkSaas ? 'min-w-0 lg:max-w-none' : 'mx-auto flex h-full w-full max-w-7xl flex-col justify-center px-4 py-8 text-white sm:py-16'
 
     const contentAlign = settings.contentAlign ?? style.contentAlign ?? 'left'
     const alignClass =
@@ -262,18 +356,25 @@ export function HeroCarouselSection({ hero }: Props) {
         className={cn(
           transitionClass,
           'pointer-events-none',
-          isCarousel && !active && 'absolute inset-0 opacity-0',
-          isCarousel && active && !useMobileFlowLayout && 'absolute inset-0 z-[3] opacity-100',
-          isCarousel && active && useMobileFlowLayout && 'relative z-[2] opacity-100',
-          !isCarousel && 'relative z-[2]',
+          mkSaas
+            ? active
+              ? 'relative z-[2]'
+              : 'hidden'
+            : cn(
+                isCarousel && !active && 'absolute inset-0 opacity-0',
+                isCarousel && active && !useMobileFlowLayout && 'absolute inset-0 z-[3] opacity-100',
+                isCarousel && active && useMobileFlowLayout && 'relative z-[2] opacity-100',
+                !isCarousel && 'relative z-[2]',
+              ),
         )}
         aria-hidden={isCarousel && !active}
       >
         <div
           className={cn(
-            'mx-auto flex h-full w-full max-w-7xl flex-col justify-center px-4 py-8 text-white sm:py-16',
+            contentPaddingClass,
+            !mkSaas && 'flex h-full w-full flex-col justify-center text-white',
             hideContentOnMobile && 'max-[640px]:hidden',
-            alignClass,
+            !mkSaas && alignClass,
           )}
         >
           {showBadge ? (
@@ -283,7 +384,14 @@ export function HeroCarouselSection({ hero }: Props) {
               type="text"
               className="pointer-events-auto mb-4 inline-block"
             >
-              <span className="inline-block rounded-full bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400">
+              <span
+                className={cn(
+                  'inline-block rounded-full px-3 py-1.5 text-xs font-medium',
+                  mkSaas
+                    ? 'border border-sky-400/30 bg-sky-500/10 font-semibold uppercase tracking-wide text-sky-200'
+                    : 'bg-green-500/20 text-green-400',
+                )}
+              >
                 {badge}
               </span>
             </BuilderField>
@@ -295,7 +403,14 @@ export function HeroCarouselSection({ hero }: Props) {
               type="text"
               className="pointer-events-auto w-fit max-w-full"
             >
-              <h1 className="text-3xl font-semibold leading-tight text-white drop-shadow md:text-4xl lg:text-5xl">
+              <h1
+                className={cn(
+                  'leading-tight text-white drop-shadow',
+                  mkSaas
+                    ? 'mt-5 text-3xl font-black tracking-tight sm:text-4xl lg:text-[2.65rem] lg:leading-[1.15]'
+                    : 'text-3xl font-semibold md:text-4xl lg:text-5xl',
+                )}
+              >
                 {title}
               </h1>
             </BuilderField>
@@ -307,13 +422,19 @@ export function HeroCarouselSection({ hero }: Props) {
               type="text"
               className="pointer-events-auto w-fit max-w-full"
             >
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-gray-300 drop-shadow md:text-lg">
+              <p
+                className={cn(
+                  'max-w-xl leading-relaxed drop-shadow',
+                  mkSaas ? 'mt-5 text-base text-slate-300 sm:text-lg' : 'mt-4 text-base text-gray-300 md:text-lg',
+                )}
+              >
                 {description}
               </p>
             </BuilderField>
           ) : null}
+          <HeroProductPrice settings={hero.settings} />
           {showButtons ? (
-            <div className="pointer-events-auto mt-6 flex flex-wrap gap-3">
+            <div className={cn('pointer-events-auto flex flex-wrap gap-3', mkSaas ? 'mt-8 flex-col sm:flex-row' : 'mt-6')}>
               {visibleButtons.map((btn, btnIndex) => (
                 <BuilderField
                   key={btn.id}
@@ -328,12 +449,14 @@ export function HeroCarouselSection({ hero }: Props) {
                       btn.variant,
                       'inline-flex rounded-lg border border-white/30 px-6 py-2.5 text-sm font-medium text-white',
                       'inline-flex rounded-lg bg-green-600 px-6 py-2.5 text-sm font-medium text-white',
+                      mkSaas,
                     )}
                   />
                 </BuilderField>
               ))}
             </div>
           ) : null}
+          {mkSaas ? renderMkSaasHighlights(hero) : null}
         </div>
       </div>
     )
@@ -433,14 +556,24 @@ export function HeroCarouselSection({ hero }: Props) {
     )
   }
 
-  if (slides.length === 0 || !hasAnyImage) return null
+  const canRenderWithoutImages = isSplit && (hasAnyImage || mkSaas || hasBlockContent)
 
-  const controlsVisible = isCarousel && (showArrows || showDots)
+  if (slides.length === 0) return null
+  if (!hasAnyImage && !canRenderWithoutImages) return null
+
+  const controlsVisible = !mkSaas && isCarousel && hasAnyImage && (showArrows || showDots)
+  const currentSlideHasImage = currentSlide ? slideHasRenderableImage(currentSlide) : false
 
   return (
     <section
       ref={sectionRef}
-      className={cn('relative w-full overflow-hidden bg-slate-900', sectionHeightClass)}
+      className={cn(
+        'relative w-full',
+        mkSaas
+          ? 'isolate overflow-hidden bg-gradient-to-br from-slate-950 via-[#0f2744] to-slate-900 text-white'
+          : 'overflow-hidden bg-slate-900',
+        sectionHeightClass,
+      )}
       style={{
         ...bgStyle,
         ...heroHeightVars(settings, isSplit ? '520px' : '280px'),
@@ -518,25 +651,33 @@ export function HeroCarouselSection({ hero }: Props) {
         </>
       ) : (
         <>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,197,94,0.15),transparent_70%)]" />
-          <div className="relative z-[2] mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div
+            className={cn(
+              'pointer-events-none absolute inset-0',
+              mkSaas
+                ? 'bg-[radial-gradient(circle_at_20%_20%,rgba(56,189,248,0.15),transparent_45%),radial-gradient(circle_at_80%_60%,rgba(34,211,238,0.1),transparent_40%)]'
+                : 'bg-[radial-gradient(circle_at_30%_50%,rgba(34,197,94,0.15),transparent_70%)]',
+            )}
+          />
+          <div className="relative z-[2] mx-auto max-w-[1280px] px-4 sm:px-6 xl:px-8">
             <div
               className={cn(
-                'grid items-center gap-10 lg:grid-cols-2 lg:gap-12',
+                'grid items-start gap-8 lg:items-center lg:gap-10',
+                mkSaas
+                  ? 'lg:grid-cols-[minmax(0,38%)_minmax(0,62%)]'
+                  : 'lg:grid-cols-2 lg:gap-12',
                 hideContentOnMobile && 'max-[640px]:grid-cols-1',
               )}
             >
-              <div className={cn('relative min-h-[120px]', hideContentOnMobile && 'max-[640px]:hidden')}>
+              <div className={cn('relative min-w-0', hideContentOnMobile && 'max-[640px]:hidden')}>
                 {slides.map((slide, i) => renderSlideContent(slide, i, i === safeIndex))}
               </div>
-              <div
-                className={cn(
-                  'relative w-full',
-                  currentSlideNaturalMobile ? 'max-[640px]:min-h-[200px]' : 'min-h-[240px]',
-                  hideContentOnMobile && 'max-[640px]:order-first',
-                )}
-              >
-                {slides[safeIndex] ? renderSlideImage(slides[safeIndex], safeIndex, true) : null}
+              <div className={cn('relative min-w-0 w-full', hideContentOnMobile && 'max-[640px]:order-first')}>
+                {mkSaas ? (
+                  <MkSaasHeroMedia hero={hero} />
+                ) : currentSlideHasImage && slides[safeIndex] ? (
+                  renderSlideImage(slides[safeIndex], safeIndex, true)
+                ) : null}
               </div>
             </div>
           </div>

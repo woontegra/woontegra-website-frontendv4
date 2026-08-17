@@ -1,8 +1,10 @@
 import type { CSSProperties } from 'react'
+import { Check } from 'lucide-react'
 import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { BuilderField } from '@/builder/edit/BuilderField'
 import { BlockSectionHeader } from '@/builder/render/SectionBlockShell'
 import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
+import { isMkSaasProblemBand, MK_SAAS_PROBLEM_PILLS } from '@/builder/render/mkSaasBuilderVisuals'
 import { renderIfText } from '@/builder/render/renderRules'
 import { resolvePublicImage } from '@/media/resolvePublicImage'
 import { cn } from '@/lib/cn'
@@ -43,6 +45,43 @@ export function CtaBlockRenderer({ block }: BlockRendererProps) {
     Boolean(b.style.backgroundColor)
 
   const isAbout = b.settings.variant === 'about'
+  const isMkProblemBand = isMkSaasProblemBand(b)
+
+  if (isMkProblemBand) {
+    const pills =
+      (b.settings.featurePills ?? []).filter((item) => item.trim().length > 0).length > 0
+        ? (b.settings.featurePills ?? []).filter((item) => item.trim().length > 0)
+        : [...MK_SAAS_PROBLEM_PILLS]
+
+    return (
+      <section
+        className="relative z-0 border-y border-slate-200 bg-white py-10 sm:py-12"
+        style={{
+          paddingTop: b.style.paddingTop?.desktop,
+          paddingBottom: b.style.paddingBottom?.desktop,
+        }}
+      >
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 sm:px-6 lg:flex-row lg:justify-between lg:gap-12 xl:px-8">
+          {b.visibility.showTitle !== false && renderIfText(b.title) ? (
+            <BuilderField path="title" label="Başlık" type="text" className="w-fit max-w-xl">
+              <p className="text-center text-lg font-semibold text-slate-800 lg:text-left lg:text-xl">{b.title}</p>
+            </BuilderField>
+          ) : null}
+          <ul className="grid w-full max-w-lg gap-3 sm:grid-cols-3 lg:max-w-none lg:flex lg:w-auto lg:gap-8">
+            {pills.map((item, index) => (
+              <li
+                key={`${item}-${index}`}
+                className="flex items-center justify-center gap-2 rounded-xl border border-sky-100 bg-sky-50 px-4 py-3 text-center text-sm font-semibold text-sky-900"
+              >
+                <Check className="h-4 w-4 shrink-0 text-sky-600" aria-hidden />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
 
   if (isAbout) {
     return (

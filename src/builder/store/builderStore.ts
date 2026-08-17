@@ -11,7 +11,7 @@ import { convertPageToBlocks } from '@/builder/load/convertPageToBlocks'
 import type { ConversionReport } from '@/builder/load/conversionReport'
 import { enrichParityRaw } from '@/builder/parity/enrichParityRaw'
 import { pageContentService, getErrorMessage } from '@/services/pageContentService'
-import { buildPageContentPayload } from '@/builder/load/pageContentPersistence'
+import { buildPageContentPayload, extractBlocksForPage } from '@/builder/load/pageContentPersistence'
 import { useToastStore } from '@/store/toastStore'
 
 export const BUILDER_DRAFT_STORAGE_PREFIX = 'woontegra_builder_draft_v1'
@@ -202,7 +202,27 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
 
     void (async () => {
       const enriched = await enrichParityRaw(def, pageRawContent)
-      const { blocks, report } = convertPageToBlocks(def, enriched ?? pageRawContent)
+      const raw = enriched ?? pageRawContent
+      const existing = extractBlocksForPage(raw, def)
+      if (existing?.length) {
+        const nextState: BuilderPageState = { pageKey, pageTitle, blocks: existing }
+        initHistory(nextState)
+        set({
+          blocks: existing,
+          canvasMode: 'builder-blocks',
+          pageLoadSource: 'builder-draft',
+          conversionReport: null,
+          isDirty: false,
+          selectedBlockId: existing[0]?.id ?? null,
+          selectedFieldPath: null,
+          loadPageStatus: 'ready',
+          pageRawContent: raw,
+        })
+        syncHistoryFlags(set)
+        return
+      }
+
+      const { blocks, report } = convertPageToBlocks(def, raw)
       if (blocks.length === 0) return
 
       const nextState: BuilderPageState = { pageKey, pageTitle, blocks }
@@ -217,7 +237,7 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
         selectedBlockId: blocks[0]?.id ?? null,
         selectedFieldPath: null,
         loadPageStatus: 'ready',
-        pageRawContent: enriched ?? pageRawContent,
+        pageRawContent: raw,
       })
       syncHistoryFlags(set)
     })()
@@ -244,6 +264,10 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
   addBlock: (type) => {
     pushHistory(get, set)
     const { blocks } = get()
+    if (type === 'mk-saas-purchase' && blocks.some((b) => b.type === 'mk-saas-purchase')) {
+      useToastStore.getState().show('Sayfada yalnızca bir Ürün Satın Alma bloğu olabilir.', 'error')
+      return
+    }
     const next = createBlockByType(type, blocks.length)
     set({
       blocks: [...blocks, next],

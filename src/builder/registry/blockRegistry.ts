@@ -55,6 +55,16 @@ const definitions: BlockDefinition[] = [
     description: 'Soru-cevap listesi; sıralama ve açılır görünüm.',
   },
   {
+    type: 'mk-saas-purchase',
+    label: BLOCK_TYPE_LABELS['mk-saas-purchase'],
+    description: 'MK SaaS gerçek satın alma paneli — fiyat ve sepet handler korunur.',
+  },
+  {
+    type: 'whatsapp-guide',
+    label: BLOCK_TYPE_LABELS['whatsapp-guide'],
+    description: 'WhatsApp Business geçiş rehberi — gerçek ekran görüntüleri ile.',
+  },
+  {
     type: 'legacy-html',
     label: BLOCK_TYPE_LABELS['legacy-html'],
     description: 'Mevcut HTML içeriği koruma bloğu.',

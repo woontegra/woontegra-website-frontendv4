@@ -46,6 +46,14 @@ export const blockRendererLoaders: Record<string, BlockLoader> = {
     import('@/builder/render/blocks/BlogArticleBlockRenderer').then((m) => ({
       default: m.BlogArticleBlockRenderer,
     })),
+  'mk-saas-purchase': () =>
+    import('@/builder/render/blocks/MkSaasPurchaseBlockRenderer').then((m) => ({
+      default: m.MkSaasPurchaseBlockRenderer,
+    })),
+  'whatsapp-guide': () =>
+    import('@/builder/render/blocks/WhatsAppGuideBlockRenderer').then((m) => ({
+      default: m.WhatsAppGuideBlockRenderer,
+    })),
 }
 
 export function getBlockRendererLoader(type: string): BlockLoader {

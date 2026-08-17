@@ -4,6 +4,7 @@ import { BlockSectionHeader, SectionBlockShell } from '@/builder/render/SectionB
 import { renderIfText } from '@/builder/render/renderRules'
 import { MediaImage } from '@/media/components/MediaImage'
 import { HomeIcon } from '@/lib/homeIcons'
+import { isMkSaasBenefitsGrid } from '@/builder/render/mkSaasBuilderVisuals'
 import { hasPublicImage } from '@/media/resolvePublicImage'
 import { cn } from '@/lib/cn'
 import type { CardGridBlock, CardGridItem } from '@/builder/types'
@@ -14,12 +15,13 @@ export function CardGridBlockRenderer({ block }: BlockRendererProps) {
   const b = block as CardGridBlock
   if (!b.visibility.enabled) return null
 
-  const variant = b.settings.variant ?? 'default'
+  const variant = b.settings.variant ?? (isMkSaasBenefitsGrid(b) ? 'mk-benefit' : 'default')
   const cards = b.settings.cards.filter(
     (c) => renderIfText(c.title) || renderIfText(c.description) || hasPublicImage(c),
   )
 
   if (variant === 'intro') return <IntroVariant block={b} cards={cards} />
+  if (variant === 'mk-benefit') return <MkBenefitVariant block={b} cards={cards} />
   if (variant === 'icon-dark') return <IconDarkVariant block={b} cards={cards} />
   if (variant === 'logo') return <LogoVariant block={b} cards={cards} />
   if (variant === 'steps') return <StepsVariant block={b} cards={cards} />
@@ -29,6 +31,57 @@ export function CardGridBlockRenderer({ block }: BlockRendererProps) {
   if (variant === 'about-brands') return <AboutBrandsVariant block={b} cards={cards} />
 
   return <DefaultVariant block={b} cards={cards} />
+}
+
+function MkBenefitVariant({ block, cards }: { block: CardGridBlock; cards: CardGridItem[] }) {
+  const cols = block.settings.columns ?? 4
+  const colClass =
+    cols === 2 ? 'sm:grid-cols-2' : cols === 3 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-4'
+
+  return (
+    <section
+      className="py-14 sm:py-20"
+      style={{
+        paddingTop: block.style.paddingTop?.desktop,
+        paddingBottom: block.style.paddingBottom?.desktop,
+      }}
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 xl:px-8">
+        <div className="mx-auto max-w-3xl text-center">
+          {block.visibility.showTitle !== false && renderIfText(block.title) ? (
+            <BuilderField path="title" label="Başlık" type="text" className="mx-auto w-fit">
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">{block.title}</h2>
+            </BuilderField>
+          ) : null}
+          {block.visibility.showDescription !== false && renderIfText(block.description) ? (
+            <BuilderField path="description" label="Açıklama" type="text" className="mx-auto mt-4 w-fit">
+              <p className="text-base leading-relaxed text-slate-600 sm:text-lg">{block.description}</p>
+            </BuilderField>
+          ) : null}
+        </div>
+        {cards.length > 0 ? (
+          <div className={cn('mt-10 grid gap-6', colClass)}>
+            {cards.map((card) => (
+              <CardLinkShell
+                key={card.id}
+                card={card}
+                as="div"
+                className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition hover:border-sky-200 hover:shadow-md"
+              >
+                {card.icon ? (
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+                    <HomeIcon name={card.icon} className="h-5 w-5" aria-hidden />
+                  </div>
+                ) : null}
+                <CardTitleDescription card={card} />
+                <CardButtonLabel card={card} />
+              </CardLinkShell>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </section>
+  )
 }
 
 function DefaultVariant({ block, cards }: { block: CardGridBlock; cards: CardGridItem[] }) {

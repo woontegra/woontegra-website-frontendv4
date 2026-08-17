@@ -11,6 +11,7 @@ import { cn } from '@/lib/cn'
 import type { BlockButton, HeroBlock } from '@/builder/types'
 import { buildHeroGradientCss } from '@/builder/types'
 import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
+import { HeroProductPrice } from '@/builder/render/HeroProductPrice'
 import { HeroCarouselSection } from '@/builder/render/blocks/HeroCarouselSection'
 
 function heroButtonClass(variant: BlockButton['variant'], outlineClass: string, primaryClass: string) {
@@ -112,7 +113,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
     hasPublicImage(settings)
 
   const visibleButtons = (settings.buttons ?? []).filter(
-    (b) => b.visible !== false && renderIfText(b.label) && renderIfText(b.href),
+    (b) => b.visible !== false && renderIfText(b.label) && (renderIfText(b.href) || Boolean(b.actionKey)),
   )
   const showButtons = visibility.showButton !== false && visibleButtons.length > 0
 
@@ -402,6 +403,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
                   </p>
                 </BuilderField>
               ) : null}
+              <HeroProductPrice settings={settings} />
               {showButtons ? (
                 <div className="flex flex-wrap gap-3">
                   {visibleButtons.map((btn, btnIndex) => (

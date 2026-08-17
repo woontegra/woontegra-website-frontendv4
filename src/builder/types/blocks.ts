@@ -13,6 +13,8 @@ import type {
 import type { LegacySectionBlock } from './legacySection'
 import type { ProductDetailBlock } from './productDetail'
 import type { BlogArticleBlock } from './blogArticle'
+import type { MkSaasPurchaseBlock } from './mkSaasPurchase'
+import type { WhatsAppGuideBlock } from './whatsappGuide'
 
 export type BuilderBlock =
   | HeroBlock
@@ -26,6 +28,8 @@ export type BuilderBlock =
   | ServicesShowcaseBlock
   | ProductDetailBlock
   | BlogArticleBlock
+  | MkSaasPurchaseBlock
+  | WhatsAppGuideBlock
   | LegacySectionBlock
   | GenericBlockPlaceholder
 
@@ -56,6 +60,8 @@ export type BlockTypeId =
   | 'legacy-html'
   | 'product-detail'
   | 'blog-article'
+  | 'mk-saas-purchase'
+  | 'whatsapp-guide'
 
 export const BLOCK_TYPE_LABELS: Record<BlockTypeId, string> = {
   hero: 'Hero',
@@ -78,4 +84,6 @@ export const BLOCK_TYPE_LABELS: Record<BlockTypeId, string> = {
   'legacy-html': 'Eski HTML',
   'product-detail': 'Ürün Detay (PDP)',
   'blog-article': 'Blog Makalesi',
+  'mk-saas-purchase': 'Ürün Satın Alma',
+  'whatsapp-guide': 'WhatsApp Geçiş Rehberi',
 }

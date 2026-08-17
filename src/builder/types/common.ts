@@ -40,6 +40,8 @@ export type BlockStyle = {
   customClass?: string
 }
 
+export type BlockButtonActionKey = 'openDemo' | 'scrollToPurchase'
+
 export type BlockButton = {
   id: string
   label?: string
@@ -47,6 +49,8 @@ export type BlockButton = {
   variant?: ButtonVariant
   visible?: boolean
   openInNewTab?: boolean
+  /** Ürün sayfası özel aksiyonları — href yerine handler kullanılır */
+  actionKey?: BlockButtonActionKey
 }
 
 export type MediaRef = {

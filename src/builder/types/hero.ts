@@ -93,6 +93,10 @@ export type HeroSettings = {
   height?: ResponsiveValue<string>
   carousel?: HeroCarouselSettings
   video?: HeroVideoSettings
+  /** Ürün sayfası — API fiyatını göster (hardcode yok) */
+  showProductPrice?: boolean
+  /** Fiyat sonrası metin, örn. "/ 1 yıl" */
+  priceSuffix?: string
 }
 
 export type HeroBlock = BlockBase & {

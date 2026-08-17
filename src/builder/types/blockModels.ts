@@ -1,5 +1,7 @@
 import type { BlockBase, BlockButton, BlockStyle, BlockVisibility } from './common'
 import { createDefaultHeroBlock, type HeroBlock } from './hero'
+import { createDefaultMkSaasPurchaseBlock, type MkSaasPurchaseBlock } from './mkSaasPurchase'
+import { createDefaultWhatsAppGuideBlock, type WhatsAppGuideBlock } from './whatsappGuide'
 
 export type MvpBlockTypeId =
   | 'hero'
@@ -11,6 +13,8 @@ export type MvpBlockTypeId =
   | 'services-showcase'
   | 'products-showcase'
   | 'blog-showcase'
+  | 'mk-saas-purchase'
+  | 'whatsapp-guide'
 
 export type CardGridItem = {
   id: string
@@ -56,6 +60,7 @@ export type CardGridVariant =
   | 'solutions'
   | 'timeline'
   | 'about-brands'
+  | 'mk-benefit'
 
 export type CardGridBlock = BlockBase & {
   type: 'card-grid'
@@ -75,7 +80,9 @@ export type CtaBlock = BlockBase & {
     imageUrl?: string
     borderRadius?: string
     buttons: BlockButton[]
-    variant?: 'default' | 'about'
+    variant?: 'default' | 'about' | 'mk-problem-band'
+    /** Sorun bandı — sağ taraftaki onay maddeleri */
+    featurePills?: string[]
   }
 }
 
@@ -147,6 +154,8 @@ export type TypedBuilderBlock =
   | ProductsShowcaseBlock
   | BlogShowcaseBlock
   | ServicesShowcaseBlock
+  | MkSaasPurchaseBlock
+  | WhatsAppGuideBlock
 
 function baseStyle(): BlockStyle {
   return {
@@ -318,6 +327,10 @@ export function createBlockByType(type: MvpBlockTypeId, sortOrder: number): Type
       return createDefaultProductsShowcaseBlock(sortOrder)
     case 'blog-showcase':
       return createDefaultBlogShowcaseBlock(sortOrder)
+    case 'mk-saas-purchase':
+      return createDefaultMkSaasPurchaseBlock(sortOrder)
+    case 'whatsapp-guide':
+      return createDefaultWhatsAppGuideBlock(sortOrder)
     default:
       return createDefaultRichTextBlock(sortOrder)
   }
@@ -333,4 +346,6 @@ export const BUILDER_MVP_BLOCK_TYPES: MvpBlockTypeId[] = [
   'services-showcase',
   'products-showcase',
   'blog-showcase',
+  'mk-saas-purchase',
+  'whatsapp-guide',
 ]

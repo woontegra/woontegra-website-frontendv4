@@ -4,6 +4,8 @@ import { BlockEditOverlay } from '@/builder/preview/BlockEditOverlay'
 import { FieldOverlayLayer } from '@/builder/preview/FieldOverlayLayer'
 import { useBuilderEditModeEffects } from '@/builder/preview/useBuilderEditModeEffects'
 import { BuilderEditProvider } from '@/builder/edit/BuilderEditContext'
+import { MkSaasBuilderPreviewProvider } from '@/components/public/product/MkSaasProductPageProvider'
+import { isMkSaasBuilderPageKey } from '@/lib/muvekkilKasaSaasProduct'
 import { useBuilderStore } from '@/builder/store/builderStore'
 import type { BuilderBlock } from '@/builder/types'
 import { cn } from '@/lib/cn'
@@ -13,6 +15,7 @@ const PUBLIC_LAYER_CLASS =
 
 export function BuilderEditableBlocksCanvas() {
   const canvasRef = useRef<HTMLDivElement>(null)
+  const pageKey = useBuilderStore((s) => s.pageKey)
   const blocks = useBuilderStore((s) => s.blocks)
   const selectedBlockId = useBuilderStore((s) => s.selectedBlockId)
   const selectedFieldPath = useBuilderStore((s) => s.selectedFieldPath)
@@ -31,6 +34,10 @@ export function BuilderEditableBlocksCanvas() {
 
   useBuilderEditModeEffects(canvasRef, dependencyKey)
 
+  const isMkSaasBuilderPage =
+    isMkSaasBuilderPageKey(pageKey) ||
+    blocks.some((b) => b.type === 'mk-saas-purchase' || b.type === 'whatsapp-guide')
+
   if (sorted.length === 0) {
     return (
       <div className="flex min-h-[320px] flex-col items-center justify-center bg-white px-6 py-16 text-center">
@@ -40,13 +47,13 @@ export function BuilderEditableBlocksCanvas() {
     )
   }
 
-  return (
+  const canvas = (
     <BuilderEditProvider annotateFields>
       <div
         ref={canvasRef}
         data-builder-edit-mode
         data-builder-canvas
-        className="relative bg-white"
+        className="relative bg-slate-50"
         onMouseLeave={() => {
           setHoveredBlockId(null)
           setHoveredFieldPath(null)
@@ -81,6 +88,8 @@ export function BuilderEditableBlocksCanvas() {
       </div>
     </BuilderEditProvider>
   )
+
+  return isMkSaasBuilderPage ? <MkSaasBuilderPreviewProvider>{canvas}</MkSaasBuilderPreviewProvider> : canvas
 }
 
 function BuilderBlockSlot({
@@ -136,7 +145,7 @@ function BuilderBlockSlot({
       data-builder-block-slot={block.id}
     >
       <div className={PUBLIC_LAYER_CLASS} aria-hidden="true">
-        <PageBlocksRenderer blocks={[block]} mode="public" annotateBlocks />
+        <PageBlocksRenderer blocks={[block]} mode="preview" annotateBlocks />
       </div>
 
       <BlockEditOverlay

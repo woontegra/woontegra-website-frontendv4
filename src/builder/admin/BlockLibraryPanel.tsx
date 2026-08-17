@@ -60,13 +60,8 @@ export function BlockLibraryPanel() {
             <h3 className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
               {cat.label}
             </h3>
-            {'placeholder' in cat && cat.placeholder ? (
-              <p className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-400">
-                {cat.placeholder}
-              </p>
-            ) : (
-              <ul className="space-y-1.5">
-                {cat.blocks.map((type) => {
+            <ul className="space-y-1.5">
+              {cat.blocks.map((type) => {
                   const def = getBlockDefinition(type)
                   const label = def?.label ?? BLOCK_TYPE_LABELS[type as MvpBlockTypeId]
                   return (
@@ -98,7 +93,6 @@ export function BlockLibraryPanel() {
                   )
                 })}
               </ul>
-            )}
           </section>
         ))}
       </div>

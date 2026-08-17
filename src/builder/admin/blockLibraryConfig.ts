@@ -17,8 +17,7 @@ export const BLOCK_LIBRARY_CATEGORIES = [
   {
     id: 'solutions',
     label: 'Çözümler',
-    types: [] as const,
-    placeholder: 'Yakında — çözüm blokları eklenecek',
+    types: ['mk-saas-purchase', 'whatsapp-guide'] as const,
   },
 ] as const
 
