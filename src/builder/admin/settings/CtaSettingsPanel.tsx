@@ -34,7 +34,58 @@ export function CtaSettingsPanel() {
       id: 'content',
       title: 'İçerik',
       defaultOpen: true,
-      content: <SharedContentSection block={block} onChange={update} />,
+      content: (
+        <>
+          <SharedContentSection block={block} onChange={update} />
+          <SelectField
+            label="Varyant"
+            value={settings.variant ?? 'default'}
+            onChange={(v) =>
+              update({ ...block, settings: { ...settings, variant: v as CtaBlock['settings']['variant'] } })
+            }
+            options={[
+              { value: 'default', label: 'Varsayılan' },
+              { value: 'about', label: 'Hakkımızda' },
+              { value: 'mk-problem-band', label: 'MK sorun bandı' },
+              { value: 'mk-compare-editions', label: 'MK sürüm seçimi' },
+            ]}
+          />
+          {settings.variant === 'mk-compare-editions' ? (
+            <>
+              <TextField
+                label="Masaüstü kart açıklaması"
+                value={settings.featurePills?.[0] ?? ''}
+                onChange={(value) =>
+                  update({
+                    ...block,
+                    settings: { ...settings, featurePills: [value, settings.featurePills?.[1] ?? ''] },
+                  })
+                }
+              />
+              <TextField
+                label="SaaS kart açıklaması"
+                value={settings.featurePills?.[1] ?? ''}
+                onChange={(value) =>
+                  update({
+                    ...block,
+                    settings: { ...settings, featurePills: [settings.featurePills?.[0] ?? '', value] },
+                  })
+                }
+              />
+              <TextField
+                label="Alt bağlantı metni"
+                value={settings.footerLinkLabel ?? ''}
+                onChange={(footerLinkLabel) => update({ ...block, settings: { ...settings, footerLinkLabel } })}
+              />
+              <TextField
+                label="Alt bağlantı"
+                value={settings.footerLinkHref ?? ''}
+                onChange={(footerLinkHref) => update({ ...block, settings: { ...settings, footerLinkHref } })}
+              />
+            </>
+          ) : null}
+        </>
+      ),
     },
     {
       id: 'buttons',

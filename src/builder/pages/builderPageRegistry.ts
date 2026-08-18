@@ -22,6 +22,8 @@ import {
 
   productBuilderPageKey,
 
+  SUPERSEDED_MK_PRODUCT_BUILDER_SLUGS,
+
   serviceBuilderPageKey,
 
   solutionBuilderPageKey,
@@ -33,6 +35,7 @@ import {
 import { SERVICE_PAGE_CONTENT_KEY } from '@/data/serviceCatalog'
 
 import { SOLUTION_PAGE_CONTENT_KEY } from '@/data/solutionCatalog'
+import { MK_COMPARE_SLUG } from '@/components/public/muvekkil-kasa/comparePageUtils'
 
 
 
@@ -300,9 +303,23 @@ export function getBuilderPageDefinition(pageKey: string): BuilderPageDefinition
 
 
 
+const SUPERSEDED_MK_PRODUCT_BUILDER_KEYS = new Set(
+
+  SUPERSEDED_MK_PRODUCT_BUILDER_SLUGS.map((slug) => productBuilderPageKey(slug).toLowerCase()),
+
+)
+
+
+
 export function resolveBuilderPageKey(input?: string | null): string {
 
   const key = (input ?? 'home').trim()
+
+  if (SUPERSEDED_MK_PRODUCT_BUILDER_KEYS.has(key.toLowerCase())) {
+
+    return productBuilderPageKey(MK_COMPARE_SLUG)
+
+  }
 
   return getBuilderPageDefinition(key) ? key : 'home'
 

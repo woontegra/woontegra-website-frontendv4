@@ -6,12 +6,46 @@ export type MkSaasPurchaseBenefit = {
   icon?: string
 }
 
+export type MkComparePurchaseCardCopy = {
+  badge: string
+  extraBadge?: string
+  title: string
+  description: string
+  detailsButtonLabel: string
+  addToCartLabel: string
+  demoButtonLabel?: string
+  imageUrl?: string
+}
+
+export const DEFAULT_MK_COMPARE_DESKTOP_COPY: MkComparePurchaseCardCopy = {
+  badge: 'Bilgisayara Kurulan',
+  title: 'Müvekkil Kasa Defteri Masaüstü',
+  description: 'Programı bilgisayarına kurarak çalışan, merkezi lisanslı masaüstü sürüm.',
+  detailsButtonLabel: 'Masaüstü Detaylarını Gör',
+  addToCartLabel: 'Sepete Ekle',
+}
+
+export const DEFAULT_MK_COMPARE_SAAS_COPY: MkComparePurchaseCardCopy = {
+  badge: 'Tarayıcıdan Erişim',
+  extraBadge: 'En kapsamlı',
+  title: 'Müvekkil Kasa Defteri SaaS',
+  description:
+    'Kurulum gerektirmeden tarayıcı üzerinden erişilen, çok kullanıcılı ve WhatsApp destekli web sürümü.',
+  detailsButtonLabel: 'SaaS Detaylarını Gör',
+  addToCartLabel: 'Sepete Ekle',
+  demoButtonLabel: '7 Gün Ücretsiz Dene',
+}
+
 export type MkSaasPurchaseBlock = BlockBase & {
   type: 'mk-saas-purchase'
   settings: {
     anchorId: string
     backgroundStyle: 'gradient' | 'solid'
     benefits: MkSaasPurchaseBenefit[]
+    /** compare = birleşik Müvekkil Kasa satış kartları */
+    layout?: 'saas' | 'compare'
+    compareDesktop?: MkComparePurchaseCardCopy
+    compareSaas?: MkComparePurchaseCardCopy
   }
 }
 

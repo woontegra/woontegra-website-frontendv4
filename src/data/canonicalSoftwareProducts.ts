@@ -34,13 +34,13 @@ export const CANONICAL_SOFTWARE_NAV: CanonicalSoftwareNavItem[] = [
   {
     slug: 'muvekkil-kasa-defteri-yazilimi',
     title: 'Müvekkil Kasa Defteri Masaüstü',
-    path: '/yazilimlar/muvekkil-kasa-defteri-yazilimi',
+    path: '/yazilimlar/muvekkil-kasa-defteri?surum=masaustu',
     order: 1,
   },
   {
     slug: 'muvekkil-kasa-defteri-web-tabanli',
     title: 'Müvekkil Kasa Defteri Çoklu Kullanıcı Web Tabanlı',
-    path: '/yazilimlar/muvekkil-kasa-defteri-web-tabanli',
+    path: '/yazilimlar/muvekkil-kasa-defteri?surum=saas',
     order: 2,
   },
   {

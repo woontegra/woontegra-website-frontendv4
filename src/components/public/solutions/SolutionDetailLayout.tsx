@@ -4,6 +4,7 @@ import { PageHero } from '@/components/public/PageHero'
 import { SiteCtaSection } from '@/components/public/SiteCtaSection'
 import { resolveIcon } from '@/lib/iconRegistry'
 import { cn } from '@/lib/cn'
+import { isRemovedServicePublicLink } from '@/lib/serviceSlugs'
 import type { SolutionDetailContent } from '@/data/solutionDetailContent'
 
 type Props = {
@@ -34,6 +35,10 @@ function FeatureCard({
 }
 
 export function SolutionDetailLayout({ content }: Props) {
+  const relatedLinks = content.related.links.filter(
+    (link) => !isRemovedServicePublicLink(link.href, link.label),
+  )
+
   return (
     <div className="bg-white">
       <PageHero
@@ -176,12 +181,12 @@ export function SolutionDetailLayout({ content }: Props) {
         </div>
       </section>
 
-      {content.related.links.length > 0 ? (
+      {relatedLinks.length > 0 ? (
         <section className="border-t border-slate-100 bg-slate-50 py-14 md:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-xl font-bold text-slate-900 md:text-2xl">{content.related.title}</h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {content.related.links.map((link) => (
+              {relatedLinks.map((link) => (
                 <Link
                   key={link.href}
                   to={link.href}

@@ -5,7 +5,9 @@ import { FieldOverlayLayer } from '@/builder/preview/FieldOverlayLayer'
 import { useBuilderEditModeEffects } from '@/builder/preview/useBuilderEditModeEffects'
 import { BuilderEditProvider } from '@/builder/edit/BuilderEditContext'
 import { MkSaasBuilderPreviewProvider } from '@/components/public/product/MkSaasProductPageProvider'
+import { MkComparePageProvider } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
 import { isMkSaasBuilderPageKey } from '@/lib/muvekkilKasaSaasProduct'
+import { isMkCompareBuilderPageKey } from '@/components/public/muvekkil-kasa/comparePageUtils'
 import { useBuilderStore } from '@/builder/store/builderStore'
 import type { BuilderBlock } from '@/builder/types'
 import { cn } from '@/lib/cn'
@@ -33,6 +35,15 @@ export function BuilderEditableBlocksCanvas() {
   const dependencyKey = sorted.map((b) => `${b.id}:${JSON.stringify(b)}`).join('|')
 
   useBuilderEditModeEffects(canvasRef, dependencyKey)
+
+  const isMkCompareBuilderPage =
+    isMkCompareBuilderPageKey(pageKey) ||
+    blocks.some(
+      (b) =>
+        b.type === 'mk-compare-table' ||
+        b.type === 'mk-compare-details' ||
+        (b.type === 'mk-saas-purchase' && (b as { settings?: { layout?: string } }).settings?.layout === 'compare'),
+    )
 
   const isMkSaasBuilderPage =
     isMkSaasBuilderPageKey(pageKey) ||
@@ -89,7 +100,13 @@ export function BuilderEditableBlocksCanvas() {
     </BuilderEditProvider>
   )
 
-  return isMkSaasBuilderPage ? <MkSaasBuilderPreviewProvider>{canvas}</MkSaasBuilderPreviewProvider> : canvas
+  return isMkCompareBuilderPage ? (
+    <MkComparePageProvider previewSafe>{canvas}</MkComparePageProvider>
+  ) : isMkSaasBuilderPage ? (
+    <MkSaasBuilderPreviewProvider>{canvas}</MkSaasBuilderPreviewProvider>
+  ) : (
+    canvas
+  )
 }
 
 function BuilderBlockSlot({

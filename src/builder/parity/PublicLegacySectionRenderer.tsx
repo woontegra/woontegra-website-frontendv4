@@ -18,6 +18,8 @@ import { SolutionCard } from '@/components/public/SolutionCard'
 import { ServiceDetailLayout } from '@/components/public/services/ServiceDetailLayout'
 import { SolutionDetailLayout } from '@/components/public/solutions/SolutionDetailLayout'
 import { SoftwareDetailView } from '@/components/public/product/SoftwareDetailView'
+import { MuvekkilKasaCompareView } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareView'
+import { MK_COMPARE_LEGACY_SECTION_KEY } from '@/builder/templates/mkCompareBuilderTemplate'
 import { BlogDetailView } from '@/components/public/blog/BlogDetailView'
 import { LegalCookieView } from '@/components/public/legal/LegalCookieView'
 import type { AboutPageContent } from '@/types/aboutPageContent'
@@ -341,6 +343,8 @@ export function PublicLegacySectionRenderer({ sectionKey, payload }: Props) {
       )
     case 'product-detail.page':
       return <SoftwareDetailView product={payload as PublicProductDetail} />
+    case MK_COMPARE_LEGACY_SECTION_KEY:
+      return <MuvekkilKasaCompareView />
     case 'blog-detail.page':
       return <BlogDetailView post={payload as PublicBlogPost} />
     case 'legal.cookie':

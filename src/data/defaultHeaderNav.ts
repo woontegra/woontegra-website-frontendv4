@@ -1,4 +1,4 @@
-import { CANONICAL_PUBLIC_SERVICES } from '@/data/canonicalServices'
+import { publicCanonicalServices } from '@/data/canonicalServices'
 import { buildCanonicalSoftwareNavChildren } from '@/lib/publicSoftwareCatalog'
 import type { PublicNavigationMenuItem } from '@/types/navigationMenu'
 
@@ -29,7 +29,7 @@ export const DEFAULT_PUBLIC_NAV: PublicNavigationMenuItem[] = [
     resolvedUrl: '/hizmetler',
     openInNewTab: false,
     sortOrder: 2,
-    children: CANONICAL_PUBLIC_SERVICES.map((service, index) => ({
+    children: publicCanonicalServices().map((service, index) => ({
       id: `svc-${service.slug}`,
       label: service.title,
       href: service.path,

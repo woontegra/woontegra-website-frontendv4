@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { BLOCK_TYPE_LABELS } from '@/builder/types'
+import { BLOCK_TYPE_LABELS, isUniqueBlockType } from '@/builder/types'
 import type { MvpBlockTypeId } from '@/builder/types'
 import { getBlockDefinition } from '@/builder/registry/blockRegistry'
 import { BLOCK_LIBRARY_CATEGORIES } from '@/builder/admin/blockLibraryConfig'
@@ -10,7 +10,9 @@ export function BlockLibraryPanel() {
   const canvasMode = useBuilderStore((s) => s.canvasMode)
   const addBlock = useBuilderStore((s) => s.addBlock)
   const convertToBuilderDraft = useBuilderStore((s) => s.convertToBuilderDraft)
+  const blocks = useBuilderStore((s) => s.blocks)
   const [query, setQuery] = useState('')
+  const existingTypes = useMemo(() => new Set(blocks.map((b) => b.type)), [blocks])
 
   const isEditable = canvasMode === 'builder-blocks'
 
@@ -64,6 +66,7 @@ export function BlockLibraryPanel() {
               {cat.blocks.map((type) => {
                   const def = getBlockDefinition(type)
                   const label = def?.label ?? BLOCK_TYPE_LABELS[type as MvpBlockTypeId]
+                  const uniqueTaken = isUniqueBlockType(type) && existingTypes.has(type)
                   return (
                     <li key={type}>
                       <div className="group flex items-start gap-2 rounded-xl border border-transparent px-2 py-2 transition hover:border-slate-200 hover:bg-slate-50">
@@ -71,17 +74,17 @@ export function BlockLibraryPanel() {
                           <p className="text-sm font-medium text-slate-800">{label}</p>
                           {def?.description ? (
                             <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-slate-400">
-                              {def.description}
+                              {uniqueTaken ? 'Bu sayfada zaten var' : def.description}
                             </p>
                           ) : null}
                         </div>
                         <button
                           type="button"
-                          disabled={!isEditable}
+                          disabled={!isEditable || uniqueTaken}
                           onClick={() => (isEditable ? addBlock(type as MvpBlockTypeId) : convertToBuilderDraft())}
                           className={cn(
                             'shrink-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700',
-                            isEditable
+                            isEditable && !uniqueTaken
                               ? 'opacity-0 transition group-hover:opacity-100 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700'
                               : 'cursor-not-allowed opacity-40',
                           )}

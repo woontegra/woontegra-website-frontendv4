@@ -4,6 +4,9 @@ import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { renderIfText } from '@/builder/render/renderRules'
 import { ProductPurchasePanel } from '@/components/public/product/ProductPurchasePanel'
 import { useMkSaasProductPageContextOptional } from '@/components/public/product/MkSaasProductPageProvider'
+import { useMkComparePageContextOptional } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
+import { MuvekkilKasaCompareProductCards } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareProductCards'
+import { MK_COMPARE_SHELL } from '@/components/public/muvekkil-kasa/comparePageUtils'
 import type { MkSaasPurchaseBlock } from '@/builder/types'
 import { cn } from '@/lib/cn'
 
@@ -25,9 +28,14 @@ function BenefitIcon({ icon }: { icon?: string }) {
 
 export function MkSaasPurchaseBlockRenderer({ block }: BlockRendererProps) {
   const ctx = useMkSaasProductPageContextOptional()
+  const compare = useMkComparePageContextOptional()
   if (block.type !== 'mk-saas-purchase') return null
   const purchase = block as MkSaasPurchaseBlock
   if (!purchase.visibility.enabled) return null
+
+  if (purchase.settings.layout === 'compare') {
+    return <MkComparePurchaseLayout purchase={purchase} compare={compare} />
+  }
 
   const product = ctx?.product
   if (!ctx || !product) {
@@ -80,6 +88,51 @@ export function MkSaasPurchaseBlockRenderer({ block }: BlockRendererProps) {
               onOpenDemo={ctx.onOpenDemo}
             />
           </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function MkComparePurchaseLayout({
+  purchase,
+  compare,
+}: {
+  purchase: MkSaasPurchaseBlock
+  compare: ReturnType<typeof useMkComparePageContextOptional>
+}) {
+  const anchorId = purchase.settings.anchorId?.trim() || 'urun-secimi'
+  const bgClass = purchase.settings.backgroundStyle === 'gradient' ? 'bg-gradient-to-b from-slate-100 to-white' : 'bg-white'
+
+  if (!compare) {
+    return (
+      <section id={anchorId} className={cn('scroll-mt-24 py-16 sm:py-20 lg:py-24', bgClass)}>
+        <div className={`${MK_COMPARE_SHELL} text-center text-sm text-slate-500`}>Ürünler yükleniyor…</div>
+      </section>
+    )
+  }
+
+  return (
+    <section id={anchorId} className={cn('scroll-mt-24 py-16 sm:py-20 lg:py-24', bgClass)}>
+      <div className={MK_COMPARE_SHELL}>
+        {purchase.visibility.showTitle !== false && renderIfText(purchase.title) ? (
+          <BuilderField path="title" label="Başlık" type="text" className="block w-fit">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{purchase.title}</h2>
+          </BuilderField>
+        ) : null}
+        {purchase.visibility.showDescription !== false && renderIfText(purchase.description) ? (
+          <BuilderField path="description" label="Açıklama" type="text" className="mt-3 block w-fit max-w-3xl">
+            <p className="text-base leading-relaxed text-slate-600 sm:text-lg">{purchase.description}</p>
+          </BuilderField>
+        ) : null}
+        <div className="mt-10">
+          <MuvekkilKasaCompareProductCards
+            desktopQuery={compare.desktopQuery}
+            saasQuery={compare.saasQuery}
+            onShowProductDetails={compare.showProductDetails}
+            desktopCopy={purchase.settings.compareDesktop}
+            saasCopy={purchase.settings.compareSaas}
+          />
         </div>
       </div>
     </section>

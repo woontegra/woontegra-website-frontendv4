@@ -34,6 +34,8 @@ import { ProductDetailSettingsPanel } from '@/builder/admin/settings/ProductDeta
 import { BlogArticleSettingsPanel } from '@/builder/admin/settings/BlogArticleSettingsPanel'
 import { MkSaasPurchaseSettingsPanel } from '@/builder/admin/settings/MkSaasPurchaseSettingsPanel'
 import { WhatsAppGuideSettingsPanel } from '@/builder/admin/settings/WhatsAppGuideSettingsPanel'
+import { MkCompareTableSettingsPanel } from '@/builder/admin/settings/MkCompareTableSettingsPanel'
+import { MkCompareDetailsSettingsPanel } from '@/builder/admin/settings/MkCompareDetailsSettingsPanel'
 
 export function BlockSettingsPanel() {
   const canvasMode = useBuilderStore((s) => s.canvasMode)
@@ -267,6 +269,14 @@ function BlockSettingsRouter({ type }: { type: string }) {
     case 'whatsapp-guide':
 
       return <WhatsAppGuideSettingsPanel />
+
+    case 'mk-compare-table':
+
+      return <MkCompareTableSettingsPanel />
+
+    case 'mk-compare-details':
+
+      return <MkCompareDetailsSettingsPanel />
 
     default:
 

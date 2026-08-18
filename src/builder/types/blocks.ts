@@ -15,6 +15,8 @@ import type { ProductDetailBlock } from './productDetail'
 import type { BlogArticleBlock } from './blogArticle'
 import type { MkSaasPurchaseBlock } from './mkSaasPurchase'
 import type { WhatsAppGuideBlock } from './whatsappGuide'
+import type { MkCompareTableBlock } from './mkCompareTable'
+import type { MkCompareDetailsBlock } from './mkCompareDetails'
 
 export type BuilderBlock =
   | HeroBlock
@@ -30,6 +32,8 @@ export type BuilderBlock =
   | BlogArticleBlock
   | MkSaasPurchaseBlock
   | WhatsAppGuideBlock
+  | MkCompareTableBlock
+  | MkCompareDetailsBlock
   | LegacySectionBlock
   | GenericBlockPlaceholder
 
@@ -62,6 +66,8 @@ export type BlockTypeId =
   | 'blog-article'
   | 'mk-saas-purchase'
   | 'whatsapp-guide'
+  | 'mk-compare-table'
+  | 'mk-compare-details'
 
 export const BLOCK_TYPE_LABELS: Record<BlockTypeId, string> = {
   hero: 'Hero',
@@ -86,4 +92,6 @@ export const BLOCK_TYPE_LABELS: Record<BlockTypeId, string> = {
   'blog-article': 'Blog Makalesi',
   'mk-saas-purchase': 'Ürün Satın Alma',
   'whatsapp-guide': 'WhatsApp Geçiş Rehberi',
+  'mk-compare-table': 'Sürüm Karşılaştırması',
+  'mk-compare-details': 'Sürüm Detay Sekmeleri',
 }

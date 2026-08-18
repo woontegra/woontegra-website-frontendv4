@@ -27,7 +27,6 @@ const SERVICE_SLUGS = [
   'web-tasarim',
   'yazilim-gelistirme',
   'e-ticaret',
-  'marka-patent-vekilligi',
 ]
 
 /** Indexlenmesi gereken statik public sayfalar (canonical path'ler) */
@@ -41,6 +40,7 @@ const STATIC_ENTRIES = [
     changefreq: 'monthly',
   })),
   { path: '/yazilimlar', priority: '0.9', changefreq: 'weekly' },
+  { path: '/yazilimlar/muvekkil-kasa-defteri', priority: '0.8', changefreq: 'monthly' },
   { path: '/blog', priority: '0.9', changefreq: 'weekly' },
   { path: '/iletisim', priority: '0.8', changefreq: 'monthly' },
   { path: '/veri-silme-talebi', priority: '0.6', changefreq: 'yearly' },
@@ -60,10 +60,17 @@ const BLOCKED_EXACT = new Set([
   '/ozel-yazilim',
   '/hizmetler/e-ticaret-cozumleri',
   '/hizmetler/saas-urun-gelistirme',
+  '/hizmetler/marka-patent-vekilligi',
+  '/hizmetler/marka-patent',
   '/cozumler/datca-topikal',
   '/cozumler/bilirkisi-hesaplama',
   '/siparis-basarili',
   '/siparis-basarisiz',
+  '/yazilimlar/muvekkil-kasa-defteri-yazilimi',
+  '/yazilimlar/muvekkil-kasa-defteri-desktop',
+  '/yazilimlar/muvekkil-kasa-defteri-web-tabanli',
+  '/yazilimlar/muvekkil-kasa-defteri-saas',
+  '/yazilimlar/muvekkil-kasa-saas',
 ])
 
 const BLOCKED_PREFIXES = [

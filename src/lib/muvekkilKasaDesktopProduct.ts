@@ -5,6 +5,11 @@ const MK_DESKTOP_SLUGS = new Set([
   'muvekkil-kasa-defteri-desktop',
 ])
 
+export function isMuvekkilKasaDesktopSalesSlug(slug?: string | null): boolean {
+  const value = slug?.trim().toLowerCase()
+  return Boolean(value && MK_DESKTOP_SLUGS.has(value))
+}
+
 export type MuvekkilKasaDesktopProductRef = {
   slug?: string | null
   licenseAppCode?: string | null

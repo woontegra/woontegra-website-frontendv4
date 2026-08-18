@@ -1,4 +1,5 @@
 import type { BuilderPageDefinition } from '@/builder/pages/builderPageRegistry'
+import { isMuvekkilKasaCompareSlug } from '@/components/public/muvekkil-kasa/comparePageUtils'
 import { pageContentService } from '@/services/pageContentService'
 import { productsService } from '@/services/productsService'
 import { SERVICE_CARDS_KEY } from '@/data/serviceCardsContent'
@@ -31,7 +32,7 @@ export async function enrichParityRaw(
     }
   }
 
-  if (def.kind === 'product-detail' && def.slug?.trim()) {
+  if (def.kind === 'product-detail' && def.slug?.trim() && !isMuvekkilKasaCompareSlug(def.slug)) {
     try {
       base.__productDetail = await productsService.getBySlug(def.slug.trim())
     } catch {

@@ -17,7 +17,7 @@ export const BLOCK_LIBRARY_CATEGORIES = [
   {
     id: 'solutions',
     label: 'Çözümler',
-    types: ['mk-saas-purchase', 'whatsapp-guide'] as const,
+    types: ['mk-saas-purchase', 'whatsapp-guide', 'mk-compare-table', 'mk-compare-details'] as const,
   },
 ] as const
 

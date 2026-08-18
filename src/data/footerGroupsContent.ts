@@ -1,3 +1,5 @@
+import { isRemovedServicePublicLink } from '@/lib/serviceSlugs'
+
 export const FOOTER_GROUPS_KEY = 'footerGroups'
 
 export type FooterLinkConfig = {
@@ -197,7 +199,9 @@ export function getActiveFooterGroups(bundle: FooterGroupsBundle): FooterGroupCo
     .sort((a, b) => a.order - b.order)
     .map((group) => ({
       ...group,
-      links: group.links.filter((link) => link.enabled).sort((a, b) => a.order - b.order),
+      links: group.links
+        .filter((link) => link.enabled && !isRemovedServicePublicLink(link.href, link.label))
+        .sort((a, b) => a.order - b.order),
     }))
     .filter((group) => group.links.length > 0)
 }

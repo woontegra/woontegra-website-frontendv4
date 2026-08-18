@@ -18,6 +18,8 @@ import { createProductDetailEditableTemplate } from '@/builder/templates/product
 import { createBlogDetailEditableTemplate } from '@/builder/templates/blogDetailEditableTemplate'
 import { MK_SAAS_CANONICAL_SLUG } from '@/lib/muvekkilKasaSaasProduct'
 import { createMkSaasSalesBuilderTemplate } from '@/builder/templates/mkSaasSalesBuilderTemplate'
+import { createMuvekkilKasaCompareBuilderTemplate } from '@/builder/templates/mkCompareBuilderTemplate'
+import { isMuvekkilKasaCompareSlug } from '@/components/public/muvekkil-kasa/comparePageUtils'
 import { emptyParityReport } from '@/builder/parity/pushLegacy'
 
 function editableResult(pageKey: string, blocks: BuilderBlock[]): { blocks: BuilderBlock[]; report: ConversionReport } {
@@ -61,6 +63,9 @@ export function convertPageParityBlocks(
         createSolutionDetailEditableTemplate(def.slug ?? '', def.title, raw),
       )
     case 'product-detail':
+      if (isMuvekkilKasaCompareSlug(def.slug)) {
+        return editableResult(def.key, createMuvekkilKasaCompareBuilderTemplate())
+      }
       if (def.slug === MK_SAAS_CANONICAL_SLUG) {
         return editableResult(def.key, createMkSaasSalesBuilderTemplate())
       }

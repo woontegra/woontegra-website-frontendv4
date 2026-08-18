@@ -5,6 +5,14 @@ type Props = {
   product: PublicProductDetail
   bullets: string[]
   isFreeDownload: boolean
+  /** Karşılaştırma sayfası gömme düzeni; varsayılan ürün sayfası görünümünü değiştirmez. */
+  variant?: 'default' | 'compare'
+  headings?: {
+    overviewEyebrow?: string
+    overviewTitle?: string
+    featuresEyebrow?: string
+    featuresTitle?: string
+  }
 }
 
 function buildUseCases(product: PublicProductDetail, isFreeDownload: boolean): string[] {
@@ -46,16 +54,17 @@ function buildTechnicalRows(product: PublicProductDetail, galleryCount: number, 
   return rows
 }
 
-export function ProductContentSections({ product, bullets, isFreeDownload }: Props) {
+export function ProductContentSections({ product, bullets, isFreeDownload, variant = 'default', headings }: Props) {
   const galleryCount = (product.galleryImages?.length ?? 0) + (product.coverImage ? 1 : 0)
   const useCases = buildUseCases(product, isFreeDownload)
   const technicalRows = buildTechnicalRows(product, galleryCount, isFreeDownload)
   const promotionalMeta = getPromotionalSoftwareMeta(product.slug)
   const isExternalSales = isExternalSalesProduct(product)
+  const isCompare = variant === 'compare'
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-10">
+    <section className={isCompare ? 'mx-auto w-full max-w-[1180px] px-4 py-6 sm:px-6 lg:py-8' : 'mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14'}>
+      <div className={isCompare ? 'grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)] lg:gap-8' : 'grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px] xl:gap-10'}>
         <div className="space-y-8">
           <section className="rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-[0_28px_70px_-42px_rgba(15,23,42,0.3)] ring-1 ring-slate-900/5 sm:p-8">
             <div className="flex items-center gap-3">
@@ -63,8 +72,12 @@ export function ProductContentSections({ product, bullets, isFreeDownload }: Pro
                 <BadgeCheck className="h-5 w-5" aria-hidden />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Ürün detay içeriği</p>
-                <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">Genel bakış</h2>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
+                  {headings?.overviewEyebrow?.trim() || 'Ürün detay içeriği'}
+                </p>
+                <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">
+                  {headings?.overviewTitle?.trim() || 'Genel bakış'}
+                </h2>
               </div>
             </div>
             {product.description ? (
@@ -84,8 +97,12 @@ export function ProductContentSections({ product, bullets, isFreeDownload }: Pro
                   <Layers3 className="h-5 w-5" aria-hidden />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">Avantajlar</p>
-                  <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">Öne çıkan özellikler</h2>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">
+                    {headings?.featuresEyebrow?.trim() || 'Avantajlar'}
+                  </p>
+                  <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">
+                    {headings?.featuresTitle?.trim() || 'Öne çıkan özellikler'}
+                  </h2>
                 </div>
               </div>
               <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -106,7 +123,7 @@ export function ProductContentSections({ product, bullets, isFreeDownload }: Pro
             </section>
           ) : null}
 
-          {useCases.length > 0 ? (
+          {useCases.length > 0 && !isCompare ? (
             <section className="rounded-[2rem] border border-white/70 bg-white/88 p-6 shadow-[0_28px_70px_-42px_rgba(15,23,42,0.22)] ring-1 ring-slate-900/5 sm:p-8">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-700">
@@ -182,6 +199,27 @@ export function ProductContentSections({ product, bullets, isFreeDownload }: Pro
           </section>
         </div>
       </div>
+      {useCases.length > 0 && isCompare ? (
+        <section className="mt-8 rounded-[2rem] border border-white/70 bg-white/88 p-6 shadow-[0_28px_70px_-42px_rgba(15,23,42,0.22)] ring-1 ring-slate-900/5 sm:p-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-700">
+              <Headset className="h-5 w-5" aria-hidden />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-violet-700">Kullanım</p>
+              <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">Kimler için uygun</h2>
+            </div>
+          </div>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {useCases.map((item) => (
+              <li key={item} className="flex gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 text-sm leading-relaxed text-slate-700">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" aria-hidden />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </section>
   )
 }

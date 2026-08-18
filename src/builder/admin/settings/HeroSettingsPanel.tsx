@@ -71,6 +71,7 @@ export function HeroSettingsPanel() {
               { value: 'split', label: 'Split (metin + görsel)' },
               { value: 'about', label: 'Hakkımızda (PageHero)' },
               { value: 'compact', label: 'Compact (detay sayfa)' },
+              { value: 'compare', label: 'Müvekkil Kasa karşılaştırması' },
             ]}
           />
           <ToggleField
@@ -159,6 +160,33 @@ export function HeroSettingsPanel() {
                 update({ ...block, style: { ...style, backgroundColor } })
               }
             />
+          ) : null}
+          {settings.layout === 'compare' && settings.mode === 'single-image' ? (
+            <p className="rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-xs leading-relaxed text-sky-900">
+              Sağdaki hero görseli “Desktop görsel” alanından gelir. Tablet ve mobil alanları kendi
+              breakpoint’lerinde kullanılır. Görsel temizlenirse ürün kapaklarından birleşik fallback
+              geri gelir.
+            </p>
+          ) : null}
+          {settings.layout === 'compare' && settings.mode !== 'single-image' ? (
+            <>
+              <ImageUrlField
+                label="Masaüstü hero görseli"
+                hint="Birleşik fallback — boşsa API ürün kapağı kullanılır"
+                value={settings.compareDesktopImage?.url ?? ''}
+                onChange={(url) =>
+                  setSettings({ compareDesktopImage: { ...settings.compareDesktopImage, url } })
+                }
+              />
+              <ImageUrlField
+                label="SaaS hero görseli"
+                hint="Birleşik fallback — boşsa API ürün kapağı kullanılır"
+                value={settings.compareSaasImage?.url ?? ''}
+                onChange={(url) =>
+                  setSettings({ compareSaasImage: { ...settings.compareSaasImage, url } })
+                }
+              />
+            </>
           ) : null}
         </>
       ),

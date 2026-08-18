@@ -1,5 +1,6 @@
 import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { BuilderField } from '@/builder/edit/BuilderField'
+import { useBuilderEditContext } from '@/builder/edit/BuilderEditContext'
 import { BlockSectionHeader, SectionBlockShell } from '@/builder/render/SectionBlockShell'
 import { renderIfText } from '@/builder/render/renderRules'
 import { MediaImage } from '@/media/components/MediaImage'
@@ -7,18 +8,22 @@ import { HomeIcon } from '@/lib/homeIcons'
 import { isMkSaasBenefitsGrid } from '@/builder/render/mkSaasBuilderVisuals'
 import { hasPublicImage } from '@/media/resolvePublicImage'
 import { cn } from '@/lib/cn'
+import { isRemovedServicePublicLink } from '@/lib/serviceSlugs'
 import type { CardGridBlock, CardGridItem } from '@/builder/types'
-import { CardButtonLabel, CardLinkShell } from '@/builder/render/blocks/CardGridCardLink'
+import { CardButtonLabel, CardLinkShell, resolveCardHref } from '@/builder/render/blocks/CardGridCardLink'
 
 export function CardGridBlockRenderer({ block }: BlockRendererProps) {
+  const { annotateFields } = useBuilderEditContext()
   if (block.type !== 'card-grid') return null
   const b = block as CardGridBlock
   if (!b.visibility.enabled) return null
 
   const variant = b.settings.variant ?? (isMkSaasBenefitsGrid(b) ? 'mk-benefit' : 'default')
-  const cards = b.settings.cards.filter(
-    (c) => renderIfText(c.title) || renderIfText(c.description) || hasPublicImage(c),
-  )
+  const cards = b.settings.cards.filter((c) => {
+    if (!(renderIfText(c.title) || renderIfText(c.description) || hasPublicImage(c))) return false
+    if (annotateFields) return true
+    return !isRemovedServicePublicLink(resolveCardHref(c), c.title)
+  })
 
   if (variant === 'intro') return <IntroVariant block={b} cards={cards} />
   if (variant === 'mk-benefit') return <MkBenefitVariant block={b} cards={cards} />

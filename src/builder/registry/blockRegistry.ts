@@ -65,6 +65,16 @@ const definitions: BlockDefinition[] = [
     description: 'WhatsApp Business geçiş rehberi — gerçek ekran görüntüleri ile.',
   },
   {
+    type: 'mk-compare-table',
+    label: BLOCK_TYPE_LABELS['mk-compare-table'],
+    description: 'Masaüstü ve SaaS sürüm karşılaştırma tablosu.',
+  },
+  {
+    type: 'mk-compare-details',
+    label: BLOCK_TYPE_LABELS['mk-compare-details'],
+    description: 'Sekmeli masaüstü ve SaaS ürün detayları.',
+  },
+  {
     type: 'legacy-html',
     label: BLOCK_TYPE_LABELS['legacy-html'],
     description: 'Mevcut HTML içeriği koruma bloğu.',

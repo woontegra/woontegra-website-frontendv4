@@ -4,6 +4,7 @@ import { PageHero } from '@/components/public/PageHero'
 import { SiteCtaSection } from '@/components/public/SiteCtaSection'
 import { resolveIcon } from '@/lib/iconRegistry'
 import { cn } from '@/lib/cn'
+import { isRemovedServicePublicLink } from '@/lib/serviceSlugs'
 import type { ServiceDetailContent } from '@/data/serviceDetailContent'
 
 type Props = {
@@ -55,7 +56,10 @@ export function ServiceDetailLayout({ content, serviceLabel }: Props) {
     content.approach.bullets.length > 0 || content.approach.flowSteps.length > 0
   const hasProcess = content.process.steps.length > 0
   const hasTechnology = content.technology.items.length > 0
-  const hasRelated = (content.related?.links.length ?? 0) > 0
+  const relatedLinks = (content.related?.links ?? []).filter(
+    (link) => !isRemovedServicePublicLink(link.href, link.label),
+  )
+  const hasRelated = relatedLinks.length > 0
 
   return (
     <div className="bg-white">
@@ -232,7 +236,7 @@ export function ServiceDetailLayout({ content, serviceLabel }: Props) {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-xl font-bold text-slate-900 md:text-2xl">{content.related!.title}</h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {content.related!.links.map((link) => (
+              {relatedLinks.map((link) => (
                 <Link
                   key={link.href}
                   to={link.href}

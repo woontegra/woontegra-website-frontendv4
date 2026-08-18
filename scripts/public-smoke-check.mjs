@@ -33,7 +33,6 @@ const SERVICE_SLUGS = [
   'e-ticaret',
   'saas',
   'yazilim-gelistirme',
-  'marka-patent-vekilligi',
 ]
 
 const SOLUTION_SLUGS = ['bilirkisi-hesaplama', 'datca-topikal']

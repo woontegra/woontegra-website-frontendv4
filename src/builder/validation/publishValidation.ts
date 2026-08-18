@@ -35,8 +35,11 @@ function hasVisibleContent(block: BuilderBlock): boolean {
       return Boolean(renderIfText((block as RichTextBlock).settings.body))
     case 'image-text': {
       const b = block as ImageTextBlock
+      const isMockup =
+        b.settings.visualVariant === 'mk-file-vault' || b.settings.visualVariant === 'mk-installments'
       return Boolean(
-        (b.visibility.showImage !== false && renderIfMediaUrl(b.settings.imageUrl)) ||
+        isMockup ||
+          (b.visibility.showImage !== false && renderIfMediaUrl(b.settings.imageUrl)) ||
           (b.settings.button?.visible !== false && renderIfText(b.settings.button?.label)),
       )
     }
@@ -58,6 +61,8 @@ function hasVisibleContent(block: BuilderBlock): boolean {
     case 'blog-showcase':
     case 'mk-saas-purchase':
     case 'whatsapp-guide':
+    case 'mk-compare-table':
+    case 'mk-compare-details':
       return true
     default:
       return false
@@ -96,7 +101,9 @@ export function validateBlocksForPublish(blocks: BuilderBlock[]): PublishValidat
 
     if (block.type === 'image-text') {
       const b = block as ImageTextBlock
-      const needsImage = b.visibility.showImage !== false
+      const isMockup =
+        b.settings.visualVariant === 'mk-file-vault' || b.settings.visualVariant === 'mk-installments'
+      const needsImage = b.visibility.showImage !== false && !isMockup
       if (needsImage && !renderIfMediaUrl(b.settings.imageUrl)) {
         issues.push({
           blockId: block.id,
@@ -112,6 +119,20 @@ export function validateBlocksForPublish(blocks: BuilderBlock[]): PublishValidat
     issues.push({
       field: 'mk-saas-purchase',
       message: 'Sayfada yalnızca bir Ürün Satın Alma bloğu olabilir.',
+    })
+  }
+  const compareTableBlocks = blocks.filter((b) => b.type === 'mk-compare-table' && b.visibility.enabled)
+  if (compareTableBlocks.length > 1) {
+    issues.push({
+      field: 'mk-compare-table',
+      message: 'Sayfada yalnızca bir Sürüm Karşılaştırması bloğu olabilir.',
+    })
+  }
+  const compareDetailsBlocks = blocks.filter((b) => b.type === 'mk-compare-details' && b.visibility.enabled)
+  if (compareDetailsBlocks.length > 1) {
+    issues.push({
+      field: 'mk-compare-details',
+      message: 'Sayfada yalnızca bir Sürüm Detay Sekmeleri bloğu olabilir.',
     })
   }
 

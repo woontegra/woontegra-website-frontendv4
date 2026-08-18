@@ -483,10 +483,10 @@ export const trademarkPatentDetail: ServiceDetailContent = {
   slug: 'marka-patent-vekilligi',
   heroTheme: 'amber',
   hero: {
-    eyebrow: 'Marka & Patent Vekilliği',
+    eyebrow: 'Marka Danışmanlığı',
     title: 'Markanızı ve Fikri Mülkiyetinizi Koruyoruz',
     description:
-      'Marka tescil, patent başvurusu ve fikri mülkiyet süreçlerinde uçtan uca danışmanlık ve vekillik hizmeti sunuyoruz.',
+      'Marka tescil, patent başvurusu ve fikri mülkiyet süreçlerinde uçtan uca danışmanlık hizmeti sunuyoruz.',
     image: '/images/hero-dashboard.jpg',
     imageAlt: 'Marka ve patent belgeleri',
     primaryCta: { text: 'Teklif Al', to: '/teklif-al' },

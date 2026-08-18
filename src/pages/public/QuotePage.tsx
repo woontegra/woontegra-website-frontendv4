@@ -11,7 +11,6 @@ const projectTypes = [
   { id: 'web-design', label: 'Web Tasarım', icon: '🎨' },
   { id: 'ecommerce', label: 'E-Ticaret', icon: '🛒' },
   { id: 'saas', label: 'SaaS Ürün', icon: '☁️' },
-  { id: 'trademark', label: 'Marka & Patent', icon: '📋' },
   { id: 'consulting', label: 'Danışmanlık', icon: '💡' },
 ]
 

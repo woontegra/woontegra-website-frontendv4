@@ -5,6 +5,10 @@ import { renderIfMediaUrl, renderIfText, shouldShowField } from '@/builder/rende
 import { hasPublicImage, resolvePublicImage } from '@/media/resolvePublicImage'
 import { cn } from '@/lib/cn'
 import type { ImageTextBlock } from '@/builder/types'
+import {
+  FileVaultMockup,
+  InstallmentWhatsAppMockup,
+} from '@/components/public/muvekkil-kasa/MuvekkilKasaSaasDetailSections'
 
 export function ImageTextBlockRenderer({ block, mode = 'public' }: BlockRendererProps) {
   if (block.type !== 'image-text') return null
@@ -26,9 +30,16 @@ export function ImageTextBlockRenderer({ block, mode = 'public' }: BlockRenderer
     shouldShowField(b.visibility.showTitle, renderIfText(b.title)) ||
     shouldShowField(b.visibility.showDescription, renderIfText(b.description))
 
-  if (!showImage && !hasHeader && !showBtn && !(isPreview && wantsImage)) return null
+  if (!showImage && !hasHeader && !showBtn && !(isPreview && wantsImage) && !b.settings.visualVariant) return null
 
   const imageFirst = b.settings.imagePosition !== 'right'
+  const visualVariant = b.settings.visualVariant ?? 'default'
+  const mockup =
+    visualVariant === 'mk-file-vault' ? (
+      <FileVaultMockup />
+    ) : visualVariant === 'mk-installments' ? (
+      <InstallmentWhatsAppMockup />
+    ) : null
 
   const imageEl =
     showImage && imageUrl ? (
@@ -39,6 +50,8 @@ export function ImageTextBlockRenderer({ block, mode = 'public' }: BlockRenderer
         loading="lazy"
         optimizeWidth={1024}
       />
+    ) : mockup && wantsImage ? (
+      <div className="flex justify-center">{mockup}</div>
     ) : isPreview && wantsImage ? (
       <div className="flex min-h-[240px] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
         Görsel henüz eklenmedi — blok ayarlarından yükleyin veya medya kütüphanesinden seçin.
@@ -69,7 +82,7 @@ export function ImageTextBlockRenderer({ block, mode = 'public' }: BlockRenderer
       <div
         className={cn(
           'grid items-center gap-8',
-          (showImage && imageEl) || (isPreview && wantsImage) ? 'md:grid-cols-2' : 'grid-cols-1',
+          imageEl ? 'md:grid-cols-2' : 'grid-cols-1',
         )}
       >
         {imageFirst ? (

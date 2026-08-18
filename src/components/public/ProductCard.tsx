@@ -30,6 +30,7 @@ import {
 
 import { cn } from '@/lib/cn'
 import { getPromotionalSoftwareMeta, isExternalSalesProduct } from '@/lib/publicSoftwareCatalog'
+import { publicSoftwareDetailHref } from '@/components/public/muvekkil-kasa/comparePageUtils'
 
 
 
@@ -67,7 +68,7 @@ export function ProductCard({ product }: Props) {
 
   const coverUrl = pickProductCoverUrl(product)
 
-  const detailHref = `/yazilimlar/${product.slug}`
+  const detailHref = publicSoftwareDetailHref(product.slug)
 
   const promotionalMeta = getPromotionalSoftwareMeta(product.slug)
 

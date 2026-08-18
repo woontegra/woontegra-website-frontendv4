@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { BuilderBlock } from '@/builder/types'
-import { createBlockByType, type MvpBlockTypeId } from '@/builder/types'
+import { BLOCK_TYPE_LABELS, createBlockByType, isUniqueBlockType, type MvpBlockTypeId } from '@/builder/types'
 import {
   getBuilderPageDefinition,
   resolveBuilderPageKey,
@@ -8,6 +8,8 @@ import {
 import { resolveBuilderPageLoad } from '@/builder/load/resolveBuilderPageLoad'
 import type { PageLoadSource, BuilderCanvasMode } from '@/builder/load/resolveBuilderPageLoad'
 import { convertPageToBlocks } from '@/builder/load/convertPageToBlocks'
+import { sanitizeMkCompareBuilderBlocks, isAutoMkCompareLegacyDocument } from '@/builder/templates/mkCompareBuilderTemplate'
+import { isMkCompareBuilderPageKey } from '@/components/public/muvekkil-kasa/comparePageUtils'
 import type { ConversionReport } from '@/builder/load/conversionReport'
 import { enrichParityRaw } from '@/builder/parity/enrichParityRaw'
 import { pageContentService, getErrorMessage } from '@/services/pageContentService'
@@ -204,16 +206,20 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
       const enriched = await enrichParityRaw(def, pageRawContent)
       const raw = enriched ?? pageRawContent
       const existing = extractBlocksForPage(raw, def)
-      if (existing?.length) {
-        const nextState: BuilderPageState = { pageKey, pageTitle, blocks: existing }
+      const usable =
+        isMkCompareBuilderPageKey(def.key) && existing
+          ? sanitizeMkCompareBuilderBlocks(existing)
+          : existing
+      if (usable?.length) {
+        const nextState: BuilderPageState = { pageKey, pageTitle, blocks: usable }
         initHistory(nextState)
         set({
-          blocks: existing,
+          blocks: usable,
           canvasMode: 'builder-blocks',
           pageLoadSource: 'builder-draft',
           conversionReport: null,
-          isDirty: false,
-          selectedBlockId: existing[0]?.id ?? null,
+          isDirty: Boolean(existing && isAutoMkCompareLegacyDocument(existing)),
+          selectedBlockId: usable[0]?.id ?? null,
           selectedFieldPath: null,
           loadPageStatus: 'ready',
           pageRawContent: raw,
@@ -264,8 +270,9 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
   addBlock: (type) => {
     pushHistory(get, set)
     const { blocks } = get()
-    if (type === 'mk-saas-purchase' && blocks.some((b) => b.type === 'mk-saas-purchase')) {
-      useToastStore.getState().show('Sayfada yalnızca bir Ürün Satın Alma bloğu olabilir.', 'error')
+    if (isUniqueBlockType(type) && blocks.some((b) => b.type === type)) {
+      const label = BLOCK_TYPE_LABELS[type]
+      useToastStore.getState().show(`Sayfada yalnızca bir ${label} bloğu olabilir.`, 'error')
       return
     }
     const next = createBlockByType(type, blocks.length)
@@ -292,6 +299,10 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
     const { blocks } = get()
     const idx = blocks.findIndex((b) => b.id === id)
     if (idx < 0) return
+    if (isUniqueBlockType(blocks[idx].type)) {
+      useToastStore.getState().show('Bu blok güvenlik nedeniyle çoğaltılamaz.', 'error')
+      return
+    }
     const copy = cloneBlock(blocks[idx], idx + 1)
     const next = [...blocks.slice(0, idx + 1), copy, ...blocks.slice(idx + 1)]
     set({ blocks: reorder(next), selectedBlockId: copy.id, isDirty: true })
@@ -351,23 +362,33 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
       set({ pageRawContent: enriched ?? raw })
 
       const localDraft = readLocalDraft(def.key)
-      if (resolved.canvasMode === 'legacy-public' && localDraft?.blocks?.length) {
+      const draftBlocks =
+        localDraft?.blocks?.length && isMkCompareBuilderPageKey(def.key)
+          ? sanitizeMkCompareBuilderBlocks(localDraft.blocks)
+          : localDraft?.blocks
+      if (resolved.canvasMode === 'legacy-public' && draftBlocks?.length) {
         applyLoadedPage(
           {
             pageKey: resolved.pageKey,
             pageTitle: resolved.pageTitle,
-            blocks: localDraft.blocks,
+            blocks: draftBlocks,
             source: 'builder-draft',
             canvasMode: 'builder-blocks',
             previewPath: def.previewPath,
           },
           set,
         )
-        set({ lastSavedAt: localDraft.savedAt, isDirty: false })
+        set({
+          lastSavedAt: localDraft?.savedAt,
+          isDirty: isMkCompareBuilderPageKey(def.key) || Boolean(localDraft && isAutoMkCompareLegacyDocument(localDraft.blocks)),
+        })
         return
       }
 
-      if (resolved.canvasMode === 'legacy-public' && def.key === 'about') {
+      if (
+        resolved.canvasMode === 'legacy-public' &&
+        (def.key === 'about' || isMkCompareBuilderPageKey(def.key))
+      ) {
         const { blocks, report } = convertPageToBlocks(def, enriched ?? raw)
         if (blocks.length > 0) {
           applyLoadedPage(
@@ -382,7 +403,7 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
             set,
           )
           set({
-            isDirty: false,
+            isDirty: isMkCompareBuilderPageKey(def.key),
             conversionReport: report,
             pageRawContent: enriched ?? raw,
           })

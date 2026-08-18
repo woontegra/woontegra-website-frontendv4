@@ -11,7 +11,10 @@ import { extractBlocksForPage } from '@/builder/load/pageContentPersistence'
 import { pageContentService } from '@/services/pageContentService'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { MkSaasBuilderPreviewProvider } from '@/components/public/product/MkSaasProductPageProvider'
+import { MkComparePageProvider } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
 import { isMkSaasBuilderPageKey } from '@/lib/muvekkilKasaSaasProduct'
+import { isMkCompareBuilderPageKey } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { resolveMkComparePublicBlocks } from '@/builder/templates/mkCompareBuilderTemplate'
 
 /** Kaydedilmiş API JSON'undan builder önizlemesi — store kullanmaz */
 export function BuilderSavedPreviewPage() {
@@ -28,8 +31,12 @@ export function BuilderSavedPreviewPage() {
 
   const blocks = useMemo(() => {
     if (!def || !raw) return null
-    return extractBlocksForPage(raw, def)
-  }, [def, raw])
+    const extracted = extractBlocksForPage(raw, def)
+    if (isMkCompareBuilderPageKey(pageKey)) {
+      return resolveMkComparePublicBlocks(extracted)
+    }
+    return extracted
+  }, [def, raw, pageKey])
 
   if (!def) {
     return <p className="p-8 text-slate-600">Geçersiz sayfa.</p>
@@ -48,6 +55,14 @@ export function BuilderSavedPreviewPage() {
     )
   }
 
+  const needsCompareProvider =
+    isMkCompareBuilderPageKey(pageKey) ||
+    blocks.some(
+      (b) =>
+        b.type === 'mk-compare-table' ||
+        b.type === 'mk-compare-details' ||
+        (b.type === 'mk-saas-purchase' && (b as { settings?: { layout?: string } }).settings?.layout === 'compare'),
+    )
   const needsMkProvider =
     isMkSaasBuilderPageKey(pageKey) ||
     blocks.some((b) => b.type === 'mk-saas-purchase' || b.type === 'whatsapp-guide')
@@ -61,5 +76,8 @@ export function BuilderSavedPreviewPage() {
     </div>
   )
 
+  if (needsCompareProvider) {
+    return <MkComparePageProvider previewSafe>{preview}</MkComparePageProvider>
+  }
   return needsMkProvider ? <MkSaasBuilderPreviewProvider>{preview}</MkSaasBuilderPreviewProvider> : preview
 }

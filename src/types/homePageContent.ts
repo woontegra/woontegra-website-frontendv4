@@ -150,7 +150,7 @@ export const defaultHomePageContent: HomePageContent = {
       { id: 'svc-2', icon: 'palette', title: 'Web Tasarım', text: 'Modern, hızlı ve dönüşüm odaklı web arayüzleri.', color: 'from-purple-500 to-pink-500', order: 1, enabled: true },
       { id: 'svc-3', icon: 'shopping-cart', title: 'E-Ticaret', text: 'Satış odaklı, yönetilebilir e-ticaret altyapıları.', color: 'from-green-500 to-emerald-500', order: 2, enabled: true },
       { id: 'svc-4', icon: 'cloud', title: 'SaaS', text: 'Abonelik tabanlı yazılım ürünleri ve merkezi lisans.', color: 'from-orange-500 to-red-500', order: 3, enabled: true },
-      { id: 'svc-5', icon: 'scale', title: 'Marka & Patent', text: 'Marka tescil ve danışmanlık süreçleri.', color: 'from-yellow-500 to-orange-500', order: 4, enabled: true },
+      { id: 'svc-5', icon: 'scale', title: 'Marka Danışmanlığı', text: 'Marka tescil ve danışmanlık süreçleri.', color: 'from-yellow-500 to-orange-500', order: 4, enabled: false },
       { id: 'svc-6', icon: 'lightbulb', title: 'Danışmanlık', text: 'Dijital büyüme için strateji ve yol haritası.', color: 'from-teal-500 to-green-500', order: 5, enabled: false },
     ],
   },
@@ -234,6 +234,19 @@ export function normalizeHomePageContent(raw: unknown): HomePageContent {
   mergeSection('why')
   mergeSection('process')
   mergeSection('cta')
+
+  base.services.cards = base.services.cards.map((card) => {
+    const title = card.title.trim().toLocaleLowerCase('tr-TR')
+    const isMarkaCard =
+      card.id === 'svc-5' ||
+      title.includes('vekillik') ||
+      title.includes('marka danışmanlığı') ||
+      title.includes('marka danismanligi') ||
+      title === 'marka & patent' ||
+      title === 'marka ve patent' ||
+      title === 'marka patent'
+    return isMarkaCard ? { ...card, enabled: false } : card
+  })
 
   return base
 }

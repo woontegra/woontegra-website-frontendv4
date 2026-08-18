@@ -62,6 +62,7 @@ export function CardGridSettingsPanel() {
               { value: 'solutions', label: 'Çözümler vitrini' },
               { value: 'timeline', label: 'Zaman çizelgesi (dikey)' },
               { value: 'about-brands', label: 'Marka kartları (hakkımızda)' },
+              { value: 'mk-benefit', label: 'MK fayda kartları' },
             ]}
           />
           {settings.variant === 'intro' || settings.variant === 'solutions' ? (

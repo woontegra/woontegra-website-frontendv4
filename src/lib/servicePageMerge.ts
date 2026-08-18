@@ -31,11 +31,27 @@ function mergeHero(
 }
 
 export function mergeServicePage(base: ServiceDetailContent, partial: ServicePageOverrides): ServiceDetailContent {
+  const hero = { ...mergeHero(base.hero, partial.hero) }
+  if (base.slug === 'marka-patent-vekilligi') {
+    const eyebrow = hero.eyebrow.trim().toLocaleLowerCase('tr-TR')
+    if (
+      eyebrow.includes('vekillik') ||
+      eyebrow === 'marka & patent' ||
+      eyebrow === 'marka ve patent' ||
+      eyebrow === 'marka patent'
+    ) {
+      hero.eyebrow = 'Marka Danışmanlığı'
+    }
+    if (hero.description.includes('danışmanlık ve vekillik')) {
+      hero.description = hero.description.replace('danışmanlık ve vekillik', 'danışmanlık')
+    }
+  }
+
   return {
     ...base,
     heroTheme: partial.heroTheme ?? base.heroTheme,
     problemsTone: partial.problemsTone ?? base.problemsTone,
-    hero: mergeHero(base.hero, partial.hero),
+    hero,
     problems: partial.problems?.items?.length
       ? { ...base.problems, ...partial.problems, items: partial.problems.items }
       : base.problems,

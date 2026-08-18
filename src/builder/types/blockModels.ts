@@ -2,6 +2,8 @@ import type { BlockBase, BlockButton, BlockStyle, BlockVisibility } from './comm
 import { createDefaultHeroBlock, type HeroBlock } from './hero'
 import { createDefaultMkSaasPurchaseBlock, type MkSaasPurchaseBlock } from './mkSaasPurchase'
 import { createDefaultWhatsAppGuideBlock, type WhatsAppGuideBlock } from './whatsappGuide'
+import { createDefaultMkCompareTableBlock, type MkCompareTableBlock } from './mkCompareTable'
+import { createDefaultMkCompareDetailsBlock, type MkCompareDetailsBlock } from './mkCompareDetails'
 
 export type MvpBlockTypeId =
   | 'hero'
@@ -15,6 +17,8 @@ export type MvpBlockTypeId =
   | 'blog-showcase'
   | 'mk-saas-purchase'
   | 'whatsapp-guide'
+  | 'mk-compare-table'
+  | 'mk-compare-details'
 
 export type CardGridItem = {
   id: string
@@ -40,6 +44,8 @@ export type RichTextBlock = BlockBase & {
   }
 }
 
+export type ImageTextVisualVariant = 'default' | 'mk-file-vault' | 'mk-installments'
+
 export type ImageTextBlock = BlockBase & {
   type: 'image-text'
   settings: {
@@ -47,6 +53,7 @@ export type ImageTextBlock = BlockBase & {
     imageAlt?: string
     imagePosition: 'left' | 'right'
     button?: BlockButton
+    visualVariant?: ImageTextVisualVariant
   }
 }
 
@@ -80,7 +87,9 @@ export type CtaBlock = BlockBase & {
     imageUrl?: string
     borderRadius?: string
     buttons: BlockButton[]
-    variant?: 'default' | 'about' | 'mk-problem-band'
+    variant?: 'default' | 'about' | 'mk-problem-band' | 'mk-compare-editions'
+    footerLinkLabel?: string
+    footerLinkHref?: string
     /** Sorun bandı — sağ taraftaki onay maddeleri */
     featurePills?: string[]
   }
@@ -156,6 +165,8 @@ export type TypedBuilderBlock =
   | ServicesShowcaseBlock
   | MkSaasPurchaseBlock
   | WhatsAppGuideBlock
+  | MkCompareTableBlock
+  | MkCompareDetailsBlock
 
 function baseStyle(): BlockStyle {
   return {
@@ -331,6 +342,10 @@ export function createBlockByType(type: MvpBlockTypeId, sortOrder: number): Type
       return createDefaultMkSaasPurchaseBlock(sortOrder)
     case 'whatsapp-guide':
       return createDefaultWhatsAppGuideBlock(sortOrder)
+    case 'mk-compare-table':
+      return createDefaultMkCompareTableBlock(sortOrder)
+    case 'mk-compare-details':
+      return createDefaultMkCompareDetailsBlock(sortOrder)
     default:
       return createDefaultRichTextBlock(sortOrder)
   }
@@ -348,4 +363,16 @@ export const BUILDER_MVP_BLOCK_TYPES: MvpBlockTypeId[] = [
   'blog-showcase',
   'mk-saas-purchase',
   'whatsapp-guide',
+  'mk-compare-table',
+  'mk-compare-details',
 ]
+
+export const UNIQUE_BLOCK_TYPES = new Set<MvpBlockTypeId>([
+  'mk-saas-purchase',
+  'mk-compare-table',
+  'mk-compare-details',
+])
+
+export function isUniqueBlockType(type: string): type is MvpBlockTypeId {
+  return UNIQUE_BLOCK_TYPES.has(type as MvpBlockTypeId)
+}

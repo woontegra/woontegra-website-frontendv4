@@ -8,15 +8,22 @@ import { isMkSaasProblemBand, MK_SAAS_PROBLEM_PILLS } from '@/builder/render/mkS
 import { renderIfText } from '@/builder/render/renderRules'
 import { resolvePublicImage } from '@/media/resolvePublicImage'
 import { cn } from '@/lib/cn'
+import { isRemovedServicePublicLink } from '@/lib/serviceSlugs'
+import { useBuilderEditContext } from '@/builder/edit/BuilderEditContext'
 import type { CtaBlock } from '@/builder/types'
 
-export function CtaBlockRenderer({ block }: BlockRendererProps) {
+export function CtaBlockRenderer({ block, mode = 'public' }: BlockRendererProps) {
+  const { annotateFields } = useBuilderEditContext()
   if (block.type !== 'cta') return null
   const b = block as CtaBlock
   if (!b.visibility.enabled) return null
 
   const buttons = (b.settings.buttons ?? []).filter(
-    (btn) => btn.visible !== false && renderIfText(btn.label) && renderIfText(btn.href),
+    (btn) =>
+      btn.visible !== false &&
+      renderIfText(btn.label) &&
+      renderIfText(btn.href) &&
+      (annotateFields || mode !== 'public' || !isRemovedServicePublicLink(btn.href, btn.label)),
   )
   const showButtons = b.visibility.showButton !== false && buttons.length > 0
   const hasHeader =
@@ -46,6 +53,7 @@ export function CtaBlockRenderer({ block }: BlockRendererProps) {
 
   const isAbout = b.settings.variant === 'about'
   const isMkProblemBand = isMkSaasProblemBand(b)
+  const isMkCompareEditions = b.settings.variant === 'mk-compare-editions'
 
   if (isMkProblemBand) {
     const pills =
@@ -78,6 +86,82 @@ export function CtaBlockRenderer({ block }: BlockRendererProps) {
               </li>
             ))}
           </ul>
+        </div>
+      </section>
+    )
+  }
+
+  if (isMkCompareEditions) {
+    const pills = (b.settings.featurePills ?? []).filter((item) => item.trim().length > 0)
+    const footerLabel = b.settings.footerLinkLabel?.trim()
+    const footerHref = b.settings.footerLinkHref?.trim() || '#urun-secimi'
+    return (
+      <section
+        className="border-t border-slate-800 bg-gradient-to-br from-slate-950 via-[#10263f] to-slate-900 py-16 text-white sm:py-20"
+        style={{
+          background: b.settings.gradient,
+          paddingTop: b.style.paddingTop?.desktop,
+          paddingBottom: b.style.paddingBottom?.desktop,
+        }}
+      >
+        <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6">
+          {b.visibility.showTitle !== false && renderIfText(b.title) ? (
+            <BuilderField path="title" label="Başlık" type="text" className="mx-auto block w-fit">
+              <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">{b.title}</h2>
+            </BuilderField>
+          ) : null}
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            {buttons.map((btn, index) => (
+              <BuilderField
+                key={btn.id}
+                path={`button.${btn.id}`}
+                label={index === 0 ? 'Masaüstü CTA' : 'SaaS CTA'}
+                type="button"
+              >
+                <a
+                  href={btn.href || '#urun-secimi'}
+                  onClick={(e) => {
+                    const raw = (btn.href || '#urun-secimi').trim()
+                    if (!raw.startsWith('#')) return
+                    const el = document.getElementById(raw.slice(1))
+                    if (el) {
+                      e.preventDefault()
+                      el.scrollIntoView({ behavior: 'smooth' })
+                    }
+                  }}
+                  className={
+                    index === 0
+                      ? 'block rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-6 py-6 text-left transition hover:bg-emerald-500/15'
+                      : 'block rounded-2xl border border-sky-400/25 bg-sky-500/10 px-6 py-6 text-left transition hover:bg-sky-500/15'
+                  }
+                >
+                  <p className="text-lg font-bold text-white">{btn.label}</p>
+                  <p className={`mt-2 text-sm ${index === 0 ? 'text-emerald-100/80' : 'text-sky-100/80'}`}>
+                    {pills[index] ?? ''}
+                  </p>
+                </a>
+              </BuilderField>
+            ))}
+          </div>
+          {footerLabel ? (
+            <p className="mt-8 text-center">
+              <a
+                href={footerHref}
+                className="text-sm font-medium text-slate-300 underline-offset-4 hover:text-white hover:underline"
+                onClick={(e) => {
+                  const id = footerHref.startsWith('#') ? footerHref.slice(1) : ''
+                  if (!id) return
+                  const el = document.getElementById(id)
+                  if (el) {
+                    e.preventDefault()
+                    el.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
+              >
+                {footerLabel}
+              </a>
+            </p>
+          ) : null}
         </div>
       </section>
     )

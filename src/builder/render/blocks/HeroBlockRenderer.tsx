@@ -13,6 +13,10 @@ import { buildHeroGradientCss } from '@/builder/types'
 import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
 import { HeroProductPrice } from '@/builder/render/HeroProductPrice'
 import { HeroCarouselSection } from '@/builder/render/blocks/HeroCarouselSection'
+import { isRemovedServicePublicLink } from '@/lib/serviceSlugs'
+import { MuvekkilKasaCompareHeroVisual } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareHeroVisual'
+import { useMkComparePageContextOptional } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
+import { MK_COMPARE_SHELL } from '@/components/public/muvekkil-kasa/comparePageUtils'
 
 function heroButtonClass(variant: BlockButton['variant'], outlineClass: string, primaryClass: string) {
   return variant === 'outline' ? outlineClass : primaryClass
@@ -113,7 +117,11 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
     hasPublicImage(settings)
 
   const visibleButtons = (settings.buttons ?? []).filter(
-    (b) => b.visible !== false && renderIfText(b.label) && (renderIfText(b.href) || Boolean(b.actionKey)),
+    (b) =>
+      b.visible !== false &&
+      renderIfText(b.label) &&
+      (renderIfText(b.href) || Boolean(b.actionKey)) &&
+      (mode !== 'public' || !isRemovedServicePublicLink(b.href, b.label)),
   )
   const showButtons = visibility.showButton !== false && visibleButtons.length > 0
 
@@ -149,6 +157,10 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
     settings.mode !== 'solid-color'
   ) {
     if (!isPreview) return null
+  }
+
+  if (settings.layout === 'compare') {
+    return <MkCompareHeroLayout hero={hero} showTitle={Boolean(showTitle)} showDescription={Boolean(showDescription)} showButtons={showButtons} visibleButtons={visibleButtons} bgStyle={bgStyle} />
   }
 
   if (settings.layout === 'compact') {
@@ -569,4 +581,145 @@ function isDarkHexColor(color?: string | null): boolean {
   const b = parseInt(expanded.slice(4, 6), 16)
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
   return luminance < 0.45
+}
+
+function MkCompareHeroLayout({
+  hero,
+  showTitle,
+  showDescription,
+  showButtons,
+  visibleButtons,
+  bgStyle,
+}: {
+  hero: HeroBlock
+  showTitle: boolean
+  showDescription: boolean
+  showButtons: boolean
+  visibleButtons: BlockButton[]
+  bgStyle: CSSProperties
+}) {
+  const { settings, style, visibility } = hero
+  const breadcrumbs = settings.showBreadcrumbs !== false ? (settings.breadcrumbs ?? []) : []
+
+  return (
+    <section
+      className="relative overflow-x-hidden bg-gradient-to-br from-slate-950 via-[#0f2744] to-slate-900 text-white"
+      style={{
+        background: style.backgroundGradient ?? bgStyle.background ?? undefined,
+        backgroundColor: style.backgroundColor,
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(16,185,129,0.16),transparent_42%),radial-gradient(circle_at_82%_55%,rgba(56,189,248,0.12),transparent_40%)]" />
+      {style.overlay?.enabled ? (
+        <div
+          className="pointer-events-none absolute inset-0 z-[1]"
+          style={{ backgroundColor: style.overlay.color ?? '#000', opacity: style.overlay.opacity ?? 0.35 }}
+        />
+      ) : null}
+      <div className={`relative z-[2] ${MK_COMPARE_SHELL} py-8 lg:py-10`}>
+        {breadcrumbs.length > 0 ? (
+          <nav className="flex flex-wrap items-center gap-1 text-sm text-slate-400">
+            {breadcrumbs.map((crumb, i) => (
+              <span key={`${crumb.label}-${i}`} className="inline-flex items-center gap-1">
+                {i > 0 ? <span className="text-slate-600">/</span> : null}
+                {crumb.href ? (
+                  <a href={crumb.href} className="hover:text-emerald-300">
+                    {crumb.label}
+                  </a>
+                ) : (
+                  <span className="text-slate-200">{crumb.label}</span>
+                )}
+              </span>
+            ))}
+          </nav>
+        ) : null}
+        <div className="mt-6 grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
+          <div className="min-w-0">
+            {visibility.showBadge !== false && settings.badge?.trim() ? (
+              <BuilderField path="badge" label="Rozet" type="text" className="inline-block">
+                <p className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-200">
+                  {settings.badge}
+                </p>
+              </BuilderField>
+            ) : null}
+            {showTitle ? (
+              <BuilderField path="title" label="Başlık" type="text" className="mt-4 block w-fit max-w-full">
+                <h1 className="text-3xl font-black leading-tight tracking-tight sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]">
+                  {hero.title}
+                </h1>
+              </BuilderField>
+            ) : null}
+            {showDescription ? (
+              <BuilderField path="description" label="Açıklama" type="text" className="mt-4 block w-fit max-w-xl">
+                <p className="text-base leading-relaxed text-slate-300">{hero.description}</p>
+              </BuilderField>
+            ) : null}
+            {showButtons ? (
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                {visibleButtons.map((btn, btnIndex) => (
+                  <BuilderField
+                    key={btn.id}
+                    path={`button.${btn.id}`}
+                    label={btnIndex === 0 ? 'Buton 1' : 'Buton 2'}
+                    type="button"
+                    className="inline-block w-full sm:w-auto"
+                  >
+                    <BlockButtonLink
+                      btn={btn}
+                      className={heroButtonClass(
+                        btn.variant,
+                        'inline-flex w-full items-center justify-center rounded-xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15 sm:w-auto',
+                        'inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-sky-400 px-6 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:brightness-105 sm:w-auto',
+                      )}
+                    />
+                  </BuilderField>
+                ))}
+              </div>
+            ) : null}
+          </div>
+          <BuilderField path="image" label="Hero görseli" type="media" className="w-full">
+            <MkCompareHeroVisualSlot hero={hero} />
+          </BuilderField>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function MkCompareHeroVisualSlot({ hero }: { hero: HeroBlock }) {
+  const { settings } = hero
+  const compare = useMkComparePageContextOptional()
+  const userSources = settings.mode === 'single-image' ? getHeroSettingsImageSources(settings) : null
+
+  if (userSources) {
+    const desktopFit = settings.imageFit?.desktop ?? 'contain'
+    const mobileFit = settings.imageFit?.mobile ?? desktopFit
+    const objectFitClass = desktopFit === 'cover' ? 'object-cover' : 'object-contain'
+    const mobileFitClass = mobileFit === 'cover' ? 'max-[640px]:object-cover' : 'max-[640px]:object-contain'
+
+    return (
+      <div className="relative mx-auto h-[280px] w-full max-w-[500px] lg:h-[320px]">
+        <div className="absolute inset-0 overflow-hidden rounded-[1.75rem] border border-white/12 bg-white/5 shadow-2xl shadow-slate-950/30 backdrop-blur-sm">
+          <div className="absolute inset-2 bg-slate-950/35 sm:inset-3">
+            <HeroResponsiveImage
+              sources={userSources}
+              alt={hero.title?.trim() || 'Müvekkil Kasa Defteri'}
+              fill
+              className={cn('h-full w-full object-center', objectFitClass, mobileFitClass)}
+              loading="eager"
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <MuvekkilKasaCompareHeroVisual
+      desktop={compare?.desktopQuery.data}
+      saas={compare?.saasQuery.data}
+      desktopImageUrl={settings.compareDesktopImage?.url}
+      saasImageUrl={settings.compareSaasImage?.url}
+    />
+  )
 }

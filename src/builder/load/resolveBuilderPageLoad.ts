@@ -6,6 +6,11 @@ import {
 } from '@/builder/load/parseBuilderBlocks'
 import { extractBlocksForPage } from '@/builder/load/pageContentPersistence'
 import { sanitizeAboutBuilderBlocks } from '@/builder/templates/aboutEditableTemplate'
+import {
+  isAutoMkCompareLegacyDocument,
+  sanitizeMkCompareBuilderBlocks,
+} from '@/builder/templates/mkCompareBuilderTemplate'
+import { isMkCompareBuilderPageKey } from '@/components/public/muvekkil-kasa/comparePageUtils'
 
 /** Builder store / canvas modu */
 export type BuilderCanvasMode = 'builder-blocks' | 'legacy-public'
@@ -37,7 +42,20 @@ export function resolveBuilderPageLoad(
   const builderBlocks = extractBlocksForPage(raw, def) ?? parseBuilderBlocksFromRaw(raw)
 
   if (builderBlocks && builderBlocks.length > 0) {
-    const normalizedBlocks = def.key === 'about' ? sanitizeAboutBuilderBlocks(builderBlocks) : builderBlocks
+    if (isMkCompareBuilderPageKey(def.key) && isAutoMkCompareLegacyDocument(builderBlocks)) {
+      return {
+        pageKey: def.key,
+        pageTitle: def.title,
+        blocks: [],
+        source: 'legacy-public',
+        canvasMode: 'legacy-public',
+        ...seo,
+      }
+    }
+    let normalizedBlocks = def.key === 'about' ? sanitizeAboutBuilderBlocks(builderBlocks) : builderBlocks
+    if (isMkCompareBuilderPageKey(def.key)) {
+      normalizedBlocks = sanitizeMkCompareBuilderBlocks(builderBlocks)
+    }
     return {
       pageKey: def.key,
       pageTitle: def.title,

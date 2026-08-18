@@ -52,7 +52,7 @@ export function resolveFieldFocus(
     return { sectionId: 'grid', settingsFieldId: 'eyebrow' }
   }
   if (fieldPath === 'image') {
-    return { sectionId: block.type === 'hero' ? 'media' : 'design', settingsFieldId: 'desktop-image' }
+    return { sectionId: block.type === 'hero' ? 'content' : 'design', settingsFieldId: 'desktop-image' }
   }
   if (fieldPath === 'highlight-text') {
     return { sectionId: 'paragraphs', settingsFieldId: 'highlight-text' }

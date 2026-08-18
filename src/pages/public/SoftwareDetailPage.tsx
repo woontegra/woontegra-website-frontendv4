@@ -7,14 +7,18 @@ import { ErrorState } from '@/components/public/ErrorState'
 import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocksPage'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { usePreviewOrParamSlug } from '@/lib/previewRouteParams'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
+import { useIsBuilderPreview, usePreviewOrParamSlug } from '@/lib/previewRouteParams'
+import { MK_COMPARE_PATH } from '@/components/public/muvekkil-kasa/comparePageUtils'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { productsService } from '@/services/productsService'
 import { mkSaasLicensePurchaseService } from '@/services/mkSaasLicensePurchaseService'
 import { getErrorMessage } from '@/api/client'
 import { isMuvekkilKasaSaasProduct, resolveMkSaasBlocksSlug } from '@/lib/muvekkilKasaSaasProduct'
-import { isMuvekkilKasaDesktopCentralLicenseProduct } from '@/lib/muvekkilKasaDesktopProduct'
+import {
+  isMuvekkilKasaDesktopCentralLicenseProduct,
+  isMuvekkilKasaDesktopSalesSlug,
+} from '@/lib/muvekkilKasaDesktopProduct'
 import { saveMkSaasRenewalToken } from '@/lib/mkSaasLicensePurchase'
 import { saveDesktopRenewalToken } from '@/lib/desktopLicenseRenewal'
 import { desktopLicenseRenewalService } from '@/services/desktopLicenseRenewalService'
@@ -40,6 +44,7 @@ function MkSaasSalesFallbackView() {
 export function SoftwareDetailPage() {
   const { slug: paramSlug = '' } = useParams()
   const slug = usePreviewOrParamSlug(paramSlug)
+  const isBuilderPreview = useIsBuilderPreview()
   const [searchParams] = useSearchParams()
   const renewalToken = searchParams.get('renewalToken')?.trim() || ''
 
@@ -80,10 +85,15 @@ export function SoftwareDetailPage() {
     retry: false,
   })
 
+  const redirectMkSalesToCompare =
+    !isBuilderPreview &&
+    !renewalToken &&
+    (isMuvekkilKasaDesktopSalesSlug(slug) || isMkSaasProduct)
+
   usePageMeta({
     title: data?.seoTitle || data?.name || 'Yazılım',
     description: data?.seoDescription || data?.shortDescription,
-    canonicalPath: slug ? `/yazilimlar/${slug}` : '/yazilimlar',
+    canonicalPath: redirectMkSalesToCompare ? MK_COMPARE_PATH : slug ? `/yazilimlar/${slug}` : '/yazilimlar',
   })
 
   const legacyView =
@@ -115,6 +125,14 @@ export function SoftwareDetailPage() {
 
   if (isMkSaasProduct && renewalToken) {
     return legacyView
+  }
+
+  if (!isBuilderPreview && !renewalToken && isMuvekkilKasaDesktopSalesSlug(slug)) {
+    return <Navigate to={`${MK_COMPARE_PATH}?surum=masaustu`} replace />
+  }
+
+  if (!isBuilderPreview && !renewalToken && isMkSaasProduct) {
+    return <Navigate to={`${MK_COMPARE_PATH}?surum=saas`} replace />
   }
 
   if (isMkSaasProduct && data && !isPending && !isError) {

@@ -69,8 +69,10 @@ export type HeroImageFit = 'cover' | 'contain'
 
 export type HeroSettings = {
   mode: HeroMode
-  /** split = ana sayfa; about = hakkımızda; compact = detay sayfa; centered = klasik tam genişlik */
-  layout?: 'split' | 'centered' | 'compact' | 'about'
+  /** split = ana sayfa; about = hakkımızda; compact = detay sayfa; centered = klasik; compare = MK birleşik */
+  layout?: 'split' | 'centered' | 'compact' | 'about' | 'compare'
+  compareDesktopImage?: MediaRef
+  compareSaasImage?: MediaRef
   badge?: string
   breadcrumbs?: HeroBreadcrumb[]
   showBreadcrumbs?: boolean
@@ -165,6 +167,7 @@ export function createDefaultHeroBlock(id: string, sortOrder = 0): HeroBlock {
 }
 
 export function heroRequiresImage(settings: HeroSettings): boolean {
+  if (settings.layout === 'compare') return false
   if (settings.mode === 'gradient' || settings.mode === 'solid-color' || settings.mode === 'video') {
     return false
   }

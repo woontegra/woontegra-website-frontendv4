@@ -54,6 +54,14 @@ export const blockRendererLoaders: Record<string, BlockLoader> = {
     import('@/builder/render/blocks/WhatsAppGuideBlockRenderer').then((m) => ({
       default: m.WhatsAppGuideBlockRenderer,
     })),
+  'mk-compare-table': () =>
+    import('@/builder/render/blocks/MkCompareTableBlockRenderer').then((m) => ({
+      default: m.MkCompareTableBlockRenderer,
+    })),
+  'mk-compare-details': () =>
+    import('@/builder/render/blocks/MkCompareDetailsBlockRenderer').then((m) => ({
+      default: m.MkCompareDetailsBlockRenderer,
+    })),
 }
 
 export function getBlockRendererLoader(type: string): BlockLoader {

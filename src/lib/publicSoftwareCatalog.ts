@@ -44,15 +44,40 @@ export function mergePublicSoftwareList(apiProducts: PublicProductListItem[]): P
 }
 
 export function buildCanonicalSoftwareNavChildren(): PublicNavigationMenuItem[] {
-  return CANONICAL_SOFTWARE_NAV.map((item) => ({
-    id: `software-${item.slug}`,
-    label: item.title,
-    href: item.path,
-    resolvedUrl: item.path,
-    openInNewTab: false,
-    sortOrder: item.order,
-    children: [],
-  }))
+  const items: PublicNavigationMenuItem[] = []
+  let muvekkilKasaInserted = false
+
+  for (const item of CANONICAL_SOFTWARE_NAV) {
+    const isMuvekkilKasa =
+      item.slug === 'muvekkil-kasa-defteri-yazilimi' || item.slug === 'muvekkil-kasa-defteri-web-tabanli'
+
+    if (isMuvekkilKasa) {
+      if (muvekkilKasaInserted) continue
+      muvekkilKasaInserted = true
+      items.push({
+        id: 'software-muvekkil-kasa-defteri',
+        label: 'Müvekkil Kasa Defteri',
+        href: '/yazilimlar/muvekkil-kasa-defteri',
+        resolvedUrl: '/yazilimlar/muvekkil-kasa-defteri',
+        openInNewTab: false,
+        sortOrder: item.order,
+        children: [],
+      })
+      continue
+    }
+
+    items.push({
+      id: `software-${item.slug}`,
+      label: item.title,
+      href: item.path,
+      resolvedUrl: item.path,
+      openInNewTab: false,
+      sortOrder: item.order,
+      children: [],
+    })
+  }
+
+  return items
 }
 
 export function isExternalSalesProduct(product: Pick<PublicProductListItem, 'slug'>): boolean {

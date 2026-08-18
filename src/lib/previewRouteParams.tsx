@@ -11,3 +11,7 @@ export function usePreviewOrParamSlug(paramSlug: string): string {
   const previewSlug = useContext(PreviewSlugContext)
   return previewSlug ?? paramSlug
 }
+
+export function useIsBuilderPreview(): boolean {
+  return useContext(PreviewSlugContext) != null
+}

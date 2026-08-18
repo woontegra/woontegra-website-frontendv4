@@ -1,4 +1,5 @@
 import { blockTypeLabel } from '@/builder/admin/BlockLibraryPanel'
+import { isUniqueBlockType } from '@/builder/types'
 import type { BuilderBlock } from '@/builder/types'
 import { cn } from '@/lib/cn'
 
@@ -39,6 +40,7 @@ export function BlockEditOverlay({
 }: Props) {
   const hidden = !block.visibility.enabled
   const showChrome = selected || hovered
+  const canDuplicate = !isUniqueBlockType(block.type)
 
   return (
     <>
@@ -89,7 +91,7 @@ export function BlockEditOverlay({
           <ToolbarBtn label="↑" title="Yukarı taşı" disabled={index === 0} onClick={onMoveUp} />
           <ToolbarBtn label="↓" title="Aşağı taşı" disabled={index === total - 1} onClick={onMoveDown} />
           <ToolbarDivider />
-          <ToolbarBtn label="Çoğalt" onClick={onDuplicate} />
+          {canDuplicate ? <ToolbarBtn label="Çoğalt" onClick={onDuplicate} /> : null}
           <ToolbarBtn label={hidden ? 'Göster' : 'Gizle'} onClick={onToggleHidden} />
           <ToolbarBtn label="Sil" danger onClick={onRemove} />
           <ToolbarDivider />

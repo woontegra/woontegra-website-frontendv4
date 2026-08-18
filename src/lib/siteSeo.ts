@@ -25,7 +25,7 @@ export const PAGE_SEO_BY_PATH: Record<string, PageSeo> = {
   '/hizmetler': {
     title: 'Woontegra Hizmetleri | Yazılım ve Dijital Çözümler',
     description:
-      'Woontegra hizmetleri: özel yazılım geliştirme, SaaS ürün altyapısı, e-ticaret, web tasarım ve marka vekilliği çözümleri.',
+      'Woontegra hizmetleri: özel yazılım geliştirme, SaaS ürün altyapısı, e-ticaret, web tasarım ve marka danışmanlığı çözümleri.',
   },
   '/yazilimlar': {
     title: 'Woontegra Yazılımları | İşletmelere Özel Yazılım Çözümleri',

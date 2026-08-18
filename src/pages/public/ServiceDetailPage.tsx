@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
-import { usePreviewOrParamSlug } from '@/lib/previewRouteParams'
+import { useIsBuilderPreview, usePreviewOrParamSlug } from '@/lib/previewRouteParams'
 import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocksPage'
 import { ServiceDetailLayout } from '@/components/public/services/ServiceDetailLayout'
 import { NotFoundPage } from '@/pages/public/NotFoundPage'
@@ -26,7 +26,8 @@ export function normalizeServicePages(raw: unknown): Record<string, ServicePageO
 export function ServiceDetailPage() {
   const { slug: rawSlug = '' } = useParams()
   const slug = resolveServiceSlug(usePreviewOrParamSlug(rawSlug))
-  if (isRemovedServiceSlug(slug)) return <NotFoundPage />
+  const isBuilderPreview = useIsBuilderPreview()
+  if (isRemovedServiceSlug(slug) && !isBuilderPreview) return <NotFoundPage />
   const base = SERVICE_DETAIL_BY_SLUG[slug]
   const { blocks } = usePublicPageBlocks(SERVICE_PAGE_CONTENT_KEY, slug)
 

@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 import { getBuilderPageDefinition, type BuilderPageDefinition } from '@/builder/pages/builderPageRegistry'
+import { isMuvekkilKasaCompareSlug } from '@/components/public/muvekkil-kasa/comparePageUtils'
 import { PreviewSlugProvider } from '@/lib/previewRouteParams'
 
 const LANDING_COMPONENTS: Record<string, ComponentType> = {
@@ -33,6 +34,9 @@ const SolutionDetailPage = lazy(() =>
 )
 const SoftwareDetailPage = lazy(() =>
   import('@/pages/public/SoftwareDetailPage').then((m) => ({ default: m.SoftwareDetailPage })),
+)
+const MuvekkilKasaComparePage = lazy(() =>
+  import('@/pages/public/MuvekkilKasaComparePage').then((m) => ({ default: m.MuvekkilKasaComparePage })),
 )
 const BlogDetailPage = lazy(() => import('@/pages/public/BlogDetailPage').then((m) => ({ default: m.BlogDetailPage })))
 
@@ -93,7 +97,7 @@ function DetailPageEmbed({ def }: { def: BuilderPageDefinition }) {
       Page = SolutionDetailPage
       break
     case 'product-detail':
-      Page = SoftwareDetailPage
+      Page = isMuvekkilKasaCompareSlug(slug) ? MuvekkilKasaComparePage : SoftwareDetailPage
       break
     case 'blog-detail':
       Page = BlogDetailPage

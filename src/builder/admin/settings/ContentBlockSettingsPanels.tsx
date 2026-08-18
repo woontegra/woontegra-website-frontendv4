@@ -179,6 +179,21 @@ export function ImageTextSettingsPanel() {
               { value: 'right', label: 'Görsel sağda' },
             ]}
           />
+          <SelectField
+            label="Görsel varyantı"
+            value={settings.visualVariant ?? 'default'}
+            onChange={(v) =>
+              update({
+                ...block,
+                settings: { ...settings, visualVariant: v as ImageTextBlock['settings']['visualVariant'] },
+              })
+            }
+            options={[
+              { value: 'default', label: 'Yüklenen görsel' },
+              { value: 'mk-file-vault', label: 'Dosya kasası mockup' },
+              { value: 'mk-installments', label: 'Taksit / WhatsApp mockup' },
+            ]}
+          />
         </>
       ),
     },

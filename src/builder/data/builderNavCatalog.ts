@@ -3,6 +3,13 @@
  * frontendV3 defaultHeaderNav + kullanıcı kapsam listesi ile hizalı.
  */
 
+import {
+  MK_COMPARE_PATH,
+  MK_COMPARE_SLUG,
+  MK_DESKTOP_CANONICAL_SLUG,
+} from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { MK_SAAS_CANONICAL_SLUG } from '@/lib/muvekkilKasaSaasProduct'
+
 export type BuilderNavService = {
   slug: string
   title: string
@@ -42,10 +49,13 @@ export const BUILDER_MENU_SERVICES: BuilderNavService[] = [
   { slug: 'web-tasarim', title: 'Web Tasarım', path: '/hizmetler/web-tasarim' },
   { slug: 'yazilim-gelistirme', title: 'Yazılım Geliştirme', path: '/hizmetler/yazilim-gelistirme' },
   { slug: 'e-ticaret', title: 'E-Ticaret Çözümleri', path: '/hizmetler/e-ticaret' },
-  { slug: 'marka-patent-vekilligi', title: 'Marka & Patent Vekilliği', path: '/hizmetler/marka-patent-vekilligi' },
+  { slug: 'marka-patent-vekilligi', title: 'Marka Danışmanlığı', path: '/hizmetler/marka-patent-vekilligi' },
 ]
 
-/** Yazılımlar alt menüsü — menüde görünen ürün detayları */
+/**
+ * Yazılım / ürün satış sayfaları (Page Builder listesi).
+ * Masaüstü ve SaaS SKU’ları ürün kataloğunda ayrı kalır; builder’da tek birleşik sayfa gösterilir.
+ */
 export const BUILDER_MENU_PRODUCTS: BuilderNavProduct[] = [
   {
     slug: 'bilirkisi-hesap',
@@ -53,14 +63,9 @@ export const BUILDER_MENU_PRODUCTS: BuilderNavProduct[] = [
     path: '/yazilimlar/bilirkisi-hesap',
   },
   {
-    slug: 'muvekkil-kasa-defteri-yazilimi',
-    title: 'Müvekkil Kasa Defteri Masaüstü',
-    path: '/yazilimlar/muvekkil-kasa-defteri-yazilimi',
-  },
-  {
-    slug: 'muvekkil-kasa-defteri-web-tabanli',
-    title: 'Müvekkil Kasa Defteri Çoklu Kullanıcı Web Tabanlı',
-    path: '/yazilimlar/muvekkil-kasa-defteri-web-tabanli',
+    slug: MK_COMPARE_SLUG,
+    title: 'Müvekkil Kasa Defteri',
+    path: MK_COMPARE_PATH,
   },
   {
     slug: 'sifre-kasasi',
@@ -68,6 +73,12 @@ export const BUILDER_MENU_PRODUCTS: BuilderNavProduct[] = [
     path: '/yazilimlar/sifre-kasasi',
   },
 ]
+
+/** Eski ayrı satış sayfaları — builder listesinde gizlenir; CMS JSON ve ürün kayıtları silinmez. */
+export const SUPERSEDED_MK_PRODUCT_BUILDER_SLUGS = [
+  MK_DESKTOP_CANONICAL_SLUG,
+  MK_SAAS_CANONICAL_SLUG,
+] as const
 
 export const BUILDER_MENU_SOLUTIONS: BuilderNavSolution[] = [
   { slug: 'e-ticaret-altyapisi', title: 'E-ticaret Altyapısı', path: '/cozumler/e-ticaret-altyapisi' },

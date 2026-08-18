@@ -1,34 +1,26 @@
 import { SERVICE_DETAIL_BY_SLUG } from '@/data/serviceDetailContent'
 
+/** Siteden kaldırılmış hizmet slug'ları — menü, kart, sitemap ve doğrudan URL erişimi bu listeden beslenir. */
+export const REMOVED_SERVICE_SLUGS = new Set(['oyun-gelistirme', 'dijital-danismanlik', 'marka-patent-vekilligi'])
 
-
-/** Siteden kaldırılmış hizmet slug'ları — menü ve doğrudan URL erişimi filtrelenir */
-export const REMOVED_SERVICE_SLUGS = new Set(['oyun-gelistirme', 'dijital-danismanlik'])
+/** Slugify edilmiş etiketler (ör. "Marka Danışmanlığı" → marka-danismanligi) */
+const REMOVED_SERVICE_LABEL_SLUGS = new Set([
+  'marka-danismanligi',
+  'marka-patent',
+  'marka-ve-patent',
+  'marka-ve-patent-vekilligi',
+  'marka-patent-danismanligi',
+])
 
 export function isRemovedServiceSlug(slug: string): boolean {
-  return REMOVED_SERVICE_SLUGS.has(slug.trim().toLowerCase())
+  const key = slug.trim().toLowerCase()
+  if (!key) return false
+  if (REMOVED_SERVICE_SLUGS.has(key)) return true
+  return REMOVED_SERVICE_SLUGS.has(resolveServiceSlug(key))
 }
 
-function hrefTargetsRemovedService(href: string): boolean {
-  const raw = (href || '').trim().toLowerCase()
-  if (!raw || raw === '#') return false
-  const pathOnly = raw.split('?')[0]?.split('#')[0] ?? raw
-
-  // /hizmetler/<slug>
-  const hizmetlerMatch = pathOnly.match(/\/hizmetler\/([^/?#]+)/i)
-  if (hizmetlerMatch && isRemovedServiceSlug(hizmetlerMatch[1])) return true
-
-  // Herhangi bir yolun son segmenti kaldırılmış slug ise (ör. /oyun-gelistirme)
-  const segments = pathOnly.split('/').filter(Boolean)
-  const lastSegment = segments[segments.length - 1]
-  if (lastSegment && isRemovedServiceSlug(lastSegment)) return true
-
-  return false
-}
-
-/** "Oyun Geliştirme" gibi kaldırılmış hizmetleri label üzerinden de yakalar. */
-function labelTargetsRemovedService(label: string): boolean {
-  const normalized = (label || '')
+function normalizeServiceLabelSlug(label: string): string {
+  return (label || '')
     .trim()
     .toLowerCase()
     .replace(/ç/g, 'c')
@@ -39,7 +31,31 @@ function labelTargetsRemovedService(label: string): boolean {
     .replace(/ü/g, 'u')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-  return isRemovedServiceSlug(normalized)
+}
+
+function hrefTargetsRemovedService(href: string): boolean {
+  const raw = (href || '').trim().toLowerCase()
+  if (!raw || raw === '#') return false
+  const pathOnly = raw.split('?')[0]?.split('#')[0] ?? raw
+
+  const hizmetlerMatch = pathOnly.match(/\/hizmetler\/([^/?#]+)/i)
+  if (hizmetlerMatch && isRemovedServiceSlug(hizmetlerMatch[1])) return true
+
+  const segments = pathOnly.split('/').filter(Boolean)
+  const lastSegment = segments[segments.length - 1]
+  if (lastSegment && (isRemovedServiceSlug(lastSegment) || REMOVED_SERVICE_LABEL_SLUGS.has(lastSegment))) return true
+
+  return false
+}
+
+function labelTargetsRemovedService(label: string): boolean {
+  const normalized = normalizeServiceLabelSlug(label)
+  if (!normalized) return false
+  return isRemovedServiceSlug(normalized) || REMOVED_SERVICE_LABEL_SLUGS.has(normalized)
+}
+
+export function isRemovedServicePublicLink(href?: string | null, label?: string | null): boolean {
+  return hrefTargetsRemovedService(href ?? '') || labelTargetsRemovedService(label ?? '')
 }
 
 export function filterRemovedServiceNavItems<

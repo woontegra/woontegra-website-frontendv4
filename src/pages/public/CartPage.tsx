@@ -15,6 +15,7 @@ import {
 import { mergeCartWithPreview } from '@/lib/cartMerge'
 import { isSaasSubscriptionProduct } from '@/utils/productPurchase'
 import { formatMoney } from '@/types/product'
+import { publicSoftwareDetailHref } from '@/components/public/muvekkil-kasa/comparePageUtils'
 import { checkoutService } from '@/services/checkoutService'
 import { usePageMeta } from '@/hooks/usePageMeta'
 
@@ -146,7 +147,7 @@ export function CartPage() {
                 <div>
                   <h3 className="font-semibold text-slate-900">{row.name}</h3>
                   {row.slug ? (
-                    <Link to={`/yazilimlar/${row.slug}`} className="text-xs text-emerald-700 hover:underline">
+                    <Link to={publicSoftwareDetailHref(row.slug)} className="text-xs text-emerald-700 hover:underline">
                       Ürün detayı
                     </Link>
                   ) : null}

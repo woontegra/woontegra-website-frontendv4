@@ -40,12 +40,12 @@ const ABOUT_SOFTWARE_CARDS = [
   {
     title: 'Müvekkil Kasa Defteri Masaüstü',
     description: 'Lisanslı masaüstü kullanım için geliştirilen, güvenli kayıt ve düzenli iş akışı sunan masaüstü yazılım.',
-    href: '/yazilimlar/muvekkil-kasa-defteri-yazilimi',
+    href: '/yazilimlar/muvekkil-kasa-defteri?surum=masaustu',
   },
   {
     title: 'Müvekkil Kasa Defteri Web Tabanlı',
     description: 'Web tabanlı kullanım, yıllık erişim ve çoklu kullanıcı ihtiyaçları için geliştirilen çevrim içi çözüm.',
-    href: '/yazilimlar/muvekkil-kasa-defteri-web-tabanli',
+    href: '/yazilimlar/muvekkil-kasa-defteri?surum=saas',
   },
   {
     title: 'Woontegra Şifre Kasası',

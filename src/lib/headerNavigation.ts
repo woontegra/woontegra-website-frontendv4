@@ -3,6 +3,7 @@ import {
   CANONICAL_PUBLIC_SERVICES,
   CANONICAL_SERVICE_BY_SLUG,
   findServicesNavItem,
+  publicCanonicalServices,
   serviceSlugFromHref,
 } from '@/data/canonicalServices'
 import { buildCanonicalSoftwareNavChildren } from '@/lib/publicSoftwareCatalog'
@@ -111,7 +112,7 @@ function restoreServicesDropdown(item: PublicNavigationMenuItem): PublicNavigati
     if (slug) bySlug.set(slug, child)
   }
 
-  for (const service of CANONICAL_PUBLIC_SERVICES) {
+  for (const service of publicCanonicalServices()) {
     if (!bySlug.has(service.slug)) {
       bySlug.set(service.slug, {
         id: `canonical-${service.slug}`,
@@ -126,6 +127,7 @@ function restoreServicesDropdown(item: PublicNavigationMenuItem): PublicNavigati
       const existing = bySlug.get(service.slug)!
       bySlug.set(service.slug, {
         ...existing,
+        label: service.slug === 'marka-patent-vekilligi' ? service.title : existing.label,
         href: service.path,
         resolvedUrl: service.path,
       })

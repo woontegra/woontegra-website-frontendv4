@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { BuilderField } from '@/builder/edit/BuilderField'
+import { useBuilderEditContext } from '@/builder/edit/BuilderEditContext'
 import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
 import { HeroProductPrice } from '@/builder/render/HeroProductPrice'
 import { isMkSaasHero } from '@/builder/render/mkSaasBuilderVisuals'
@@ -27,6 +28,7 @@ import { renderIfText, shouldShowField } from '@/builder/render/renderRules'
 import type { BlockButton, HeroBlock, HeroSlide } from '@/builder/types'
 import { HeroResponsiveImage } from '@/media/components/HeroResponsiveImage'
 import { cn } from '@/lib/cn'
+import { isRemovedServicePublicLink } from '@/lib/serviceSlugs'
 
 type Props = {
   hero: HeroBlock
@@ -219,6 +221,7 @@ function heroButtonClass(
 }
 
 export function HeroCarouselSection({ hero }: Props) {
+  const { annotateFields } = useBuilderEditContext()
   const { settings, style, visibility } = hero
   const sectionRef = useRef<HTMLElement>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -333,7 +336,9 @@ export function HeroCarouselSection({ hero }: Props) {
     const showTitle = shouldShowField(slideVisibility.showTitle, title)
     const showDescription = shouldShowField(slideVisibility.showDescription, description)
     const showBadge = slideVisibility.showBadge !== false && Boolean(badge)
-    const visibleButtons = getSlideButtons(slide, hero)
+    const visibleButtons = getSlideButtons(slide, hero).filter(
+      (b) => annotateFields || !isRemovedServicePublicLink(b.href, b.label),
+    )
     const showButtons = slideVisibility.showButton !== false && visibleButtons.length > 0
     const showHighlights = mkSaas && (hero.settings.highlights ?? []).some((h) => renderIfText(h.title))
     const showPrice = mkSaas && settings.showProductPrice === true

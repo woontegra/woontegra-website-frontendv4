@@ -25,6 +25,9 @@ const SoftwareListPage = lazy(() =>
 const SoftwareDetailPage = lazy(() =>
   import('@/pages/public/SoftwareDetailPage').then((m) => ({ default: m.SoftwareDetailPage })),
 )
+const MuvekkilKasaComparePage = lazy(() =>
+  import('@/pages/public/MuvekkilKasaComparePage').then((m) => ({ default: m.MuvekkilKasaComparePage })),
+)
 const BlogListPage = lazy(() => import('@/pages/public/BlogListPage').then((m) => ({ default: m.BlogListPage })))
 const BlogDetailPage = lazy(() => import('@/pages/public/BlogDetailPage').then((m) => ({ default: m.BlogDetailPage })))
 const ContactPage = lazy(() => import('@/pages/public/ContactPage').then((m) => ({ default: m.ContactPage })))
@@ -280,6 +283,7 @@ export const router = createBrowserRouter([
       { path: 'cozumler/bilirkisi-hesaplama', element: <Navigate to="/cozumler" replace /> },
       { path: 'cozumler/:slug', element: <LazyPage><SolutionDetailPage /></LazyPage> },
       { path: 'yazilimlar', element: <LazyPage><SoftwareListPage /></LazyPage> },
+      { path: 'yazilimlar/muvekkil-kasa-defteri', element: <LazyPage><MuvekkilKasaComparePage /></LazyPage> },
       { path: 'yazilimlar/:slug', element: <LazyPage><SoftwareDetailPage /></LazyPage> },
       { path: 'blog', element: <LazyPage><BlogListPage /></LazyPage> },
       { path: 'blog/:slug', element: <LazyPage><BlogDetailPage /></LazyPage> },
