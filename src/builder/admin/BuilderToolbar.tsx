@@ -1,23 +1,22 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import { BUILDER_PAGE_GROUPS, useBuilderStore } from '@/builder/store/builderStore'
+import { isAboutBuilderPilotPage } from '@/builder/pilot/aboutBuilderPilot'
+import { canOpenAboutDraftPreview } from '@/builder/pilot/aboutPilotLoad'
 import { cn } from '@/lib/cn'
+import { formatDateTime } from '@/utils/adminOrderUi'
+import { useToastStore } from '@/store/toastStore'
 
 type Props = {
   onJsonOpen: () => void
   onValidationOpen: () => void
   onTemplatesOpen: () => void
+  onPublishOpen: () => void
+  onRevisionsOpen: () => void
 }
 
 function formatSavedAt(iso: string | null): string {
   if (!iso) return 'Henüz kaydedilmedi'
-  try {
-    return new Intl.DateTimeFormat('tr-TR', {
-      dateStyle: 'short',
-      timeStyle: 'short',
-    }).format(new Date(iso))
-  } catch {
-    return iso
-  }
+  return formatDateTime(iso)
 }
 
 const SOURCE_LABELS = {
@@ -26,7 +25,13 @@ const SOURCE_LABELS = {
   'legacy-public': 'Legacy (salt okunur)',
 } as const
 
-export function BuilderToolbar({ onJsonOpen, onValidationOpen, onTemplatesOpen }: Props) {
+export function BuilderToolbar({
+  onJsonOpen,
+  onValidationOpen,
+  onTemplatesOpen,
+  onPublishOpen,
+  onRevisionsOpen,
+}: Props) {
   const [, setSearchParams] = useSearchParams()
   const pageKey = useBuilderStore((s) => s.pageKey)
   const isDirty = useBuilderStore((s) => s.isDirty)
@@ -42,9 +47,13 @@ export function BuilderToolbar({ onJsonOpen, onValidationOpen, onTemplatesOpen }
   const saveDraftLocal = useBuilderStore((s) => s.saveDraftLocal)
   const savePageToApi = useBuilderStore((s) => s.savePageToApi)
   const isSaving = useBuilderStore((s) => s.isSaving)
+  const isPublishing = useBuilderStore((s) => s.isPublishing)
+  const persistMeta = useBuilderStore((s) => s.persistMeta)
   const undo = useBuilderStore((s) => s.undo)
   const redo = useBuilderStore((s) => s.redo)
   const loadPage = useBuilderStore((s) => s.loadPage)
+  const isAboutPilot = isAboutBuilderPilotPage(pageKey)
+  const busy = isSaving || isPublishing || loadPageStatus === 'loading'
 
   const handlePageChange = (key: string) => {
     if (key === pageKey) return
@@ -53,6 +62,17 @@ export function BuilderToolbar({ onJsonOpen, onValidationOpen, onTemplatesOpen }
     }
     setSearchParams({ page: key }, { replace: true })
     void loadPage(key)
+  }
+
+  const openPreview = () => {
+    if (isAboutPilot) {
+      if (isDirty || !canOpenAboutDraftPreview({ hasBuilderRecord: persistMeta?.hasBuilderRecord === true })) {
+        useToastStore.getState().show('Önizleme için önce taslağı kaydedin.', 'error')
+        return
+      }
+    }
+    const url = `/admin/builder-preview?page=${encodeURIComponent(pageKey)}`
+    window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -77,6 +97,22 @@ export function BuilderToolbar({ onJsonOpen, onValidationOpen, onTemplatesOpen }
             <ToolbarBtn onClick={convertToBuilderDraft} variant="primary">
               Builder&apos;a dönüştür
             </ToolbarBtn>
+          ) : isAboutPilot ? (
+            <>
+              <ToolbarBtn
+                onClick={onPublishOpen}
+                variant="primary"
+                disabled={busy || blocks.length === 0}
+              >
+                {isPublishing ? 'Yayınlanıyor…' : 'Yayına Al'}
+              </ToolbarBtn>
+              <ToolbarBtn onClick={() => void savePageToApi()} disabled={busy || blocks.length === 0}>
+                {isSaving ? 'Kaydediliyor…' : 'Taslağı Kaydet'}
+              </ToolbarBtn>
+              <ToolbarBtn onClick={onRevisionsOpen} disabled={busy}>
+                Sürümler
+              </ToolbarBtn>
+            </>
           ) : (
             <>
               <ToolbarBtn onClick={() => void savePageToApi()} variant="primary" disabled={isSaving || blocks.length === 0}>
@@ -96,13 +132,7 @@ export function BuilderToolbar({ onJsonOpen, onValidationOpen, onTemplatesOpen }
           <ToolbarBtn onClick={redo} disabled={!canRedo}>
             Redo
           </ToolbarBtn>
-          <ToolbarBtn
-            onClick={() => {
-              const url = `/admin/builder-preview?page=${encodeURIComponent(pageKey)}`
-              window.open(url, '_blank', 'noopener,noreferrer')
-            }}
-            disabled={loadPageStatus === 'loading'}
-          >
+          <ToolbarBtn onClick={openPreview} disabled={loadPageStatus === 'loading'}>
             Önizle
           </ToolbarBtn>
           <ToolbarBtn onClick={onValidationOpen}>Yayın Kontrolü</ToolbarBtn>
@@ -139,18 +169,37 @@ export function BuilderToolbar({ onJsonOpen, onValidationOpen, onTemplatesOpen }
                 {loadPageStatus === 'loading'
                   ? 'Yükleniyor…'
                   : isDirty
-                    ? 'Kaydedilmemiş değişiklik'
+                    ? 'Kaydedilmemiş değişiklikler'
                     : lastSavedAt
-                      ? 'Kaydedildi'
+                      ? 'Taslak kaydedildi'
                       : 'Hazır'}
               </span>
-              {pageLoadSource ? (
+              {isAboutPilot && persistMeta?.hasUnpublishedChanges ? (
+                <span className="inline-flex rounded-full bg-sky-50 px-2 py-0.5 font-medium text-sky-800">
+                  Yayından farklı
+                </span>
+              ) : null}
+              {!isAboutPilot && pageLoadSource ? (
                 <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-slate-600">
                   {SOURCE_LABELS[pageLoadSource]}
                 </span>
               ) : null}
             </p>
-            <p className="mt-0.5 text-slate-400">Son kayıt: {formatSavedAt(lastSavedAt)}</p>
+            {isAboutPilot ? (
+              <div className="mt-0.5 space-y-0.5 text-slate-400">
+                <p>Son taslak: {formatSavedAt(persistMeta?.draftUpdatedAt ?? lastSavedAt)}</p>
+                <p>
+                  Son yayın:{' '}
+                  {persistMeta?.publishedAt
+                    ? `${formatDateTime(persistMeta.publishedAt)}${
+                        persistMeta.publishedRevision ? ` · Sürüm ${persistMeta.publishedRevision}` : ''
+                      }`
+                    : 'Henüz hiç yayınlanmadı'}
+                </p>
+              </div>
+            ) : (
+              <p className="mt-0.5 text-slate-400">Son kayıt: {formatSavedAt(lastSavedAt)}</p>
+            )}
           </div>
         </div>
       </div>

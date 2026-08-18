@@ -13,7 +13,13 @@ import { isMkCompareBuilderPageKey } from '@/components/public/muvekkil-kasa/com
 import type { ConversionReport } from '@/builder/load/conversionReport'
 import { enrichParityRaw } from '@/builder/parity/enrichParityRaw'
 import { pageContentService, getErrorMessage } from '@/services/pageContentService'
-import { buildPageContentPayload, extractBlocksForPage } from '@/builder/load/pageContentPersistence'
+import { adminBuilderPagesService, getBuilderPagesErrorMessage } from '@/services/adminBuilderPagesService'
+import { extractBlocksForPage } from '@/builder/load/pageContentPersistence'
+import { isAboutBuilderPilotPage } from '@/builder/pilot/aboutBuilderPilot'
+import { resolveAboutPilotBlocks, hasUnpublishedAboutChanges, shouldKeepAboutEditorOnLoadError } from '@/builder/pilot/aboutPilotLoad'
+import { persistBuilderPage, publishBuilderPilotPage, buildCurrentPagePayload } from '@/builder/pilot/builderPersist'
+import { stableStringify } from '@/builder/pilot/stablePayload'
+import type { BuilderPageStateDto, BuilderRevisionListItemDto } from '@/types/builderPages'
 import { useToastStore } from '@/store/toastStore'
 
 export const BUILDER_DRAFT_STORAGE_PREFIX = 'woontegra_builder_draft_v1'
@@ -49,6 +55,16 @@ type BuilderStore = BuilderPageState & {
   conversionReport: ConversionReport | null
   isSaving: boolean
   saveError: string | null
+  isPublishing: boolean
+  persistSnapshot: string | null
+  persistMeta: {
+    hasBuilderRecord: boolean
+    draftUpdatedAt: string | null
+    publishedAt: string | null
+    publishedRevision: number | null
+    hasUnpublishedChanges: boolean
+  } | null
+  revisions: BuilderRevisionListItemDto[]
   selectBlock: (id: string | null) => void
   selectField: (blockId: string, fieldPath: string) => void
   convertToBuilderDraft: () => void
@@ -62,6 +78,8 @@ type BuilderStore = BuilderPageState & {
   loadPage: (pageKey: string) => Promise<void>
   saveDraftLocal: () => void
   savePageToApi: () => Promise<boolean>
+  publishAboutPilot: () => Promise<boolean>
+  loadAboutRevisions: () => Promise<void>
   clearDraftLocal: () => void
   exportJson: () => string
   undo: () => void
@@ -174,6 +192,30 @@ function applyLoadedPage(
   syncHistoryFlags(set)
 }
 
+function emptyPersistMeta() {
+  return {
+    hasBuilderRecord: false,
+    draftUpdatedAt: null as string | null,
+    publishedAt: null as string | null,
+    publishedRevision: null as number | null,
+    hasUnpublishedChanges: false,
+  }
+}
+
+function persistMetaFromState(state: BuilderPageStateDto) {
+  return {
+    hasBuilderRecord: state.hasBuilderRecord,
+    draftUpdatedAt: state.draftUpdatedAt,
+    publishedAt: state.publishedAt,
+    publishedRevision: state.publishedRevision,
+    hasUnpublishedChanges: hasUnpublishedAboutChanges(state),
+  }
+}
+
+function snapshotFromPayload(def: NonNullable<ReturnType<typeof getBuilderPageDefinition>>, blocks: BuilderBlock[], raw: Record<string, unknown> | null) {
+  return stableStringify(buildCurrentPagePayload(def, blocks, raw))
+}
+
 export const useBuilderStore = create<BuilderStore>((set, get) => ({
   ...DEFAULT_PAGE,
   selectedBlockId: null,
@@ -191,6 +233,10 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
   conversionReport: null,
   isSaving: false,
   saveError: null,
+  isPublishing: false,
+  persistSnapshot: null,
+  persistMeta: null,
+  revisions: [],
 
   selectBlock: (id) => set({ selectedBlockId: id, selectedFieldPath: null }),
 
@@ -325,7 +371,7 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
       blocks: get().blocks.map((b) => (b.id === id ? ({ ...b, ...patch } as BuilderBlock) : b)),
       isDirty: true,
     })
-    get().saveDraftLocal()
+    if (!isAboutBuilderPilotPage(get().pageKey)) get().saveDraftLocal()
   },
 
   replaceBlock: (id, block) => {
@@ -333,7 +379,7 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
       blocks: get().blocks.map((b) => (b.id === id ? block : b)),
       isDirty: true,
     })
-    get().saveDraftLocal()
+    if (!isAboutBuilderPilotPage(get().pageKey)) get().saveDraftLocal()
   },
 
   loadPage: async (pageKeyInput) => {
@@ -344,15 +390,65 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
       return
     }
 
+    const previous = get()
+    const keepEditorOnError = shouldKeepAboutEditorOnLoadError({
+      previousPageKey: previous.pageKey,
+      nextPageKey: def.key,
+      blockCount: previous.blocks.length,
+      status: previous.loadPageStatus,
+    })
+
     set({
       loadPageStatus: 'loading',
       loadPageError: null,
       selectedBlockId: null,
-    selectedFieldPath: null,
+      selectedFieldPath: null,
       pageKey: def.key,
       pageTitle: def.title,
       previewPath: def.previewPath,
+      persistMeta: isAboutBuilderPilotPage(def.key) ? previous.persistMeta : null,
+      persistSnapshot: isAboutBuilderPilotPage(def.key) ? previous.persistSnapshot : null,
+      revisions: isAboutBuilderPilotPage(def.key) ? previous.revisions : [],
     })
+
+    if (isAboutBuilderPilotPage(def.key)) {
+      try {
+        const state = await adminBuilderPagesService.getState(def.key)
+        const { blocks, raw } = resolveAboutPilotBlocks(def, state)
+        applyLoadedPage(
+          {
+            pageKey: def.key,
+            pageTitle: def.title,
+            blocks,
+            source: blocks.length ? 'builder-draft' : 'legacy-public',
+            canvasMode: blocks.length ? 'builder-blocks' : 'legacy-public',
+            previewPath: def.previewPath,
+          },
+          set,
+        )
+        set({
+          pageRawContent: raw,
+          isDirty: false,
+          lastSavedAt: state.draftUpdatedAt,
+          persistMeta: persistMetaFromState(state),
+          persistSnapshot: snapshotFromPayload(def, blocks, raw),
+          loadPageError: null,
+        })
+      } catch (err) {
+        const message = getBuilderPagesErrorMessage(err, 'Sayfa yüklenemedi')
+        useToastStore.getState().show(message, 'error')
+        if (keepEditorOnError) {
+          set({ loadPageStatus: 'ready', loadPageError: message })
+          return
+        }
+        set({
+          loadPageStatus: 'error',
+          loadPageError: message,
+          persistMeta: emptyPersistMeta(),
+        })
+      }
+      return
+    }
 
     try {
       const raw = await pageContentService.getRawByKey(def.contentKey)
@@ -380,15 +476,14 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
         )
         set({
           lastSavedAt: localDraft?.savedAt,
-          isDirty: isMkCompareBuilderPageKey(def.key) || Boolean(localDraft && isAutoMkCompareLegacyDocument(localDraft.blocks)),
+          isDirty:
+            isMkCompareBuilderPageKey(def.key) ||
+            Boolean(localDraft && isAutoMkCompareLegacyDocument(localDraft.blocks)),
         })
         return
       }
 
-      if (
-        resolved.canvasMode === 'legacy-public' &&
-        (def.key === 'about' || isMkCompareBuilderPageKey(def.key))
-      ) {
+      if (resolved.canvasMode === 'legacy-public' && isMkCompareBuilderPageKey(def.key)) {
         const { blocks, report } = convertPageToBlocks(def, enriched ?? raw)
         if (blocks.length > 0) {
           applyLoadedPage(
@@ -403,7 +498,7 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
             set,
           )
           set({
-            isDirty: isMkCompareBuilderPageKey(def.key),
+            isDirty: true,
             conversionReport: report,
             pageRawContent: enriched ?? raw,
           })
@@ -460,6 +555,7 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
 
   saveDraftLocal: () => {
     const { pageKey, pageTitle, blocks } = get()
+    if (isAboutBuilderPilotPage(pageKey)) return
     const savedAt = new Date().toISOString()
     const payload: BuilderDraftPayload = { pageKey, pageTitle, blocks, savedAt }
     localStorage.setItem(draftStorageKey(pageKey), JSON.stringify(payload))
@@ -472,16 +568,32 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
 
     const def = getBuilderPageDefinition(pageKey)
     if (!def) return false
+    if (get().isSaving) return false
 
     set({ isSaving: true, saveError: null })
 
     try {
-      const content = buildPageContentPayload(def, blocks, pageRawContent)
-      const saved = await pageContentService.updateByKey(def.contentKey, content)
+      const result = await persistBuilderPage(pageKey, def, blocks, pageRawContent)
+      if (result.kind === 'persistent-draft') {
+        const savedAt = result.state.draftUpdatedAt ?? new Date().toISOString()
+        set({
+          pageRawContent: result.state.draftContent,
+          isDirty: false,
+          isSaving: false,
+          lastSavedAt: savedAt,
+          pageLoadSource: 'builder-draft',
+          saveError: null,
+          persistMeta: persistMetaFromState(result.state),
+          persistSnapshot: snapshotFromPayload(def, blocks, result.state.draftContent),
+        })
+        useToastStore.getState().show('Taslak kaydedildi', 'success')
+        return true
+      }
+
       const savedAt = new Date().toISOString()
       localStorage.removeItem(draftStorageKey(pageKey))
       set({
-        pageRawContent: saved,
+        pageRawContent: result.saved,
         isDirty: false,
         isSaving: false,
         lastSavedAt: savedAt,
@@ -491,10 +603,52 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
       useToastStore.getState().show('Kayıt başarıyla tamamlandı', 'success')
       return true
     } catch (err) {
-      const message = getErrorMessage(err, 'Kayıt başarısız')
+      const message = isAboutBuilderPilotPage(pageKey)
+        ? getBuilderPagesErrorMessage(err, 'Kayıt başarısız')
+        : getErrorMessage(err, 'Kayıt başarısız')
       set({ isSaving: false, saveError: message })
       useToastStore.getState().show(message, 'error')
       return false
+    }
+  },
+
+  publishAboutPilot: async () => {
+    const { pageKey, blocks, canvasMode } = get()
+    if (!isAboutBuilderPilotPage(pageKey)) return false
+    if (canvasMode !== 'builder-blocks' || blocks.length === 0) return false
+    if (get().isPublishing || get().isSaving) return false
+
+    const def = getBuilderPageDefinition(pageKey)
+    if (!def) return false
+
+    set({ isPublishing: true, saveError: null })
+    try {
+      const published = await publishBuilderPilotPage(pageKey)
+      set({
+        isPublishing: false,
+        persistMeta: persistMetaFromState(published.state),
+        pageRawContent: published.state.draftContent ?? get().pageRawContent,
+        lastSavedAt: published.state.draftUpdatedAt ?? get().lastSavedAt,
+      })
+      useToastStore.getState().show('Hakkımızda sayfası yayına alındı', 'success')
+      return true
+    } catch (err) {
+      const message = getBuilderPagesErrorMessage(err, 'Yayın başarısız')
+      set({ isPublishing: false, saveError: message })
+      useToastStore.getState().show(message, 'error')
+      return false
+    }
+  },
+
+  loadAboutRevisions: async () => {
+    const { pageKey } = get()
+    if (!isAboutBuilderPilotPage(pageKey)) return
+    try {
+      const revisions = await adminBuilderPagesService.listRevisions(pageKey)
+      set({ revisions })
+    } catch {
+      set({ revisions: [] })
+      useToastStore.getState().show('Sürüm listesi yüklenemedi', 'error')
     }
   },
 

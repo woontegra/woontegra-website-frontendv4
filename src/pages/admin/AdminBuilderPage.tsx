@@ -4,8 +4,11 @@ import { BlockLibraryPanel } from '@/builder/admin/BlockLibraryPanel'
 import { BlockSettingsPanel } from '@/builder/admin/BlockSettingsPanel'
 import { BuilderPreviewCanvas } from '@/builder/admin/BuilderPreviewCanvas'
 import { BuilderToolbar } from '@/builder/admin/BuilderToolbar'
+import { BuilderPublishDialog } from '@/builder/admin/BuilderPublishDialog'
+import { BuilderRevisionsModal } from '@/builder/admin/BuilderRevisionsModal'
 import { PageTemplatesModal } from '@/builder/admin/PageTemplatesModal'
 import { resolveBuilderPageKey } from '@/builder/pages/builderPageRegistry'
+import { isAboutBuilderPilotPage } from '@/builder/pilot/aboutBuilderPilot'
 import { useBuilderStore } from '@/builder/store/builderStore'
 import { validateBlocksForPublish } from '@/builder/validation/publishValidation'
 import { AppToast } from '@/components/ui/AppToast'
@@ -17,10 +20,20 @@ export function AdminBuilderPage() {
   const loadPage = useBuilderStore((s) => s.loadPage)
   const exportJson = useBuilderStore((s) => s.exportJson)
   const blocks = useBuilderStore((s) => s.blocks)
+  const isDirty = useBuilderStore((s) => s.isDirty)
+  const persistMeta = useBuilderStore((s) => s.persistMeta)
+  const revisions = useBuilderStore((s) => s.revisions)
+  const isSaving = useBuilderStore((s) => s.isSaving)
+  const isPublishing = useBuilderStore((s) => s.isPublishing)
+  const savePageToApi = useBuilderStore((s) => s.savePageToApi)
+  const publishAboutPilot = useBuilderStore((s) => s.publishAboutPilot)
+  const loadAboutRevisions = useBuilderStore((s) => s.loadAboutRevisions)
 
   const [jsonOpen, setJsonOpen] = useState(false)
   const [validationOpen, setValidationOpen] = useState(false)
   const [templatesOpen, setTemplatesOpen] = useState(false)
+  const [publishOpen, setPublishOpen] = useState(false)
+  const [revisionsOpen, setRevisionsOpen] = useState(false)
   const [validationResult, setValidationResult] = useState(() => validateBlocksForPublish(blocks))
 
   useEffect(() => {
@@ -32,12 +45,41 @@ export function AdminBuilderPage() {
     setValidationOpen(true)
   }
 
+  const openPublish = () => {
+    const result = validateBlocksForPublish(blocks)
+    setValidationResult(result)
+    if (!result.ok) {
+      setValidationOpen(true)
+      return
+    }
+    setPublishOpen(true)
+  }
+
+  const openRevisions = () => {
+    setRevisionsOpen(true)
+    void loadAboutRevisions()
+  }
+
+  const handlePublishSaved = async () => {
+    const ok = await publishAboutPilot()
+    if (ok) setPublishOpen(false)
+  }
+
+  const handleSaveAndPublish = async () => {
+    const saved = await savePageToApi()
+    if (!saved) return
+    const ok = await publishAboutPilot()
+    if (ok) setPublishOpen(false)
+  }
+
   return (
     <div className="-m-6 flex min-h-[calc(100vh)] flex-col bg-[#f4f6f9] lg:h-[calc(100vh)] lg:max-h-[calc(100vh)] lg:overflow-hidden">
       <BuilderToolbar
         onJsonOpen={() => setJsonOpen(true)}
         onValidationOpen={openValidation}
         onTemplatesOpen={() => setTemplatesOpen(true)}
+        onPublishOpen={openPublish}
+        onRevisionsOpen={openRevisions}
       />
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
@@ -48,13 +90,31 @@ export function AdminBuilderPage() {
 
       <PageTemplatesModal open={templatesOpen} onClose={() => setTemplatesOpen(false)} />
 
+      <BuilderPublishDialog
+        open={publishOpen}
+        dirty={isDirty}
+        loading={isSaving || isPublishing}
+        hasSavedDraft={persistMeta?.hasBuilderRecord === true}
+        onCancel={() => setPublishOpen(false)}
+        onPublishSaved={() => void handlePublishSaved()}
+        onSaveAndPublish={() => void handleSaveAndPublish()}
+      />
+
+      <BuilderRevisionsModal
+        open={revisionsOpen}
+        revisions={revisions}
+        onClose={() => setRevisionsOpen(false)}
+      />
+
       {jsonOpen ? (
         <Modal title="JSON önizleme" onClose={() => setJsonOpen(false)}>
           <pre className="max-h-[60vh] overflow-auto rounded-xl bg-slate-900 p-4 text-xs text-emerald-100">
             {exportJson()}
           </pre>
           <p className="mt-2 text-xs text-slate-500">
-            Kaydet ile API&apos;ye yazılacak JSON yapısı. Gerçek kayıt PUT /api/page-content/:contentKey üzerinden yapılır.
+            {isAboutBuilderPilotPage(pageParam)
+              ? 'Taslak kaydı yalnızca kayıtlı taslağı günceller; canlı sayfa Yayına Al ile değişir.'
+              : 'Kaydet ile API\'ye yazılacak JSON yapısı. Gerçek kayıt PUT /api/page-content/:contentKey üzerinden yapılır.'}
           </p>
         </Modal>
       ) : null}

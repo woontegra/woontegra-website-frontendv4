@@ -1,6 +1,7 @@
 import { PublicSitePageEmbed } from '@/builder/preview/PublicSitePageEmbed'
 import { BuilderEditableBlocksCanvas } from '@/builder/preview/BuilderEditableBlocksCanvas'
 import { useBuilderStore } from '@/builder/store/builderStore'
+import { isAboutBuilderPilotPage } from '@/builder/pilot/aboutBuilderPilot'
 import { cn } from '@/lib/cn'
 import type { ConversionReport } from '@/builder/load/conversionReport'
 
@@ -14,6 +15,7 @@ export function BuilderPreviewCanvas() {
   const conversionReport = useBuilderStore((s) => s.conversionReport)
   const convertToBuilderDraft = useBuilderStore((s) => s.convertToBuilderDraft)
   const revertToLegacyView = useBuilderStore((s) => s.revertToLegacyView)
+  const isAboutPilot = isAboutBuilderPilotPage(pageKey)
 
   const isEditable = canvasMode === 'builder-blocks'
   const isLegacy = canvasMode === 'legacy-public'
@@ -44,7 +46,7 @@ export function BuilderPreviewCanvas() {
         <ConversionReportBanner report={conversionReport} onRevert={revertToLegacyView} />
       ) : null}
 
-      {isEditable && !conversionReport ? (
+      {isEditable && !conversionReport && !isAboutPilot ? (
         <div className="border-b border-slate-200 bg-white px-4 py-2">
           <button
             type="button"
