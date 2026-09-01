@@ -1,6 +1,7 @@
 import { BadgeCheck, Check, Headset, Layers3, ShieldCheck } from 'lucide-react'
 import type { PublicProductDetail } from '@/types/product'
 import { getPromotionalSoftwareMeta, isExternalSalesProduct } from '@/lib/publicSoftwareCatalog'
+import { MK_COMPARE_DESKTOP_DELIVERY_NOTE } from '@/components/public/muvekkil-kasa/mkCompareContent'
 type Props = {
   product: PublicProductDetail
   bullets: string[]
@@ -30,7 +31,12 @@ function buildUseCases(product: PublicProductDetail, isFreeDownload: boolean): s
   return items.slice(0, 3)
 }
 
-function buildTechnicalRows(product: PublicProductDetail, galleryCount: number, isFreeDownload: boolean) {
+function buildTechnicalRows(
+  product: PublicProductDetail,
+  galleryCount: number,
+  isFreeDownload: boolean,
+  isCompare: boolean,
+) {
   if (isExternalSalesProduct(product)) {
     const meta = getPromotionalSoftwareMeta(product.slug)
     const rows = [
@@ -43,24 +49,50 @@ function buildTechnicalRows(product: PublicProductDetail, galleryCount: number, 
   }
 
   const rows = [
-    { label: 'Ürün tipi', value: product.productType === 'SAAS' ? 'Web tabanlı / abonelik' : product.productType === 'SERVICE' ? 'Dijital hizmet' : 'Masaüstü yazılım' },
-    { label: 'Teslimat', value: isFreeDownload ? 'Anında indirme' : product.productType === 'SERVICE' ? 'Planlı dijital teslimat' : 'Satın alma sonrası dijital teslimat' },
-    { label: 'Lisans', value: product.licenseRequired ? 'Merkezi lisans' : 'Standart kullanım' },
+    {
+      label: 'Ürün tipi',
+      value:
+        product.productType === 'SAAS'
+          ? 'Web tabanlı kullanım'
+          : product.productType === 'SERVICE'
+            ? 'Dijital hizmet'
+            : 'Masaüstü yazılım',
+    },
+    {
+      label: 'Teslimat',
+      value: isFreeDownload
+        ? 'Anında indirme'
+        : product.productType === 'SERVICE'
+          ? 'Planlı dijital teslimat'
+          : 'Satın alma sonrası dijital teslimat',
+    },
+    {
+      label: 'Erişim bilgisi',
+      value: product.licenseRequired
+        ? isCompare
+          ? MK_COMPARE_DESKTOP_DELIVERY_NOTE
+          : 'Lisans bilgileri e-posta ile iletilir'
+        : 'Standart kullanım',
+    },
   ]
   if (product.version?.trim()) rows.push({ label: 'Sürüm', value: product.version.trim() })
   if (galleryCount > 0) rows.push({ label: 'Galeri', value: `${galleryCount} görsel` })
-  if (product.licenseDays != null && product.licenseDays > 0) rows.push({ label: 'Lisans süresi', value: `${product.licenseDays} gün` })
-  if (product.licenseMaxDevices != null && product.licenseMaxDevices > 0) rows.push({ label: 'Cihaz hakkı', value: `${product.licenseMaxDevices} cihaz` })
+  if (!isCompare && product.licenseDays != null && product.licenseDays > 0) {
+    rows.push({ label: 'Lisans süresi', value: `${product.licenseDays} gün` })
+  }
+  if (!isCompare && product.licenseMaxDevices != null && product.licenseMaxDevices > 0) {
+    rows.push({ label: 'Cihaz hakkı', value: `${product.licenseMaxDevices} cihaz` })
+  }
   return rows
 }
 
 export function ProductContentSections({ product, bullets, isFreeDownload, variant = 'default', headings }: Props) {
   const galleryCount = (product.galleryImages?.length ?? 0) + (product.coverImage ? 1 : 0)
+  const isCompare = variant === 'compare'
   const useCases = buildUseCases(product, isFreeDownload)
-  const technicalRows = buildTechnicalRows(product, galleryCount, isFreeDownload)
+  const technicalRows = buildTechnicalRows(product, galleryCount, isFreeDownload, isCompare)
   const promotionalMeta = getPromotionalSoftwareMeta(product.slug)
   const isExternalSales = isExternalSalesProduct(product)
-  const isCompare = variant === 'compare'
 
   return (
     <section className={isCompare ? 'mx-auto w-full max-w-[1180px] px-4 py-6 sm:px-6 lg:py-8' : 'mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14'}>
@@ -165,7 +197,7 @@ export function ProductContentSections({ product, bullets, isFreeDownload, varia
               ))}
               {!isExternalSales && product.licenseRequired ? (
                 <li className="rounded-2xl border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
-                  Merkezi lisans yönetimi; aktivasyon bilgileri e-posta ile iletilir.
+                  {isCompare ? MK_COMPARE_DESKTOP_DELIVERY_NOTE : 'Lisans bilgileri e-posta ile iletilir.'}
                 </li>
               ) : null}
               {!isExternalSales && product.hasDownload ? (

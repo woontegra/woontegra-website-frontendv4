@@ -9,9 +9,9 @@ import { resolveMkComparePublicBlocks } from '@/builder/templates/mkCompareBuild
 
 export function MuvekkilKasaComparePage() {
   usePageMeta({
-    title: 'Müvekkil Kasa Defteri Masaüstü ve SaaS Karşılaştırması | Woontegra',
+    title: 'Müvekkil Kasa Defteri Masaüstü ve Web Tabanlı Karşılaştırması | Woontegra',
     description:
-      'Müvekkil Kasa Defteri masaüstü ve web tabanlı SaaS sürümlerini karşılaştırın; büronuza uygun kullanım, lisans ve özellik seçeneğini belirleyin.',
+      'Müvekkil Kasa Defteri masaüstü ve web tabanlı sürümlerini karşılaştırın; büronuza uygun kullanım ve özellik seçeneğini belirleyin.',
     canonicalPath: MK_COMPARE_PATH,
   })
 

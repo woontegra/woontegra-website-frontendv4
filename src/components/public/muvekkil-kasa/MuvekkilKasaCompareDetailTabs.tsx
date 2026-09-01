@@ -21,7 +21,7 @@ type Query = UseQueryResult<PublicProductDetail, Error>
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'desktop', label: 'Masaüstü Detayları' },
-  { id: 'saas', label: 'SaaS/Web Detayları' },
+  { id: 'saas', label: 'Web Tabanlı Detayları' },
 ]
 
 type Props = {
@@ -147,7 +147,7 @@ export function MuvekkilKasaCompareDetailTabs({ desktopQuery, saasQuery, tab, on
                   onClick={scrollToCompareTable}
                   className="inline-flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 sm:w-auto"
                 >
-                  SaaS ile Karşılaştır
+                  Web Tabanlı ile Karşılaştır
                 </button>
               </div>
             </div>
@@ -168,8 +168,8 @@ export function MuvekkilKasaCompareDetailTabs({ desktopQuery, saasQuery, tab, on
           saasQuery.isError || (!saasQuery.isPending && !saas) ? (
             <div className={MK_COMPARE_SHELL}>
               <ErrorState
-                title="SaaS detayları yüklenemedi"
-                message={getErrorMessage(saasQuery.error, 'SaaS ürün içeriği alınamadı.')}
+                title="Web tabanlı detaylar yüklenemedi"
+                message={getErrorMessage(saasQuery.error, 'Web tabanlı ürün içeriği alınamadı.')}
                 action={
                   <button
                     type="button"

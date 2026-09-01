@@ -42,7 +42,7 @@ export function MkCompareDetailsBlockRenderer({ block }: BlockRendererProps) {
   const anchorId = details.settings.anchorId?.trim() || 'urun-detaylari'
   const tabs: { id: MkCompareEdition; label: string }[] = [
     { id: 'desktop', label: details.settings.desktop.tabLabel || 'Masaüstü Detayları' },
-    { id: 'saas', label: details.settings.saas.tabLabel || 'SaaS/Web Detayları' },
+    { id: 'saas', label: details.settings.saas.tabLabel || 'Web Tabanlı Detayları' },
   ]
 
   const onTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, current: MkCompareEdition) => {
@@ -121,8 +121,8 @@ export function MkCompareDetailsBlockRenderer({ block }: BlockRendererProps) {
         visible={tab === 'saas'}
         query={compare?.saasQuery}
         panel={details.settings.saas}
-        errorTitle="SaaS detayları yüklenemedi"
-        errorFallback="SaaS ürün içeriği alınamadı."
+        errorTitle="Web tabanlı detaylar yüklenemedi"
+        errorFallback="Web tabanlı ürün içeriği alınamadı."
         retryClass="text-sky-700"
         primaryClass="bg-sky-600 hover:bg-sky-700"
         onPrimary={scrollToComparePurchase}

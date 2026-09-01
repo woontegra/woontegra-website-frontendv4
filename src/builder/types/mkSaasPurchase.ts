@@ -20,7 +20,8 @@ export type MkComparePurchaseCardCopy = {
 export const DEFAULT_MK_COMPARE_DESKTOP_COPY: MkComparePurchaseCardCopy = {
   badge: 'Bilgisayara Kurulan',
   title: 'Müvekkil Kasa Defteri Masaüstü',
-  description: 'Programı bilgisayarına kurarak çalışan, merkezi lisanslı masaüstü sürüm.',
+  description:
+    'Tek bilgisayarda çalışan, kurulum ile kullanılan masaüstü sürüm. Basit müvekkil kasa takibi için uygundur.',
   detailsButtonLabel: 'Masaüstü Detaylarını Gör',
   addToCartLabel: 'Sepete Ekle',
 }
@@ -28,10 +29,10 @@ export const DEFAULT_MK_COMPARE_DESKTOP_COPY: MkComparePurchaseCardCopy = {
 export const DEFAULT_MK_COMPARE_SAAS_COPY: MkComparePurchaseCardCopy = {
   badge: 'Tarayıcıdan Erişim',
   extraBadge: 'En kapsamlı',
-  title: 'Müvekkil Kasa Defteri SaaS',
+  title: 'Müvekkil Kasa Defteri Web Tabanlı',
   description:
-    'Kurulum gerektirmeden tarayıcı üzerinden erişilen, çok kullanıcılı ve WhatsApp destekli web sürümü.',
-  detailsButtonLabel: 'SaaS Detaylarını Gör',
+    'Kurulum gerektirmeden tarayıcı üzerinden erişilen, büro içi ekip kullanımı ve kapsamlı takip sunan web tabanlı sürüm.',
+  detailsButtonLabel: 'Web Tabanlı Detaylarını Gör',
   addToCartLabel: 'Sepete Ekle',
   demoButtonLabel: '7 Gün Ücretsiz Dene',
 }
