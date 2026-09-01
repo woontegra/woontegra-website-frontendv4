@@ -7,6 +7,7 @@ import {
   MK_COMPARE_TABLE_ROWS,
   MK_COMPARE_TABLE_TITLE,
   MK_COMPARE_WEB_COLUMN,
+  isMkCompareWebHighlightFeature,
 } from '@/components/public/muvekkil-kasa/mkCompareContent'
 
 type Tone = 'check' | 'neutral' | 'saas' | 'info'
@@ -23,31 +24,28 @@ export type Row = {
   saas: Cell
 }
 
-function CellView({ cell }: { cell: Cell }) {
+function CellView({ cell, column, feature }: { cell: Cell; column: 'desktop' | 'web'; feature: string }) {
   const isUnavailable = cell.text.trim().toLowerCase() === 'yok'
+  const highlightWeb = column === 'web' && isMkCompareWebHighlightFeature(feature)
+
   const icon =
-    isUnavailable ? null : cell.tone === 'check' ? (
+    column === 'desktop' && !isUnavailable && cell.tone === 'check' ? (
       <Check className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
-    ) : cell.tone === 'saas' ? (
+    ) : highlightWeb ? (
       <Info className="mt-0.5 h-5 w-5 shrink-0 text-sky-600" aria-hidden />
-    ) : (
-      <Info className="mt-0.5 h-5 w-5 shrink-0 text-slate-400" aria-hidden />
-    )
+    ) : null
 
   const wrapClass = isUnavailable
-    ? 'text-slate-500'
-    : cell.tone === 'check'
-      ? 'text-slate-800'
-      : cell.tone === 'saas'
-        ? 'text-sky-900'
-        : 'text-slate-700'
+    ? 'text-slate-600'
+    : highlightWeb
+      ? 'text-sky-900'
+      : 'text-slate-800'
 
-  const badge =
-    cell.tone === 'saas' ? (
-      <span className="inline-flex rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-800">
-        Web Tabanlı avantaj
-      </span>
-    ) : null
+  const badge = highlightWeb ? (
+    <span className="inline-flex rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-800">
+      Web Tabanlı avantaj
+    </span>
+  ) : null
 
   return (
     <div className={`flex items-start ${icon ? 'gap-2.5' : ''} text-[15px] leading-relaxed ${wrapClass}`}>
@@ -114,13 +112,13 @@ export function MuvekkilKasaCompareTable({
               <div className="rounded-xl bg-emerald-50/70 px-4 py-3">
                 <dt className="text-xs font-semibold uppercase tracking-wide text-emerald-800">{desktopColumnLabel}</dt>
                 <dd className="mt-2">
-                  <CellView cell={row.desktop} />
+                  <CellView cell={row.desktop} column="desktop" feature={row.feature} />
                 </dd>
               </div>
               <div className="rounded-xl bg-sky-50/80 px-4 py-3">
                 <dt className="text-xs font-semibold uppercase tracking-wide text-sky-800">{saasColumnLabel}</dt>
                 <dd className="mt-2">
-                  <CellView cell={row.saas} />
+                  <CellView cell={row.saas} column="web" feature={row.feature} />
                 </dd>
               </div>
             </dl>
@@ -165,10 +163,10 @@ export function MuvekkilKasaCompareTable({
                   {row.feature}
                 </th>
                 <td className="px-6 py-4 align-middle">
-                  <CellView cell={row.desktop} />
+                  <CellView cell={row.desktop} column="desktop" feature={row.feature} />
                 </td>
                 <td className="px-6 py-4 align-middle">
-                  <CellView cell={row.saas} />
+                  <CellView cell={row.saas} column="web" feature={row.feature} />
                 </td>
               </tr>
             ))}
@@ -177,9 +175,9 @@ export function MuvekkilKasaCompareTable({
       </div>
 
       {showFootnote ? (
-        <p className="mt-6 max-w-3xl rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm leading-relaxed text-slate-700 sm:text-[15px]">
-          {MK_COMPARE_TABLE_DECISION_NOTE}
-        </p>
+        <div className="mt-8 max-w-3xl rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-sky-50/40 px-5 py-5 shadow-sm sm:px-6 sm:py-6">
+          <p className="text-[15px] font-medium leading-relaxed text-slate-800 sm:text-base">{MK_COMPARE_TABLE_DECISION_NOTE}</p>
+        </div>
       ) : null}
     </section>
   )
