@@ -1,10 +1,13 @@
 import { Check, CircleHelp, Globe, Info, Monitor } from 'lucide-react'
 import type { PublicProductDetail } from '@/types/product'
-import { formatMkSaasTryMoney } from '@/components/public/product/ProductPurchasePanel'
 import {
-  formatDeviceRightsFromApi,
-  formatLicenseDurationFromApi,
-} from '@/components/public/muvekkil-kasa/comparePageUtils'
+  MK_COMPARE_DESKTOP_COLUMN,
+  MK_COMPARE_TABLE_DECISION_NOTE,
+  MK_COMPARE_TABLE_DESCRIPTION,
+  MK_COMPARE_TABLE_ROWS,
+  MK_COMPARE_TABLE_TITLE,
+  MK_COMPARE_WEB_COLUMN,
+} from '@/components/public/muvekkil-kasa/mkCompareContent'
 
 type Tone = 'check' | 'neutral' | 'saas' | 'info'
 
@@ -21,17 +24,19 @@ export type Row = {
 }
 
 function CellView({ cell }: { cell: Cell }) {
+  const isUnavailable = cell.text.trim().toLowerCase() === 'yok'
   const icon =
-    cell.tone === 'check' ? (
+    isUnavailable ? null : cell.tone === 'check' ? (
       <Check className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
     ) : cell.tone === 'saas' ? (
       <Info className="mt-0.5 h-5 w-5 shrink-0 text-sky-600" aria-hidden />
     ) : (
-      <Info className="mt-0.5 h-5 w-5 shrink-0 text-slate-500" aria-hidden />
+      <Info className="mt-0.5 h-5 w-5 shrink-0 text-slate-400" aria-hidden />
     )
 
-  const wrapClass =
-    cell.tone === 'check'
+  const wrapClass = isUnavailable
+    ? 'text-slate-500'
+    : cell.tone === 'check'
       ? 'text-slate-800'
       : cell.tone === 'saas'
         ? 'text-sky-900'
@@ -40,12 +45,12 @@ function CellView({ cell }: { cell: Cell }) {
   const badge =
     cell.tone === 'saas' ? (
       <span className="inline-flex rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-800">
-        SaaS özelliği
+        Web Tabanlı avantaj
       </span>
     ) : null
 
   return (
-    <div className={`flex items-start gap-2.5 text-[15px] leading-relaxed ${wrapClass}`}>
+    <div className={`flex items-start ${icon ? 'gap-2.5' : ''} text-[15px] leading-relaxed ${wrapClass}`}>
       {icon}
       <div className="min-w-0">
         {badge ? <div className="mb-1.5">{badge}</div> : null}
@@ -61,102 +66,34 @@ function CellView({ cell }: { cell: Cell }) {
 }
 
 type Props = {
-  desktop: PublicProductDetail | undefined
-  saas: PublicProductDetail | undefined
-  saasYears: number
+  desktop?: PublicProductDetail
+  saas?: PublicProductDetail
+  saasYears?: number
   title?: string
   description?: string
   desktopColumnLabel?: string
   saasColumnLabel?: string
   rows?: Row[]
   hideHeader?: boolean
+  showFootnote?: boolean
 }
 
 export function MuvekkilKasaCompareTable({
-  desktop,
-  saas,
-  saasYears,
-  title = 'Sürüm karşılaştırması',
-  description = 'Yalnızca bu sitede doğrulanan kullanım, lisans ve satış farkları. Doğrulanmayan iddialar tabloda yer almaz.',
-  desktopColumnLabel = 'Masaüstü',
-  saasColumnLabel = 'SaaS / Web',
+  title = MK_COMPARE_TABLE_TITLE,
+  description = MK_COMPARE_TABLE_DESCRIPTION,
+  desktopColumnLabel = MK_COMPARE_DESKTOP_COLUMN,
+  saasColumnLabel = MK_COMPARE_WEB_COLUMN,
   rows: rowsProp,
   hideHeader = false,
+  showFootnote = true,
 }: Props) {
-  const desktopDuration = desktop ? formatLicenseDurationFromApi(desktop) : 'Ürün yüklenince gösterilir'
-  const desktopDevices = desktop ? formatDeviceRightsFromApi(desktop) : 'Ürün yüklenince gösterilir'
-  const desktopPrice = desktop && Number.isFinite(desktop.price) && desktop.price > 0
-    ? `${formatMkSaasTryMoney(desktop.price, desktop.currency)} · tek lisans`
-    : 'API fiyatı · tek lisans'
-  const saasUnit = saas && Number.isFinite(saas.price) && saas.price > 0
-    ? formatMkSaasTryMoney(saas.price, saas.currency)
-    : 'API birim fiyatı'
-  const saasTotal =
-    saas && Number.isFinite(saas.price) && saas.price > 0
-      ? formatMkSaasTryMoney(saas.price * saasYears, saas.currency)
-      : null
-
-  const rows: Row[] = rowsProp ?? [
-    {
-      feature: 'Kullanım şekli',
-      desktop: { tone: 'check', text: 'Bilgisayara kurulan masaüstü programı' },
-      saas: { tone: 'check', text: 'Tarayıcı üzerinden web erişimi' },
-    },
-    {
-      feature: 'Kurulum',
-      desktop: { tone: 'neutral', text: 'Kurulum gerektirir' },
-      saas: { tone: 'check', text: 'Kurulum gerektirmez' },
-    },
-    {
-      feature: 'Lisans modeli',
-      desktop: { tone: 'check', text: 'Merkezi lisans' },
-      saas: { tone: 'check', text: 'Yıllık SaaS üyeliği' },
-    },
-    {
-      feature: 'Kullanım süresi',
-      desktop: { tone: 'info', text: desktopDuration },
-      saas: { tone: 'check', text: '1–10 yıl seçilebilir' },
-    },
-    {
-      feature: 'Cihaz hakkı',
-      desktop: { tone: 'info', text: desktopDevices },
-      saas: { tone: 'check', text: 'Tarayıcı erişimi' },
-    },
-    {
-      feature: 'Çoklu kullanıcı',
-      desktop: {
-        tone: 'neutral',
-        text: 'Bilgi için ürün detayını inceleyin',
-        hint: 'Bu özellik masaüstü uygulama kodunda bu siteden doğrulanmadı.',
-      },
-      saas: { tone: 'check', text: 'Desteklenir' },
-    },
-    {
-      feature: 'WhatsApp Business bağlantısı',
-      desktop: { tone: 'saas', text: 'Web sürümünde sunulur' },
-      saas: { tone: 'check', text: 'Desteklenir' },
-    },
-    {
-      feature: 'Otomatik WhatsApp hatırlatmaları',
-      desktop: { tone: 'saas', text: 'Web sürümünde sunulur' },
-      saas: { tone: 'check', text: 'Desteklenir' },
-    },
-    {
-      feature: 'Ücretsiz demo',
-      desktop: { tone: 'neutral', text: 'Bulunmuyor' },
-      saas: { tone: 'check', text: '7 gün' },
-    },
-    {
-      feature: 'Fiyatlandırma',
-      desktop: { tone: 'info', text: desktopPrice },
-      saas: {
-        tone: 'info',
-        text: saasTotal
-          ? `${saasUnit} × ${saasYears} yıl = ${saasTotal}`
-          : `${saasUnit} × seçilen yıl`,
-      },
-    },
-  ]
+  const rows: Row[] =
+    rowsProp ??
+    MK_COMPARE_TABLE_ROWS.map((row) => ({
+      feature: row.feature,
+      desktop: row.desktop,
+      saas: row.saas,
+    }))
 
   return (
     <section aria-labelledby="mk-compare-table-heading" className="min-w-0">
@@ -165,9 +102,7 @@ export function MuvekkilKasaCompareTable({
           <h2 id="mk-compare-table-heading" className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
             {title}
           </h2>
-          <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
-            {description}
-          </p>
+          <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">{description}</p>
         </>
       )}
 
@@ -240,6 +175,12 @@ export function MuvekkilKasaCompareTable({
           </tbody>
         </table>
       </div>
+
+      {showFootnote ? (
+        <p className="mt-6 max-w-3xl rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm leading-relaxed text-slate-700 sm:text-[15px]">
+          {MK_COMPARE_TABLE_DECISION_NOTE}
+        </p>
+      ) : null}
     </section>
   )
 }

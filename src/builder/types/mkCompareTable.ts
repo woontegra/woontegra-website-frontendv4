@@ -1,4 +1,11 @@
 import type { BlockBase, BlockStyle, BlockVisibility } from './common'
+import {
+  MK_COMPARE_DESKTOP_COLUMN,
+  MK_COMPARE_TABLE_DESCRIPTION,
+  MK_COMPARE_TABLE_ROWS,
+  MK_COMPARE_TABLE_TITLE,
+  MK_COMPARE_WEB_COLUMN,
+} from '@/components/public/muvekkil-kasa/mkCompareContent'
 
 export type MkCompareCellTone = 'check' | 'neutral' | 'saas' | 'info'
 
@@ -61,70 +68,12 @@ function cell(tone: MkCompareCellTone, text: string, extra?: Partial<MkCompareTa
 }
 
 export function createDefaultMkCompareTableRows(): MkCompareTableRow[] {
-  return [
-    {
-      id: 'row-usage',
-      feature: 'Kullanım şekli',
-      desktop: cell('check', 'Bilgisayara kurulan masaüstü programı'),
-      saas: cell('check', 'Tarayıcı üzerinden web erişimi'),
-    },
-    {
-      id: 'row-install',
-      feature: 'Kurulum',
-      desktop: cell('neutral', 'Kurulum gerektirir'),
-      saas: cell('check', 'Kurulum gerektirmez'),
-    },
-    {
-      id: 'row-license',
-      feature: 'Lisans modeli',
-      desktop: cell('check', 'Merkezi lisans'),
-      saas: cell('check', 'Yıllık SaaS üyeliği'),
-    },
-    {
-      id: 'row-duration',
-      feature: 'Kullanım süresi',
-      desktop: cell('info', 'Ürün yüklenince gösterilir', { valueKey: 'desktop-license' }),
-      saas: cell('check', '1–10 yıl seçilebilir', { valueKey: 'saas-years' }),
-    },
-    {
-      id: 'row-devices',
-      feature: 'Cihaz hakkı',
-      desktop: cell('info', 'Ürün yüklenince gösterilir', { valueKey: 'desktop-devices' }),
-      saas: cell('check', 'Tarayıcı erişimi'),
-    },
-    {
-      id: 'row-multiuser',
-      feature: 'Çoklu kullanıcı',
-      desktop: cell('neutral', 'Bilgi için ürün detayını inceleyin', {
-        hint: 'Bu özellik masaüstü uygulama kodunda bu siteden doğrulanmadı.',
-      }),
-      saas: cell('check', 'Desteklenir'),
-    },
-    {
-      id: 'row-whatsapp',
-      feature: 'WhatsApp Business bağlantısı',
-      desktop: cell('saas', 'Web sürümünde sunulur'),
-      saas: cell('check', 'Desteklenir'),
-    },
-    {
-      id: 'row-reminders',
-      feature: 'Otomatik WhatsApp hatırlatmaları',
-      desktop: cell('saas', 'Web sürümünde sunulur'),
-      saas: cell('check', 'Desteklenir'),
-    },
-    {
-      id: 'row-demo',
-      feature: 'Ücretsiz demo',
-      desktop: cell('neutral', 'Bulunmuyor'),
-      saas: cell('check', '7 gün'),
-    },
-    {
-      id: 'row-price',
-      feature: 'Fiyatlandırma',
-      desktop: cell('info', 'API fiyatı · tek lisans', { valueKey: 'desktop-price' }),
-      saas: cell('info', 'API birim fiyatı × seçilen yıl', { valueKey: 'saas-price' }),
-    },
-  ]
+  return MK_COMPARE_TABLE_ROWS.map((row) => ({
+    id: row.id,
+    feature: row.feature,
+    desktop: cell(row.desktop.tone, row.desktop.text, row.desktop.hint ? { hint: row.desktop.hint } : undefined),
+    saas: cell(row.saas.tone, row.saas.text, row.saas.hint ? { hint: row.saas.hint } : undefined),
+  }))
 }
 
 export function createDefaultMkCompareTableBlock(sortOrder: number): MkCompareTableBlock {
@@ -132,15 +81,14 @@ export function createDefaultMkCompareTableBlock(sortOrder: number): MkCompareTa
     id: uid('mk-compare-table'),
     type: 'mk-compare-table',
     sortOrder,
-    title: 'Sürüm karşılaştırması',
-    description:
-      'Yalnızca bu sitede doğrulanan kullanım, lisans ve satış farkları. Doğrulanmayan iddialar tabloda yer almaz.',
+    title: MK_COMPARE_TABLE_TITLE,
+    description: MK_COMPARE_TABLE_DESCRIPTION,
     visibility: baseVisibility(),
     style: baseStyle(),
     settings: {
       anchorId: 'surum-karsilastirmasi',
-      desktopColumnLabel: 'Masaüstü',
-      saasColumnLabel: 'SaaS / Web',
+      desktopColumnLabel: MK_COMPARE_DESKTOP_COLUMN,
+      saasColumnLabel: MK_COMPARE_WEB_COLUMN,
       rows: createDefaultMkCompareTableRows(),
     },
   }

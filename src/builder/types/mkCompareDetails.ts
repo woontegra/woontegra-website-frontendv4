@@ -70,10 +70,10 @@ export function createDefaultMkCompareDetailsBlock(sortOrder: number): MkCompare
         useProductDescription: true,
         useProductFeatures: true,
         primaryCtaLabel: 'Satın Alma Alanına Dön',
-        secondaryCtaLabel: 'SaaS ile Karşılaştır',
+        secondaryCtaLabel: 'Web Tabanlı ile Karşılaştır',
       },
       saas: {
-        tabLabel: 'SaaS/Web Detayları',
+        tabLabel: 'Web Tabanlı Detayları',
         overviewEyebrow: 'Ürün detay içeriği',
         overviewTitle: 'Genel bakış',
         descriptionHtml: '',

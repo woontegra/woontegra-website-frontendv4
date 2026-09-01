@@ -1,4 +1,8 @@
 import type { PublicProductDetail } from '@/types/product'
+import {
+  MK_COMPARE_DESKTOP_DELIVERY_NOTE,
+  MK_COMPARE_WEB_DELIVERY_NOTE,
+} from '@/components/public/muvekkil-kasa/mkCompareContent'
 import { isMuvekkilKasaDesktopSalesSlug } from '@/lib/muvekkilKasaDesktopProduct'
 import { isMuvekkilKasaSaasProduct } from '@/lib/muvekkilKasaSaasProduct'
 
@@ -51,17 +55,15 @@ export function formatDeviceRightsFromApi(product: PublicProductDetail): string 
 }
 
 export function desktopDeliveryNotes(product: PublicProductDetail): string[] {
-  const notes: string[] = []
-  if (product.licenseRequired) {
-    notes.push('Merkezi lisans; aktivasyon bilgileri e-posta ile iletilir.')
-  }
+  const notes: string[] = [MK_COMPARE_DESKTOP_DELIVERY_NOTE]
   if (product.hasDownload) {
     notes.push('Dijital indirme bağlantısı ödeme onayı sonrası paylaşılır.')
   }
-  if (notes.length === 0) {
-    notes.push('Dijital teslimat')
-  }
   return notes
+}
+
+export function webDeliveryNotes(): string[] {
+  return [MK_COMPARE_WEB_DELIVERY_NOTE]
 }
 
 export function scrollToComparePurchase() {

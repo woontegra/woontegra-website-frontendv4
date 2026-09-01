@@ -65,7 +65,7 @@ export function MuvekkilKasaCompareHeroVisual({ desktop, saas, desktopImageUrl, 
       <Frame
         product={saas}
         overrideUrl={saasImageUrl}
-        label="SaaS/Web"
+        label="Web Tabanlı"
         accent="saas"
         className="absolute right-3 top-5 z-10 w-[62%] rotate-[3deg] lg:right-4 lg:top-6"
       />

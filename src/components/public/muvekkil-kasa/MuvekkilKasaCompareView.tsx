@@ -1,4 +1,3 @@
-import { useMkSaasProductPageContext } from '@/components/public/product/MkSaasProductPageProvider'
 import { MuvekkilKasaCompareProductCards } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareProductCards'
 import { MuvekkilKasaCompareTable } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareTable'
 import { MuvekkilKasaCompareDetailTabs } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareDetailTabs'
@@ -16,11 +15,14 @@ import {
   scrollToComparePurchase,
   scrollToCompareTable,
 } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import {
+  MK_COMPARE_HERO_BADGE,
+  MK_COMPARE_HERO_DESCRIPTION,
+} from '@/components/public/muvekkil-kasa/mkCompareContent'
 import { Breadcrumbs } from '@/components/public/Breadcrumbs'
 
 function ComparePageBody() {
   const { desktopQuery, saasQuery, detailTab, setDetailTab, showProductDetails } = useMkComparePageContext()
-  const saasCtx = useMkSaasProductPageContext()
 
   return (
     <div className="overflow-x-hidden bg-white">
@@ -38,15 +40,12 @@ function ComparePageBody() {
           <div className="mt-6 grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
             <div className="min-w-0">
               <p className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-200">
-                Masaüstü ve SaaS / Web
+                {MK_COMPARE_HERO_BADGE}
               </p>
               <h1 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]">
                 Müvekkil Kasa Defteri: Size Uygun Sürümü Seçin
               </h1>
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-300">
-                Masaüstü kullanımın sadeliğini veya internet üzerinden erişilebilen gelişmiş SaaS altyapısını
-                karşılaştırın; büronuza uygun sürümü seçin.
-              </p>
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-300">{MK_COMPARE_HERO_DESCRIPTION}</p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <button
                   type="button"
@@ -90,11 +89,7 @@ function ComparePageBody() {
         className="scroll-mt-24 border-y border-slate-200/80 bg-slate-50 py-16 sm:py-20 lg:py-24"
       >
         <div className={MK_COMPARE_SHELL}>
-          <MuvekkilKasaCompareTable
-            desktop={desktopQuery.data}
-            saas={saasQuery.data}
-            saasYears={saasCtx.webUsageYears}
-          />
+          <MuvekkilKasaCompareTable />
         </div>
       </section>
 
@@ -130,15 +125,15 @@ function ComparePageBody() {
               className="rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-6 py-6 text-left transition hover:bg-emerald-500/15"
             >
               <p className="text-lg font-bold text-white">Masaüstü Sürümünü Seç</p>
-              <p className="mt-2 text-sm text-emerald-100/80">Bilgisayara kurulum · Merkezi lisans</p>
+              <p className="mt-2 text-sm text-emerald-100/80">Bilgisayara kurulum · Tek bilgisayarda kullanım</p>
             </button>
             <button
               type="button"
               onClick={scrollToComparePurchase}
               className="rounded-2xl border border-sky-400/25 bg-sky-500/10 px-6 py-6 text-left transition hover:bg-sky-500/15"
             >
-              <p className="text-lg font-bold text-white">SaaS/Web Sürümünü Seç</p>
-              <p className="mt-2 text-sm text-sky-100/80">Tarayıcı erişimi · 7 gün ücretsiz demo</p>
+              <p className="text-lg font-bold text-white">Web Tabanlı Sürümü Seç</p>
+              <p className="mt-2 text-sm text-sky-100/80">Her yerden erişim · 7 gün ücretsiz demo</p>
             </button>
           </div>
           <p className="mt-8 text-center">
