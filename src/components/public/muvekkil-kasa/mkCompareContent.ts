@@ -11,6 +11,19 @@ export const MK_COMPARE_TABLE_DECISION_NOTE =
 export const MK_COMPARE_DESKTOP_COLUMN = 'Masaüstü Sürüm'
 export const MK_COMPARE_WEB_COLUMN = 'Web Tabanlı Sürüm'
 
+/** Web sütununda rozet ve ikon yalnızca bu satırlarda gösterilir. */
+export const MK_COMPARE_WEB_HIGHLIGHT_FEATURES = [
+  'Yetkili kullanıcılar',
+  'Personel ve prim takibi',
+  'Otomatik hatırlatmalar',
+  'Raporlama ve kontrol',
+  'Her yerden erişim',
+] as const
+
+export function isMkCompareWebHighlightFeature(feature: string): boolean {
+  return (MK_COMPARE_WEB_HIGHLIGHT_FEATURES as readonly string[]).includes(feature)
+}
+
 export const MK_COMPARE_HERO_BADGE = 'Masaüstü ve Web Tabanlı'
 export const MK_COMPARE_HERO_DESCRIPTION =
   'Masaüstü kullanımın sadeliğini veya internet üzerinden erişilebilen gelişmiş web tabanlı takibi karşılaştırın; büronuza uygun sürümü seçin.'
