@@ -14,6 +14,10 @@ import { createDefaultMkCompareTableBlock } from '@/builder/types/mkCompareTable
 import { createDefaultMkCompareDetailsBlock } from '@/builder/types/mkCompareDetails'
 import { MK_SAAS_PROBLEM_PILLS } from '@/builder/render/mkSaasBuilderVisuals'
 import { MK_COMPARE_DETAILS_ID, MK_COMPARE_PURCHASE_ID, MK_COMPARE_TABLE_ID } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import {
+  MK_COMPARE_HERO_BADGE,
+  MK_COMPARE_HERO_DESCRIPTION,
+} from '@/components/public/muvekkil-kasa/mkCompareContent'
 
 export const MK_COMPARE_LEGACY_SECTION_KEY = 'muvekkil-kasa.compare'
 
@@ -59,8 +63,7 @@ export function resolveMkComparePublicBlocks(blocks: BuilderBlock[] | null | und
 export function createMuvekkilKasaCompareBuilderTemplate(): BuilderBlock[] {
   const hero = createDefaultHeroBlock(uid('hero'), 0)
   hero.title = 'Müvekkil Kasa Defteri: Size Uygun Sürümü Seçin'
-  hero.description =
-    'Masaüstü kullanımın sadeliğini veya internet üzerinden erişilebilen gelişmiş SaaS altyapısını karşılaştırın; büronuza uygun sürümü seçin.'
+  hero.description = MK_COMPARE_HERO_DESCRIPTION
   hero.style.backgroundColor = '#0f172a'
   hero.style.backgroundGradient = 'linear-gradient(to bottom right, #020617, #0f2744, #0f172a)'
   hero.style.containerWidth = 'wide'
@@ -69,7 +72,7 @@ export function createMuvekkilKasaCompareBuilderTemplate(): BuilderBlock[] {
     ...hero.settings,
     mode: 'gradient',
     layout: 'compare',
-    badge: 'Masaüstü ve SaaS / Web',
+    badge: MK_COMPARE_HERO_BADGE,
     showBreadcrumbs: true,
     breadcrumbs: [
       { label: 'Ana Sayfa', href: '/' },
@@ -233,7 +236,7 @@ export function createMuvekkilKasaCompareBuilderTemplate(): BuilderBlock[] {
     backgroundType: 'gradient',
     gradient: 'linear-gradient(to bottom right, #020617, #10263f, #0f172a)',
     variant: 'mk-compare-editions',
-    featurePills: ['Bilgisayara kurulum · Merkezi lisans', 'Tarayıcı erişimi · 7 gün ücretsiz demo'],
+    featurePills: ['Bilgisayara kurulum · Tek bilgisayarda kullanım', 'Her yerden erişim · 7 gün ücretsiz demo'],
     footerLinkLabel: 'Satın alma alanına dön',
     footerLinkHref: `#${MK_COMPARE_PURCHASE_ID}`,
     buttons: [
@@ -246,7 +249,7 @@ export function createMuvekkilKasaCompareBuilderTemplate(): BuilderBlock[] {
       },
       {
         id: uid('cta-saas'),
-        label: 'SaaS/Web Sürümünü Seç',
+        label: 'Web Tabanlı Sürümünü Seç',
         href: `#${MK_COMPARE_PURCHASE_ID}`,
         visible: true,
         variant: 'outline',

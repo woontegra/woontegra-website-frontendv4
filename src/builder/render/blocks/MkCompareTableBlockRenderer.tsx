@@ -3,15 +3,21 @@ import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { renderIfText } from '@/builder/render/renderRules'
 import { formatMkSaasTryMoney } from '@/components/public/product/ProductPurchasePanel'
 import { MuvekkilKasaCompareTable, type Row } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareTable'
+import { MK_COMPARE_SHELL } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import {
+  MK_COMPARE_DESKTOP_COLUMN,
+  MK_COMPARE_TABLE_DESCRIPTION,
+  MK_COMPARE_TABLE_TITLE,
+  MK_COMPARE_WEB_COLUMN,
+} from '@/components/public/muvekkil-kasa/mkCompareContent'
+import type { MkCompareTableBlock, MkCompareTableCell, MkCompareValueKey } from '@/builder/types/mkCompareTable'
+import type { PublicProductDetail } from '@/types/product'
 import { useMkComparePageContextOptional } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
 import { useMkSaasProductPageContextOptional } from '@/components/public/product/MkSaasProductPageProvider'
 import {
   formatDeviceRightsFromApi,
   formatLicenseDurationFromApi,
-  MK_COMPARE_SHELL,
 } from '@/components/public/muvekkil-kasa/comparePageUtils'
-import type { MkCompareTableBlock, MkCompareTableCell, MkCompareValueKey } from '@/builder/types/mkCompareTable'
-import type { PublicProductDetail } from '@/types/product'
 
 function resolveValue(
   key: MkCompareValueKey | undefined,
@@ -57,17 +63,31 @@ function toRowCell(
   }
 }
 
-export function MkCompareTableBlockRenderer({ block }: BlockRendererProps) {
+export function MkCompareTableBlockRenderer({ block, mode = 'public' }: BlockRendererProps) {
   if (block.type !== 'mk-compare-table') return null
   const table = block as MkCompareTableBlock
   if (!table.visibility.enabled) return null
+
+  const anchorId = table.settings.anchorId?.trim() || 'surum-karsilastirmasi'
+
+  if (mode === 'public') {
+    return (
+      <section
+        id={anchorId}
+        className="scroll-mt-24 border-y border-slate-200/80 bg-slate-50 py-16 sm:py-20 lg:py-24"
+      >
+        <div className={MK_COMPARE_SHELL}>
+          <MuvekkilKasaCompareTable />
+        </div>
+      </section>
+    )
+  }
 
   const compare = useMkComparePageContextOptional()
   const saasCtx = useMkSaasProductPageContextOptional()
   const desktop = compare?.desktopQuery.data
   const saas = compare?.saasQuery.data
   const saasYears = saasCtx?.webUsageYears ?? 1
-  const anchorId = table.settings.anchorId?.trim() || 'surum-karsilastirmasi'
 
   const rows: Row[] = table.settings.rows.map((row) => ({
     feature: row.feature,
@@ -92,11 +112,10 @@ export function MkCompareTableBlockRenderer({ block }: BlockRendererProps) {
           </BuilderField>
         ) : null}
         <MuvekkilKasaCompareTable
-          desktop={desktop}
-          saas={saas}
-          saasYears={saasYears}
-          desktopColumnLabel={table.settings.desktopColumnLabel}
-          saasColumnLabel={table.settings.saasColumnLabel}
+          title={table.title || MK_COMPARE_TABLE_TITLE}
+          description={table.description || MK_COMPARE_TABLE_DESCRIPTION}
+          desktopColumnLabel={table.settings.desktopColumnLabel || MK_COMPARE_DESKTOP_COLUMN}
+          saasColumnLabel={table.settings.saasColumnLabel || MK_COMPARE_WEB_COLUMN}
           rows={rows}
           hideHeader
         />

@@ -17,8 +17,7 @@ import type { PublicProductDetail } from '@/types/product'
 import type { MkComparePurchaseCardCopy } from '@/builder/types/mkSaasPurchase'
 import {
   desktopDeliveryNotes,
-  formatDeviceRightsFromApi,
-  formatLicenseDurationFromApi,
+  webDeliveryNotes,
 } from '@/components/public/muvekkil-kasa/comparePageUtils'
 
 type Query = UseQueryResult<PublicProductDetail, Error>
@@ -139,7 +138,7 @@ function DesktopCard({
       </h2>
       <p className="mt-2 min-h-[3.25rem] text-sm leading-relaxed text-slate-600 sm:text-base">
         {copy?.description?.trim() ||
-          'Programı bilgisayarına kurarak çalışan, merkezi lisanslı masaüstü sürüm.'}
+          'Tek bilgisayarda çalışan, kurulum ile kullanılan masaüstü sürüm. Basit müvekkil kasa takibi için uygundur.'}
       </p>
 
       <div className="mt-6 min-h-[5.75rem]">
@@ -172,23 +171,12 @@ function DesktopCard({
         )}
       </div>
 
-      <div className="mt-4 space-y-2 text-sm text-slate-700 sm:text-[15px]">
-        <p>
-          <span className="font-semibold text-slate-800">Lisans süresi: </span>
-          {formatLicenseDurationFromApi(product)}
-        </p>
-        <p>
-          <span className="font-semibold text-slate-800">Cihaz hakkı: </span>
-          {formatDeviceRightsFromApi(product)}
-        </p>
-        <div>
-          <p className="font-semibold text-slate-800">Teslimat</p>
-          <ul className="mt-1 space-y-1 text-slate-600">
-            {desktopDeliveryNotes(product).map((note) => (
-              <li key={note}>{note}</li>
-            ))}
-          </ul>
-        </div>
+      <div className="mt-4 text-sm text-slate-600 sm:text-[15px]">
+        <ul className="space-y-1">
+          {desktopDeliveryNotes(product).map((note) => (
+            <li key={note}>{note}</li>
+          ))}
+        </ul>
       </div>
 
       <div className="mt-auto space-y-2.5 pt-6">
@@ -240,8 +228,8 @@ function SaasCard({
   if (query.isError || !product) {
     return (
       <ErrorState
-        title="SaaS ürünü yüklenemedi"
-        message={getErrorMessage(query.error, 'SaaS ürün bilgileri alınamadı.')}
+        title="Web tabanlı ürün yüklenemedi"
+        message={getErrorMessage(query.error, 'Web tabanlı ürün bilgileri alınamadı.')}
         action={<RetryAction onRetry={() => query.refetch()} />}
       />
     )
@@ -274,11 +262,11 @@ function SaasCard({
         <ProductCover product={product} name={product.name} overrideUrl={copy?.imageUrl} />
       </div>
       <h2 className="mt-5 min-h-[3.25rem] text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
-        {copy?.title?.trim() || 'Müvekkil Kasa Defteri SaaS'}
+        {copy?.title?.trim() || 'Müvekkil Kasa Defteri Web Tabanlı'}
       </h2>
       <p className="mt-2 min-h-[3.25rem] text-sm leading-relaxed text-slate-600 sm:text-base">
         {copy?.description?.trim() ||
-          'Kurulum gerektirmeden tarayıcı üzerinden erişilen, çok kullanıcılı ve WhatsApp destekli web sürümü.'}
+          'Kurulum gerektirmeden tarayıcı üzerinden erişilen, büro içi ekip kullanımı ve kapsamlı takip sunan web tabanlı sürüm.'}
       </p>
 
       <div className="mt-6 min-h-[5.75rem]">
@@ -310,6 +298,14 @@ function SaasCard({
         ) : (
           <p className="text-sm text-slate-500">Fiyat ürün detayında belirtilir.</p>
         )}
+      </div>
+
+      <div className="mt-4 text-sm text-slate-600 sm:text-[15px]">
+        <ul className="space-y-1">
+          {webDeliveryNotes().map((note) => (
+            <li key={note}>{note}</li>
+          ))}
+        </ul>
       </div>
 
       <div className="mt-4 min-h-[5.5rem]">
@@ -354,7 +350,7 @@ function SaasCard({
           onClick={onShowDetails}
           className="flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50"
         >
-          {copy?.detailsButtonLabel?.trim() || 'SaaS Detaylarını Gör'}
+          {copy?.detailsButtonLabel?.trim() || 'Web Tabanlı Detaylarını Gör'}
         </button>
         {canPurchase && !ctx.feedback ? (
           <button
