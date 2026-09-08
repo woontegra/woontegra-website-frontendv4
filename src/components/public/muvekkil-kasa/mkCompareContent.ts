@@ -135,3 +135,59 @@ export const MK_COMPARE_LEGACY_TABLE_FEATURES = [
   'WhatsApp Business bağlantısı',
   'Otomatik WhatsApp hatırlatmaları',
 ] as const
+
+/** Karşılaştırma sayfası “Ürün detay içeriği” — sekmeye göre yapılandırılmış metin. */
+export type MkCompareDetailOverview = {
+  intro: string
+  canDo: string[]
+  suitableFor: string[]
+  advantages: string[]
+}
+
+export const MK_COMPARE_DETAIL_OVERVIEW_DESKTOP: MkCompareDetailOverview = {
+  intro:
+    'Müvekkil Kasa Defteri masaüstü sürümü, müvekkil hesaplarınızı bilgisayarınızda düzenli tutmanıza yardımcı olur. Tahsilat, ödeme, masraf, avans ve bakiyeyi tarihli kasa hareketleriyle izlersiniz. Satın alma sonrası lisans bilgileri e-posta ile iletilir.',
+  canDo: [
+    'Müvekkil bazında tahsilat, ödeme, masraf ve avans kayıtlarını girebilirsiniz.',
+    'Kalan bakiyeyi anlık olarak görebilirsiniz.',
+    'Kasa hareketlerini tarihe göre sıralı tutabilirsiniz.',
+    'Dağınık notlar yerine tek bir kayıt düzeni kullanabilirsiniz.',
+  ],
+  suitableFor: [
+    'Tek başına veya az müvekkille çalışan hukuk profesyonelleri',
+    'Temel kasa takibini kendi bilgisayarında yürütmek isteyenler',
+    'Basit ve hızlı kurulum arayan kullanıcılar',
+  ],
+  advantages: [
+    'Masaüstünde sade ve odaklı çalışma düzeni',
+    'Müvekkil mali akışının tek ekranda toplanması',
+    'Tarihli hareketlerle okunabilir kayıt geçmişi',
+    'Lisans bilgilerinin e-posta ile teslimi',
+  ],
+}
+
+export const MK_COMPARE_DETAIL_OVERVIEW_WEB: MkCompareDetailOverview = {
+  intro:
+    'Web tabanlı sürüm, aynı mali takip ihtiyaçlarını tarayıcı üzerinden karşılar. Birden fazla yetkili kullanıcı farklı cihazlardan ortak kayıtlara erişebilir. Giriş ve erişim bilgileri e-posta ile iletilir.',
+  canDo: [
+    'Tahsilat, ödeme, masraf, avans ve bakiyeyi müvekkil bazında yönetebilirsiniz.',
+    'İnternet olan her yerden tarayıcıyla giriş yapabilirsiniz.',
+    'Yetkili kullanıcılarla aynı kasa verisini paylaşabilirsiniz.',
+    'Büro içi ortak takibi farklı cihazlardan sürdürebilirsiniz.',
+  ],
+  suitableFor: [
+    'Birden fazla kişinin aynı kasa kayıtlarına bakması gereken bürolar',
+    'Ofis dışında da dosya ve müvekkil bakiyesini görmek isteyen ekipler',
+    'Ortak takip ve yetki ayrımı arayan hukuk ofisleri',
+  ],
+  advantages: [
+    'Kurulum yükü olmadan tarayıcıdan anında erişim',
+    'Yetkili kullanıcılarla paylaşılan çalışma ortamı',
+    'Telefon, tablet veya bilgisayardan devam edebilme esnekliği',
+    'Büro genelinde aynı güncel bakiyeyi görme kolaylığı',
+  ],
+}
+
+export function getMkCompareDetailOverview(edition: 'desktop' | 'saas'): MkCompareDetailOverview {
+  return edition === 'saas' ? MK_COMPARE_DETAIL_OVERVIEW_WEB : MK_COMPARE_DETAIL_OVERVIEW_DESKTOP
+}

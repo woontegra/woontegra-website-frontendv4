@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  getMkCompareDetailOverview,
   MK_COMPARE_DESKTOP_COLUMN,
   MK_COMPARE_LEGACY_TABLE_FEATURES,
   MK_COMPARE_TABLE_ROWS,
@@ -73,5 +74,29 @@ describe('mk compare customer content', () => {
   it('uses customer-facing column labels', () => {
     expect(MK_COMPARE_DESKTOP_COLUMN).toBe('Masaüstü Sürüm')
     expect(MK_COMPARE_WEB_COLUMN).toBe('Web Tabanlı Sürüm')
+  })
+
+  it('structures detail overview with intro and three bullet groups', () => {
+    for (const edition of ['desktop', 'saas'] as const) {
+      const overview = getMkCompareDetailOverview(edition)
+      expect(overview.intro.split('.').filter((s) => s.trim()).length).toBeGreaterThanOrEqual(2)
+      expect(overview.canDo.length).toBeGreaterThanOrEqual(3)
+      expect(overview.suitableFor.length).toBeGreaterThanOrEqual(3)
+      expect(overview.advantages.length).toBeGreaterThanOrEqual(3)
+      const haystack = [overview.intro, ...overview.canDo, ...overview.suitableFor, ...overview.advantages]
+        .join(' ')
+        .toLowerCase()
+      expect(haystack.includes('saas')).toBe(false)
+    }
+  })
+
+  it('keeps desktop and web overview messaging distinct', () => {
+    const desktop = getMkCompareDetailOverview('desktop')
+    const web = getMkCompareDetailOverview('saas')
+    expect(desktop.intro).not.toBe(web.intro)
+    expect(desktop.intro.toLowerCase()).toContain('masaüstü')
+    expect(web.intro.toLowerCase()).toContain('tarayıcı')
+    expect(web.canDo.some((item) => item.toLowerCase().includes('yetkili'))).toBe(true)
+    expect(desktop.advantages.some((item) => item.toLowerCase().includes('lisans'))).toBe(true)
   })
 })

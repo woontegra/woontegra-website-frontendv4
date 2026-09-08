@@ -1,7 +1,6 @@
 import { useId, useRef, type KeyboardEvent } from 'react'
 import { Sparkles } from 'lucide-react'
 import { ProductContentSections } from '@/components/public/product/ProductContentSections'
-import { MuvekkilKasaSaasDetailSections } from '@/components/public/muvekkil-kasa/MuvekkilKasaSaasDetailSections'
 import { ErrorState } from '@/components/public/ErrorState'
 import { useMkSaasProductPageContext } from '@/components/public/product/MkSaasProductPageProvider'
 import { isFreeDownloadProduct } from '@/utils/productPurchase'
@@ -133,6 +132,7 @@ export function MuvekkilKasaCompareDetailTabs({ desktopQuery, saasQuery, tab, on
                 bullets={featureBulletsFromProduct(desktop)}
                 isFreeDownload={isFreeDownloadProduct(desktop)}
                 variant="compare"
+                compareEdition="desktop"
               />
               <div className={`${MK_COMPARE_SHELL} flex flex-col gap-3 pb-2 sm:flex-row`}>
                 <button
@@ -183,9 +183,13 @@ export function MuvekkilKasaCompareDetailTabs({ desktopQuery, saasQuery, tab, on
             </div>
           ) : saas ? (
             <div>
-              <div className="[&>div]:bg-transparent [&_.max-w-7xl]:!max-w-[1180px]">
-                <MuvekkilKasaSaasDetailSections />
-              </div>
+              <ProductContentSections
+                product={saas}
+                bullets={featureBulletsFromProduct(saas)}
+                isFreeDownload={isFreeDownloadProduct(saas)}
+                variant="compare"
+                compareEdition="saas"
+              />
               <div className={`${MK_COMPARE_SHELL} flex flex-col gap-3 py-10 sm:flex-row sm:flex-wrap`}>
                 <button
                   type="button"

@@ -110,6 +110,7 @@ export function MkCompareDetailsBlockRenderer({ block }: BlockRendererProps) {
         visible={tab === 'desktop'}
         query={compare?.desktopQuery}
         panel={details.settings.desktop}
+        compareEdition="desktop"
         errorTitle="Masaüstü detayları yüklenemedi"
         errorFallback="Masaüstü ürün içeriği alınamadı."
         retryClass="text-emerald-700"
@@ -121,6 +122,7 @@ export function MkCompareDetailsBlockRenderer({ block }: BlockRendererProps) {
         visible={tab === 'saas'}
         query={compare?.saasQuery}
         panel={details.settings.saas}
+        compareEdition="saas"
         errorTitle="Web tabanlı detaylar yüklenemedi"
         errorFallback="Web tabanlı ürün içeriği alınamadı."
         retryClass="text-sky-700"
@@ -137,6 +139,7 @@ function Panel({
   visible,
   query,
   panel,
+  compareEdition,
   errorTitle,
   errorFallback,
   retryClass,
@@ -148,6 +151,7 @@ function Panel({
   visible: boolean
   query: UseQueryResult<PublicProductDetail, Error> | undefined
   panel: MkCompareDetailsPanel
+  compareEdition: MkCompareEdition
   errorTitle: string
   errorFallback: string
   retryClass: string
@@ -195,6 +199,7 @@ function Panel({
         bullets={bullets}
         isFreeDownload={isFreeDownloadProduct(product)}
         variant="compare"
+        compareEdition={compareEdition}
         headings={{
           overviewEyebrow: panel.overviewEyebrow,
           overviewTitle: panel.overviewTitle,
