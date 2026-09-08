@@ -106,12 +106,15 @@ export function aggregateDownloadsFromOrders(
     if (!paid.has(detail.orderNo)) continue
     for (const item of detail.items) {
       if (!item.downloadUrl || isSaasOrderDeliveryUrl(item.downloadUrl)) continue
+      if (item.downloadUnavailableMessage) continue
+      const href = resolveDownloadHref(item.downloadUrl)
+      if (href.includes('/api/downloads/order/')) continue
       const meta = resolveItemDownloadMeta(item)
       rows.push({
         orderNo: detail.orderNo,
         productName: item.productName,
         productSlug: item.productSlug,
-        downloadUrl: resolveDownloadHref(item.downloadUrl),
+        downloadUrl: href,
         kind: meta.kind,
         label: meta.label,
         buttonLabel: meta.buttonLabel,
@@ -165,8 +168,17 @@ export function pickLatestOrder(orders: CustomerOrderListItem[]): CustomerOrderL
 }
 
 export function downloadButtonsForItem(item: CustomerOrderItem, paid: boolean) {
-  if (!paid || !item.downloadUrl || isSaasOrderDeliveryUrl(item.downloadUrl)) return []
+  if (!paid || isSaasOrderDeliveryUrl(item.downloadUrl)) return []
+  if (item.downloadUnavailableMessage) return []
+  if (!item.downloadUrl) return []
   const href = resolveDownloadHref(item.downloadUrl)
+  if (href.includes('/api/downloads/order/')) return []
   const meta = resolveItemDownloadMeta(item)
   return [{ label: meta.buttonLabel, href }]
+}
+
+export function downloadUnavailableMessageForItem(item: CustomerOrderItem, paid: boolean): string | null {
+  if (!paid || isSaasOrderDeliveryUrl(item.downloadUrl)) return null
+  if (item.downloadUnavailableMessage) return item.downloadUnavailableMessage
+  return null
 }

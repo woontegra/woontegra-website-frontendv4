@@ -32,6 +32,8 @@ export type CreateOrderBody = {
   saveToAddressBook?: boolean
   selectedAddressId?: string | null
   renewalToken?: string
+  /** Aynı satın alma denemesinin yeniden denemelerinde sabit kalır */
+  checkoutIdempotencyKey?: string
 }
 
 export type CreateOrderResponse = {
@@ -42,6 +44,7 @@ export type CreateOrderResponse = {
   currency: string
   paymentProvider: string
   addressBookWarning?: string
+  reused?: boolean
 }
 
 export type CartPreviewRow = {

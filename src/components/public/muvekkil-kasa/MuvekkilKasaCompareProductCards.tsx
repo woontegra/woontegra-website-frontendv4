@@ -17,10 +17,53 @@ import type { PublicProductDetail } from '@/types/product'
 import type { MkComparePurchaseCardCopy } from '@/builder/types/mkSaasPurchase'
 import {
   desktopDeliveryNotes,
+  MK_COMPARE_CARD_DESKTOP_ID,
+  MK_COMPARE_CARD_SAAS_ID,
   webDeliveryNotes,
 } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { useMkComparePageContextOptional } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
 
 type Query = UseQueryResult<PublicProductDetail, Error>
+
+/** Affiliate / ?surum= vurgusu: hedef, diğer (soluk) veya yok. */
+type ReferralCardFocus = 'target' | 'other' | 'none'
+
+function referralFocusClass(focus: ReferralCardFocus, tone: 'emerald' | 'sky'): string {
+  if (focus === 'none') return ''
+  if (focus === 'other') return ' opacity-45 grayscale-[0.25] saturate-75'
+  if (tone === 'emerald') {
+    return ' border-[3px] border-emerald-500 shadow-[0_22px_55px_-18px_rgba(5,150,105,0.55)] ring-4 ring-emerald-200/90'
+  }
+  return ' border-[3px] border-sky-500 shadow-[0_22px_55px_-18px_rgba(2,132,199,0.55)] ring-4 ring-sky-200/90'
+}
+
+function ReferralProductBadge({ tone }: { tone: 'emerald' | 'sky' }) {
+  return (
+    <p
+      className={
+        tone === 'emerald'
+          ? 'mb-3 inline-flex w-fit items-center rounded-full border border-emerald-600 bg-emerald-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm'
+          : 'mb-3 inline-flex w-fit items-center rounded-full border border-sky-600 bg-sky-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm'
+      }
+    >
+      Bu bağlantıya ait ürün
+    </p>
+  )
+}
+
+function ReferralCartHint({ tone }: { tone: 'emerald' | 'sky' }) {
+  return (
+    <p
+      className={
+        tone === 'emerald'
+          ? 'rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-center text-xs font-medium leading-snug text-emerald-900'
+          : 'rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-center text-xs font-medium leading-snug text-sky-900'
+      }
+    >
+      İş ortağı bağlantısıyla seçilen ürün
+    </p>
+  )
+}
 
 function CardSkeleton() {
   return (
@@ -80,10 +123,12 @@ function DesktopCard({
   query,
   onShowDetails,
   copy,
+  focus,
 }: {
   query: Query
   onShowDetails: () => void
   copy?: MkComparePurchaseCardCopy
+  focus: ReferralCardFocus
 }) {
   const [feedback, setFeedback] = useState<'added' | 'in-cart' | null>(null)
   const product = query.data
@@ -105,6 +150,7 @@ function DesktopCard({
   const strikePrice =
     product.originalPrice != null && product.originalPrice > unitPrice ? product.originalPrice : null
   const campaignBadge = product.campaign?.badge?.trim() || (product.campaign ? 'Kampanyalı' : null)
+  const isTarget = focus === 'target'
 
   const handleAddToCart = () => {
     if (!canPurchase) return
@@ -123,7 +169,11 @@ function DesktopCard({
   }
 
   return (
-    <article className="flex h-full flex-col rounded-3xl border border-emerald-100 bg-white p-5 shadow-[0_18px_50px_-28px_rgba(15,118,110,0.35)] ring-1 ring-emerald-900/5 sm:p-7">
+    <article
+      id={MK_COMPARE_CARD_DESKTOP_ID}
+      className={`flex h-full flex-col rounded-3xl border border-emerald-100 bg-white p-5 shadow-[0_18px_50px_-28px_rgba(15,118,110,0.35)] ring-1 ring-emerald-900/5 transition sm:p-7${referralFocusClass(focus, 'emerald')}`}
+    >
+      {isTarget ? <ReferralProductBadge tone="emerald" /> : null}
       <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
           <Monitor className="h-3.5 w-3.5" aria-hidden />
@@ -193,6 +243,7 @@ function DesktopCard({
         >
           {copy?.detailsButtonLabel?.trim() || 'Masaüstü Detaylarını Gör'}
         </button>
+        {canPurchase && !feedback && isTarget ? <ReferralCartHint tone="emerald" /> : null}
         {canPurchase && !feedback ? (
           <button
             type="button"
@@ -216,10 +267,12 @@ function SaasCard({
   query,
   onShowDetails,
   copy,
+  focus,
 }: {
   query: Query
   onShowDetails: () => void
   copy?: MkComparePurchaseCardCopy
+  focus: ReferralCardFocus
 }) {
   const ctx = useMkSaasProductPageContext()
   const product = query.data
@@ -244,9 +297,14 @@ function SaasCard({
     product.originalPrice != null && product.originalPrice > unitPrice ? product.originalPrice : null
   const campaignBadge = product.campaign?.badge?.trim() || (product.campaign ? 'Kampanyalı' : null)
   const yearsId = 'mk-compare-saas-years'
+  const isTarget = focus === 'target'
 
   return (
-    <article className="flex h-full flex-col rounded-3xl border border-sky-100 bg-white p-5 shadow-[0_18px_50px_-28px_rgba(2,132,199,0.35)] ring-1 ring-sky-900/5 sm:p-7">
+    <article
+      id={MK_COMPARE_CARD_SAAS_ID}
+      className={`flex h-full flex-col rounded-3xl border border-sky-100 bg-white p-5 shadow-[0_18px_50px_-28px_rgba(2,132,199,0.35)] ring-1 ring-sky-900/5 transition sm:p-7${referralFocusClass(focus, 'sky')}`}
+    >
+      {isTarget ? <ReferralProductBadge tone="sky" /> : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-800">
           <Globe className="h-3.5 w-3.5" aria-hidden />
@@ -352,6 +410,7 @@ function SaasCard({
         >
           {copy?.detailsButtonLabel?.trim() || 'Web Tabanlı Detaylarını Gör'}
         </button>
+        {canPurchase && !ctx.feedback && isTarget ? <ReferralCartHint tone="sky" /> : null}
         {canPurchase && !ctx.feedback ? (
           <button
             type="button"
@@ -389,14 +448,28 @@ export function MuvekkilKasaCompareProductCards({
   desktopCopy,
   saasCopy,
 }: Props) {
+  const compareCtx = useMkComparePageContextOptional()
+  const highlightedEdition = compareCtx?.highlightedEdition ?? null
+
+  const focusFor = (edition: 'desktop' | 'saas'): ReferralCardFocus => {
+    if (!highlightedEdition) return 'none'
+    return highlightedEdition === edition ? 'target' : 'other'
+  }
+
   return (
     <div className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
       <DesktopCard
         query={desktopQuery}
         onShowDetails={() => onShowProductDetails('desktop')}
         copy={desktopCopy}
+        focus={focusFor('desktop')}
       />
-      <SaasCard query={saasQuery} onShowDetails={() => onShowProductDetails('saas')} copy={saasCopy} />
+      <SaasCard
+        query={saasQuery}
+        onShowDetails={() => onShowProductDetails('saas')}
+        copy={saasCopy}
+        focus={focusFor('saas')}
+      />
     </div>
   )
 }

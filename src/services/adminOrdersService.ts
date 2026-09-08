@@ -31,11 +31,20 @@ export const adminOrdersService = {
   async confirmBankTransfer(
     id: string,
     body: { paymentDate: string; bankNote: string; reference?: string },
-  ): Promise<{ orderNo: string; alreadyPaid: boolean }> {
-    const res = await adminApi.patch<ApiSuccess<{ orderNo: string; alreadyPaid: boolean }>>(
-      `/admin/orders/${encodeURIComponent(id)}/confirm-bank-transfer`,
-      body,
-    )
+  ): Promise<{
+    orderNo: string
+    alreadyPaid: boolean
+    licenseDeliveryOk?: boolean
+    licenseDeliveryAlert?: string | null
+  }> {
+    const res = await adminApi.patch<
+      ApiSuccess<{
+        orderNo: string
+        alreadyPaid: boolean
+        licenseDeliveryOk?: boolean
+        licenseDeliveryAlert?: string | null
+      }>
+    >(`/admin/orders/${encodeURIComponent(id)}/confirm-bank-transfer`, body)
     return unwrapApiData(res.data, 'adminOrders.confirmBankTransfer')
   },
 

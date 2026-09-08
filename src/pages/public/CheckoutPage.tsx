@@ -45,6 +45,10 @@ import { desktopLicenseRenewalService } from '@/services/desktopLicenseRenewalSe
 import { checkoutService } from '@/services/checkoutService'
 import { customersService } from '@/services/customersService'
 import { getErrorMessage } from '@/api/client'
+import {
+  clearCheckoutIdempotencyKey,
+  getOrCreateCheckoutIdempotencyKey,
+} from '@/lib/checkoutIdempotency'
 import { ordersService } from '@/services/ordersService'
 import { paymentsService } from '@/services/paymentsService'
 import { LAST_ORDER_EMAIL_KEY, MK_SAAS_CHECKOUT_ORDER_KEY, MK_SAAS_LICENSE_PURCHASE_ORDER_KEY } from '@/types/orderSuccess'
@@ -508,6 +512,7 @@ export function CheckoutPage() {
     submitLockRef.current = true
     setSubmitting(true)
     setFormError(null)
+    const checkoutIdempotencyKey = getOrCreateCheckoutIdempotencyKey(cartKey)
     try {
       if (paymentMethod === 'BANK_TRANSFER') {
         const created = await ordersService.create({
@@ -539,12 +544,14 @@ export function CheckoutPage() {
           saveToAddressBook: authed && offerSaveToBook && saveToAddressBook,
           selectedAddressId: selectedAddressId || undefined,
           renewalToken: checkoutRenewalToken || undefined,
+          checkoutIdempotencyKey,
         })
 
         if (created.addressBookWarning) {
           toast(created.addressBookWarning, 'error')
         }
 
+        clearCheckoutIdempotencyKey(cartKey)
         sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, customerEmail.toLowerCase())
         if (licensePurchase) {
           sessionStorage.setItem(MK_SAAS_LICENSE_PURCHASE_ORDER_KEY, created.orderNo)
@@ -616,12 +623,14 @@ export function CheckoutPage() {
           saveToAddressBook: authed && offerSaveToBook && saveToAddressBook,
           selectedAddressId: selectedAddressId || undefined,
           renewalToken: checkoutRenewalToken || undefined,
+          checkoutIdempotencyKey,
         })
 
         if (created.addressBookWarning) {
           toast(created.addressBookWarning, 'error')
         }
 
+        clearCheckoutIdempotencyKey(cartKey)
         sessionStorage.setItem(LAST_ORDER_EMAIL_KEY, customerEmail.toLowerCase())
         if (licensePurchase) {
           sessionStorage.setItem(MK_SAAS_LICENSE_PURCHASE_ORDER_KEY, created.orderNo)

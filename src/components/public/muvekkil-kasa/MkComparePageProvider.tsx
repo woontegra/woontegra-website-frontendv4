@@ -6,6 +6,7 @@ import {
   MK_DESKTOP_CANONICAL_SLUG,
   parseMkCompareSurumParam,
   scrollToCompareDetails,
+  scrollToCompareEditionCard,
   type MkCompareEdition,
 } from '@/components/public/muvekkil-kasa/comparePageUtils'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
@@ -21,6 +22,11 @@ type MkComparePageContextValue = {
   detailTab: MkCompareEdition
   setDetailTab: (tab: MkCompareEdition) => void
   showProductDetails: (edition: MkCompareEdition) => void
+  /**
+   * `?surum=` varken kalıcı ürün vurgusu (affiliate / sürüm linki).
+   * Parametre yoksa null — kartlar normal görünür.
+   */
+  highlightedEdition: MkCompareEdition | null
 }
 
 const MkComparePageContext = createContext<MkComparePageContextValue | null>(null)
@@ -45,6 +51,10 @@ type Props = {
 export function MkComparePageProvider({ previewSafe = false, children }: Props) {
   const [searchParams] = useSearchParams()
   const surumParam = searchParams.get('surum')
+  const hasSurumParam = surumParam != null && surumParam.trim() !== ''
+  const highlightedEdition: MkCompareEdition | null = hasSurumParam
+    ? parseMkCompareSurumParam(surumParam)
+    : null
   const [detailTab, setDetailTab] = useState<MkCompareEdition>(() => parseMkCompareSurumParam(surumParam))
 
   useEffect(() => {
@@ -70,12 +80,32 @@ export function MkComparePageProvider({ previewSafe = false, children }: Props) 
     ...publicQueryOptions,
   })
 
+  // ?surum= ile gelince hedef karta kaydır (vurgu sayfa açık kaldığı sürece kalır).
+  useEffect(() => {
+    if (!highlightedEdition) return
+    const query = highlightedEdition === 'saas' ? saasQuery : desktopQuery
+    if (query.isPending) return
+
+    const scrollTimer = window.setTimeout(() => {
+      scrollToCompareEditionCard(highlightedEdition)
+    }, 80)
+
+    return () => window.clearTimeout(scrollTimer)
+  }, [
+    highlightedEdition,
+    desktopQuery.isPending,
+    saasQuery.isPending,
+    desktopQuery.dataUpdatedAt,
+    saasQuery.dataUpdatedAt,
+  ])
+
   const value: MkComparePageContextValue = {
     desktopQuery,
     saasQuery,
     detailTab,
     setDetailTab,
     showProductDetails,
+    highlightedEdition,
   }
 
   return (

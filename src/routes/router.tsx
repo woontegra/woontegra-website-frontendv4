@@ -4,9 +4,11 @@ import { AdminGuard } from '@/app/guards/AdminGuard'
 import { CustomerGuard } from '@/app/guards/CustomerGuard'
 import { AppRouteErrorBoundary } from '@/components/common/AppRouteErrorBoundary'
 import { LazyChunkErrorBoundary } from '@/components/common/LazyChunkErrorBoundary'
+import { AppToast } from '@/components/ui/AppToast'
 import { ScrollToTop } from '@/components/common/ScrollToTop'
 import { clearChunkReloadAttemptFlag } from '@/lib/chunkLoadError'
 import { SiteLayout } from '@/layouts/SiteLayout'
+import { PartnerLayout } from '@/layouts/PartnerLayout'
 import { PublicRouteSkeleton } from '@/components/public/PublicRouteSkeleton'
 
 const HomePage = lazy(() => import('@/pages/public/HomePage').then((m) => ({ default: m.HomePage })))
@@ -27,6 +29,17 @@ const SoftwareDetailPage = lazy(() =>
 )
 const MuvekkilKasaComparePage = lazy(() =>
   import('@/pages/public/MuvekkilKasaComparePage').then((m) => ({ default: m.MuvekkilKasaComparePage })),
+)
+const AffiliateReferralRedirectPage = lazy(() =>
+  import('@/pages/public/AffiliateReferralRedirectPage').then((m) => ({
+    default: m.AffiliateReferralRedirectPage,
+  })),
+)
+const PartnerAuthPage = lazy(() =>
+  import('@/pages/public/PartnerAuthPage').then((m) => ({ default: m.PartnerAuthPage })),
+)
+const PartnerPortalPage = lazy(() =>
+  import('@/pages/public/PartnerPortalPage').then((m) => ({ default: m.PartnerPortalPage })),
 )
 const BlogListPage = lazy(() => import('@/pages/public/BlogListPage').then((m) => ({ default: m.BlogListPage })))
 const BlogDetailPage = lazy(() => import('@/pages/public/BlogDetailPage').then((m) => ({ default: m.BlogDetailPage })))
@@ -135,6 +148,21 @@ const AdminCampaignListPage = lazy(() =>
 )
 const AdminCampaignFormPage = lazy(() =>
   import('@/pages/admin/AdminCampaignFormPage').then((m) => ({ default: m.AdminCampaignFormPage })),
+)
+const AdminAffiliatePartnerListPage = lazy(() =>
+  import('@/pages/admin/AdminAffiliatePartnerListPage').then((m) => ({
+    default: m.AdminAffiliatePartnerListPage,
+  })),
+)
+const AdminAffiliatePartnerFormPage = lazy(() =>
+  import('@/pages/admin/AdminAffiliatePartnerFormPage').then((m) => ({
+    default: m.AdminAffiliatePartnerFormPage,
+  })),
+)
+const AdminAffiliatePartnerDetailPage = lazy(() =>
+  import('@/pages/admin/AdminAffiliatePartnerDetailPage').then((m) => ({
+    default: m.AdminAffiliatePartnerDetailPage,
+  })),
 )
 const AdminMediaLibraryPage = lazy(() =>
   import('@/pages/admin/AdminMediaLibraryPage').then((m) => ({ default: m.AdminMediaLibraryPage })),
@@ -250,6 +278,7 @@ function RootLayout() {
     <>
       <ScrollToTop />
       <Outlet />
+      <AppToast />
     </>
   )
 }
@@ -285,6 +314,7 @@ export const router = createBrowserRouter([
       { path: 'yazilimlar', element: <LazyPage><SoftwareListPage /></LazyPage> },
       { path: 'yazilimlar/muvekkil-kasa-defteri', element: <LazyPage><MuvekkilKasaComparePage /></LazyPage> },
       { path: 'yazilimlar/:slug', element: <LazyPage><SoftwareDetailPage /></LazyPage> },
+      { path: 'r/:code', element: <LazyPage><AffiliateReferralRedirectPage /></LazyPage> },
       { path: 'blog', element: <LazyPage><BlogListPage /></LazyPage> },
       { path: 'blog/:slug', element: <LazyPage><BlogDetailPage /></LazyPage> },
       { path: 'iletisim', element: <LazyPage><ContactPage /></LazyPage> },
@@ -353,6 +383,14 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    element: <PartnerLayout />,
+    errorElement: <AppRouteErrorBoundary />,
+    children: [
+      { path: 'is-ortagi/giris', element: <LazyPage><PartnerAuthPage /></LazyPage> },
+      { path: 'is-ortagi', element: <LazyPage><PartnerPortalPage /></LazyPage> },
+    ],
+  },
+  {
     path: 'admin/giris',
     errorElement: <AppRouteErrorBoundary />,
     element: (
@@ -396,6 +434,10 @@ export const router = createBrowserRouter([
           { path: 'campaigns', element: <LazyPage><AdminCampaignListPage /></LazyPage> },
           { path: 'campaigns/new', element: <LazyPage><AdminCampaignFormPage /></LazyPage> },
           { path: 'campaigns/:id/edit', element: <LazyPage><AdminCampaignFormPage /></LazyPage> },
+          { path: 'is-ortaklari', element: <LazyPage><AdminAffiliatePartnerListPage /></LazyPage> },
+          { path: 'is-ortaklari/yeni', element: <LazyPage><AdminAffiliatePartnerFormPage /></LazyPage> },
+          { path: 'is-ortaklari/:id', element: <LazyPage><AdminAffiliatePartnerDetailPage /></LazyPage> },
+          { path: 'is-ortaklari/:id/duzenle', element: <LazyPage><AdminAffiliatePartnerFormPage /></LazyPage> },
           { path: 'media', element: <LazyPage><AdminMediaLibraryPage /></LazyPage> },
           { path: 'test-data-cleanup', element: <LazyPage><AdminTestDataCleanupPage /></LazyPage> },
           {

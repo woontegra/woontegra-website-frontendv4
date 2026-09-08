@@ -4,12 +4,14 @@ import { cn } from '@/lib/cn'
 type Props = {
   children: ReactNode
   className?: string
+  /** Applied to the inner <table> element */
+  tableClassName?: string
 }
 
-export function Table({ children, className }: Props) {
+export function Table({ children, className, tableClassName }: Props) {
   return (
-    <div className={cn('overflow-x-auto rounded-xl border border-slate-200 bg-white', className)}>
-      <table className="min-w-full text-left text-sm">{children}</table>
+    <div className={cn('min-w-0 overflow-x-auto rounded-xl border border-slate-200 bg-white', className)}>
+      <table className={cn('min-w-full text-left text-sm', tableClassName)}>{children}</table>
     </div>
   )
 }

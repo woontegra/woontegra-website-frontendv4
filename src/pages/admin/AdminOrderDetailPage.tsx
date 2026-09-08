@@ -114,9 +114,17 @@ export function AdminOrderDetailPage() {
         bankNote: bankNote.trim(),
         reference: bankRef.trim() || undefined,
       }),
-    onSuccess: () => {
+    onSuccess: (data) => {
       setBankOpen(false)
-      setToast('Havale/EFT ödemesi onaylandı.')
+      if (data && typeof data === 'object' && 'licenseDeliveryOk' in data && data.licenseDeliveryOk === false) {
+        setToast('Ödeme alındı, lisans oluşturulamadı. Yeniden deneyebilirsiniz.')
+      } else {
+        setToast(
+          data && typeof data === 'object' && 'alreadyPaid' in data && data.alreadyPaid
+            ? 'Ödeme zaten onaylı; teslimat yenilendi.'
+            : 'Havale/EFT ödemesi onaylandı.',
+        )
+      }
       void queryClient.invalidateQueries({ queryKey: ['admin', 'orders', id] })
       void queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] })
       invalidateAdminSidebarBadges(queryClient)
@@ -513,12 +521,18 @@ export function AdminOrderDetailPage() {
           <CardBody>
             <h2 className="text-sm font-semibold text-sky-950">Merkezi lisans durumu</h2>
             {centralLicenseErrors.length > 0 ? (
-              <p className="mt-2 text-sm text-red-800">
-                Lisans oluşturulamadı: {centralLicenseErrors[0]!.licenseServerLastError}
+              <p className="mt-2 text-sm font-medium text-red-800">
+                Ödeme alındı, lisans oluşturulamadı
               </p>
             ) : (
               <p className="mt-2 text-sm text-sky-900">{CENTRAL_LICENSE_PENDING_ADMIN}</p>
             )}
+            {centralLicenseErrors.length > 0 ? (
+              <p className="mt-1 text-sm text-red-700">{centralLicenseErrors[0]!.licenseServerLastError}</p>
+            ) : null}
+            {data.digitalDeliveryEmailAlert ? (
+              <p className="mt-2 text-sm text-amber-900">{data.digitalDeliveryEmailAlert}</p>
+            ) : null}
             <p className="mt-2 text-xs text-sky-800">
               Teslimat: ödeme onayı sonrası lisans bilgileri e-posta ile iletilir. İndirme e-postası:{' '}
               {formatDateTime(data.downloadEmailSentAt)}
@@ -535,7 +549,7 @@ export function AdminOrderDetailPage() {
                 }}
               >
                 <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${retryDeliveryMutation.isPending ? 'animate-spin' : ''}`} />
-                Lisans teslimatını yeniden dene
+                Lisans teslimatını güvenli yeniden dene
               </Button>
             ) : null}
           </CardBody>

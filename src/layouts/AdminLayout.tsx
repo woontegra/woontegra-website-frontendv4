@@ -64,7 +64,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: 'Pazarlama',
-    items: [{ to: '/admin/campaigns', label: 'Kampanyalar' }],
+    items: [
+      { to: '/admin/campaigns', label: 'Kampanyalar' },
+      { to: '/admin/is-ortaklari', label: 'İş Ortakları' },
+    ],
   },
   {
     title: 'Site',

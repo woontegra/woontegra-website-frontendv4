@@ -8,7 +8,6 @@ import { PageTemplatesModal } from '@/builder/admin/PageTemplatesModal'
 import { resolveBuilderPageKey } from '@/builder/pages/builderPageRegistry'
 import { useBuilderStore } from '@/builder/store/builderStore'
 import { validateBlocksForPublish } from '@/builder/validation/publishValidation'
-import { AppToast } from '@/components/ui/AppToast'
 
 export function AdminBuilderPage() {
   const [searchParams] = useSearchParams()
@@ -80,8 +79,6 @@ export function AdminBuilderPage() {
           )}
         </Modal>
       ) : null}
-
-      <AppToast />
     </div>
   )
 }

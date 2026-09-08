@@ -11,6 +11,7 @@ function createClient(withAdminAuth: boolean, timeoutMs: number): AxiosInstance 
     baseURL: getApiBaseUrl(),
     headers: { 'Content-Type': 'application/json' },
     timeout: timeoutMs,
+    withCredentials: true,
   })
 
   client.interceptors.request.use((config) => {

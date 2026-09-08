@@ -23,6 +23,7 @@ export type CustomerOrderItem = {
   downloadKind?: 'setup' | 'portable' | 'generic' | null
   downloadLabel?: string | null
   downloadButtonLabel?: string | null
+  downloadUnavailableMessage?: string | null
 }
 
 export type CustomerOrderDetail = {

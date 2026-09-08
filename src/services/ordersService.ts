@@ -9,6 +9,8 @@ export const ordersService = {
   async create(body: CreateOrderBody): Promise<CreateOrderResponse> {
     const res = await publicApi.post<ApiSuccess<CreateOrderResponse>>('/orders', body, {
       headers: customerAuthHeaders(),
+      // Create + Railway gecikmesi: 8sn public timeout çift siparişe yol açıyordu
+      timeout: 45_000,
     })
     return unwrapApiData(res.data, 'orders.create')
   },

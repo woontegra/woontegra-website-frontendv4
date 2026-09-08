@@ -10,6 +10,7 @@ import { MaskedSecret } from '@/components/account/MaskedSecret'
 import { CENTRAL_LICENSE_PUBLIC_MESSAGE } from '@/constants/centralLicenseServer'
 import {
   downloadButtonsForItem,
+  downloadUnavailableMessageForItem,
   formatAccountDate,
   isPaidLikeOrder,
   isSaasOrderDeliveryUrl,
@@ -98,6 +99,7 @@ export function AccountOrderDetailPage() {
           <ul className="divide-y divide-slate-100">
             {data.items.map((item, i) => {
               const buttons = downloadButtonsForItem(item, paid)
+              const unavailable = downloadUnavailableMessageForItem(item, paid)
               return (
                 <li key={`${item.productName}-${i}`} className="flex flex-wrap items-center justify-between gap-3 py-3">
                   <div>
@@ -124,6 +126,8 @@ export function AccountOrderDetailPage() {
                           </a>
                         ))}
                       </div>
+                    ) : unavailable ? (
+                      <p className="mt-1 max-w-xs text-xs text-amber-800">{unavailable}</p>
                     ) : paid ? (
                       <p className="mt-1 text-xs text-slate-400">İndirme yok</p>
                     ) : (
