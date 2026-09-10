@@ -1,8 +1,18 @@
 import { Link } from 'react-router-dom'
+import { Facebook, Instagram, Linkedin, Youtube } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { openCookiePreferences } from '@/lib/cookieConsent'
 import { DEFAULT_PUBLIC_SITE_SETTINGS, usePublicSiteSettings } from '@/hooks/usePublicSiteSettings'
 import { useFooterGroups } from '@/hooks/useFooterGroups'
 import { resolvePublicHref } from '@/lib/publicNavUrl'
+import { SOCIAL_PROFILES, type SocialProfileId } from '@/lib/siteSeo'
+
+const SOCIAL_ICONS: Record<SocialProfileId, LucideIcon> = {
+  linkedin: Linkedin,
+  instagram: Instagram,
+  facebook: Facebook,
+  youtube: Youtube,
+}
 
 export function PublicFooter() {
   const { groups } = useFooterGroups()
@@ -22,8 +32,28 @@ export function PublicFooter() {
           <div className="sm:col-span-2 lg:col-span-1">
             <p className="text-lg font-semibold text-white">{siteName}</p>
             <p className="mt-3 text-sm leading-relaxed text-slate-400">
-              Kurumsal yazılım, güvenli ödeme ve merkezi lisans yönetimi.
+              Yazılım şirketi — özel yazılım, güvenli ödeme ve merkezi lisans yönetimi.
             </p>
+            <ul className="mt-5 flex flex-wrap items-center gap-2">
+              {SOCIAL_PROFILES.map((profile) => {
+                const Icon = SOCIAL_ICONS[profile.id]
+                return (
+                  <li key={profile.id}>
+                    <a
+                      href={profile.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Woontegra ${profile.label}`}
+                      title={profile.label}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 text-slate-300 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+                    >
+                      <Icon className="h-4 w-4" aria-hidden />
+                      <span className="sr-only">{profile.label}</span>
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
 
           {linkGroups.map((group) => (

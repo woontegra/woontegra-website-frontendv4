@@ -26,7 +26,7 @@ export function isMkCompareWebHighlightFeature(feature: string): boolean {
 
 export const MK_COMPARE_HERO_BADGE = 'Masaüstü ve Web Tabanlı'
 export const MK_COMPARE_HERO_DESCRIPTION =
-  'Masaüstü kullanımın sadeliğini veya internet üzerinden erişilebilen gelişmiş web tabanlı takibi karşılaştırın; büronuza uygun sürümü seçin.'
+  'Woontegra’nın avukat büroları için geliştirdiği Müvekkil Kasa Defteri’nde masaüstü sadeliğini veya internet üzerinden erişilebilen web tabanlı takibi karşılaştırın; büronuza uygun sürümü seçin.'
 
 export const MK_COMPARE_DESKTOP_DELIVERY_NOTE = 'Kurulum ve lisans bilgileri e-posta ile iletilir.'
 export const MK_COMPARE_WEB_DELIVERY_NOTE = 'Giriş bilgileri ve erişim bilgileri e-posta ile iletilir.'

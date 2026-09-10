@@ -10,6 +10,20 @@ const ROOT = path.resolve(__dirname, '..')
 const DIST = path.join(ROOT, 'dist')
 const SITEMAP = path.join(DIST, 'sitemap.xml')
 
+const ORGANIZATION_ID = 'https://www.woontegra.com/#organization'
+const SOCIAL_URLS = [
+  'https://www.linkedin.com/company/woontegra',
+  'https://www.instagram.com/woontegra_teknoloji/',
+  'https://www.facebook.com/woontegra',
+  'https://www.youtube.com/@woontegra_teknoloji',
+]
+
+const PRODUCT_HUB_PATHS = [
+  '/yazilimlar/bilirkisi-hesap',
+  '/yazilimlar/muvekkil-kasa-defteri',
+  '/yazilimlar/sifre-kasasi',
+]
+
 const checks = []
 const failures = []
 
@@ -47,6 +61,24 @@ function hasJsonLdType(html, type) {
   )
 }
 
+function extractJsonLdBlocks(html) {
+  const blocks = []
+  const re = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+  let match
+  while ((match = re.exec(html))) {
+    try {
+      blocks.push(JSON.parse(match[1]))
+    } catch {
+      // ignore malformed
+    }
+  }
+  return blocks
+}
+
+function findSchema(blocks, type) {
+  return blocks.find((b) => b && (b['@type'] === type || b['@type']?.includes?.(type)))
+}
+
 function rootHtml(html) {
   const start = html.indexOf('<div id="root">')
   if (start < 0) return ''
@@ -56,6 +88,14 @@ function rootHtml(html) {
 
 function hasRealH1(html) {
   return /<h1[\s>]/i.test(rootHtml(html))
+}
+
+function hasCrawlableHref(html, href) {
+  return (
+    html.includes(`href="${href}"`) ||
+    html.includes(`href='${href}'`) ||
+    html.includes(`to="${href}"`)
+  )
 }
 
 function verifyPage(route, { mustInclude = [], titleIncludes, requireOrg, requireWebsite, requireSoftware } = {}) {
@@ -91,6 +131,67 @@ function assertNoWebsiteOnInnerPages() {
     const scripts = [...html.matchAll(/id="jsonld-([^"]+)"/g)].map((m) => m[1])
     assert(route, !scripts.includes('website'), 'WebSite JSON-LD yalnızca ana sayfada olmalı')
   }
+}
+
+function verifyOrganizationAndSocial() {
+  const html = readHtml('/')
+  if (!html) return
+  const blocks = extractJsonLdBlocks(html)
+  const org = findSchema(blocks, 'Organization')
+  assert('/', Boolean(org), 'Organization parse edilebilir')
+  if (!org) return
+
+  assert('/', org['@id'] === ORGANIZATION_ID, 'Organization @id')
+  assert('/', org.legalName?.includes('Woontegra Teknoloji'), 'Organization legalName')
+  assert('/', Boolean(org.contactPoint), 'Organization ContactPoint')
+  assert('/', Array.isArray(org.sameAs) && org.sameAs.length >= 4, 'Organization sameAs var')
+  for (const url of SOCIAL_URLS) {
+    assert('/', org.sameAs?.includes(url), `sameAs: ${url}`)
+  }
+
+  const website = findSchema(blocks, 'WebSite')
+  assert('/', Boolean(website), 'WebSite parse edilebilir')
+  assert(
+    '/',
+    website?.publisher?.['@id'] === ORGANIZATION_ID,
+    'WebSite publisher → Organization @id',
+  )
+
+  const footerChunk = html.slice(html.toLowerCase().lastIndexOf('<footer'))
+  for (const url of SOCIAL_URLS) {
+    assert('/', footerChunk.includes(url) || html.includes(url), `footer sosyal link: ${url}`)
+  }
+}
+
+function verifySoftwareWoontegraRelation(route, productNeedle) {
+  const html = readHtml(route)
+  if (!html) return
+  const blocks = extractJsonLdBlocks(html)
+  const app = findSchema(blocks, 'SoftwareApplication')
+  assert(route, Boolean(app), 'SoftwareApplication parse')
+  if (!app) return
+
+  const refOk = (node) => node && (node['@id'] === ORGANIZATION_ID || node.name === 'Woontegra')
+  assert(route, refOk(app.publisher), 'SoftwareApplication publisher → Woontegra')
+  assert(route, refOk(app.author) || refOk(app.creator), 'SoftwareApplication author/creator → Woontegra')
+  assert(route, rootHtml(html).toLowerCase().includes('woontegra'), `görünür body Woontegra (${productNeedle})`)
+  assert(route, rootHtml(html).toLowerCase().includes(productNeedle.toLowerCase()), `görünür ürün adı: ${productNeedle}`)
+
+  const crumb = findSchema(blocks, 'BreadcrumbList')
+  assert(route, Boolean(crumb), 'BreadcrumbList JSON-LD')
+  const crumbNames = (crumb?.itemListElement || []).map((i) => String(i.name || '')).join(' ')
+  assert(route, /yazılım/i.test(crumbNames), 'breadcrumb Yazılımlar içerir')
+}
+
+function verifyYazilimlarHub() {
+  const html = readHtml('/yazilimlar')
+  if (!html) return
+  for (const pathPart of PRODUCT_HUB_PATHS) {
+    assert('/yazilimlar', hasCrawlableHref(html, pathPart), `hub crawlable link: ${pathPart}`)
+  }
+  assert('/yazilimlar', /bilirkişi/i.test(html), 'hub Bilirkişi adı')
+  assert('/yazilimlar', /müvekkil/i.test(html), 'hub Müvekkil adı')
+  assert('/yazilimlar', /şifre/i.test(html), 'hub Şifre Kasası adı')
 }
 
 function verifySitemap() {
@@ -157,6 +258,18 @@ function main() {
   })
   verifySitemap()
   assertNoWebsiteOnInnerPages()
+
+  verifyOrganizationAndSocial()
+  verifyYazilimlarHub()
+  verifySoftwareWoontegraRelation('/yazilimlar/bilirkisi-hesap', 'Bilirkişi')
+  verifySoftwareWoontegraRelation('/yazilimlar/muvekkil-kasa-defteri', 'Müvekkil')
+  verifySoftwareWoontegraRelation('/yazilimlar/sifre-kasasi', 'Şifre')
+
+  // Internal linking smoke (prerender nav)
+  const home = readHtml('/')
+  if (home) {
+    assert('/', hasCrawlableHref(home, '/yazilimlar'), 'ana sayfa → Yazılımlar link')
+  }
 
   const ok = checks.filter((c) => c.ok).length
   console.log(`[verify:seo] ${ok}/${checks.length} kontrol geçti`)

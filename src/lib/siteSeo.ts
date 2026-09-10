@@ -3,9 +3,56 @@ export const SITE_ORIGIN = 'https://www.woontegra.com'
 
 export const ORGANIZATION_LEGAL_NAME = 'Woontegra Teknoloji Yazılım ve Dijital Hizmetler Ltd. Şti.'
 
+/** Stable Organization entity id — WebSite / SoftwareApplication references */
+export const ORGANIZATION_ID = `${SITE_ORIGIN}/#organization`
+
 export const SITE_LOGO_URL = `${SITE_ORIGIN}/images/woontegra-logo.svg`
 
 export const DEFAULT_OG_IMAGE = SITE_LOGO_URL
+
+export type SocialProfileId = 'linkedin' | 'instagram' | 'facebook' | 'youtube'
+
+export type SocialProfile = {
+  id: SocialProfileId
+  label: string
+  url: string
+}
+
+/** Verified Woontegra social profiles — single source for sameAs + footer */
+export const SOCIAL_PROFILES: readonly SocialProfile[] = [
+  { id: 'linkedin', label: 'LinkedIn', url: 'https://www.linkedin.com/company/woontegra' },
+  { id: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/woontegra_teknoloji/' },
+  { id: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/woontegra' },
+  { id: 'youtube', label: 'YouTube', url: 'https://www.youtube.com/@woontegra_teknoloji' },
+] as const
+
+export function socialProfileUrls(
+  overrides?: Partial<Record<SocialProfileId, string | null | undefined>>,
+): string[] {
+  return SOCIAL_PROFILES.map((profile) => {
+    const override = overrides?.[profile.id]?.trim()
+    return override || profile.url
+  })
+}
+
+/** Public product hub — crawlable entity links on /yazilimlar */
+export const SOFTWARE_ENTITY_HUB = [
+  {
+    name: 'Bilirkişi Hesap',
+    path: '/yazilimlar/bilirkisi-hesap',
+    description: 'İş hukuku ve bilirkişilik hesaplamaları için Woontegra web yazılımı.',
+  },
+  {
+    name: 'Müvekkil Kasa Defteri',
+    path: '/yazilimlar/muvekkil-kasa-defteri',
+    description: 'Avukat büroları için Woontegra masaüstü ve web tabanlı kasa defteri.',
+  },
+  {
+    name: 'Şifre Kasası',
+    path: '/yazilimlar/sifre-kasasi',
+    description: 'Woontegra’nın ücretsiz Windows şifre yönetim aracı.',
+  },
+] as const
 
 export type PageSeo = {
   title: string
@@ -17,12 +64,12 @@ export const PAGE_SEO_BY_PATH: Record<string, PageSeo> = {
   '/': {
     title: 'Woontegra | Yazılım, E-Ticaret ve Dijital Dönüşüm Çözümleri',
     description:
-      'Woontegra Teknoloji Yazılım ve Dijital Hizmetler Ltd. Şti.; işletmeler için özel yazılım, e-ticaret altyapısı, web sitesi, masaüstü yazılım ve dijital dönüşüm çözümleri geliştirir.',
+      'Woontegra; işletmeler için özel yazılım, e-ticaret altyapısı, web sitesi, masaüstü yazılım ve dijital dönüşüm çözümleri geliştiren bir yazılım şirketidir.',
   },
   '/hakkimizda': {
     title: 'Woontegra Hakkında | Woontegra Teknoloji Yazılım',
     description:
-      'Woontegra Teknoloji Yazılım ve Dijital Hizmetler Ltd. Şti.; özel yazılım, e-ticaret altyapısı, web tasarım ve dijital sistem çözümleri geliştiren yazılım şirketidir.',
+      'Woontegra; özel yazılım, e-ticaret altyapısı, web tasarım ve dijital sistem çözümleri geliştiren bir yazılım şirketidir.',
   },
   '/hizmetler': {
     title: 'Woontegra Hizmetleri | Yazılım ve Dijital Çözümler',
@@ -32,7 +79,7 @@ export const PAGE_SEO_BY_PATH: Record<string, PageSeo> = {
   '/yazilimlar': {
     title: 'Woontegra Yazılımları | İşletmelere Özel Yazılım Çözümleri',
     description:
-      'Woontegra yazılımları; işletmeler için masaüstü programlar, SaaS ürünleri ve lisanslı dijital çözümler sunar.',
+      'Woontegra yazılımları: Bilirkişi Hesap, Müvekkil Kasa Defteri ve Şifre Kasası — masaüstü, web ve lisanslı dijital ürünler.',
   },
   '/blog': {
     title: 'Woontegra Blog | Yazılım ve Dijital Dönüşüm',
@@ -138,12 +185,13 @@ export function organizationSchema(contact?: OrganizationContactInput): Record<s
   const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    '@id': ORGANIZATION_ID,
     name: 'Woontegra',
     legalName: ORGANIZATION_LEGAL_NAME,
     url: SITE_ORIGIN,
     logo: SITE_LOGO_URL,
     description:
-      'Woontegra, işletmeler için özel yazılım, e-ticaret altyapısı, web sitesi ve dijital dönüşüm çözümleri geliştirir.',
+      'Woontegra, işletmeler için özel yazılım, e-ticaret altyapısı, web sitesi ve dijital dönüşüm çözümleri geliştiren bir yazılım şirketidir.',
   }
 
   const email = contact?.email?.trim()
@@ -174,8 +222,7 @@ export function organizationSchema(contact?: OrganizationContactInput): Record<s
     }
   }
 
-  const sameAs = compactSameAs(contact?.sameAs)
-  if (sameAs) schema.sameAs = sameAs
+  schema.sameAs = compactSameAs(contact?.sameAs) ?? socialProfileUrls()
 
   return schema
 }
@@ -186,7 +233,12 @@ export function webSiteSchema(): Record<string, unknown> {
     '@type': 'WebSite',
     name: 'Woontegra',
     url: `${SITE_ORIGIN}/`,
+    publisher: { '@id': ORGANIZATION_ID },
   }
+}
+
+function organizationRef(): { '@id': string } {
+  return { '@id': ORGANIZATION_ID }
 }
 
 export type SoftwareApplicationInput = {
@@ -201,6 +253,7 @@ export type SoftwareApplicationInput = {
 }
 
 export function softwareApplicationSchema(input: SoftwareApplicationInput): Record<string, unknown> {
+  const org = organizationRef()
   const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -208,16 +261,9 @@ export function softwareApplicationSchema(input: SoftwareApplicationInput): Reco
     description: input.description,
     url: input.url,
     applicationCategory: input.applicationCategory || 'BusinessApplication',
-    publisher: {
-      '@type': 'Organization',
-      name: 'Woontegra',
-      url: SITE_ORIGIN,
-    },
-    provider: {
-      '@type': 'Organization',
-      name: 'Woontegra',
-      url: SITE_ORIGIN,
-    },
+    publisher: org,
+    author: org,
+    creator: org,
   }
 
   const os = input.operatingSystem?.trim()

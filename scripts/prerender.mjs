@@ -15,6 +15,30 @@ const DIST = path.join(ROOT, 'dist')
 const SITEMAP = path.join(DIST, 'sitemap.xml')
 
 const SITE = 'https://www.woontegra.com'
+const ORGANIZATION_ID = `${SITE}/#organization`
+const SOCIAL_PROFILES = [
+  { label: 'LinkedIn', url: 'https://www.linkedin.com/company/woontegra' },
+  { label: 'Instagram', url: 'https://www.instagram.com/woontegra_teknoloji/' },
+  { label: 'Facebook', url: 'https://www.facebook.com/woontegra' },
+  { label: 'YouTube', url: 'https://www.youtube.com/@woontegra_teknoloji' },
+]
+const SOFTWARE_ENTITY_HUB = [
+  {
+    name: 'Bilirkişi Hesap',
+    path: '/yazilimlar/bilirkisi-hesap',
+    description: 'İş hukuku ve bilirkişilik hesaplamaları için Woontegra web yazılımı.',
+  },
+  {
+    name: 'Müvekkil Kasa Defteri',
+    path: '/yazilimlar/muvekkil-kasa-defteri',
+    description: 'Avukat büroları için Woontegra masaüstü ve web tabanlı kasa defteri.',
+  },
+  {
+    name: 'Şifre Kasası',
+    path: '/yazilimlar/sifre-kasasi',
+    description: 'Woontegra’nın ücretsiz Windows şifre yönetim aracı.',
+  },
+]
 const API_BASE = (() => {
   const raw =
     process.env.PRERENDER_API_URL?.trim() ||
@@ -179,7 +203,7 @@ const PRODUCT_FALLBACKS = {
     title: 'Woontegra Şifre Kasası | Ücretsiz Windows Şifre Yönetim Aracı',
     description:
       "Giriş URL'lerinizi, kullanıcı adlarınızı, şifrelerinizi ve notlarınızı yerel ve şifreli şekilde saklayın.",
-    body: 'Ücretsiz Woontegra Şifre Kasası ile şifrelerinizi yerel ve şifreli şekilde yönetin.',
+    body: 'Ücretsiz Woontegra Şifre Kasası; Woontegra tarafından geliştirilen yerel ve şifreli Windows şifre yönetim aracıdır.',
     applicationCategory: 'UtilitiesApplication',
     operatingSystem: 'Windows',
     h1: 'Ücretsiz Woontegra Şifre Kasası',
@@ -256,12 +280,13 @@ function organizationSchema() {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    '@id': ORGANIZATION_ID,
     name: 'Woontegra',
     legalName: 'Woontegra Teknoloji Yazılım ve Dijital Hizmetler Ltd. Şti.',
     url: SITE,
     logo: `${SITE}/images/woontegra-logo.svg`,
     description:
-      'Woontegra, işletmeler için özel yazılım, e-ticaret altyapısı, web sitesi ve dijital dönüşüm çözümleri geliştirir.',
+      'Woontegra, işletmeler için özel yazılım, e-ticaret altyapısı, web sitesi ve dijital dönüşüm çözümleri geliştiren bir yazılım şirketidir.',
     email: 'info@woontegra.com',
     telephone: '+90 532 317 17 55',
     address: {
@@ -278,6 +303,7 @@ function organizationSchema() {
       telephone: '+90 532 317 17 55',
       availableLanguage: ['Turkish'],
     },
+    sameAs: SOCIAL_PROFILES.map((p) => p.url),
   }
 }
 
@@ -287,10 +313,12 @@ function webSiteSchema() {
     '@type': 'WebSite',
     name: 'Woontegra',
     url: `${SITE}/`,
+    publisher: { '@id': ORGANIZATION_ID },
   }
 }
 
 function softwareApplicationSchema(input) {
+  const org = { '@id': ORGANIZATION_ID }
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -298,8 +326,9 @@ function softwareApplicationSchema(input) {
     description: input.description,
     url: input.url,
     applicationCategory: input.applicationCategory || 'BusinessApplication',
-    publisher: { '@type': 'Organization', name: 'Woontegra', url: SITE },
-    provider: { '@type': 'Organization', name: 'Woontegra', url: SITE },
+    publisher: org,
+    author: org,
+    creator: org,
   }
   if (input.operatingSystem) schema.operatingSystem = input.operatingSystem
   if (input.price != null && Number.isFinite(input.price)) {
@@ -406,7 +435,7 @@ async function resolvePageModel(route, cache) {
     if (about?.heroTitle) h1 = String(about.heroTitle)
     if (about?.seoTitle) title = String(about.seoTitle)
     if (about?.seoDescription) description = String(about.seoDescription)
-    bodyText = `${h1}. ${description} Woontegra kendi ürünlerini geliştiren bir teknoloji şirketidir.`
+    bodyText = `${h1}. ${description} Woontegra yazılım, web ve masaüstü ürünleri geliştiren bir yazılım şirketidir.`
     return { title, description, h1, bodyText, jsonLd, crumbs }
   }
 
@@ -420,8 +449,8 @@ async function resolvePageModel(route, cache) {
   if (route === '/yazilimlar') {
     crumbs.push({ name: 'Yazılımlar', path: route })
     jsonLd.push(breadcrumbSchema(crumbs))
-    bodyText = `${h1}. Woontegra yazılımları: Bilirkişi Hesaplama Yazılımı, Müvekkil Kasa Defteri ve Şifre Kasası.`
-    return { title, description, h1, bodyText, jsonLd, crumbs }
+    bodyText = `${h1}. Woontegra yazılımları: Bilirkişi Hesap, Müvekkil Kasa Defteri ve Şifre Kasası.`
+    return { title, description, h1, bodyText, jsonLd, crumbs, hubProducts: true }
   }
 
   if (route === '/yazilimlar/bilirkisi-hesap') {
@@ -587,6 +616,28 @@ async function resolvePageModel(route, cache) {
 }
 
 function renderBody(model) {
+  const hub =
+    model.hubProducts
+      ? h(
+          'section',
+          { 'aria-label': 'Woontegra ürünleri' },
+          h('h2', null, 'Woontegra ürünleri'),
+          h(
+            'ul',
+            null,
+            SOFTWARE_ENTITY_HUB.map((product) =>
+              h(
+                'li',
+                { key: product.path },
+                h('a', { href: product.path }, product.name),
+                ' — ',
+                product.description,
+              ),
+            ),
+          ),
+        )
+      : null
+
   return renderToStaticMarkup(
     h(
       Fragment,
@@ -610,16 +661,34 @@ function renderBody(model) {
         null,
         h('h1', null, model.h1),
         h('p', null, model.bodyText),
+        hub,
         h(
           'p',
           null,
-          'Woontegra Teknoloji Yazılım ve Dijital Hizmetler Ltd. Şti. — yazılım, e-ticaret ve dijital dönüşüm.',
+          'Woontegra — yazılım şirketi. Özel yazılım, e-ticaret ve dijital dönüşüm çözümleri geliştirir.',
         ),
       ),
       h(
         'footer',
         null,
         h('p', null, '© Woontegra — www.woontegra.com'),
+        h(
+          'nav',
+          { 'aria-label': 'Sosyal medya' },
+          SOCIAL_PROFILES.map((profile) =>
+            h(
+              'a',
+              {
+                key: profile.url,
+                href: profile.url,
+                target: '_blank',
+                rel: 'noopener noreferrer',
+                'aria-label': `Woontegra ${profile.label}`,
+              },
+              profile.label,
+            ),
+          ),
+        ),
       ),
     ),
   )

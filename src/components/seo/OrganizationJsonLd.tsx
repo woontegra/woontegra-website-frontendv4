@@ -2,16 +2,19 @@ import { useMemo } from 'react'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { defaultLegalCompanyInfo } from '@/data/legalCompanyInfo'
 import { useLegalCompanyInfo } from '@/hooks/useLegalCompanyInfo'
-import { organizationSchema } from '@/lib/siteSeo'
+import { organizationSchema, socialProfileUrls } from '@/lib/siteSeo'
 
 /** Site genelinde tek Organization JSON-LD (duplicate üretmez). */
 export function OrganizationJsonLd() {
   const company = useLegalCompanyInfo()
   const info = company ?? defaultLegalCompanyInfo
 
-  const sameAs = [info.linkedin, info.instagram, info.facebook, info.youtube, info.twitter].filter(
-    (url) => Boolean(url?.trim()),
-  )
+  const sameAs = socialProfileUrls({
+    linkedin: info.linkedin,
+    instagram: info.instagram,
+    facebook: info.facebook,
+    youtube: info.youtube,
+  })
 
   const data = useMemo(
     () =>

@@ -23,8 +23,8 @@ import {
 import { isDesktopLicenseRenewalContext, type DesktopLicenseRenewalView } from '@/lib/desktopLicenseRenewal'
 
 const TYPE_LEAD = {
-  DOWNLOAD: 'Masaüstü kullanım için hazırlanmış yazılım.',
-  SAAS: 'Çoklu kullanıcı / abonelik yapısına uygun yazılım hizmeti.',
+  DOWNLOAD: 'Woontegra tarafından geliştirilmiş masaüstü yazılım.',
+  SAAS: 'Woontegra’nın çoklu kullanıcı / abonelik yapısına uygun yazılım hizmeti.',
   SERVICE: 'Woontegra tarafından sunulan dijital hizmet.',
 } as const
 

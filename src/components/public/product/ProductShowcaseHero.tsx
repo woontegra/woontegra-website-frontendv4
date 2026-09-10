@@ -118,10 +118,15 @@ export function ProductShowcaseHero({ product, lead, isFreeDownload, children }:
                     <ShieldCheck className="h-4 w-4 text-sky-300" aria-hidden />
                     Woontegra geliştirdi · resmi sitede satış
                   </div>
+                ) : isFreeDownload ? (
+                  <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-slate-200 backdrop-blur">
+                    <ShieldCheck className="h-4 w-4 text-emerald-300" aria-hidden />
+                    Woontegra’nın ücretsiz Windows aracı
+                  </div>
                 ) : (
                   <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-slate-200 backdrop-blur">
                     <ShieldCheck className="h-4 w-4 text-emerald-300" aria-hidden />
-                    Güvenli dijital teslimat akışı
+                    Woontegra güvenli dijital teslimat
                   </div>
                 )}
                 {product.productType === 'DOWNLOAD' && product.version?.trim() ? (

@@ -10,7 +10,7 @@ import { resolveMkComparePublicBlocks } from '@/builder/templates/mkCompareBuild
 
 const MK_TITLE = 'Müvekkil Kasa Defteri Masaüstü ve Web Tabanlı Karşılaştırması | Woontegra'
 const MK_DESCRIPTION =
-  'Müvekkil Kasa Defteri masaüstü ve web tabanlı sürümlerini karşılaştırın; büronuza uygun kullanım ve özellik seçeneğini belirleyin.'
+  'Woontegra Müvekkil Kasa Defteri masaüstü ve web tabanlı sürümlerini karşılaştırın; büronuza uygun kullanım ve özellik seçeneğini belirleyin.'
 
 export function MuvekkilKasaComparePage() {
   usePageMeta({

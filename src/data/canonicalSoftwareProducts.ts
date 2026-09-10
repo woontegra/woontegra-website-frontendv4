@@ -79,9 +79,9 @@ const PROMOTIONAL_SOFTWARE: Record<string, { meta: PromotionalSoftwareMeta; deta
       slug: BILIRKISI_HESAP_SLUG,
       productType: 'SERVICE',
       shortDescription:
-        'İşçilik alacakları, kıdem-ihbar tazminatı, fazla mesai, yıllık izin ve benzeri bilirkişi hesaplamalarını web tabanlı olarak hazırlamak için geliştirilen profesyonel hesaplama yazılımı.',
+        'Woontegra tarafından geliştirilen web tabanlı yazılım; işçilik alacakları, kıdem-ihbar tazminatı, fazla mesai, yıllık izin ve benzeri bilirkişi hesaplamalarını hazırlamak için tasarlanmıştır.',
       description:
-        '<p>Bilirkişi Hesaplama Yazılımı; iş hukuku ve bilirkişilik süreçlerinde kullanılan hesaplama kalemlerini tek merkezde toplayan, web tabanlı bir hesaplama yazılımıdır. İşçilik alacakları, kıdem-ihbar tazminatı, fazla mesai, yıllık izin ve benzeri hesaplamaların düzenli ve kontrollü şekilde hazırlanmasına yardımcı olur.</p><p>Satın alma, lisans üretimi, kullanıcı hesabı ve destek süreçleri Bilirkişi Hesaplama Yazılımı’nın resmi sitesi üzerinden yürütülür.</p>',
+        '<p>Bilirkişi Hesaplama Yazılımı; Woontegra’nın iş hukuku ve bilirkişilik süreçleri için geliştirdiği web tabanlı bir hesaplama yazılımıdır. İşçilik alacakları, kıdem-ihbar tazminatı, fazla mesai, yıllık izin ve benzeri hesaplamaların düzenli ve kontrollü şekilde hazırlanmasına yardımcı olur.</p><p>Satın alma, lisans üretimi, kullanıcı hesabı ve destek süreçleri Bilirkişi Hesaplama Yazılımı’nın resmi sitesi üzerinden yürütülür.</p>',
       price: 0,
       compareAtPrice: null,
       currency: 'TRY',

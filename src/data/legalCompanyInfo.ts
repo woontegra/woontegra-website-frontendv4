@@ -36,11 +36,11 @@ export const defaultLegalCompanyInfo: LegalCompanyInfo = {
   taxNumber: '8141122110',
   mersisNumber: '0814112211000001',
   dataControllerRepresentative: '',
-  instagram: '',
-  facebook: '',
-  linkedin: '',
+  instagram: 'https://www.instagram.com/woontegra_teknoloji/',
+  facebook: 'https://www.facebook.com/woontegra',
+  linkedin: 'https://www.linkedin.com/company/woontegra',
   twitter: '',
-  youtube: '',
+  youtube: 'https://www.youtube.com/@woontegra_teknoloji',
   lastUpdated: '2026-06-08',
 }
 
@@ -75,11 +75,11 @@ export function mergeLegalCompanyInfo(partial?: Partial<LegalCompanyInfo> | null
     taxNumber: pickString(partial.taxNumber, defaultLegalCompanyInfo.taxNumber),
     mersisNumber: pickString(partial.mersisNumber, defaultLegalCompanyInfo.mersisNumber),
     dataControllerRepresentative: pickString(partial.dataControllerRepresentative),
-    instagram: pickString(partial.instagram),
-    facebook: pickString(partial.facebook),
-    linkedin: pickString(partial.linkedin),
-    twitter: pickString(partial.twitter),
-    youtube: pickString(partial.youtube),
+    instagram: pickString(partial.instagram, defaultLegalCompanyInfo.instagram),
+    facebook: pickString(partial.facebook, defaultLegalCompanyInfo.facebook),
+    linkedin: pickString(partial.linkedin, defaultLegalCompanyInfo.linkedin),
+    twitter: pickString(partial.twitter, defaultLegalCompanyInfo.twitter),
+    youtube: pickString(partial.youtube, defaultLegalCompanyInfo.youtube),
     lastUpdated: pickString(partial.lastUpdated, defaultLegalCompanyInfo.lastUpdated),
   }
 }
