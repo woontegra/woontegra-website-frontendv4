@@ -32,8 +32,17 @@ function devV3PublicImagesPlugin(): Plugin {
   }
 }
 
-export default defineConfig(({ mode }) => {  const env = loadEnv(mode, process.cwd(), 'VITE_')
-  const apiProxyTarget = env.VITE_DEV_API_PROXY?.trim() || 'http://127.0.0.1:4000'
+function isAdminChunk(dep: string): boolean {
+  return /(?:^|\/)admin-[^/]+\.js$/i.test(dep) || dep.includes('/admin-')
+}
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), 'VITE_')
+  const railwayApi = 'https://websitebackend-production-ab6e.up.railway.app'
+  // DEV: local backend (P0 öncesi davranış). .env ile override edilir.
+  const devProxyTarget = env.VITE_DEV_API_PROXY?.trim() || 'http://127.0.0.1:4000'
+  // PREVIEW/prerender: asla local backend gerektirmez
+  const previewProxyTarget = env.VITE_PRERENDER_API_PROXY?.trim() || railwayApi
 
   return {
     plugins: [react(), tailwindcss(), devV3PublicImagesPlugin()],
@@ -46,6 +55,11 @@ export default defineConfig(({ mode }) => {  const env = loadEnv(mode, process.c
       target: 'es2020',
       cssMinify: true,
       sourcemap: false,
+      modulePreload: {
+        resolveDependencies(_filename, deps) {
+          return deps.filter((dep) => !isAdminChunk(dep))
+        },
+      },
       rollupOptions: {
         output: {
           manualChunks(id) {
@@ -54,7 +68,9 @@ export default defineConfig(({ mode }) => {  const env = loadEnv(mode, process.c
                 id.includes('/src/pages/admin/') ||
                 id.includes('/src/builder/admin/') ||
                 id.includes('/src/builder/store/') ||
-                id.includes('/src/builder/load/')
+                id.includes('/src/builder/load/') ||
+                id.includes('/src/layouts/AdminLayout') ||
+                id.includes('/src/app/guards/AdminGuard')
               ) {
                 return 'admin'
               }
@@ -75,12 +91,27 @@ export default defineConfig(({ mode }) => {  const env = loadEnv(mode, process.c
       port: 5174,
       proxy: {
         '/api': {
-          target: apiProxyTarget,
+          target: devProxyTarget,
           changeOrigin: true,
           secure: true,
         },
         '/uploads': {
-          target: apiProxyTarget,
+          target: devProxyTarget,
+          changeOrigin: true,
+          secure: true,
+        },
+      },
+    },
+    preview: {
+      port: 4173,
+      proxy: {
+        '/api': {
+          target: previewProxyTarget,
+          changeOrigin: true,
+          secure: true,
+        },
+        '/uploads': {
+          target: previewProxyTarget,
           changeOrigin: true,
           secure: true,
         },

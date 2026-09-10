@@ -28,7 +28,7 @@ export const defaultLegalCompanyInfo: LegalCompanyInfo = {
   email: 'info@woontegra.com',
   phone: '+90 532 317 17 55',
   whatsapp: '+90 532 317 17 55',
-  website: 'https://woontegra.com',
+  website: 'https://www.woontegra.com',
   address: 'İskele Mahallesi Bademli Caddesi Hanlılar 2 Sitesi 43/6 Datça / Muğla 48900',
   city: 'Muğla',
   district: 'Datça',

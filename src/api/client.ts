@@ -43,7 +43,18 @@ export const adminApi = createClient(true, ADMIN_API_TIMEOUT_MS)
 
 export function getErrorMessage(error: unknown, fallback = 'İşlem başarısız'): string {
   if (axios.isAxiosError(error)) {
-    return error.response?.data?.message || error.message || fallback
+    const apiMessage = error.response?.data?.message
+    if (typeof apiMessage === 'string' && apiMessage.trim()) return apiMessage.trim()
+    const status = error.response?.status
+    if (status && status >= 500) return 'Sunucuya şu an ulaşılamıyor. Lütfen biraz sonra tekrar deneyin.'
+    if (status === 404) return 'İstenen kayıt bulunamadı.'
+    if (error.code === 'ECONNABORTED') return 'İstek zaman aşımına uğradı. Lütfen tekrar deneyin.'
+    if (error.code === 'ERR_NETWORK' || !error.response) {
+      return 'Bağlantı kurulamadı. İnternet bağlantınızı veya API erişimini kontrol edin.'
+    }
+    // "Request failed with status code 500" gibi ham Axios metinlerini gösterme
+    if (/^Request failed with status code \d+$/i.test(error.message)) return fallback
+    return error.message || fallback
   }
   if (error instanceof Error) return error.message
   return fallback

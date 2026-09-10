@@ -129,8 +129,8 @@ export function PublicHeader() {
             <MediaImage
               src={logoUrl}
               alt={siteName}
-              loading="lazy"
-              fetchPriority="low"
+              loading="eager"
+              fetchPriority="high"
               className="block shrink-0 object-contain object-left"
               style={logoStyle}
             />

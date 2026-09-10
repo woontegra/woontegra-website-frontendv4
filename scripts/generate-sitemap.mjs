@@ -22,11 +22,15 @@ const API_BASE = (() => {
 
 const API_TIMEOUT_MS = 5_000
 
-const SERVICE_SLUGS = [
-  'saas',
-  'web-tasarim',
-  'yazilim-gelistirme',
-  'e-ticaret',
+const SERVICE_SLUGS = ['saas', 'web-tasarim', 'yazilim-gelistirme', 'e-ticaret']
+
+const SOLUTION_SLUGS = [
+  'e-ticaret-altyapisi',
+  'pazaryeri-entegrasyonu',
+  'siparis-yonetimi',
+  'stok-fiyat-yonetimi',
+  'dijital-operasyon',
+  'ozel-yazilim-surecleri',
 ]
 
 /** Indexlenmesi gereken statik public sayfalar (canonical path'ler) */
@@ -39,11 +43,27 @@ const STATIC_ENTRIES = [
     priority: '0.8',
     changefreq: 'monthly',
   })),
+  { path: '/cozumler', priority: '0.8', changefreq: 'monthly' },
+  ...SOLUTION_SLUGS.map((slug) => ({
+    path: `/cozumler/${slug}`,
+    priority: '0.7',
+    changefreq: 'monthly',
+  })),
   { path: '/yazilimlar', priority: '0.9', changefreq: 'weekly' },
   { path: '/yazilimlar/muvekkil-kasa-defteri', priority: '0.8', changefreq: 'monthly' },
+  { path: '/yazilimlar/sifre-kasasi', priority: '0.8', changefreq: 'monthly' },
+  { path: '/yazilimlar/bilirkisi-hesap', priority: '0.8', changefreq: 'monthly' },
   { path: '/blog', priority: '0.9', changefreq: 'weekly' },
   { path: '/iletisim', priority: '0.8', changefreq: 'monthly' },
   { path: '/veri-silme-talebi', priority: '0.6', changefreq: 'yearly' },
+  { path: '/gizlilik-politikasi', priority: '0.5', changefreq: 'yearly' },
+  { path: '/kvkk-aydinlatma-metni', priority: '0.5', changefreq: 'yearly' },
+  { path: '/cerez-politikasi', priority: '0.5', changefreq: 'yearly' },
+  { path: '/acik-riza-metni', priority: '0.5', changefreq: 'yearly' },
+  { path: '/kullanim-sartlari', priority: '0.5', changefreq: 'yearly' },
+  { path: '/mesafeli-satis-sozlesmesi', priority: '0.4', changefreq: 'yearly' },
+  { path: '/on-bilgilendirme-formu', priority: '0.4', changefreq: 'yearly' },
+  { path: '/iade-iptal-kosullari', priority: '0.4', changefreq: 'yearly' },
 ]
 
 /** Sitemap'e girmemesi gereken path'ler (redirect kaynakları, private, legacy) */
@@ -84,9 +104,11 @@ const BLOCKED_PREFIXES = [
   '/api',
   '/builder-preview',
   '/yasal/',
+  '/yasal-belge/',
 ]
 
-const BLOCKED_SLUG_PARTS = ['optimoon', 'datca', 'mercan', 'bilirkisi']
+/** Harici marka/slug parçaları — bilirkisi artık Woontegra ürün sayfası olarak dahil */
+const BLOCKED_SLUG_PARTS = ['optimoon', 'datca', 'mercan']
 
 function isBlockedPath(p) {
   const pathname = p.split('?')[0].split('#')[0]
@@ -133,6 +155,13 @@ async function fetchDynamicPaths() {
       const slug = String(product?.slug ?? '').trim()
       const active = product?.isActive !== false && product?.published !== false
       if (slug && active) {
+        // MK satış slug'ları compare canonical'a yönlenir; sitemap'te duplicate olmasın
+        if (
+          /muvekkil-kasa-defteri-(yazilimi|desktop|web-tabanli|saas)/i.test(slug) ||
+          slug === 'muvekkil-kasa-saas'
+        ) {
+          continue
+        }
         dynamic.push({ path: `/yazilimlar/${slug}`, priority: '0.8', changefreq: 'monthly' })
       }
     }

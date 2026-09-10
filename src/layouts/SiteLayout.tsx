@@ -1,7 +1,5 @@
-import { useMemo } from 'react'
 import { Outlet } from 'react-router-dom'
-import { JsonLd } from '@/components/seo/JsonLd'
-import { organizationSchema } from '@/lib/siteSeo'
+import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd'
 import { useQuery } from '@tanstack/react-query'
 import { PublicHeader } from '@/components/public/PublicHeader'
 import { PublicFooter } from '@/components/public/PublicFooter'
@@ -12,7 +10,6 @@ import { TrackingScripts } from '@/integrations/TrackingScripts'
 import { campaignsService } from '@/services/campaignsService'
 
 export function SiteLayout() {
-  const orgSchema = useMemo(() => organizationSchema(), [])
   const campaignsQuery = useQuery({
     queryKey: ['campaigns', 'public'],
     queryFn: () => campaignsService.getPublic(),
@@ -23,7 +20,7 @@ export function SiteLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      <JsonLd id="organization" data={orgSchema} />
+      <OrganizationJsonLd />
       <SiteFaviconEffect />
       <TrackingScripts />
       {announcement ? <CampaignAnnouncementBar campaign={announcement} /> : null}

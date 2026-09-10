@@ -6,6 +6,7 @@ import { SolutionDetailLayout } from '@/components/public/solutions/SolutionDeta
 import { NotFoundPage } from '@/pages/public/NotFoundPage'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { BreadcrumbJsonLd } from '@/components/seo/SoftwareProductJsonLd'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { mergeSolutionPage, type SolutionPageOverrides } from '@/lib/solutionPageMerge'
 import {
@@ -52,6 +53,7 @@ export function SolutionDetailPage() {
   usePageMeta({
     title: content?.seoTitle ?? (base ? `${base.title} | Woontegra` : 'Çözüm'),
     description: content?.seoDescription ?? content?.description,
+    canonicalPath: `/cozumler/${slug}`,
   })
 
   if (!base || !isKnownSolutionSlug(slug)) return <NotFoundPage />
@@ -68,6 +70,15 @@ export function SolutionDetailPage() {
   }
 
   return (
-    <PublicBuilderBlocksPage blocks={blocks} fallback={<SolutionDetailLayout content={content!} />} />
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Ana Sayfa', path: '/' },
+          { name: 'Çözümler', path: '/cozumler' },
+          { name: content!.title || base.title, path: `/cozumler/${slug}` },
+        ]}
+      />
+      <PublicBuilderBlocksPage blocks={blocks} fallback={<SolutionDetailLayout content={content!} />} />
+    </>
   )
 }

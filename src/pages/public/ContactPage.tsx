@@ -21,8 +21,11 @@ export function ContactPage() {
   const content = { ...defaultContactContent, ...data }
 
   usePageMeta({
-    title: 'İletişim',
-    description: content.heroSubtitle || 'Woontegra ile iletişime geçin.',
+    title: 'Woontegra İletişim | Woontegra Teknoloji',
+    description:
+      content.heroSubtitle?.trim() ||
+      'Woontegra Teknoloji Yazılım ve Dijital Hizmetler Ltd. Şti. ile iletişime geçin. Yazılım, lisans ve proje sorularınız için bize ulaşın.',
+    canonicalPath: '/iletisim',
   })
 
   const legacyView = (

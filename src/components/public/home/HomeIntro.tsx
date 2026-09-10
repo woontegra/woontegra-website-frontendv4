@@ -1,12 +1,13 @@
 import { cn } from '@/lib/cn'
 import type { HomePageContent } from '@/types/homePageContent'
 
-type Props = { intro: HomePageContent['intro'] }
+type Props = { intro: HomePageContent['intro']; titleAs?: 'h1' | 'h2' }
 
-export function HomeIntro({ intro }: Props) {
+export function HomeIntro({ intro, titleAs = 'h2' }: Props) {
   if (!intro.enabled) return null
 
   const cards = (intro.cards ?? []).filter((c) => c.enabled).slice().sort((a, b) => a.order - b.order)
+  const TitleTag = titleAs
 
   return (
     <section className="relative bg-gradient-to-b from-white via-slate-50 to-white py-14 sm:py-16">
@@ -16,9 +17,9 @@ export function HomeIntro({ intro }: Props) {
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{intro.eyebrow}</p>
           ) : null}
           {intro.title ? (
-            <h2 className="text-balance bg-gradient-to-r from-emerald-700 via-green-600 to-blue-700 bg-clip-text text-2xl font-semibold leading-tight text-transparent sm:text-3xl">
+            <TitleTag className="text-balance bg-gradient-to-r from-emerald-700 via-green-600 to-blue-700 bg-clip-text text-2xl font-semibold leading-tight text-transparent sm:text-3xl">
               {intro.title}
-            </h2>
+            </TitleTag>
           ) : null}
         </div>
 

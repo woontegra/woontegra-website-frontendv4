@@ -6,6 +6,7 @@ import { ServiceDetailLayout } from '@/components/public/services/ServiceDetailL
 import { NotFoundPage } from '@/pages/public/NotFoundPage'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { BreadcrumbJsonLd } from '@/components/seo/SoftwareProductJsonLd'
 import { mergeServicePage, servicePageSeo, type ServicePageOverrides } from '@/lib/servicePageMerge'
 import { mergePageSeo, PAGE_SEO_BY_PATH, normalizePublicPath } from '@/lib/siteSeo'
 import { isRemovedServiceSlug, resolveServiceSlug } from '@/lib/serviceSlugs'
@@ -65,9 +66,18 @@ export function ServiceDetailPage() {
   }
 
   return (
-    <PublicBuilderBlocksPage
-      blocks={blocks}
-      fallback={<ServiceDetailLayout content={content!} />}
-    />
+    <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Ana Sayfa', path: '/' },
+          { name: 'Hizmetler', path: '/hizmetler' },
+          { name: content!.hero.title || base.hero.title, path: canonicalPath },
+        ]}
+      />
+      <PublicBuilderBlocksPage
+        blocks={blocks}
+        fallback={<ServiceDetailLayout content={content!} />}
+      />
+    </>
   )
 }

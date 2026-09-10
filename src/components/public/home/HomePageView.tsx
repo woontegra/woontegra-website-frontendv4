@@ -34,7 +34,7 @@ export function HomePageView({ content }: Props) {
   return (
     <>
       <HomeHero hero={content.hero} />
-      <HomeIntro intro={content.intro} />
+      <HomeIntro intro={content.intro} titleAs={content.hero.enabled ? 'h2' : 'h1'} />
       <BelowFoldSection>
         <HomeServices services={content.services} />
       </BelowFoldSection>

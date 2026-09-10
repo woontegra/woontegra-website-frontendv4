@@ -132,9 +132,9 @@ function IntroVariant({ block, cards }: { block: CardGridBlock; cards: CardGridI
             </BuilderField>
           ) : null}
           <BuilderField path="title" label="Ana başlık" type="text" className="w-fit max-w-full mx-auto">
-            <h2 className="text-balance bg-gradient-to-r from-emerald-700 via-green-600 to-blue-700 bg-clip-text text-2xl font-semibold text-transparent sm:text-3xl">
+            <h1 className="text-balance bg-gradient-to-r from-emerald-700 via-green-600 to-blue-700 bg-clip-text text-2xl font-semibold text-transparent sm:text-3xl">
               {block.title}
-            </h2>
+            </h1>
           </BuilderField>
           {block.description ? (
             <BuilderField path="description" label="Açıklama" type="text" className="mx-auto mt-4 max-w-2xl">

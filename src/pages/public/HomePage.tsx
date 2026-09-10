@@ -25,8 +25,8 @@ export function HomePage() {
   })
 
   const plan = useMemo(
-    () => (raw !== undefined ? resolveHomeRenderPlan(raw ?? null) : null),
-    [raw],
+    () => (!isPending ? resolveHomeRenderPlan(raw ?? null) : null),
+    [raw, isPending],
   )
   const heroShell = useMemo(() => (plan ? extractHomeHeroShell(plan) : null), [plan])
 

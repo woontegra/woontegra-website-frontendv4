@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { SoftwareDetailView } from '@/components/public/product/SoftwareDetailView'
 import { MuvekkilKasaSaasSalesPage } from '@/components/public/product/MuvekkilKasaSaasSalesPage'
@@ -5,7 +6,9 @@ import { MkSaasProductPageProvider, useMkSaasProductPageContext } from '@/compon
 import { PublicDetailSkeleton } from '@/components/public/PublicRouteSkeleton'
 import { ErrorState } from '@/components/public/ErrorState'
 import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocksPage'
+import { SoftwareProductJsonLd } from '@/components/seo/SoftwareProductJsonLd'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { isFreeDownloadProduct } from '@/utils/productPurchase'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { useIsBuilderPreview, usePreviewOrParamSlug } from '@/lib/previewRouteParams'
@@ -90,11 +93,46 @@ export function SoftwareDetailPage() {
     !renewalToken &&
     (isMuvekkilKasaDesktopSalesSlug(slug) || isMkSaasProduct)
 
+  const productCanonicalPath = redirectMkSalesToCompare
+    ? MK_COMPARE_PATH
+    : slug
+      ? `/yazilimlar/${slug}`
+      : '/yazilimlar'
+
   usePageMeta({
     title: data?.seoTitle || data?.name || 'Yazılım',
     description: data?.seoDescription || data?.shortDescription,
-    canonicalPath: redirectMkSalesToCompare ? MK_COMPARE_PATH : slug ? `/yazilimlar/${slug}` : '/yazilimlar',
+    canonicalPath: productCanonicalPath,
+    ogType: 'product',
+    ogImage: data?.coverImage ?? null,
   })
+
+  const productJsonLd = useMemo(() => {
+    if (!data?.name || redirectMkSalesToCompare) return null
+    const description =
+      data.seoDescription?.trim() ||
+      data.shortDescription?.trim() ||
+      data.name
+    const includeOffer =
+      typeof data.price === 'number' &&
+      Number.isFinite(data.price) &&
+      (data.price > 0 || isFreeDownloadProduct(data))
+    return {
+      name: data.name,
+      description,
+      path: `/yazilimlar/${data.slug}`,
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: null as string | null,
+      price: includeOffer ? data.price : null,
+      priceCurrency: data.currency || 'TRY',
+      includeOffer,
+      breadcrumbs: [
+        { name: 'Ana Sayfa', path: '/' },
+        { name: 'Yazılımlar', path: '/yazilimlar' },
+        { name: data.name, path: `/yazilimlar/${data.slug}` },
+      ],
+    }
+  }, [data, redirectMkSalesToCompare])
 
   const legacyView =
     isPending ? (
@@ -158,5 +196,10 @@ export function SoftwareDetailPage() {
     return <MkSaasProductPageProvider product={data}>{mkFallback}</MkSaasProductPageProvider>
   }
 
-  return <PublicBuilderBlocksPage blocks={blocks} fallback={legacyView} />
+  return (
+    <>
+      {productJsonLd ? <SoftwareProductJsonLd {...productJsonLd} /> : null}
+      <PublicBuilderBlocksPage blocks={blocks} fallback={legacyView} />
+    </>
+  )
 }

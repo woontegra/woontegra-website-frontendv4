@@ -55,7 +55,11 @@ export function SolutionsPage() {
   const solutionCards = getActiveSolutionCards(cardsQuery.data ?? defaultSolutionCardsBundle)
   const benefits = getActiveSolutionBenefitCards(benefitsQuery.data ?? defaultSolutionBenefitCardsBundle)
 
-  usePageMeta({ title: page.seoTitle, description: page.seoDescription })
+  usePageMeta({
+    title: page.seoTitle,
+    description: page.seoDescription,
+    canonicalPath: '/cozumler',
+  })
 
   if (!page.enabled) {
     return (

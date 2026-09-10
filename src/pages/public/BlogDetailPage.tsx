@@ -5,6 +5,7 @@ import { PublicBuilderBlocksPage } from '@/components/public/PublicBuilderBlocks
 import { PublicDetailSkeleton } from '@/components/public/PublicRouteSkeleton'
 import { ErrorState } from '@/components/public/ErrorState'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { BreadcrumbJsonLd } from '@/components/seo/SoftwareProductJsonLd'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { usePreviewOrParamSlug } from '@/lib/previewRouteParams'
 import { BLOG_PAGES_CONTENT_KEY } from '@/lib/builderPageContentKeys'
@@ -28,6 +29,8 @@ export function BlogDetailPage() {
     title: data?.title || 'Blog',
     description: data?.excerpt,
     canonicalPath: slug ? `/blog/${slug}` : '/blog',
+    ogType: 'article',
+    ogImage: data?.featuredImage || data?.coverImageUrl || null,
   })
 
   const legacyView =
@@ -44,5 +47,18 @@ export function BlogDetailPage() {
       <BlogDetailView post={data} />
     )
 
-  return <PublicBuilderBlocksPage blocks={blocks} fallback={legacyView} />
+  return (
+    <>
+      {data?.title && slug ? (
+        <BreadcrumbJsonLd
+          items={[
+            { name: 'Ana Sayfa', path: '/' },
+            { name: 'Blog', path: '/blog' },
+            { name: data.title, path: `/blog/${slug}` },
+          ]}
+        />
+      ) : null}
+      <PublicBuilderBlocksPage blocks={blocks} fallback={legacyView} />
+    </>
+  )
 }
