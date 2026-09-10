@@ -36,6 +36,45 @@ function isAdminChunk(dep: string): boolean {
   return /(?:^|\/)admin-[^/]+\.js$/i.test(dep) || dep.includes('/admin-')
 }
 
+/**
+ * Vite preview defaults to SPA fallback (always root index.html).
+ * Vercel serves existing filesystem HTML first, then SPA rewrite.
+ * Mirror that: if dist/<route>/index.html exists, serve it.
+ */
+function previewPrerenderFirstPlugin(): Plugin {
+  const distRoot = path.resolve(__dirname, 'dist')
+  return {
+    name: 'preview-prerender-first',
+    configurePreviewServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') return next()
+        const raw = req.url?.split('?')[0] ?? '/'
+        const pathname = decodeURIComponent(raw)
+        if (pathname.startsWith('/api') || pathname.startsWith('/uploads') || pathname.startsWith('/assets')) {
+          return next()
+        }
+        // Skip obvious static asset URLs that still have an extension
+        if (/\.[a-zA-Z0-9]{1,8}$/.test(pathname) && !pathname.endsWith('.html')) {
+          return next()
+        }
+        const rel =
+          pathname === '/'
+            ? 'index.html'
+            : path.join(pathname.replace(/^\/+|\/+$/g, ''), 'index.html')
+        const filePath = path.resolve(distRoot, rel)
+        if (!filePath.startsWith(distRoot) || !fs.existsSync(filePath)) return next()
+        res.setHeader('Content-Type', 'text/html; charset=utf-8')
+        if (req.method === 'HEAD') {
+          res.statusCode = 200
+          res.end()
+          return
+        }
+        fs.createReadStream(filePath).pipe(res)
+      })
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const railwayApi = 'https://websitebackend-production-ab6e.up.railway.app'
@@ -45,7 +84,7 @@ export default defineConfig(({ mode }) => {
   const previewProxyTarget = env.VITE_PRERENDER_API_PROXY?.trim() || railwayApi
 
   return {
-    plugins: [react(), tailwindcss(), devV3PublicImagesPlugin()],
+    plugins: [react(), tailwindcss(), devV3PublicImagesPlugin(), previewPrerenderFirstPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

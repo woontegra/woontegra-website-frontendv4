@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { createJSONStorage, persist } from 'zustand/middleware'
 import type { AuthUser } from '@/types/auth'
 
 type AuthState = {
@@ -7,6 +7,15 @@ type AuthState = {
   adminUser: AuthUser | null
   setAdminSession: (token: string, user: AuthUser) => void
   clearAdminSession: () => void
+}
+
+const noopStorage: Storage = {
+  getItem: () => null,
+  setItem: () => undefined,
+  removeItem: () => undefined,
+  clear: () => undefined,
+  key: () => null,
+  length: 0,
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -19,6 +28,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'woontegra-v4-admin-auth',
+      storage: createJSONStorage(() => (typeof window === 'undefined' ? noopStorage : localStorage)),
       partialize: (s) => ({
         adminToken: s.adminToken,
         adminUser: s.adminUser,

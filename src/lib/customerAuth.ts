@@ -9,6 +9,7 @@ function storage(persistent: boolean): Storage {
 }
 
 function readRemember(): boolean {
+  if (typeof window === 'undefined') return true
   try {
     return localStorage.getItem(REMEMBER_KEY) === '1'
   } catch {
@@ -17,10 +18,12 @@ function readRemember(): boolean {
 }
 
 export function getCustomerToken(): string | null {
+  if (typeof window === 'undefined') return null
   return localStorage.getItem(TOKEN_KEY) ?? sessionStorage.getItem(TOKEN_KEY)
 }
 
 export function getCustomerProfile(): CustomerProfile | null {
+  if (typeof window === 'undefined') return null
   try {
     const raw = localStorage.getItem(PROFILE_KEY) ?? sessionStorage.getItem(PROFILE_KEY)
     if (!raw) return null
@@ -31,6 +34,7 @@ export function getCustomerProfile(): CustomerProfile | null {
 }
 
 export function saveCustomerSession(token: string, profile: CustomerProfile, remember = true) {
+  if (typeof window === 'undefined') return
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(PROFILE_KEY)
   sessionStorage.removeItem(TOKEN_KEY)
@@ -48,6 +52,7 @@ export function saveCustomerSession(token: string, profile: CustomerProfile, rem
 }
 
 export function clearCustomerSession() {
+  if (typeof window === 'undefined') return
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(PROFILE_KEY)
   sessionStorage.removeItem(TOKEN_KEY)

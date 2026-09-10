@@ -141,6 +141,7 @@ function parseCartArray(parsed: unknown): CartLine[] {
 }
 
 export function readCart(): CartLine[] {
+  if (typeof window === 'undefined') return []
   try {
     let raw = localStorage.getItem(CART_KEY)
     if (!raw) {
@@ -158,10 +159,12 @@ export function readCart(): CartLine[] {
 }
 
 export function writeCart(lines: CartLine[]): void {
+  if (typeof window === 'undefined') return
   localStorage.setItem(CART_KEY, JSON.stringify(lines))
 }
 
 export function clearCart(): void {
+  if (typeof window === 'undefined') return
   localStorage.removeItem(CART_KEY)
   localStorage.removeItem(CART_KEY_V1)
   window.dispatchEvent(new Event('woontegra-cart'))
