@@ -2,7 +2,7 @@
  * Build-time prerender for public SEO routes.
  * Keeps Vite SPA architecture; writes static HTML snapshots under dist/.
  */
-import { spawn } from 'node:child_process'
+import { spawn, execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
 import path from 'node:path'
@@ -15,6 +15,7 @@ const DIST = path.join(ROOT, 'dist')
 const SITEMAP = path.join(DIST, 'sitemap.xml')
 const PREVIEW_PORT = Number(process.env.PRERENDER_PORT || 4173)
 const PREVIEW_ORIGIN = `http://127.0.0.1:${PREVIEW_PORT}`
+const IS_CI = Boolean(process.env.VERCEL || process.env.CI)
 
 const PRIORITY_ROUTES = [
   '/',
@@ -92,6 +93,23 @@ function collectRoutes() {
   return [...set].sort((a, b) => a.localeCompare(b))
 }
 
+function ensureChromium() {
+  // node_modules içine kur — Vercel cache / path sorunlarını azaltır
+  if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
+    process.env.PLAYWRIGHT_BROWSERS_PATH = '0'
+  }
+  const cli = path.join(ROOT, 'node_modules', 'playwright', 'cli.js')
+  if (!fs.existsSync(cli)) {
+    throw new Error('playwright paketi bulunamadı — npm install gerekli')
+  }
+  console.log('[prerender] playwright chromium-headless-shell kuruluyor…')
+  execFileSync(process.execPath, [cli, 'install', '--only-shell', 'chromium'], {
+    cwd: ROOT,
+    stdio: 'inherit',
+    env: process.env,
+  })
+}
+
 function waitForServer(url, timeoutMs = 60_000) {
   const started = Date.now()
   return new Promise((resolve, reject) => {
@@ -110,9 +128,13 @@ function waitForServer(url, timeoutMs = 60_000) {
 }
 
 function startPreview() {
+  const viteCli = path.join(ROOT, 'node_modules', 'vite', 'bin', 'vite.js')
+  if (!fs.existsSync(viteCli)) {
+    throw new Error('vite bulunamadı — npm install / build ortamını kontrol edin')
+  }
   const child = spawn(
-    process.platform === 'win32' ? 'npx.cmd' : 'npx',
-    ['vite', 'preview', '--host', '127.0.0.1', '--port', String(PREVIEW_PORT)],
+    process.execPath,
+    [viteCli, 'preview', '--host', '127.0.0.1', '--port', String(PREVIEW_PORT)],
     {
       cwd: ROOT,
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -123,7 +145,6 @@ function startPreview() {
           process.env.VITE_PRERENDER_API_PROXY ||
           'https://websitebackend-production-ab6e.up.railway.app',
       },
-      shell: process.platform === 'win32',
     },
   )
   child.stdout.on('data', (buf) => {
@@ -143,6 +164,16 @@ function outputPathForRoute(route) {
 
 function scrubAdminPreloads(html) {
   return html.replace(/<link[^>]+rel="modulepreload"[^>]+href="[^"]*admin-[^"]+\.js"[^>]*>\s*/gi, '')
+}
+
+async function launchChromium() {
+  // Vercel/Linux container: sandbox genelde kırılır
+  const args = ['--disable-dev-shm-usage', '--disable-gpu']
+  if (IS_CI || process.platform === 'linux') {
+    args.push('--no-sandbox', '--disable-setuid-sandbox')
+  }
+  console.log(`[prerender] chromium.launch headless args=${args.join(' ')}`)
+  return chromium.launch({ headless: true, args })
 }
 
 async function prerenderRouteOnce(page, route, spaShell) {
@@ -184,6 +215,8 @@ async function main() {
     throw new Error('dist/ bulunamadı — önce vite build çalıştırın')
   }
 
+  ensureChromium()
+
   const spaShellPath = path.join(DIST, 'index.html')
   const spaShell = fs.readFileSync(spaShellPath, 'utf8')
   if (!spaShell.includes('<div id="root"></div>') && !spaShell.includes('<div id="root">')) {
@@ -200,11 +233,9 @@ async function main() {
   try {
     await waitForServer(PREVIEW_ORIGIN)
     try {
-      browser = await chromium.launch({ headless: true })
+      browser = await launchChromium()
     } catch (launchErr) {
-      console.error(
-        '[prerender] Chromium başlatılamadı. CI/Vercel için `playwright install --only-shell chromium` gerekir.',
-      )
+      console.error('[prerender] Chromium başlatılamadı (Vercel/CI sandbox veya eksik binary).')
       throw launchErr
     }
     const page = await browser.newPage()
