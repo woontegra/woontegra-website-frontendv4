@@ -122,9 +122,11 @@ export function trackPurchase(order: {
   logDebug('purchase', params)
 }
 
-export function trackLead(data?: { source?: string; email?: string }) {
+export function trackLead(data?: { source?: string; email?: string; product?: string }) {
   if (!eventEnabled('lead')) return
-  const params = { source: data?.source ?? 'website' }
+  // Never send PII (email/phone/name) to Meta/GA — email is debug-only.
+  const params: Record<string, unknown> = { source: data?.source ?? 'website' }
+  if (data?.product?.trim()) params.product = data.product.trim()
   gtagEvent('generate_lead', params)
   fbqEvent('Lead', params)
   logDebug('lead', { ...params, email: data?.email ? '[redacted]' : undefined })

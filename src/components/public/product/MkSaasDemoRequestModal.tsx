@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { saasDemoService } from '@/services/saasDemoService'
+import { trackLead } from '@/integrations/trackingEvents'
 import { getErrorMessage } from '@/api/client'
 
 type Props = {
@@ -102,6 +103,7 @@ export function MkSaasDemoRequestModal({
       })
       setLoginUrl(result.loginUrl)
       setSuccess(true)
+      trackLead({ source: 'mk-saas-demo', product: 'muvekkil-kasa-defteri' })
     } catch (err) {
       setError(getErrorMessage(err, 'Demo talebi gönderilemedi'))
     } finally {
