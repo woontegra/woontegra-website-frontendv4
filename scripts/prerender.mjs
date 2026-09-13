@@ -616,80 +616,296 @@ async function resolvePageModel(route, cache) {
 }
 
 function renderBody(model) {
-  const hub =
-    model.hubProducts
+  const home = model.isHome === true || model.route === '/'
+  const navItems = [
+    { href: '/hakkimizda', label: 'Hakkımızda' },
+    { href: '/yazilimlar', label: 'Yazılımlar' },
+    { href: '/hizmetler', label: 'Hizmetler' },
+    { href: '/iletisim', label: 'İletişim' },
+  ]
+
+  const header = h(
+    'header',
+    { className: 'sticky top-0 z-[100] w-full border-b border-slate-100 bg-white' },
+    h(
+      'div',
+      { className: 'mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8' },
+      h(
+        'a',
+        { href: '/', className: 'flex shrink-0 items-center gap-2', 'aria-label': 'Woontegra Ana Sayfa' },
+        h('span', { className: 'text-lg font-semibold tracking-tight text-slate-900' }, 'Woontegra'),
+      ),
+      h(
+        'nav',
+        { 'aria-label': 'Ana menü', className: 'hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex' },
+        navItems.map((item) =>
+          h(
+            'a',
+            {
+              key: item.href,
+              href: item.href,
+              className:
+                'whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900',
+            },
+            item.label,
+          ),
+        ),
+      ),
+    ),
+    h(
+      'nav',
+      {
+        'aria-label': 'Mobil menü',
+        className: 'flex flex-wrap items-center justify-center gap-1 px-4 py-2 lg:hidden',
+      },
+      navItems.map((item) =>
+        h(
+          'a',
+          {
+            key: `m-${item.href}`,
+            href: item.href,
+            className:
+              'whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900',
+          },
+          item.label,
+        ),
+      ),
+    ),
+  )
+
+  const crumbTrail =
+    Array.isArray(model.crumbs) && model.crumbs.length > 1
       ? h(
-          'section',
-          { 'aria-label': 'Woontegra ürünleri' },
-          h('h2', null, 'Woontegra ürünleri'),
+          'div',
+          { className: 'mb-5 flex flex-wrap gap-2 text-sm text-slate-300' },
+          model.crumbs.map((c, i) => {
+            const isLast = i === model.crumbs.length - 1
+            return h(
+              Fragment,
+              { key: `${c.path}-${i}` },
+              i > 0 ? h('span', { className: 'text-slate-500' }, ' / ') : null,
+              isLast
+                ? h('span', { className: 'text-slate-200' }, c.name)
+                : h('a', { href: c.path || '/', className: 'text-slate-400 hover:text-white' }, c.name),
+            )
+          }),
+        )
+      : null
+
+  const hero = home
+    ? h(
+        'section',
+        {
+          className:
+            'relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-green-900 py-12 sm:py-16 lg:py-20',
+        },
+        h('div', {
+          className:
+            'absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,197,94,0.2),transparent_70%)]',
+        }),
+        h(
+          'div',
+          { className: 'relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8' },
+          h(
+            'div',
+            { className: 'grid max-w-3xl items-center gap-10 lg:gap-12' },
+            h(
+              'div',
+              { className: 'text-white' },
+              h(
+                'div',
+                { className: 'mb-4 inline-block rounded-full bg-green-500/20 px-3 py-1.5' },
+                h('span', { className: 'text-xs font-medium text-green-400' }, 'Woontegra Yazılım'),
+              ),
+              h(
+                'h1',
+                { className: 'mb-4 text-3xl font-semibold leading-tight text-white md:text-4xl lg:text-5xl' },
+                model.h1,
+              ),
+              h(
+                'p',
+                { className: 'mb-6 max-w-xl text-base leading-relaxed text-gray-300 md:text-lg' },
+                model.bodyText,
+              ),
+              h(
+                'div',
+                { className: 'flex flex-wrap gap-3' },
+                h(
+                  'a',
+                  {
+                    href: '/yazilimlar',
+                    className:
+                      'inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-2.5 text-sm font-medium text-white',
+                  },
+                  'Yazılımlar',
+                ),
+                h(
+                  'a',
+                  {
+                    href: '/iletisim',
+                    className:
+                      'inline-flex items-center justify-center rounded-lg border border-white/30 px-6 py-2.5 text-sm font-medium text-white',
+                  },
+                  'İletişim',
+                ),
+              ),
+            ),
+          ),
+        ),
+      )
+    : h(
+        'section',
+        {
+          className:
+            'relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 py-12 md:py-16 lg:py-20',
+        },
+        h('div', {
+          className:
+            'pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(34,197,94,0.15),transparent_55%)]',
+        }),
+        h(
+          'div',
+          { className: 'relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8' },
+          h(
+            'div',
+            { className: 'grid max-w-4xl items-center gap-10 lg:gap-16' },
+            h(
+              'div',
+              { className: 'text-white' },
+              crumbTrail,
+              h(
+                'p',
+                {
+                  className:
+                    'mb-4 inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-400',
+                },
+                'Woontegra',
+              ),
+              h(
+                'h1',
+                { className: 'text-3xl font-bold leading-tight tracking-tight text-white md:text-4xl lg:text-5xl' },
+                model.h1,
+              ),
+              h(
+                'p',
+                { className: 'mt-5 max-w-xl text-base leading-relaxed text-slate-300 md:text-lg' },
+                model.bodyText,
+              ),
+            ),
+          ),
+        ),
+      )
+
+  const hub = model.hubProducts
+    ? h(
+        'section',
+        { className: 'border-b border-slate-200 bg-slate-50 py-10', 'aria-label': 'Woontegra ürünleri' },
+        h(
+          'div',
+          { className: 'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8' },
+          h('h2', { className: 'text-sm font-semibold uppercase tracking-wide text-slate-500' }, 'Woontegra ürünleri'),
           h(
             'ul',
-            null,
+            { className: 'mt-5 grid gap-4 sm:grid-cols-3' },
             SOFTWARE_ENTITY_HUB.map((product) =>
               h(
                 'li',
                 { key: product.path },
-                h('a', { href: product.path }, product.name),
-                ' — ',
-                product.description,
+                h(
+                  'a',
+                  {
+                    href: product.path,
+                    className: 'block rounded-2xl border border-slate-200 bg-white p-5',
+                  },
+                  h('p', { className: 'text-base font-semibold text-slate-900' }, product.name),
+                  h('p', { className: 'mt-2 text-sm leading-relaxed text-slate-600' }, product.description),
+                ),
               ),
             ),
           ),
-        )
-      : null
-
-  return renderToStaticMarkup(
-    h(
-      Fragment,
-      null,
-      h(
-        'header',
-        { className: 'prerender-header' },
-        h('a', { href: '/' }, 'Woontegra'),
-        h('nav', { 'aria-label': 'Ana menü' }, [
-          h('a', { key: 'a', href: '/hakkimizda' }, 'Hakkımızda'),
-          ' ',
-          h('a', { key: 'b', href: '/yazilimlar' }, 'Yazılımlar'),
-          ' ',
-          h('a', { key: 'c', href: '/hizmetler' }, 'Hizmetler'),
-          ' ',
-          h('a', { key: 'd', href: '/iletisim' }, 'İletişim'),
-        ]),
-      ),
-      h(
-        'main',
-        null,
-        h('h1', null, model.h1),
-        h('p', null, model.bodyText),
-        hub,
-        h(
-          'p',
-          null,
-          'Woontegra — yazılım şirketi. Özel yazılım, e-ticaret ve dijital dönüşüm çözümleri geliştirir.',
         ),
-      ),
+      )
+    : null
+
+  const content = h(
+    'section',
+    { className: 'mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8' },
+    h(
+      'p',
+      { className: 'max-w-3xl text-base leading-relaxed text-slate-600' },
+      'Woontegra — yazılım şirketi. Özel yazılım, e-ticaret ve dijital dönüşüm çözümleri geliştirir.',
+    ),
+    h(
+      'ul',
+      { className: 'mt-4 space-y-2 text-sm text-slate-600' },
+      h('li', null, h('a', { href: '/yazilimlar', className: 'font-medium text-emerald-700 hover:text-emerald-800' }, 'Yazılımlar')),
+      h('li', null, h('a', { href: '/hakkimizda', className: 'font-medium text-emerald-700 hover:text-emerald-800' }, 'Hakkımızda')),
+      h('li', null, h('a', { href: '/iletisim', className: 'font-medium text-emerald-700 hover:text-emerald-800' }, 'İletişim')),
+    ),
+  )
+
+  const footer = h(
+    'footer',
+    { className: 'border-t border-slate-200 bg-slate-900 text-slate-300' },
+    h(
+      'div',
+      { className: 'mx-auto max-w-7xl px-4 py-12 sm:px-6' },
       h(
-        'footer',
-        null,
-        h('p', null, '© Woontegra — www.woontegra.com'),
+        'div',
+        { className: 'grid gap-10 sm:grid-cols-2 lg:grid-cols-4' },
         h(
-          'nav',
-          { 'aria-label': 'Sosyal medya' },
-          SOCIAL_PROFILES.map((profile) =>
-            h(
-              'a',
-              {
-                key: profile.url,
-                href: profile.url,
-                target: '_blank',
-                rel: 'noopener noreferrer',
-                'aria-label': `Woontegra ${profile.label}`,
-              },
-              profile.label,
+          'div',
+          { className: 'sm:col-span-2 lg:col-span-1' },
+          h('p', { className: 'text-lg font-semibold text-white' }, 'Woontegra'),
+          h(
+            'p',
+            { className: 'mt-3 text-sm leading-relaxed text-slate-400' },
+            'Yazılım şirketi — özel yazılım, güvenli ödeme ve merkezi lisans yönetimi.',
+          ),
+          h(
+            'ul',
+            { className: 'mt-5 flex flex-wrap items-center gap-2' },
+            SOCIAL_PROFILES.map((profile) =>
+              h(
+                'li',
+                { key: profile.url },
+                h(
+                  'a',
+                  {
+                    href: profile.url,
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                    'aria-label': `Woontegra ${profile.label}`,
+                    title: profile.label,
+                    className:
+                      'inline-flex h-10 items-center justify-center rounded-lg border border-slate-700 px-3 text-xs font-medium text-slate-300',
+                  },
+                  profile.label,
+                ),
+              ),
             ),
           ),
         ),
       ),
+      h(
+        'div',
+        {
+          className:
+            'mt-10 flex flex-col gap-2 border-t border-slate-800 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between',
+        },
+        h('p', null, `© ${new Date().getFullYear()} Woontegra. Tüm hakları saklıdır.`),
+        h('p', null, 'www.woontegra.com'),
+      ),
+    ),
+  )
+
+  return renderToStaticMarkup(
+    h(
+      'div',
+      { className: 'flex min-h-screen flex-col bg-white' },
+      header,
+      h('main', { className: 'flex-1' }, hero, hub, content),
+      footer,
     ),
   )
 }
@@ -775,7 +991,7 @@ async function main() {
       if (critical.has(route) && !/woontegra/i.test(`${model.title} ${model.bodyText} ${model.h1}`)) {
         throw new Error('kritik sayfada Woontegra metni yok')
       }
-      const bodyHtml = renderBody(model)
+      const bodyHtml = renderBody({ ...model, isHome: route === '/', route })
       // Always start from pristine SPA shell for asset tags
       const html = injectIntoShell(spaShell, model, route, bodyHtml)
       if (!/<h1[\s>]/i.test(html)) throw new Error('H1 yazılamadı')

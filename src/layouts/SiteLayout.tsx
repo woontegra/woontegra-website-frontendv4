@@ -8,6 +8,11 @@ import { CookieConsentBanner } from '@/components/cookie/CookieConsentBanner'
 import { SiteFaviconEffect } from '@/hooks/usePublicSiteSettings'
 import { TrackingScripts } from '@/integrations/TrackingScripts'
 import { campaignsService } from '@/services/campaignsService'
+import { PRERENDER_SHELL_CLASS_INVENTORY } from '@/prerender/shellClassInventory'
+
+/** Keep prerender shell utilities referenced so public CSS retains them. */
+const _prerenderShellCssAnchor = PRERENDER_SHELL_CLASS_INVENTORY
+void _prerenderShellCssAnchor
 
 export function SiteLayout() {
   const campaignsQuery = useQuery({
