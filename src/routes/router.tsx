@@ -27,6 +27,14 @@ const SoftwareListPage = lazy(() =>
 const SoftwareDetailPage = lazy(() =>
   import('@/pages/public/SoftwareDetailPage').then((m) => ({ default: m.SoftwareDetailPage })),
 )
+const BilirkisiCheckoutPage = lazy(() =>
+  import('@/pages/public/BilirkisiCheckoutPage').then((m) => ({ default: m.BilirkisiCheckoutPage })),
+)
+const BilirkisiCampaignRedirectPage = lazy(() =>
+  import('@/pages/public/BilirkisiCampaignRedirectPage').then((m) => ({
+    default: m.BilirkisiCampaignRedirectPage,
+  })),
+)
 const MuvekkilKasaComparePage = lazy(() =>
   import('@/pages/public/MuvekkilKasaComparePage').then((m) => ({ default: m.MuvekkilKasaComparePage })),
 )
@@ -313,7 +321,12 @@ export const router = createBrowserRouter([
       { path: 'cozumler/:slug', element: <LazyPage><SolutionDetailPage /></LazyPage> },
       { path: 'yazilimlar', element: <LazyPage><SoftwareListPage /></LazyPage> },
       { path: 'yazilimlar/muvekkil-kasa-defteri', element: <LazyPage><MuvekkilKasaComparePage /></LazyPage> },
+      {
+        path: 'yazilimlar/bilirkisi-hesap/satin-al',
+        element: <LazyPage><BilirkisiCheckoutPage /></LazyPage>,
+      },
       { path: 'yazilimlar/:slug', element: <LazyPage><SoftwareDetailPage /></LazyPage> },
+      { path: 'k/:code', element: <LazyPage><BilirkisiCampaignRedirectPage /></LazyPage> },
       { path: 'r/:code', element: <LazyPage><AffiliateReferralRedirectPage /></LazyPage> },
       { path: 'blog', element: <LazyPage><BlogListPage /></LazyPage> },
       { path: 'blog/:slug', element: <LazyPage><BlogDetailPage /></LazyPage> },

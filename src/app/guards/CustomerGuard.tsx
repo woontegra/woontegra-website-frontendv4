@@ -7,6 +7,7 @@ export function CustomerGuard() {
 
   if (!authed) {
     const returnTo = encodeURIComponent(location.pathname + location.search)
+    // return path is always pathname+search from this app (open-redirect safe)
     return <Navigate to={`/giris?return=${returnTo}`} replace />
   }
 

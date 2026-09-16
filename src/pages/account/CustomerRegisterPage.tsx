@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/Button'
 import { useCustomerSession } from '@/hooks/useCustomerSession'
 import { customersService, getErrorMessage } from '@/services/customersService'
 import { trackSignUp } from '@/integrations/trackingEvents'
+import { safeInternalReturnPath } from '@/lib/safeInternalReturnPath'
 
 export function CustomerRegisterPage() {
   const [params] = useSearchParams()
-  const ret = params.get('return') || '/hesabim'
+  const ret = safeInternalReturnPath(params.get('return'), '/hesabim')
   const navigate = useNavigate()
   const { authed } = useCustomerSession()
   const [name, setName] = useState('')
@@ -22,7 +23,7 @@ export function CustomerRegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  if (authed) return <Navigate to="/hesabim" replace />
+  if (authed) return <Navigate to={ret} replace />
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,7 +45,7 @@ export function CustomerRegisterPage() {
         phone: phone.trim() || undefined,
       })
       trackSignUp({ method: 'email' })
-      navigate(ret.startsWith('/') ? ret : '/hesabim', { replace: true })
+      navigate(ret, { replace: true })
     } catch (err) {
       setError(getErrorMessage(err, 'Kayıt oluşturulamadı'))
     } finally {

@@ -60,8 +60,8 @@ function buildTechnicalRows(
     const meta = getPromotionalSoftwareMeta(product.slug)
     const rows = [
       { label: 'Ürün tipi', value: meta?.publicProductTypeLabel ?? 'Web Tabanlı Yazılım' },
-      { label: 'Teslimat', value: 'Resmi sitede dijital erişim' },
-      { label: 'Lisans', value: meta?.licenseSummary ?? 'Resmi sitede' },
+      { label: 'Teslimat', value: 'Bilirkişi Hesap paneli' },
+      { label: 'Lisans', value: meta?.licenseSummary ?? 'Panel erişimi' },
     ]
     if (galleryCount > 0) rows.push({ label: 'Galeri', value: `${galleryCount} görsel` })
     return rows

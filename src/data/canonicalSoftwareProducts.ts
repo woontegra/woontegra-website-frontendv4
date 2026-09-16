@@ -1,10 +1,14 @@
 import type { PublicProductDetail, PublicProductListItem } from '@/types/product'
 
 export const BILIRKISI_HESAP_SLUG = 'bilirkisi-hesap'
-export const BILIRKISI_HESAP_OFFICIAL_URL = 'https://www.bilirkisihesap.com/'
+/** Program giriş (panel) — local override via BFF config */
+export const BILIRKISI_HESAP_PANEL_URL = 'https://panel.bilirkisihesap.com'
+export const BILIRKISI_HESAP_CHECKOUT_PATH = `/yazilimlar/${BILIRKISI_HESAP_SLUG}/satin-al`
 
 export type PromotionalSoftwareMeta = {
+  /** @deprecated Prefer checkoutPath for Woontegra-hosted BH sales */
   officialUrl: string
+  checkoutPath: string
   badges: string[]
   ctaLabel: string
   priceNote: string
@@ -14,6 +18,7 @@ export type PromotionalSoftwareMeta = {
   useCases: string[]
   deliveryNotes: string[]
   licenseSummary: string
+  demoCtaLabel: string
 }
 
 export type CanonicalSoftwareNavItem = {
@@ -27,7 +32,7 @@ export type CanonicalSoftwareNavItem = {
 export const CANONICAL_SOFTWARE_NAV: CanonicalSoftwareNavItem[] = [
   {
     slug: BILIRKISI_HESAP_SLUG,
-    title: 'Bilirkişi Hesaplama Yazılımı',
+    title: 'Bilirkişi Hesap',
     path: `/yazilimlar/${BILIRKISI_HESAP_SLUG}`,
     order: 0,
   },
@@ -54,13 +59,14 @@ export const CANONICAL_SOFTWARE_NAV: CanonicalSoftwareNavItem[] = [
 const PROMOTIONAL_SOFTWARE: Record<string, { meta: PromotionalSoftwareMeta; detail: PublicProductDetail }> = {
   [BILIRKISI_HESAP_SLUG]: {
     meta: {
-      officialUrl: BILIRKISI_HESAP_OFFICIAL_URL,
-      badges: ['Harici Satış', 'Web Tabanlı Yazılım', 'Hukuk / Bilirkişi', 'Öne Çıkan'],
-      ctaLabel: 'Resmi Siteye Git',
+      officialUrl: BILIRKISI_HESAP_CHECKOUT_PATH,
+      checkoutPath: BILIRKISI_HESAP_CHECKOUT_PATH,
+      badges: ['Woontegra Yazılımı', 'Web Tabanlı', 'Hukuk / Bilirkişi', 'Öne Çıkan'],
+      ctaLabel: 'Satın Al',
       listCtaLabel: 'İncele',
-      priceNote: 'Detaylar resmi sitede',
+      priceNote: 'Fiyat yükleniyor…',
       disclaimer:
-        'Bu ürün Woontegra tarafından geliştirilmiştir. Satış, lisans üretimi ve kullanıcı işlemleri Bilirkişi Hesaplama Yazılımı resmi sitesi üzerinden yürütülmektedir.',
+        'Bu ürün Woontegra tarafından geliştirilmiştir. Satın alma sonrası lisans ve program girişi Bilirkişi Hesap paneli üzerinden sağlanır.',
       publicProductTypeLabel: 'Web Tabanlı Yazılım',
       useCases: [
         'Web tabanlı bilirkişi ve işçilik alacağı hesaplamaları için uygundur.',
@@ -68,20 +74,21 @@ const PROMOTIONAL_SOFTWARE: Record<string, { meta: PromotionalSoftwareMeta; deta
         'Tarayıcı üzerinden erişim ve kontrollü hesaplama akışı arayan kullanıcılar için uygundur.',
       ],
       deliveryNotes: [
-        'Satın alma, lisans ve kullanıcı işlemleri resmi sitede yürütülür.',
-        'Woontegra sepeti ve ödeme akışına dahil değildir.',
+        'Satın alma Woontegra üzerinden tamamlanır; lisans Bilirkişi Hesap panelinde oluşur.',
+        'Demo talebi 7 günlük deneme lisansı oluşturur (panel e-postası ile).',
       ],
-      licenseSummary: 'Resmi sitede',
+      licenseSummary: 'Abonelik · panel erişimi',
+      demoCtaLabel: 'Ücretsiz Dene',
     },
     detail: {
       id: 'promotional-bilirkisi-hesap',
-      name: 'Bilirkişi Hesaplama Yazılımı',
+      name: 'Bilirkişi Hesap',
       slug: BILIRKISI_HESAP_SLUG,
       productType: 'SERVICE',
       shortDescription:
         'Woontegra tarafından geliştirilen web tabanlı yazılım; işçilik alacakları, kıdem-ihbar tazminatı, fazla mesai, yıllık izin ve benzeri bilirkişi hesaplamalarını hazırlamak için tasarlanmıştır.',
       description:
-        '<p>Bilirkişi Hesaplama Yazılımı; Woontegra’nın iş hukuku ve bilirkişilik süreçleri için geliştirdiği web tabanlı bir hesaplama yazılımıdır. İşçilik alacakları, kıdem-ihbar tazminatı, fazla mesai, yıllık izin ve benzeri hesaplamaların düzenli ve kontrollü şekilde hazırlanmasına yardımcı olur.</p><p>Satın alma, lisans üretimi, kullanıcı hesabı ve destek süreçleri Bilirkişi Hesaplama Yazılımı’nın resmi sitesi üzerinden yürütülür.</p>',
+        '<p>Bilirkişi Hesap; Woontegra’nın iş hukuku ve bilirkişilik süreçleri için geliştirdiği web tabanlı bir hesaplama yazılımıdır. İşçilik alacakları, kıdem-ihbar tazminatı, fazla mesai, yıllık izin ve benzeri hesaplamaların düzenli ve kontrollü şekilde hazırlanmasına yardımcı olur.</p><p>Satın alma ve demo talebi Woontegra üzerinden yapılır. Program girişi Bilirkişi Hesap paneli üzerinden sağlanır.</p>',
       price: 0,
       compareAtPrice: null,
       currency: 'TRY',

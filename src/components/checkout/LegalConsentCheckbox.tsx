@@ -39,7 +39,11 @@ export function LegalModalLink({ onClick, children }: { onClick: () => void; chi
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onClick()
+      }}
       className="font-medium text-emerald-700 underline decoration-emerald-300 underline-offset-2 hover:text-emerald-800"
     >
       {children}

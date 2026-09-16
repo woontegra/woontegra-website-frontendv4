@@ -19,9 +19,9 @@ function productMetaItems(product: PublicProductDetail, isFreeDownload: boolean,
     const meta = getPromotionalSoftwareMeta(product.slug)
     return [
       { label: 'Ürün tipi', value: meta?.publicProductTypeLabel ?? 'Web Tabanlı Yazılım' },
-      { label: 'Satış kanalı', value: 'Resmi site' },
-      { label: 'Lisans', value: meta?.licenseSummary ?? 'Resmi sitede' },
-      { label: 'Woontegra sepeti', value: 'Dahil değil' },
+      { label: 'Satış', value: 'Woontegra üzerinden' },
+      { label: 'Lisans', value: meta?.licenseSummary ?? 'Panel erişimi' },
+      { label: 'Demo', value: '7 günlük deneme' },
     ]
   }
 
@@ -116,7 +116,7 @@ export function ProductShowcaseHero({ product, lead, isFreeDownload, children }:
                 {isExternalSales ? (
                   <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-slate-200 backdrop-blur">
                     <ShieldCheck className="h-4 w-4 text-sky-300" aria-hidden />
-                    Woontegra geliştirdi · resmi sitede satış
+                    Woontegra geliştirdi · Woontegra üzerinden satış
                   </div>
                 ) : isFreeDownload ? (
                   <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/8 px-4 py-3 text-sm text-slate-200 backdrop-blur">

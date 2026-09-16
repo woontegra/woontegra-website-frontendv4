@@ -164,7 +164,7 @@ export function ProductCard({ product }: Props) {
 
             <p className="mt-3 text-lg font-semibold text-white">{product.name}</p>
 
-            <p className="mt-2 text-sm text-slate-300">Web tabanlı · Harici satış · Resmi sitede lisans</p>
+            <p className="mt-2 text-sm text-slate-300">Web tabanlı · Woontegra üzerinden satış</p>
 
           </div>
 
@@ -354,13 +354,9 @@ export function ProductCard({ product }: Props) {
 
             ) : isExternalSales && promotionalMeta ? (
 
-              <a
+              <Link
 
-                href={promotionalMeta.officialUrl}
-
-                target="_blank"
-
-                rel="noopener noreferrer"
+                to={promotionalMeta.checkoutPath || promotionalMeta.officialUrl}
 
                 className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
 
@@ -368,7 +364,7 @@ export function ProductCard({ product }: Props) {
 
                 {promotionalMeta.ctaLabel}
 
-              </a>
+              </Link>
 
             ) : null}
 

@@ -8,7 +8,8 @@ import type { PublicNavigationMenuItem } from '@/types/navigationMenu'
 import type { PublicProductListItem } from '@/types/product'
 
 export {
-  BILIRKISI_HESAP_OFFICIAL_URL,
+  BILIRKISI_HESAP_CHECKOUT_PATH,
+  BILIRKISI_HESAP_PANEL_URL,
   BILIRKISI_HESAP_SLUG,
   getPromotionalSoftwareDetail,
   getPromotionalSoftwareMeta,

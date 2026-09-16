@@ -41,10 +41,12 @@ export function TurkeyCityDistrictFields({
     onDistrictChange('')
   }
 
+  const labelCls = 'block min-h-[1.25rem] text-sm font-medium leading-5 text-slate-700'
+
   return (
     <>
       <div className="space-y-1.5">
-        <label htmlFor={`${idPrefix}-city`} className="block text-sm font-medium text-slate-700">
+        <label htmlFor={`${idPrefix}-city`} className={labelCls}>
           İl
         </label>
         <select
@@ -62,7 +64,7 @@ export function TurkeyCityDistrictFields({
         </select>
       </div>
       <div className="space-y-1.5">
-        <label htmlFor={`${idPrefix}-district`} className="block text-sm font-medium text-slate-700">
+        <label htmlFor={`${idPrefix}-district`} className={labelCls}>
           İlçe
         </label>
         <select

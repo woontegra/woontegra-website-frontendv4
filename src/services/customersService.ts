@@ -105,6 +105,25 @@ export const customersService = {
     return unwrap(res.data)
   },
 
+  /** After successful BH/Woontegra checkout — save as default CustomerAddress (no TCKN). */
+  async saveDefaultAddressFromCheckout(body: {
+    fullName: string
+    phone?: string | null
+    city: string
+    district?: string | null
+    addressLine: string
+    taxOffice?: string | null
+    taxNumber?: string | null
+    companyName?: string | null
+  }): Promise<{ status: string; addressId?: string }> {
+    const res = await publicApi.post<
+      ApiSuccess<{ status: string; addressId?: string }>
+    >('/customers/me/addresses/save-default-from-checkout', body, {
+      headers: customerHeaders(),
+    })
+    return unwrap(res.data)
+  },
+
   async patchAddress(id: string, body: Partial<CustomerAddressInput>) {
     await publicApi.patch(`/customers/me/addresses/${encodeURIComponent(id)}`, body, {
       headers: customerHeaders(),

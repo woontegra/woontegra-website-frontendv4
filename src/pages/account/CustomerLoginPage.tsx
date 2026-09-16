@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/Button'
 import { useCustomerSession } from '@/hooks/useCustomerSession'
 import { customersService, getErrorMessage } from '@/services/customersService'
 import { trackLogin } from '@/integrations/trackingEvents'
+import { safeInternalReturnPath } from '@/lib/safeInternalReturnPath'
 
 export function CustomerLoginPage() {
   const [params] = useSearchParams()
-  const ret = params.get('return') || '/hesabim'
+  const ret = safeInternalReturnPath(params.get('return'), '/hesabim')
   const navigate = useNavigate()
   const { authed } = useCustomerSession()
   const [email, setEmail] = useState('')
@@ -18,7 +19,7 @@ export function CustomerLoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  if (authed) return <Navigate to={ret.startsWith('/') ? ret : '/hesabim'} replace />
+  if (authed) return <Navigate to={ret} replace />
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,7 +28,7 @@ export function CustomerLoginPage() {
     try {
       await customersService.login(email, password, remember)
       trackLogin({ method: 'email' })
-      navigate(ret.startsWith('/') ? ret : '/hesabim', { replace: true })
+      navigate(ret, { replace: true })
     } catch (err) {
       setError(getErrorMessage(err, 'Giriş yapılamadı'))
     } finally {
