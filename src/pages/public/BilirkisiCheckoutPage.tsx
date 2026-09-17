@@ -82,6 +82,32 @@ function canonicalizeCampaignCode(raw: string): string {
   return raw.trim().toUpperCase().replace(/\s+/g, '_')
 }
 
+/** Map BH quote reason codes to user-facing Turkish; never render raw internal codes. */
+function bhQuoteInvalidMessage(reason?: string | null): string {
+  const normalized = String(reason || '')
+    .trim()
+    .toUpperCase()
+  if (normalized.includes('NOT_APPLICABLE') || normalized.includes('NOT_ELIGIBLE')) {
+    return 'Bu kampanya seçili paket için geçerli değil.'
+  }
+  if (normalized.includes('EXPIRED')) {
+    return 'Bu kampanyanın süresi dolmuş.'
+  }
+  if (normalized.includes('LIMIT') || normalized.includes('INACTIVE')) {
+    return 'Bu kampanya şu anda kullanılamıyor.'
+  }
+  if (normalized.includes('NOT_FOUND')) {
+    return 'Kampanya bulunamadı.'
+  }
+  if (normalized.includes('NOT_STARTED')) {
+    return 'Bu kampanya henüz başlamamış.'
+  }
+  if (/^[A-Z][A-Z0-9_]*$/.test(normalized)) {
+    return 'Bu kampanya seçili paket için geçerli değil.'
+  }
+  return reason?.trim() || 'Fiyat teklifi geçersiz.'
+}
+
 function isDevUi(): boolean {
   return import.meta.env.DEV === true
 }
@@ -886,7 +912,7 @@ export function BilirkisiCheckoutPage() {
                     ) : null}
                   </div>
                 ) : (
-                  <p className="mt-1 text-sm text-rose-700">{quote?.reason || 'Fiyat teklifi geçersiz.'}</p>
+                  <p className="mt-1 text-sm text-rose-700">{bhQuoteInvalidMessage(quote?.reason)}</p>
                 )}
               </div>
             </section>
