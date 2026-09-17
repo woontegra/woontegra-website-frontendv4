@@ -75,6 +75,16 @@ type Billing = {
   district: string
 }
 
+type RenewalContext = {
+  maskedEmail: string | null
+  maskedName: string | null
+  currentPackage: string | null
+  subscriptionEndsAt: string | null
+  barAssociationName: string | null
+  monthlyPriceTl: number | null
+  annualPriceTl: number | null
+}
+
 const fieldLabelCls = 'block min-h-[1.25rem] text-sm font-medium leading-5 text-slate-700'
 const textareaCls =
   'min-h-[5.5rem] w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-100'
@@ -113,6 +123,124 @@ function isDevUi(): boolean {
   return import.meta.env.DEV === true
 }
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+}
+
+function formatRenewalPackageLabel(raw: string | null | undefined): string {
+  const key = String(raw || '')
+    .trim()
+    .toLowerCase()
+  if (!key) return '—'
+  if (key.includes('month') || key.includes('aylik') || key.includes('aylık') || key === '0') {
+    return 'Profesyonel Aylık'
+  }
+  if (
+    key.includes('annual') ||
+    key.includes('year') ||
+    key.includes('yillik') ||
+    key.includes('yıllık') ||
+    key === '1'
+  ) {
+    return 'Profesyonel Yıllık'
+  }
+  return String(raw).trim()
+}
+
+function formatRenewalEndDate(raw: string | null | undefined): string {
+  if (!raw) return '—'
+  const d = new Date(raw)
+  if (Number.isNaN(d.getTime())) return '—'
+  return d.toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+/** Normalize renewal resolve/quote payload into BhQuote (TL amounts). */
+function extractRenewalQuote(
+  data: Record<string, unknown>,
+  preferredType: ProductType,
+): { quote: BhQuote | null; selectedType: ProductType | null } {
+  const options = Array.isArray(data.options) ? data.options : []
+  const selectedOption = asRecord(data.selectedOption)
+  const selectedTypeRaw = String(
+    data.selectedProductType || selectedOption.productType || preferredType || '',
+  ).toLowerCase()
+  const selectedType: ProductType | null =
+    selectedTypeRaw === 'monthly' || selectedTypeRaw === 'annual' ? selectedTypeRaw : null
+
+  const matchType = selectedType || preferredType
+  const matched =
+    options.find((o) => String(asRecord(o).productType || '').toLowerCase() === matchType) ||
+    (Object.keys(selectedOption).length ? selectedOption : null) ||
+    options[0]
+
+  const optionRec = asRecord(matched)
+  const nestedQuote = asRecord(optionRec.quote || data.quote || data.renewalQuote)
+
+  const finalRaw =
+    nestedQuote.finalPrice ??
+    nestedQuote.finalAmount ??
+    (nestedQuote.finalPriceKurus != null ? Number(nestedQuote.finalPriceKurus) / 100 : null) ??
+    (nestedQuote.finalAmountKurus != null ? Number(nestedQuote.finalAmountKurus) / 100 : null)
+  const normalRaw =
+    nestedQuote.normalPrice ??
+    nestedQuote.listPrice ??
+    (nestedQuote.normalPriceKurus != null ? Number(nestedQuote.normalPriceKurus) / 100 : null) ??
+    (nestedQuote.normalAmountKurus != null ? Number(nestedQuote.normalAmountKurus) / 100 : null) ??
+    finalRaw
+
+  const finalTl = finalRaw != null ? Number(finalRaw) : NaN
+  const normalTl = normalRaw != null ? Number(normalRaw) : NaN
+
+  if (!Number.isFinite(finalTl)) {
+    return { quote: null, selectedType }
+  }
+
+  const campaign = asRecord(nestedQuote.campaign || optionRec.campaign || data.campaign)
+  return {
+    selectedType,
+    quote: {
+      valid: nestedQuote.valid === false ? false : true,
+      reason: (nestedQuote.reason as string | null | undefined) ?? null,
+      normalPrice: Number.isFinite(normalTl) ? normalTl : undefined,
+      finalPrice: finalTl,
+      currency: String(nestedQuote.currency || 'TRY'),
+      campaign:
+        Object.keys(campaign).length > 0
+          ? {
+              publicCode: (campaign.publicCode as string | null) ?? null,
+              name: (campaign.name as string | null) ?? null,
+              discountRate:
+                campaign.discountRate != null ? Number(campaign.discountRate) : null,
+              campaignType: (campaign.campaignType as string | null) ?? null,
+              barAssociationKey: (campaign.barAssociationKey as string | null) ?? null,
+              barAssociationName: (campaign.barAssociationName as string | null) ?? null,
+            }
+          : null,
+      appliedDiscountSource: (nestedQuote.appliedDiscountSource as string | null) ?? null,
+    },
+  }
+}
+
+function extractRenewalOptionPriceTl(
+  data: Record<string, unknown>,
+  productType: ProductType,
+): number | null {
+  const options = Array.isArray(data.options) ? data.options : []
+  const matched = options.find(
+    (o) => String(asRecord(o).productType || '').toLowerCase() === productType,
+  )
+  if (!matched) return null
+  const q = asRecord(asRecord(matched).quote)
+  const finalTl = Number(
+    q.finalPrice ??
+      q.finalAmount ??
+      (q.finalPriceKurus != null ? Number(q.finalPriceKurus) / 100 : NaN),
+  )
+  return Number.isFinite(finalTl) ? finalTl : null
+}
+
 export function BilirkisiCheckoutPage() {
   const { authed, profile } = useCustomerSession()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -121,10 +249,10 @@ export function BilirkisiCheckoutPage() {
 
   usePageMeta({
     title: isRenewal
-      ? 'Bilirkişi Hesap — Lisans Yenile | Woontegra'
+      ? 'Bilirkişi Hesap — Aboneliğinizi Uzatın | Woontegra'
       : 'Bilirkişi Hesap — Satın Al | Woontegra',
     description: isRenewal
-      ? 'Bilirkişi Hesaplama Yazılımı abonelik yenileme.'
+      ? 'Bilirkişi Hesaplama Yazılımı abonelik yenileme — mevcut lisansınız uzatılır.'
       : 'Bilirkişi Hesaplama Yazılımı abonelik satın alma.',
     robots: 'noindex,nofollow',
     canonicalPath: `/yazilimlar/${BILIRKISI_HESAP_SLUG}/satin-al`,
@@ -157,6 +285,7 @@ export function BilirkisiCheckoutPage() {
   const period = 1
   const [quote, setQuote] = useState<BhQuote | null>(null)
   const [quoteLoading, setQuoteLoading] = useState(false)
+  const [renewalContext, setRenewalContext] = useState<RenewalContext | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card')
   const [bankAvailable, setBankAvailable] = useState(false)
   const [consentGroups, setConsentGroups] = useState({ sale: false, terms: false })
@@ -302,48 +431,40 @@ export function BilirkisiCheckoutPage() {
       let cancelled = false
       setQuoteLoading(true)
       setQuote(null)
-      const load = campaignCode
-        ? bilirkisiHesapService.renewalQuote({
-            renewalToken,
-            campaignPublicCode: campaignCode,
-          })
-        : bilirkisiHesapService.renewalResolve(renewalToken)
-      load
+      bilirkisiHesapService
+        .renewalQuote({
+          renewalToken,
+          campaignPublicCode: campaignCode || null,
+          productType,
+          subscriptionPeriod: productType === 'monthly' ? 0 : 1,
+        })
         .then((raw) => {
           if (cancelled) return
-          const data = (raw as { data?: Record<string, unknown>; quote?: BhQuote }).data || raw
-          const q = (data as { quote?: BhQuote }).quote
-          const selectedType = String(
-            (data as { selectedProductType?: string }).selectedProductType || '',
-          ).toLowerCase()
-          if (selectedType === 'monthly' || selectedType === 'annual') {
+          const root = asRecord(raw)
+          const data = asRecord(root.data && Object.keys(asRecord(root.data)).length ? root.data : root)
+          setRenewalContext({
+            maskedEmail: (data.maskedEmail as string | null) || null,
+            maskedName: (data.maskedName as string | null) || null,
+            currentPackage: (data.currentPackage as string | null) || null,
+            subscriptionEndsAt: (data.subscriptionEndsAt as string | null) || null,
+            barAssociationName: (data.barAssociationName as string | null) || null,
+            monthlyPriceTl: extractRenewalOptionPriceTl(data, 'monthly'),
+            annualPriceTl: extractRenewalOptionPriceTl(data, 'annual'),
+          })
+          const { quote: nextQuote, selectedType } = extractRenewalQuote(data, productType)
+          if (selectedType && selectedType !== productType && !searchParams.get('plan')) {
             setProductType(selectedType)
           }
-          if (q) setQuote(q)
-          else if ((data as { renewalQuote?: { finalPriceKurus?: number; normalPriceKurus?: number } }).renewalQuote) {
-            const rq = (data as { renewalQuote: { finalPriceKurus?: number; normalPriceKurus?: number } }).renewalQuote
-            setQuote({
-              valid: true,
-              finalPrice: (rq.finalPriceKurus || 0) / 100,
-              normalPrice: (rq.normalPriceKurus || 0) / 100,
-              currency: 'TRY',
-            })
-          } else if ((data as { finalAmountKurus?: number }).finalAmountKurus != null) {
-            const finalK = Number((data as { finalAmountKurus: number }).finalAmountKurus)
-            const normalK = Number(
-              (data as { normalAmountKurus?: number }).normalAmountKurus ?? finalK,
-            )
-            setQuote({
-              valid: true,
-              finalPrice: finalK / 100,
-              normalPrice: normalK / 100,
-              currency: 'TRY',
-            })
+          if (nextQuote) setQuote(nextQuote)
+          else {
+            setQuote(null)
+            setError('Yenileme fiyatı alınamadı.')
           }
         })
         .catch((err) => {
           if (!cancelled) {
             setQuote(null)
+            setRenewalContext(null)
             setError(getErrorMessage(err, 'Yenileme oturumu geçersiz veya süresi dolmuş.'))
           }
         })
@@ -354,6 +475,7 @@ export function BilirkisiCheckoutPage() {
         cancelled = true
       }
     }
+    setRenewalContext(null)
     let cancelled = false
     setQuoteLoading(true)
     setQuote(null)
@@ -611,7 +733,9 @@ export function BilirkisiCheckoutPage() {
                 ? success.fulfillmentOk
                   ? 'Local dry-run: lisans aktivasyonu tetiklendi. Panel e-postanızı kontrol edin.'
                   : 'Dry-run token alındı; fulfillment tamamlanamadı. Panel loglarını kontrol edin.'
-                : 'Aboneliğiniz hazırlanıyor. Lisans ve giriş bilgileri e-posta adresinize iletilecektir.'}
+                : isRenewal
+                  ? 'Mevcut Bilirkişi Hesap lisansınız uzatılıyor. Yeni hesap oluşturulmaz.'
+                  : 'Aboneliğiniz hazırlanıyor. Lisans ve giriş bilgileri e-posta adresinize iletilecektir.'}
           </p>
           {success.merchantOid ? (
             <p className="mt-3 font-mono text-xs text-slate-500">Sipariş: {success.merchantOid}</p>
@@ -642,8 +766,14 @@ export function BilirkisiCheckoutPage() {
     <div className="mx-auto max-w-6xl px-4 py-8 sm:py-10 lg:py-12">
       <div className="mb-6 lg:mb-8">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Bilirkişi Hesap</p>
-        <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">Satın al</h1>
-        {isDevUi() ? (
+        <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+          {isRenewal ? 'Aboneliğinizi Uzatın' : 'Satın al'}
+        </h1>
+        {isRenewal ? (
+          <p className="mt-2 text-sm text-slate-600">
+            Ödeme sonrası mevcut lisansınız uzatılır; yeni hesap veya bağımsız lisans oluşturulmaz.
+          </p>
+        ) : isDevUi() ? (
           <p className="mt-2 text-sm text-slate-500">
             Fiyat Bilirkişi Hesap satış motorundan gelir. Ödeme local ortamda dry-run ile çalışır.
           </p>
@@ -651,6 +781,32 @@ export function BilirkisiCheckoutPage() {
           <p className="mt-2 text-sm text-slate-600">Abonelik paketini seçin, fatura bilgilerinizi tamamlayın ve ödemeye geçin.</p>
         )}
       </div>
+
+      {isRenewal && renewalContext ? (
+        <div className="mb-5 rounded-2xl border border-sky-200 bg-sky-50/80 px-4 py-3.5 text-sm text-slate-800 sm:px-5">
+          <p className="font-semibold text-sky-900">Yenileme oturumu</p>
+          <dl className="mt-2 grid gap-1.5 sm:grid-cols-2">
+            <div>
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Hesap</dt>
+              <dd>{renewalContext.maskedEmail || renewalContext.maskedName || '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Mevcut paket</dt>
+              <dd>{formatRenewalPackageLabel(renewalContext.currentPackage)}</dd>
+            </div>
+            <div>
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Mevcut bitiş</dt>
+              <dd>{formatRenewalEndDate(renewalContext.subscriptionEndsAt)}</dd>
+            </div>
+            {renewalContext.barAssociationName ? (
+              <div>
+                <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Bağlı baro</dt>
+                <dd>{renewalContext.barAssociationName}</dd>
+              </div>
+            ) : null}
+          </dl>
+        </div>
+      ) : null}
 
       {campaignCode ? (
         <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
@@ -827,10 +983,14 @@ export function BilirkisiCheckoutPage() {
             ) : (
               <div className="rounded-xl border border-sky-100 bg-sky-50/70 px-4 py-5 sm:px-5">
                 <h2 className="text-base font-semibold text-slate-900">
-                  Satın almaya devam etmek için hesabınıza giriş yapın
+                  {isRenewal
+                    ? 'Aboneliğinizi uzatmak için hesabınıza giriş yapın'
+                    : 'Satın almaya devam etmek için hesabınıza giriş yapın'}
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  Siparişiniz ve lisans bilgileriniz Woontegra hesabınızla ilişkilendirilecektir.
+                  {isRenewal
+                    ? 'Ödeme Woontegra hesabınız üzerinden alınır; Bilirkişi Hesap lisansınız aynı kullanıcıda uzatılır.'
+                    : 'Siparişiniz ve lisans bilgileriniz Woontegra hesabınızla ilişkilendirilecektir.'}
                 </p>
                 <div className="mt-5 flex flex-wrap gap-3">
                   <Link
@@ -853,9 +1013,13 @@ export function BilirkisiCheckoutPage() {
           {/* SAĞ: Özet + ödeme (sticky desktop) — guest ve authed aynı görünüm */}
           <div className="mt-6 space-y-4 lg:sticky lg:top-24 lg:mt-0">
             <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
-              <h2 className="text-sm font-semibold text-slate-900">Abonelik paketi</h2>
+              <h2 className="text-sm font-semibold text-slate-900">
+                {isRenewal ? 'Uzatma paketi' : 'Abonelik paketi'}
+              </h2>
               <p className="mt-1 text-xs text-slate-500">
-                Aylık ve yıllık birbirinden bağımsız iki pakettir.
+                {isRenewal
+                  ? 'Seçtiğiniz süre, mevcut lisans bitiş tarihine eklenir.'
+                  : 'Aylık ve yıllık birbirinden bağımsız iki pakettir.'}
               </p>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <button
@@ -871,7 +1035,11 @@ export function BilirkisiCheckoutPage() {
                     Profesyonel Aylık
                   </p>
                   <p className="mt-1 text-lg font-bold text-slate-950">
-                    {product?.priceMonthly != null ? formatBhPriceTl(product.priceMonthly / 100) : '—'}
+                    {isRenewal && renewalContext?.monthlyPriceTl != null
+                      ? formatBhPriceTl(renewalContext.monthlyPriceTl)
+                      : product?.priceMonthly != null
+                        ? formatBhPriceTl(product.priceMonthly / 100)
+                        : '—'}
                     <span className="ml-1 text-xs font-semibold text-slate-500">/ ay</span>
                   </p>
                 </button>
@@ -891,7 +1059,11 @@ export function BilirkisiCheckoutPage() {
                     Profesyonel Yıllık
                   </p>
                   <p className="mt-1 text-lg font-bold text-slate-950">
-                    {product?.price != null ? formatBhPriceTl(product.price / 100) : '—'}
+                    {isRenewal && renewalContext?.annualPriceTl != null
+                      ? formatBhPriceTl(renewalContext.annualPriceTl)
+                      : product?.price != null
+                        ? formatBhPriceTl(product.price / 100)
+                        : '—'}
                     <span className="ml-1 text-xs font-semibold text-slate-500">/ yıl</span>
                   </p>
                 </button>
