@@ -12,6 +12,7 @@ import {
   getErrorMessage,
 } from '@/services/adminAffiliatePartnersService'
 import { adminProductsService } from '@/services/adminProductsService'
+import { filterAffiliateAssignableProducts } from '@/lib/affiliateAssignableProducts'
 import { useToastStore } from '@/store/toastStore'
 
 type ProductRowDraft = {
@@ -82,7 +83,10 @@ export function AdminAffiliatePartnerFormPage() {
     setProductRows(rows)
   }, [partnerQuery.data])
 
-  const productOptions = useMemo(() => productsQuery.data ?? [], [productsQuery.data])
+  const productOptions = useMemo(() => {
+    const keepIds = productRows.map((r) => r.productId).filter(Boolean)
+    return filterAffiliateAssignableProducts(productsQuery.data ?? [], keepIds)
+  }, [productsQuery.data, productRows])
 
   const saveMutation = useMutation({
     mutationFn: async () => {

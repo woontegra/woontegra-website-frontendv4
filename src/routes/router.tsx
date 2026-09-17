@@ -157,6 +157,35 @@ const AdminCampaignListPage = lazy(() =>
 const AdminCampaignFormPage = lazy(() =>
   import('@/pages/admin/AdminCampaignFormPage').then((m) => ({ default: m.AdminCampaignFormPage })),
 )
+const AdminBhOverviewPage = lazy(() =>
+  import('@/pages/admin/bh/AdminBhOverviewPage').then((m) => ({ default: m.AdminBhOverviewPage })),
+)
+const AdminBhPricingPage = lazy(() =>
+  import('@/pages/admin/bh/AdminBhPricingPage').then((m) => ({ default: m.AdminBhPricingPage })),
+)
+const AdminBhCampaignsPage = lazy(() =>
+  import('@/pages/admin/bh/AdminBhCampaignsPage').then((m) => ({ default: m.AdminBhCampaignsPage })),
+)
+const AdminBhCampaignEditorPage = lazy(() =>
+  import('@/pages/admin/AdminBhCampaignEditorPage').then((m) => ({ default: m.AdminBhCampaignEditorPage })),
+)
+const AdminBhBarPerformancePage = lazy(() =>
+  import('@/pages/admin/bh/AdminBhBarPerformancePage').then((m) => ({
+    default: m.AdminBhBarPerformancePage,
+  })),
+)
+const AdminBhDemoRequestsPage = lazy(() =>
+  import('@/pages/admin/bh/AdminBhDemoRequestsPage').then((m) => ({ default: m.AdminBhDemoRequestsPage })),
+)
+const AdminBhOrdersPage = lazy(() =>
+  import('@/pages/admin/bh/AdminBhOrdersPage').then((m) => ({ default: m.AdminBhOrdersPage })),
+)
+const AdminBhBankTransfersPage = lazy(() =>
+  import('@/pages/admin/bh/AdminBhBankTransfersPage').then((m) => ({ default: m.AdminBhBankTransfersPage })),
+)
+const AdminBhLegalArchivesPage = lazy(() =>
+  import('@/pages/admin/bh/AdminBhLegalArchivesPage').then((m) => ({ default: m.AdminBhLegalArchivesPage })),
+)
 const AdminAffiliatePartnerListPage = lazy(() =>
   import('@/pages/admin/AdminAffiliatePartnerListPage').then((m) => ({
     default: m.AdminAffiliatePartnerListPage,
@@ -447,6 +476,16 @@ export const router = createBrowserRouter([
           { path: 'campaigns', element: <LazyPage><AdminCampaignListPage /></LazyPage> },
           { path: 'campaigns/new', element: <LazyPage><AdminCampaignFormPage /></LazyPage> },
           { path: 'campaigns/:id/edit', element: <LazyPage><AdminCampaignFormPage /></LazyPage> },
+          { path: 'bh', element: <LazyPage><AdminBhOverviewPage /></LazyPage> },
+          { path: 'bh/fiyatlandirma', element: <LazyPage><AdminBhPricingPage /></LazyPage> },
+          { path: 'bh/kampanyalar', element: <LazyPage><AdminBhCampaignsPage /></LazyPage> },
+          { path: 'bh/kampanyalar/new', element: <LazyPage><AdminBhCampaignEditorPage /></LazyPage> },
+          { path: 'bh/kampanyalar/:id', element: <LazyPage><AdminBhCampaignEditorPage /></LazyPage> },
+          { path: 'bh/baro-performansi', element: <LazyPage><AdminBhBarPerformancePage /></LazyPage> },
+          { path: 'bh/demo-talepleri', element: <LazyPage><AdminBhDemoRequestsPage /></LazyPage> },
+          { path: 'bh/siparisler', element: <LazyPage><AdminBhOrdersPage /></LazyPage> },
+          { path: 'bh/havale', element: <LazyPage><AdminBhBankTransfersPage /></LazyPage> },
+          { path: 'bh/sozlesme-arsivi', element: <LazyPage><AdminBhLegalArchivesPage /></LazyPage> },
           { path: 'is-ortaklari', element: <LazyPage><AdminAffiliatePartnerListPage /></LazyPage> },
           { path: 'is-ortaklari/yeni', element: <LazyPage><AdminAffiliatePartnerFormPage /></LazyPage> },
           { path: 'is-ortaklari/:id', element: <LazyPage><AdminAffiliatePartnerDetailPage /></LazyPage> },

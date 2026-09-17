@@ -1,8 +1,11 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import '@/admin.css'
 import {
+  Activity,
   Cloud,
+  DollarSign,
   Download,
+  FileText,
   ImageIcon,
   KeyRound,
   LayoutDashboard,
@@ -11,6 +14,7 @@ import {
   Settings,
   ShoppingBag,
   Trash2,
+  TrendingUp,
   Users,
   Wallet,
 } from 'lucide-react'
@@ -70,6 +74,19 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    title: 'Bilirkişi Hesap',
+    items: [
+      { to: '/admin/bh', label: 'Genel Bakış', end: true },
+      { to: '/admin/bh/fiyatlandirma', label: 'Fiyatlandırma' },
+      { to: '/admin/bh/kampanyalar', label: 'Kampanyalar' },
+      { to: '/admin/bh/baro-performansi', label: 'Baro Performansı' },
+      { to: '/admin/bh/demo-talepleri', label: 'Demo Talepleri' },
+      { to: '/admin/bh/siparisler', label: 'Siparişler' },
+      { to: '/admin/bh/havale', label: 'Havale Ödemeleri' },
+      { to: '/admin/bh/sozlesme-arsivi', label: 'Sözleşme Arşivi' },
+    ],
+  },
+  {
     title: 'Site',
     items: [
       { to: '/admin/builder', label: 'Page Builder' },
@@ -89,6 +106,12 @@ function groupIcon(label: string) {
   if (label.includes('Ürün')) return Package
   if (label.includes('Medya')) return ImageIcon
   if (label.includes('Kampanya')) return Megaphone
+  if (label.includes('Baro')) return TrendingUp
+  if (label.includes('Havale') || label.includes('Ödeme')) return Wallet
+  if (label.includes('Sözleşme') || label.includes('Demo')) return FileText
+  if (label.includes('Sipariş')) return ShoppingBag
+  if (label.includes('Fiyat')) return DollarSign
+  if (label === 'Genel Bakış') return Activity
   if (label.includes('Builder')) return LayoutDashboard
   if (label.includes('Test Verisi')) return Trash2
   if (label.includes('Ayar')) return Settings

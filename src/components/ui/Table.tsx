@@ -1,4 +1,4 @@
-import type { ReactNode, TdHTMLAttributes } from 'react'
+import type { HTMLAttributes, ReactNode, TdHTMLAttributes } from 'react'
 import { cn } from '@/lib/cn'
 
 type Props = {
@@ -28,8 +28,12 @@ export function TBody({ children }: Props) {
   return <tbody className="divide-y divide-slate-100">{children}</tbody>
 }
 
-export function TR({ children, className }: Props) {
-  return <tr className={cn('hover:bg-slate-50/80', className)}>{children}</tr>
+export function TR({ children, className, ...props }: HTMLAttributes<HTMLTableRowElement>) {
+  return (
+    <tr className={cn('hover:bg-slate-50/80', className)} {...props}>
+      {children}
+    </tr>
+  )
 }
 
 export function TH({ children, className }: Props) {
