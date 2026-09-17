@@ -15,6 +15,7 @@ import {
   type BhCampaign,
 } from '@/services/adminBhService'
 import { useToastStore } from '@/store/toastStore'
+import { bilirkisiHesapCampaignCheckoutUrl } from '@/data/canonicalSoftwareProducts'
 import {
   bhPaymentMethodLabel,
   formatBhDateTime,
@@ -123,14 +124,6 @@ export function bhFormToPayload(form: BhCampaignFormState, mode: 'create' | 'edi
   }
 
   return payload
-}
-
-function campaignShortPath(code: string): string {
-  return `/k/${encodeURIComponent(code)}`
-}
-
-function campaignCheckoutPath(code: string): string {
-  return `/satin-al?c=${encodeURIComponent(code)}`
 }
 
 type BhCampaignFormProps = {
@@ -283,26 +276,26 @@ export function BhCampaignFormFields({
         />
 
         <div className="sm:col-span-2 space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Kampanya bağlantısı</label>
+          <label className="block text-sm font-medium text-slate-700">Satış bağlantısı</label>
           {publicCode ? (
             <>
               <div className="flex flex-wrap items-stretch gap-2">
                 <input
                   className="min-w-0 flex-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs"
-                  value={campaignShortPath(publicCode)}
+                  value={bilirkisiHesapCampaignCheckoutUrl(publicCode)}
                   readOnly
                 />
                 <Button
                   type="button"
                   variant="secondary"
                   size="sm"
-                  onClick={() => void copyText(campaignShortPath(publicCode))}
+                  onClick={() => void copyText(bilirkisiHesapCampaignCheckoutUrl(publicCode))}
                 >
                   <Copy className="h-3.5 w-3.5" />
                   Kopyala
                 </Button>
                 <a
-                  href={campaignShortPath(publicCode)}
+                  href={bilirkisiHesapCampaignCheckoutUrl(publicCode)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
@@ -312,9 +305,7 @@ export function BhCampaignFormFields({
                 </a>
               </div>
               <p className="text-xs text-slate-500">
-                Kod: <span className="font-mono">{publicCode}</span>
-                {' · '}
-                Satın alma: <span className="font-mono">{campaignCheckoutPath(publicCode)}</span>
+                Dahili kampanya kodu: <span className="font-mono">{publicCode}</span>
               </p>
             </>
           ) : (

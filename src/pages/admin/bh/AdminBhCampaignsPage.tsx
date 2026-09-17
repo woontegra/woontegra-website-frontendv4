@@ -17,6 +17,7 @@ import {
 } from '@/services/adminBhService'
 import { useToastStore } from '@/store/toastStore'
 import { formatBhDateTime } from '@/utils/bhAdminUi'
+import { bilirkisiHesapCampaignCheckoutUrl } from '@/data/canonicalSoftwareProducts'
 
 type CampaignForm = {
   name: string
@@ -160,7 +161,7 @@ export function AdminBhCampaignsPage() {
     <div className="w-full min-w-0 space-y-6">
       <PageHeader
         title="Bilirkişi Hesap — Kampanyalar"
-        description="Baro ve genel indirim kampanyalarını yönetin. Kısa link: /k/{kod}"
+        description="Baro ve genel indirim kampanyalarını yönetin. Paylaşım için tam Woontegra satış bağlantısı kullanılır."
         actions={
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={() => void refetch()} disabled={isFetching}>
@@ -275,10 +276,17 @@ export function AdminBhCampaignsPage() {
             />
           </div>
           {editor && typeof editor === 'object' ? (
-            <div className="sm:col-span-2 rounded-md bg-slate-50 px-3 py-2 text-sm">
-              <span className="text-slate-500">Kampanya kodu:</span>{' '}
-              <span className="font-mono">{editor.publicCode}</span>
-              <span className="ml-2 text-slate-500">· Kısa link:</span> /k/{editor.publicCode}
+            <div className="sm:col-span-2 rounded-md bg-slate-50 px-3 py-2 text-sm space-y-1">
+              <div>
+                <span className="text-slate-500">Kampanya kodu:</span>{' '}
+                <span className="font-mono">{editor.publicCode}</span>
+              </div>
+              <div className="break-all">
+                <span className="text-slate-500">Satış bağlantısı:</span>{' '}
+                <span className="font-mono text-xs">
+                  {bilirkisiHesapCampaignCheckoutUrl(editor.publicCode)}
+                </span>
+              </div>
             </div>
           ) : (
             <p className="sm:col-span-2 text-xs text-slate-500">

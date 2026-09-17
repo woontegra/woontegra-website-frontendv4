@@ -4,6 +4,17 @@ export const BILIRKISI_HESAP_SLUG = 'bilirkisi-hesap'
 /** Program giriş (panel) — local override via BFF config */
 export const BILIRKISI_HESAP_PANEL_URL = 'https://panel.bilirkisihesap.com'
 export const BILIRKISI_HESAP_CHECKOUT_PATH = `/yazilimlar/${BILIRKISI_HESAP_SLUG}/satin-al`
+/** Canonical public origin for shareable BH checkout links (admin copy / protocols). */
+export const WOONTEGRA_PUBLIC_ORIGIN = 'https://www.woontegra.com'
+
+/** Full Woontegra sales URL for a campaign public code — never /k/ short paths for admin copy. */
+export function bilirkisiHesapCampaignCheckoutUrl(campaignCode: string): string {
+  const code = String(campaignCode || '').trim()
+  const qs = new URLSearchParams()
+  if (code) qs.set('c', code)
+  const q = qs.toString()
+  return `${WOONTEGRA_PUBLIC_ORIGIN}${BILIRKISI_HESAP_CHECKOUT_PATH}${q ? `?${q}` : ''}`
+}
 
 export type PromotionalSoftwareMeta = {
   /** @deprecated Prefer checkoutPath for Woontegra-hosted BH sales */
