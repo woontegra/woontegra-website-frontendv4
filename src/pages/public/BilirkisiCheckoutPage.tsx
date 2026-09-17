@@ -223,6 +223,35 @@ function extractRenewalQuote(
   }
 }
 
+/** Customer-facing campaign title — never technical publicCode (CMP_…). */
+function campaignCustomerFacingTitle(campaign: NonNullable<BhQuote['campaign']>): string | null {
+  const type = String(campaign.campaignType || '').toUpperCase()
+  if (type === 'BAR_ASSOCIATION') {
+    const barName = String(campaign.barAssociationName || '').trim()
+    if (barName) return barName
+  }
+  const name = String(campaign.name || '').trim()
+  if (!name) return null
+  const code = String(campaign.publicCode || '').trim()
+  if (code && name.toLowerCase() === code.toLowerCase()) return null
+  if (/^CMP_[A-Z0-9]+$/i.test(name)) return null
+  return name
+}
+
+function campaignCustomerBanner(
+  campaign: BhQuote['campaign'] | null | undefined,
+): { title: string; subtitle: string } | null {
+  if (!campaign || campaign.discountRate == null || !Number.isFinite(Number(campaign.discountRate))) {
+    return null
+  }
+  const title = campaignCustomerFacingTitle(campaign)
+  if (!title) return null
+  return {
+    title,
+    subtitle: `Tüm paketlerde %${campaign.discountRate} indirim uygulanır.`,
+  }
+}
+
 function extractRenewalOptionPriceTl(
   data: Record<string, unknown>,
   productType: ProductType,
@@ -319,6 +348,12 @@ export function BilirkisiCheckoutPage() {
     amountFormatted?: string
     fulfillmentOk?: boolean
   } | null>(null)
+
+  const campaignBanner = useMemo(() => campaignCustomerBanner(quote?.campaign), [quote?.campaign])
+  const campaignFacingTitle = useMemo(
+    () => (quote?.campaign ? campaignCustomerFacingTitle(quote.campaign) : null),
+    [quote?.campaign],
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -808,10 +843,10 @@ export function BilirkisiCheckoutPage() {
         </div>
       ) : null}
 
-      {campaignCode ? (
-        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
-          Kampanya kodu: <strong>{campaignCode}</strong>
-          {quote?.campaign?.discountRate != null ? ` · %${quote.campaign.discountRate} indirim` : null}
+      {campaignBanner ? (
+        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-amber-950 sm:px-5">
+          <p className="font-bold text-amber-950">{campaignBanner.title}</p>
+          <p className="mt-1 text-sm text-amber-900/90">{campaignBanner.subtitle}</p>
         </div>
       ) : null}
 
@@ -1092,10 +1127,10 @@ export function BilirkisiCheckoutPage() {
                     {quote.campaign?.discountRate != null ? (
                       <p className="mt-0.5 text-sm font-medium text-emerald-700">
                         %{quote.campaign.discountRate} indirim
-                        {quote.campaign.name ? ` · ${quote.campaign.name}` : ''}
+                        {campaignFacingTitle ? ` · ${campaignFacingTitle}` : ''}
                       </p>
-                    ) : quote.campaign?.name ? (
-                      <p className="mt-0.5 text-sm text-emerald-700">{quote.campaign.name}</p>
+                    ) : campaignFacingTitle ? (
+                      <p className="mt-0.5 text-sm text-emerald-700">{campaignFacingTitle}</p>
                     ) : null}
                   </div>
                 ) : (
