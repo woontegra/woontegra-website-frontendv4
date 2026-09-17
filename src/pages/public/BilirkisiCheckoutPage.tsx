@@ -15,6 +15,7 @@ import {
   type BhQuote,
 } from '@/services/bilirkisiHesapService'
 import { customersService } from '@/services/customersService'
+import { paymentsService } from '@/services/paymentsService'
 import { getErrorMessage } from '@/api/client'
 import { BILIRKISI_HESAP_SLUG } from '@/data/canonicalSoftwareProducts'
 import {
@@ -550,24 +551,22 @@ export function BilirkisiCheckoutPage() {
           amountFormatted: res.amountFormatted,
         })
       } else {
-        const res = await bilirkisiHesapService.createPaytrTokenGuest(body)
-        if (!res.success || !res.token) throw new Error(res.message || 'Ödeme başlatılamadı.')
-        if (res.dryRun || res.token.startsWith('dryrun_')) {
-          await persistDefaultAddressIfRequested()
-          const oid = res.merchantOid || ''
-          if (oid) {
-            window.location.href = `/odeme/basarili?merchant_oid=${encodeURIComponent(oid)}`
-            return
-          }
-          setSuccess({
-            kind: 'card_dry_run',
-            merchantOid: res.merchantOid,
-            fulfillmentOk: res.fulfillment?.ok !== false,
-          })
-        } else {
-          await persistDefaultAddressIfRequested()
-          window.location.href = `https://www.paytr.com/odeme/guvenli/${res.token}`
+        const created = await bilirkisiHesapService.createCheckoutOrder(body)
+        if (!created.success || !created.data?.orderNo) {
+          throw new Error(created.message || 'Sipariş oluşturulamadı.')
         }
+        let token: string
+        try {
+          token = await paymentsService.startPaytr(created.data.orderNo)
+        } catch (payErr) {
+          throw new Error(getErrorMessage(payErr, 'Ödeme başlatılamadı.'))
+        }
+        await persistDefaultAddressIfRequested()
+        if (token.startsWith('dryrun_')) {
+          window.location.href = `/odeme/basarili/${encodeURIComponent(created.data.orderNo)}`
+          return
+        }
+        window.location.href = `https://www.paytr.com/odeme/guvenli/${token}`
       }
     } catch (err) {
       setError(getErrorMessage(err, 'Ödeme başlatılamadı.'))

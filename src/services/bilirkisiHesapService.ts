@@ -209,6 +209,26 @@ export const bilirkisiHesapService = {
     }
   },
 
+  /** Woontegra-central BH checkout: WT Order priced from BH prepare-sale. */
+  async createCheckoutOrder(body: Record<string, unknown>) {
+    const { data } = await publicApi.post('/bh/checkout/create-order', body, {
+      headers: customerAuthHeaders(),
+      timeout: 45_000,
+    })
+    return data as {
+      success: boolean
+      data?: {
+        orderNo: string
+        orderId: string
+        totalTl: number
+        saleRef: string
+        paymentProvider: string
+      }
+      message?: string
+      code?: string
+    }
+  },
+
   async renewalOptions() {
     const { data } = await publicApi.post(
       '/bh/renewal/options',
