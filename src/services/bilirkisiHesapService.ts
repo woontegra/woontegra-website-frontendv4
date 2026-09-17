@@ -283,6 +283,26 @@ export const bilirkisiHesapService = {
     return data
   },
 
+  async renewalQuote(input: {
+    renewalToken: string
+    campaignPublicCode?: string | null
+    productType?: 'monthly' | 'annual'
+    subscriptionPeriod?: number
+  }) {
+    const { data } = await publicApi.post(
+      '/bh/renewal/quote',
+      {
+        renewalToken: input.renewalToken,
+        campaignPublicCode: input.campaignPublicCode || undefined,
+        campaignId: input.campaignPublicCode || undefined,
+        productType: input.productType,
+        subscriptionPeriod: input.subscriptionPeriod,
+      },
+      { timeout: 20_000 },
+    )
+    return data
+  },
+
   annualPriceTl(product: BhProduct): number | null {
     return kurusToTl(product.price)
   },

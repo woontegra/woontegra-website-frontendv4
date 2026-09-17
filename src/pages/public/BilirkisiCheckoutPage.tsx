@@ -131,10 +131,9 @@ export function BilirkisiCheckoutPage() {
   })
 
   const campaignCode = useMemo(() => {
-    if (isRenewal) return ''
     const c = searchParams.get('c') || searchParams.get('campaign') || ''
     return c ? canonicalizeCampaignCode(c) : ''
-  }, [searchParams, isRenewal])
+  }, [searchParams])
 
   const initialPlan = useMemo((): ProductType => {
     const raw = (searchParams.get('plan') || searchParams.get('productType') || searchParams.get('product_type') || '')
@@ -303,8 +302,13 @@ export function BilirkisiCheckoutPage() {
       let cancelled = false
       setQuoteLoading(true)
       setQuote(null)
-      bilirkisiHesapService
-        .renewalResolve(renewalToken)
+      const load = campaignCode
+        ? bilirkisiHesapService.renewalQuote({
+            renewalToken,
+            campaignPublicCode: campaignCode,
+          })
+        : bilirkisiHesapService.renewalResolve(renewalToken)
+      load
         .then((raw) => {
           if (cancelled) return
           const data = (raw as { data?: Record<string, unknown>; quote?: BhQuote }).data || raw
@@ -322,6 +326,17 @@ export function BilirkisiCheckoutPage() {
               valid: true,
               finalPrice: (rq.finalPriceKurus || 0) / 100,
               normalPrice: (rq.normalPriceKurus || 0) / 100,
+              currency: 'TRY',
+            })
+          } else if ((data as { finalAmountKurus?: number }).finalAmountKurus != null) {
+            const finalK = Number((data as { finalAmountKurus: number }).finalAmountKurus)
+            const normalK = Number(
+              (data as { normalAmountKurus?: number }).normalAmountKurus ?? finalK,
+            )
+            setQuote({
+              valid: true,
+              finalPrice: finalK / 100,
+              normalPrice: normalK / 100,
               currency: 'TRY',
             })
           }
@@ -503,8 +518,9 @@ export function BilirkisiCheckoutPage() {
       productType,
       product_type: productType,
       subscriptionPeriod: productType === 'annual' ? period : undefined,
-      campaignId: isRenewal ? undefined : campaignCode || undefined,
-      campaign_id: isRenewal ? undefined : campaignCode || undefined,
+      campaignId: campaignCode || undefined,
+      campaign_id: campaignCode || undefined,
+      campaignPublicCode: campaignCode || undefined,
       renewalToken: isRenewal ? renewalToken : undefined,
       billingInfo,
       legalConsents,
