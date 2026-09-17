@@ -284,7 +284,7 @@ export function AdminBhCampaignsPage() {
               <div className="break-all">
                 <span className="text-slate-500">Satış bağlantısı:</span>{' '}
                 <span className="font-mono text-xs">
-                  {bilirkisiHesapCampaignCheckoutUrl(editor.publicCode)}
+                  {bilirkisiHesapCampaignCheckoutUrl(editor.publicCode || '')}
                 </span>
               </div>
             </div>
