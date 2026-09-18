@@ -1,16 +1,33 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { CustomerAuthShell } from '@/components/account/CustomerAuthShell'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { useCustomerSession } from '@/hooks/useCustomerSession'
 import { customersService, getErrorMessage } from '@/services/customersService'
+import { bilirkisiHesapService } from '@/services/bilirkisiHesapService'
 import { trackSignUp } from '@/integrations/trackingEvents'
 import { safeInternalReturnPath } from '@/lib/safeInternalReturnPath'
+
+function extractRenewTokenFromReturn(ret: string): string {
+  try {
+    const url = new URL(ret, window.location.origin)
+    return (url.searchParams.get('renew') || '').trim()
+  } catch {
+    return ''
+  }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+}
 
 export function CustomerRegisterPage() {
   const [params] = useSearchParams()
   const ret = safeInternalReturnPath(params.get('return'), '/hesabim')
+  const renewToken = useMemo(() => extractRenewTokenFromReturn(ret), [ret])
   const navigate = useNavigate()
   const { authed } = useCustomerSession()
   const [name, setName] = useState('')
@@ -22,6 +39,39 @@ export function CustomerRegisterPage() {
   const [marketing, setMarketing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [demoPrefillHint, setDemoPrefillHint] = useState(false)
+
+  useEffect(() => {
+    if (!renewToken || renewToken.length < 32) return
+    let cancelled = false
+    bilirkisiHesapService
+      .renewalResolve(renewToken)
+      .then((raw) => {
+        if (cancelled) return
+        const root = asRecord(raw)
+        const data = asRecord(root.data && Object.keys(asRecord(root.data)).length ? root.data : root)
+        const nextEmail =
+          String(data.accountEmail || data.targetEmail || data.email || '')
+            .trim()
+            .toLowerCase()
+        const nextName = String(data.customerName || '').trim()
+        const purchaseContext = String(data.purchaseContext || '').toUpperCase()
+        const isDemo =
+          purchaseContext === 'DEMO_CONVERSION' ||
+          String(data.currentPackage || data.licenseType || '')
+            .trim()
+            .toLowerCase() === 'demo'
+        if (nextEmail) setEmail((prev) => prev || nextEmail)
+        if (nextName) setName((prev) => prev || nextName)
+        if (isDemo && (nextEmail || nextName)) setDemoPrefillHint(true)
+      })
+      .catch(() => {
+        /* token invalid/expired — leave form empty */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [renewToken])
 
   if (authed) return <Navigate to={ret} replace />
 
@@ -56,7 +106,11 @@ export function CustomerRegisterPage() {
   return (
     <CustomerAuthShell
       title="Kayıt ol"
-      subtitle="Dijital ürünlerinizi güvenle takip edin; sipariş ve lisans bilgileriniz tek yerde."
+      subtitle={
+        demoPrefillHint
+          ? 'Demo yükseltme bilginiz korundu. Woontegra müşteri hesabınızı oluşturun; satın alma adımına otomatik döneceksiniz.'
+          : 'Dijital ürünlerinizi güvenle takip edin; sipariş ve lisans bilgileriniz tek yerde.'
+      }
       footer={
         <>
           Zaten hesabınız var mı?{' '}
@@ -68,6 +122,11 @@ export function CustomerRegisterPage() {
     >
       <form onSubmit={onSubmit} className="space-y-4">
         {error ? <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p> : null}
+        {demoPrefillHint ? (
+          <p className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-900">
+            Bilirkişi Hesap demo hesabınızdaki ad ve e-posta önceden dolduruldu. Telefon ve fatura bilgilerini satın alma adımında tamamlayabilirsiniz.
+          </p>
+        ) : null}
         <Input label="Ad soyad" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
         <Input label="E-posta" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
         <Input label="Telefon" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" hint="Opsiyonel" />

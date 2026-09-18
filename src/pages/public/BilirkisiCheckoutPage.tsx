@@ -76,6 +76,9 @@ type Billing = {
 }
 
 type RenewalContext = {
+  purchaseContext: 'DEMO_CONVERSION' | 'LICENSE_RENEWAL' | null
+  accountEmail: string | null
+  customerName: string | null
   maskedEmail: string | null
   maskedName: string | null
   currentPackage: string | null
@@ -287,10 +290,10 @@ export function BilirkisiCheckoutPage() {
 
   usePageMeta({
     title: isRenewal
-      ? 'Bilirkişi Hesap — Aboneliğinizi Uzatın | Woontegra'
+      ? 'Bilirkişi Hesap — Abonelik | Woontegra'
       : 'Bilirkişi Hesap — Satın Al | Woontegra',
     description: isRenewal
-      ? 'Bilirkişi Hesaplama Yazılımı abonelik yenileme — mevcut lisansınız uzatılır.'
+      ? 'Bilirkişi Hesaplama Yazılımı abonelik satın alma / yenileme.'
       : 'Bilirkişi Hesaplama Yazılımı abonelik satın alma.',
     robots: 'noindex,nofollow',
     canonicalPath: `/yazilimlar/${BILIRKISI_HESAP_SLUG}/satin-al`,
@@ -324,6 +327,8 @@ export function BilirkisiCheckoutPage() {
   const [quote, setQuote] = useState<BhQuote | null>(null)
   const [quoteLoading, setQuoteLoading] = useState(false)
   const [renewalContext, setRenewalContext] = useState<RenewalContext | null>(null)
+  const isDemoUpgrade = renewalContext?.purchaseContext === 'DEMO_CONVERSION'
+  const isPaidRenewal = isRenewal && Boolean(renewalContext) && !isDemoUpgrade
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card')
   const [bankAvailable, setBankAvailable] = useState(false)
   const [consentGroups, setConsentGroups] = useState({ sale: false, terms: false })
@@ -490,6 +495,16 @@ export function BilirkisiCheckoutPage() {
           const root = asRecord(raw)
           const data = asRecord(root.data && Object.keys(asRecord(root.data)).length ? root.data : root)
           setRenewalContext({
+            purchaseContext:
+              String(data.purchaseContext || '').toUpperCase() === 'DEMO_CONVERSION'
+                ? 'DEMO_CONVERSION'
+                : String(data.currentPackage || data.licenseType || '')
+                      .trim()
+                      .toLowerCase() === 'demo'
+                  ? 'DEMO_CONVERSION'
+                  : 'LICENSE_RENEWAL',
+            accountEmail: (data.accountEmail as string | null) || (data.targetEmail as string | null) || null,
+            customerName: (data.customerName as string | null) || null,
             maskedEmail: (data.maskedEmail as string | null) || null,
             maskedName: (data.maskedName as string | null) || null,
             currentPackage: (data.currentPackage as string | null) || null,
@@ -814,9 +829,14 @@ export function BilirkisiCheckoutPage() {
       <div className="mb-6 lg:mb-8">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Bilirkişi Hesap</p>
         <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-          {isRenewal ? 'Aboneliğinizi Uzatın' : 'Satın al'}
+          {isDemoUpgrade ? 'Demo aboneliğinizi satın alın' : isPaidRenewal ? 'Aboneliğinizi Uzatın' : 'Satın al'}
         </h1>
-        {isRenewal ? (
+        {isDemoUpgrade ? (
+          <p className="mt-2 text-sm text-slate-600">
+            Ödeme sonrası mevcut demo lisansınız ücretli aboneliğe dönüşür; kalan demo süresi satın alınan süreye eklenir.
+            Yeni Bilirkişi Hesap hesabı oluşturulmaz.
+          </p>
+        ) : isPaidRenewal ? (
           <p className="mt-2 text-sm text-slate-600">
             Ödeme sonrası mevcut lisansınız uzatılır; yeni hesap veya bağımsız lisans oluşturulmaz.
           </p>
@@ -831,18 +851,28 @@ export function BilirkisiCheckoutPage() {
 
       {isRenewal && renewalContext ? (
         <div className="mb-5 rounded-2xl border border-sky-200 bg-sky-50/80 px-4 py-3.5 text-sm text-slate-800 sm:px-5">
-          <p className="font-semibold text-sky-900">Yenileme oturumu</p>
+          <p className="font-semibold text-sky-900">
+            {isDemoUpgrade ? 'Demo yükseltme oturumu' : 'Yenileme oturumu'}
+          </p>
           <dl className="mt-2 grid gap-1.5 sm:grid-cols-2">
             <div>
               <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Hesap</dt>
               <dd>{renewalContext.maskedEmail || renewalContext.maskedName || '—'}</dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Mevcut paket</dt>
-              <dd>{formatRenewalPackageLabel(renewalContext.currentPackage)}</dd>
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                {isDemoUpgrade ? 'Mevcut lisans' : 'Mevcut paket'}
+              </dt>
+              <dd>
+                {isDemoUpgrade
+                  ? 'Demo'
+                  : formatRenewalPackageLabel(renewalContext.currentPackage)}
+              </dd>
             </div>
             <div>
-              <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Mevcut bitiş</dt>
+              <dt className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                {isDemoUpgrade ? 'Demo bitiş' : 'Mevcut bitiş'}
+              </dt>
               <dd>{formatRenewalEndDate(renewalContext.subscriptionEndsAt)}</dd>
             </div>
             {renewalContext.barAssociationName ? (

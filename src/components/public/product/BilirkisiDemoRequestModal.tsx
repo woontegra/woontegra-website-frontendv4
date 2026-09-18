@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Sparkles, X } from 'lucide-react'
+import { AlertCircle, Sparkles, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
@@ -114,17 +114,24 @@ export function BilirkisiDemoRequestModal({ open, onClose }: Props) {
           <div className="space-y-4 px-5 py-6">
             <p className="text-base font-semibold text-emerald-700">Demo talebiniz alındı.</p>
             <p className="text-sm leading-relaxed text-slate-600">
-              7 günlük deneme lisansı oluşturuldu. Giriş bilgileri e-posta adresinize iletilir (yerelde e-posta
-              dry-run olabilir). Programa şu adresten giriş yapabilirsiniz:
+              7 günlük deneme lisansınız oluşturuldu. Giriş bilgileriniz e-posta adresinize gönderildi. Programa
+              aşağıdaki adresten giriş yapabilirsiniz:
             </p>
             <a
               href={panelLoginUrl}
-              className="inline-flex text-sm font-semibold text-sky-700 underline-offset-2 hover:underline"
+              className="inline-flex break-all text-sm font-semibold text-sky-700 underline-offset-2 hover:underline"
               target="_blank"
               rel="noopener noreferrer"
             >
               {panelLoginUrl}
             </a>
+            <p
+              className="flex gap-2 rounded-xl bg-rose-50 px-3 py-2.5 text-sm leading-snug text-rose-700"
+              role="note"
+            >
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" aria-hidden />
+              <span>E-postayı göremiyorsanız lütfen Spam veya Gereksiz klasörünüzü de kontrol edin.</span>
+            </p>
             <Button type="button" className="w-full" onClick={onClose}>
               Tamam
             </Button>
