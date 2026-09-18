@@ -4,6 +4,14 @@ import { createDefaultMkSaasPurchaseBlock, type MkSaasPurchaseBlock } from './mk
 import { createDefaultWhatsAppGuideBlock, type WhatsAppGuideBlock } from './whatsappGuide'
 import { createDefaultMkCompareTableBlock, type MkCompareTableBlock } from './mkCompareTable'
 import { createDefaultMkCompareDetailsBlock, type MkCompareDetailsBlock } from './mkCompareDetails'
+import {
+  createDefaultCalloutBlock,
+  createDefaultGalleryBlock,
+  createDefaultVideoEmbedBlock,
+  type CalloutBlock,
+  type GalleryBlock,
+  type VideoEmbedBlock,
+} from './contentBlocks'
 
 export type MvpBlockTypeId =
   | 'hero'
@@ -12,6 +20,9 @@ export type MvpBlockTypeId =
   | 'card-grid'
   | 'cta'
   | 'faq'
+  | 'video-embed'
+  | 'callout'
+  | 'gallery'
   | 'services-showcase'
   | 'products-showcase'
   | 'blog-showcase'
@@ -19,6 +30,8 @@ export type MvpBlockTypeId =
   | 'whatsapp-guide'
   | 'mk-compare-table'
   | 'mk-compare-details'
+
+export type { CalloutBlock, GalleryBlock, VideoEmbedBlock }
 
 export type CardGridItem = {
   id: string
@@ -160,6 +173,9 @@ export type TypedBuilderBlock =
   | CardGridBlock
   | CtaBlock
   | FaqBlock
+  | VideoEmbedBlock
+  | CalloutBlock
+  | GalleryBlock
   | ProductsShowcaseBlock
   | BlogShowcaseBlock
   | ServicesShowcaseBlock
@@ -332,6 +348,12 @@ export function createBlockByType(type: MvpBlockTypeId, sortOrder: number): Type
       return createDefaultCtaBlock(sortOrder)
     case 'faq':
       return createDefaultFaqBlock(sortOrder)
+    case 'video-embed':
+      return createDefaultVideoEmbedBlock(sortOrder)
+    case 'callout':
+      return createDefaultCalloutBlock(sortOrder)
+    case 'gallery':
+      return createDefaultGalleryBlock(sortOrder)
     case 'services-showcase':
       return createDefaultServicesShowcaseBlock(sortOrder)
     case 'products-showcase':
@@ -358,6 +380,9 @@ export const BUILDER_MVP_BLOCK_TYPES: MvpBlockTypeId[] = [
   'card-grid',
   'cta',
   'faq',
+  'video-embed',
+  'callout',
+  'gallery',
   'services-showcase',
   'products-showcase',
   'blog-showcase',

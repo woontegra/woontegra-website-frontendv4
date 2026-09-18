@@ -7,6 +7,8 @@
     "dev": "vite",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
     "test:gallery": "vitest run src/media/normalizeProductGalleryImages.test.ts",
+    "test:builder": "vitest run src/builder/fixtures/fazlaMesaiModuleFixture.test.ts",
+    "test": "vitest run",
     "prerender": "node scripts/prerender.mjs",
     "verify:seo": "node scripts/verify-seo.mjs",
     "build": "npm run generate:sitemap && npm run test:gallery && tsc -b && vite build && npm run prerender && npm run verify:assets && npm run verify:seo",

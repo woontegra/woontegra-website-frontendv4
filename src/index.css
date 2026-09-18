@@ -25,3 +25,78 @@
     font-family: var(--font-sans);
   }
 }
+
+/* Builder rich-text article — semantic HTML hierarchy without typography plugin */
+@layer components {
+  .builder-rich-article {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+  }
+
+  .builder-rich-article > :first-child {
+    margin-top: 0;
+  }
+
+  .builder-rich-article h2 {
+    margin-top: 2.5rem;
+    margin-bottom: 0.875rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    color: #0f172a;
+  }
+
+  .builder-rich-article h3 {
+    margin-top: 1.75rem;
+    margin-bottom: 0.625rem;
+    font-size: 1.25rem;
+    font-weight: 650;
+    letter-spacing: -0.015em;
+    line-height: 1.35;
+    color: #0f172a;
+  }
+
+  .builder-rich-article p {
+    margin-top: 0;
+    margin-bottom: 1.125rem;
+    color: #334155;
+  }
+
+  .builder-rich-article ul,
+  .builder-rich-article ol {
+    margin: 0 0 1.25rem;
+    padding-left: 1.35rem;
+    color: #334155;
+  }
+
+  .builder-rich-article ul {
+    list-style-type: disc;
+  }
+
+  .builder-rich-article ol {
+    list-style-type: decimal;
+  }
+
+  .builder-rich-article li {
+    margin-bottom: 0.4rem;
+    padding-left: 0.2rem;
+  }
+
+  .builder-rich-article li::marker {
+    color: #059669;
+  }
+
+  .builder-rich-article a {
+    color: #047857;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .builder-rich-article strong,
+  .builder-rich-article b {
+    font-weight: 700;
+    color: #0f172a;
+  }
+}

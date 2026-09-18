@@ -22,8 +22,11 @@ export function CtaBlockRenderer({ block, mode = 'public' }: BlockRendererProps)
     (btn) =>
       btn.visible !== false &&
       renderIfText(btn.label) &&
-      renderIfText(btn.href) &&
-      (annotateFields || mode !== 'public' || !isRemovedServicePublicLink(btn.href, btn.label)),
+      (renderIfText(btn.href) || Boolean(btn.actionKey)) &&
+      (annotateFields ||
+        mode !== 'public' ||
+        Boolean(btn.actionKey) ||
+        !isRemovedServicePublicLink(btn.href, btn.label)),
   )
   const showButtons = b.visibility.showButton !== false && buttons.length > 0
   const hasHeader =
@@ -46,10 +49,10 @@ export function CtaBlockRenderer({ block, mode = 'public' }: BlockRendererProps)
     bgStyle.backgroundColor = b.style.backgroundColor
   }
 
-  const darkBg =
+  const useLightText =
     b.settings.backgroundType === 'gradient' ||
     b.settings.backgroundType === 'image' ||
-    Boolean(b.style.backgroundColor)
+    isDarkHexColor(b.style.backgroundColor)
 
   const isAbout = b.settings.variant === 'about'
   const isMkProblemBand = isMkSaasProblemBand(b)
@@ -221,12 +224,32 @@ export function CtaBlockRenderer({ block, mode = 'public' }: BlockRendererProps)
       }}
     >
       <div className="mx-auto max-w-7xl px-4 text-center">
-        <BlockSectionHeader
-          title={b.title}
-          description={b.description}
-          showTitle={b.visibility.showTitle}
-          showDescription={b.visibility.showDescription}
-        />
+        {useLightText ? (
+          <header className="mb-8">
+            {b.visibility.showTitle !== false && renderIfText(b.title) ? (
+              <BuilderField path="title" label="Başlık" type="text" className="mx-auto w-fit max-w-full">
+                <h2 className="text-2xl font-bold tracking-tight text-white md:text-3xl">{b.title}</h2>
+              </BuilderField>
+            ) : null}
+            {b.visibility.showDescription !== false && renderIfText(b.description) ? (
+              <BuilderField
+                path="description"
+                label="Açıklama"
+                type="text"
+                className="mx-auto mt-3 w-fit max-w-2xl"
+              >
+                <p className="text-base leading-relaxed text-slate-200 md:text-lg">{b.description}</p>
+              </BuilderField>
+            ) : null}
+          </header>
+        ) : (
+          <BlockSectionHeader
+            title={b.title}
+            description={b.description}
+            showTitle={b.visibility.showTitle}
+            showDescription={b.visibility.showDescription}
+          />
+        )}
         {showButtons ? (
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             {buttons.map((btn, btnIndex) => (
@@ -240,15 +263,17 @@ export function CtaBlockRenderer({ block, mode = 'public' }: BlockRendererProps)
                 <BlockButtonLink
                   btn={btn}
                   className={cn(
-                    'inline-flex rounded-lg px-5 py-2.5 text-sm font-semibold transition',
+                    'inline-flex min-h-11 items-center rounded-lg px-5 py-2.5 text-sm font-semibold transition',
                     btn.variant === 'outline' &&
-                      (darkBg
-                        ? 'border border-white text-white'
+                      (useLightText
+                        ? 'border border-white/80 text-white hover:bg-white/10'
                         : 'border border-slate-300 text-slate-800'),
                     btn.variant === 'secondary' &&
-                      (darkBg ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-800'),
+                      (useLightText
+                        ? 'bg-white text-slate-900 hover:bg-slate-100'
+                        : 'bg-slate-100 text-slate-800'),
                     (!btn.variant || btn.variant === 'primary') &&
-                      'bg-emerald-600 text-white hover:bg-emerald-700',
+                      'bg-emerald-600 text-white hover:bg-emerald-500',
                   )}
                 />
               </BuilderField>
@@ -258,4 +283,18 @@ export function CtaBlockRenderer({ block, mode = 'public' }: BlockRendererProps)
       </div>
     </section>
   )
+}
+
+function isDarkHexColor(color?: string | null): boolean {
+  if (!color) return false
+  const hex = color.trim()
+  const match = hex.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)
+  if (!match) return false
+  const raw = match[1]
+  const expanded = raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw
+  const r = parseInt(expanded.slice(0, 2), 16)
+  const g = parseInt(expanded.slice(2, 4), 16)
+  const b = parseInt(expanded.slice(4, 6), 16)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return luminance < 0.45
 }

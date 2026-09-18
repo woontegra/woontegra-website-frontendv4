@@ -29,13 +29,21 @@ export function parseBuilderBlocksFromRaw(raw: Record<string, unknown> | null): 
   return null
 }
 
-export function extractSeoFromRaw(raw: Record<string, unknown> | null): {
+export function extractSeoFromRaw(
+  raw: Record<string, unknown> | null,
+  slug?: string,
+): {
   seoTitle?: string
   seoDescription?: string
 } {
   if (!raw) return {}
-  const title = String(raw.seoTitle ?? '').trim()
-  const description = String(raw.seoDescription ?? '').trim()
+  let source: Record<string, unknown> = raw
+  if (slug && raw.pages && typeof raw.pages === 'object') {
+    const page = (raw.pages as Record<string, unknown>)[slug]
+    if (page && typeof page === 'object') source = page as Record<string, unknown>
+  }
+  const title = String(source.seoTitle ?? '').trim()
+  const description = String(source.seoDescription ?? '').trim()
   return {
     seoTitle: title || undefined,
     seoDescription: description || undefined,

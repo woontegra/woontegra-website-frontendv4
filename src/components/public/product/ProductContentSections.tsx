@@ -17,6 +17,8 @@ import {
   MK_COMPARE_WEB_DELIVERY_NOTE,
 } from '@/components/public/muvekkil-kasa/mkCompareContent'
 import type { MkCompareEdition } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { BILIRKISI_HESAP_SLUG } from '@/data/canonicalSoftwareProducts'
+import { BhProductPageModulesSidebar } from '@/pages/public/BhModulesIndexPage'
 
 type Props = {
   product: PublicProductDetail
@@ -392,6 +394,8 @@ export function ProductContentSections({
         </div>
 
         <div className="space-y-6">
+          {!isCompare && product.slug === BILIRKISI_HESAP_SLUG ? <BhProductPageModulesSidebar /> : null}
+
           <section className="rounded-[2rem] border border-emerald-100/90 bg-[linear-gradient(180deg,rgba(236,253,245,0.98),rgba(255,255,255,0.98))] p-6 shadow-[0_28px_70px_-42px_rgba(16,185,129,0.2)] ring-1 ring-emerald-900/5 sm:p-7">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { SettingsAccordion, CollapsibleItem } from '@/builder/admin/ui/SettingsAccordion'
 import { AddItemButton, ImageUrlField, SelectField, TextAreaField, TextField, ToggleField } from '@/builder/admin/ui/FormFields'
+import { RichTextHtmlEditor } from '@/builder/admin/ui/RichTextHtmlEditor'
 import {
   SharedAdvancedSection,
   SharedContentSection,
@@ -41,12 +42,11 @@ export function RichTextSettingsPanel() {
         <>
           <SharedContentSection block={block} onChange={update} />
           {!isAboutVariant ? (
-            <TextAreaField
+            <RichTextHtmlEditor
               label="Gövde metni"
-              hint="Paragraflar ve satır sonları korunur"
+              hint="H2/H3, kalın, bağlantı, liste — düz metin de korunur"
               value={block.settings.body ?? ''}
               onChange={(body) => update({ ...block, settings: { ...block.settings, body } })}
-              rows={8}
             />
           ) : null}
         </>

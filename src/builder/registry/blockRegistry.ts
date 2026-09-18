@@ -55,6 +55,21 @@ const definitions: BlockDefinition[] = [
     description: 'Soru-cevap listesi; sıralama ve açılır görünüm.',
   },
   {
+    type: 'video-embed',
+    label: BLOCK_TYPE_LABELS['video-embed'],
+    description: 'YouTube URL ile responsive video gömme; başlık/açıklama opsiyonel.',
+  },
+  {
+    type: 'callout',
+    label: BLOCK_TYPE_LABELS.callout,
+    description: 'Bilgi, uyarı veya not kutusu; başlık + açıklama.',
+  },
+  {
+    type: 'gallery',
+    label: BLOCK_TYPE_LABELS.gallery,
+    description: 'Bir veya birden fazla görsel; admin medya seçici ile.',
+  },
+  {
     type: 'mk-saas-purchase',
     label: BLOCK_TYPE_LABELS['mk-saas-purchase'],
     description: 'MK SaaS gerçek satın alma paneli — fiyat ve sepet handler korunur.',

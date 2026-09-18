@@ -10,6 +10,8 @@ import {
 
   BUILDER_MENU_BLOG_POSTS,
 
+  BUILDER_MENU_BH_MODULES,
+
   BUILDER_MENU_LEGAL,
 
   BUILDER_MENU_PRODUCTS,
@@ -36,6 +38,11 @@ import { SERVICE_PAGE_CONTENT_KEY } from '@/data/serviceCatalog'
 
 import { SOLUTION_PAGE_CONTENT_KEY } from '@/data/solutionCatalog'
 import { MK_COMPARE_SLUG } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import {
+  BH_MODULE_PAGES_CONTENT_KEY,
+  bhModuleBuilderPageKey,
+  bhModuleDetailPath,
+} from '@/builder/types/bhModule'
 
 
 
@@ -48,6 +55,8 @@ export type BuilderPageKind =
   | 'solution-detail'
 
   | 'product-detail'
+
+  | 'bh-module-detail'
 
   | 'blog-detail'
 
@@ -259,6 +268,26 @@ const BLOG_DETAIL_PAGES: BuilderPageDefinition[] = BUILDER_MENU_BLOG_POSTS.map((
 
 
 
+const BH_MODULE_DETAIL_PAGES: BuilderPageDefinition[] = BUILDER_MENU_BH_MODULES.map((m) => ({
+
+  key: bhModuleBuilderPageKey(m.slug),
+
+  title: m.title,
+
+  contentKey: BH_MODULE_PAGES_CONTENT_KEY,
+
+  previewPath: m.path || bhModuleDetailPath(m.slug),
+
+  group: 'bhModules' as const,
+
+  kind: 'bh-module-detail' as const,
+
+  slug: m.slug,
+
+}))
+
+
+
 const LEGAL_PAGES: BuilderPageDefinition[] = BUILDER_MENU_LEGAL.map((l) => ({
 
   key: l.key,
@@ -286,6 +315,8 @@ export const BUILDER_PAGE_REGISTRY: BuilderPageDefinition[] = [
   ...SOLUTION_DETAIL_PAGES,
 
   ...PRODUCT_DETAIL_PAGES,
+
+  ...BH_MODULE_DETAIL_PAGES,
 
   ...BLOG_DETAIL_PAGES,
 

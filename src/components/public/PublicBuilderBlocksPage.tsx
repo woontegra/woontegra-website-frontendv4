@@ -6,14 +6,21 @@ type Props = {
   blocks: BuilderBlock[] | null | undefined
   fallback: ReactNode
   className?: string
+  /** false: below-fold defer kapalı (modül detay gibi uzun sayfalar) */
+  deferBelowFold?: boolean
 }
 
 /** Kaydedilmiş builder blokları varsa public renderer; yoksa legacy bileşenler */
-export function PublicBuilderBlocksPage({ blocks, fallback, className = 'bg-white' }: Props) {
+export function PublicBuilderBlocksPage({
+  blocks,
+  fallback,
+  className = 'bg-white',
+  deferBelowFold,
+}: Props) {
   if (blocks && blocks.length > 0) {
     return (
       <div className={className}>
-        <PageBlocksRenderer blocks={blocks} mode="public" />
+        <PageBlocksRenderer blocks={blocks} mode="public" deferBelowFold={deferBelowFold} />
       </div>
     )
   }

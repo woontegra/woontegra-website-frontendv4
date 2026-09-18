@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { resolvePublicHref } from '@/lib/publicNavUrl'
 import type { BlockButton } from '@/builder/types'
 import { useMkSaasProductPageContextOptional } from '@/components/public/product/MkSaasProductPageProvider'
+import { useBhModulePageContextOptional } from '@/components/public/product/BhModulePageProvider'
 import { useBuilderEditContext } from '@/builder/edit/BuilderEditContext'
 
 function normalizeButtonHref(href: string, label: string): string {
@@ -20,6 +21,10 @@ function isExternalHref(href: string): boolean {
   return /^https?:\/\//i.test(href) || href.startsWith('mailto:') || href.startsWith('tel:')
 }
 
+function isDemoRequestLabel(label: string): boolean {
+  return /demo\s*talep/i.test(label.trim())
+}
+
 type Props = {
   btn: BlockButton
   className: string
@@ -28,19 +33,27 @@ type Props = {
 /** Builder hero/CTA butonları — actionKey veya href ile çalışır */
 export function BuilderActionButton({ btn, className }: Props) {
   const label = (btn.label ?? '').trim()
-  const ctx = useMkSaasProductPageContextOptional()
+  const mkCtx = useMkSaasProductPageContextOptional()
+  const bhCtx = useBhModulePageContextOptional()
   const { annotateFields } = useBuilderEditContext()
 
   if (!label) return null
 
-  if (btn.actionKey === 'openDemo') {
+  const wantsDemo =
+    btn.actionKey === 'openDemo' || (Boolean(bhCtx) && isDemoRequestLabel(label))
+
+  if (wantsDemo) {
     return (
       <button
         type="button"
         className={className}
         onClick={() => {
-          if (annotateFields || ctx?.previewSafe) return
-          ctx?.onOpenDemo()
+          if (annotateFields || mkCtx?.previewSafe || bhCtx?.previewSafe) return
+          if (bhCtx) {
+            bhCtx.onOpenDemo()
+            return
+          }
+          mkCtx?.onOpenDemo()
         }}
       >
         {label}

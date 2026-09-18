@@ -4,7 +4,7 @@ import { useBuilderEditContext } from '@/builder/edit/BuilderEditContext'
 import { BlockSectionHeader, SectionBlockShell } from '@/builder/render/SectionBlockShell'
 import { renderIfText } from '@/builder/render/renderRules'
 import { MediaImage } from '@/media/components/MediaImage'
-import { HomeIcon } from '@/lib/homeIcons'
+import { BuilderCardIcon, resolveBuilderCardIcon } from '@/builder/render/BuilderCardIcon'
 import { isMkSaasBenefitsGrid } from '@/builder/render/mkSaasBuilderVisuals'
 import { hasPublicImage } from '@/media/resolvePublicImage'
 import { cn } from '@/lib/cn'
@@ -75,7 +75,7 @@ function MkBenefitVariant({ block, cards }: { block: CardGridBlock; cards: CardG
               >
                 {card.icon ? (
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
-                    <HomeIcon name={card.icon} className="h-5 w-5" aria-hidden />
+                    <BuilderCardIcon name={card.icon} className="h-5 w-5" />
                   </div>
                 ) : null}
                 <CardTitleDescription card={card} />
@@ -92,7 +92,11 @@ function MkBenefitVariant({ block, cards }: { block: CardGridBlock; cards: CardG
 function DefaultVariant({ block, cards }: { block: CardGridBlock; cards: CardGridItem[] }) {
   const cols = block.settings.columns ?? 3
   const colClass =
-    cols === 2 ? 'md:grid-cols-2' : cols === 4 ? 'md:grid-cols-4' : 'md:grid-cols-3'
+    cols === 2
+      ? 'md:grid-cols-2'
+      : cols === 4
+        ? 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+        : 'md:grid-cols-3'
 
   return (
     <SectionBlockShell style={block.style}>
@@ -152,8 +156,8 @@ function IntroVariant({ block, cards }: { block: CardGridBlock; cards: CardGridI
                 className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur"
               >
                 {card.icon ? (
-                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl border bg-gradient-to-br from-emerald-600/10 to-transparent text-xs font-bold text-emerald-700">
-                    {card.icon}
+                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl border bg-gradient-to-br from-emerald-600/10 to-transparent text-emerald-700">
+                    <BuilderCardIcon name={card.icon} className="h-4 w-4" />
                   </div>
                 ) : null}
                 <CardTitleDescription card={card} />
@@ -209,7 +213,7 @@ function IconDarkVariant({ block, cards }: { block: CardGridBlock; cards: CardGr
                     card.color ?? 'from-emerald-500 to-green-600',
                   )}
                 >
-                  <HomeIcon name={card.icon} className="h-7 w-7 text-white sm:h-8 sm:w-8" />
+                  <BuilderCardIcon name={card.icon} className="h-7 w-7 text-white sm:h-8 sm:w-8" />
                 </div>
               ) : null}
               <CardTitleDescription card={card} light />
@@ -270,15 +274,17 @@ function StepsVariant({ block, cards }: { block: CardGridBlock; cards: CardGridI
         showDescription={block.visibility.showDescription}
       />
       <div className={cn('grid gap-6', colClass)}>
-        {cards.map((card) => (
+        {cards.map((card, index) => (
           <CardLinkShell
             key={card.id}
             card={card}
-            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+            as="div"
+            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
           >
-            {card.icon ? (
-              <span className="text-2xl font-bold text-emerald-600">{card.icon}</span>
-            ) : null}
+            {/* Step badge — asla card.icon raw string basma */}
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white">
+              {index + 1}
+            </div>
             <CardTitleDescription card={card} />
             <CardButtonLabel card={card} />
           </CardLinkShell>
@@ -330,7 +336,7 @@ function WhyVariant({ block, cards }: { block: CardGridBlock; cards: CardGridIte
                     card.color ?? 'from-emerald-500 to-green-600',
                   )}
                 >
-                  <HomeIcon name={card.icon} className="h-6 w-6" />
+                  <BuilderCardIcon name={card.icon} className="h-6 w-6" />
                 </div>
               ) : null}
               <CardTitleDescription card={card} />
@@ -372,7 +378,7 @@ function SolutionsVariant({ block, cards }: { block: CardGridBlock; cards: CardG
                     card.color ?? 'from-emerald-500 to-teal-600',
                   )}
                 >
-                  <HomeIcon name={card.icon} className="h-6 w-6" />
+                  <BuilderCardIcon name={card.icon} className="h-6 w-6" />
                 </div>
               ) : null}
               <CardTitleDescription card={card} />
@@ -416,7 +422,7 @@ function TimelineVariant({ block, cards }: { block: CardGridBlock; cards: CardGr
                   )}
                 >
                   {step.icon ? (
-                    <HomeIcon name={step.icon} className="h-5 w-5 text-white" />
+                    <BuilderCardIcon name={step.icon} className="h-5 w-5 text-white" />
                   ) : null}
                 </div>
               </div>
@@ -514,8 +520,23 @@ function AboutBrandsVariant({ block, cards }: { block: CardGridBlock; cards: Car
 }
 
 function DefaultCard({ card }: { card: CardGridItem }) {
+  const Icon = resolveBuilderCardIcon(card.icon)
   return (
-    <CardLinkShell card={card} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <CardLinkShell
+      card={card}
+      className="flex h-full flex-col rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md"
+    >
+      {Icon ? (
+        <div
+          className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl"
+          style={{
+            backgroundColor: `${card.color || '#059669'}14`,
+            color: card.color || '#059669',
+          }}
+        >
+          <Icon className="h-5 w-5" aria-hidden />
+        </div>
+      ) : null}
       <CardTitleDescription card={card} />
       <CardButtonLabel card={card} />
     </CardLinkShell>

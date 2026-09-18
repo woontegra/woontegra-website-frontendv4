@@ -30,6 +30,12 @@ const SoftwareDetailPage = lazy(() =>
 const BilirkisiCheckoutPage = lazy(() =>
   import('@/pages/public/BilirkisiCheckoutPage').then((m) => ({ default: m.BilirkisiCheckoutPage })),
 )
+const BhModulesIndexPage = lazy(() =>
+  import('@/pages/public/BhModulesIndexPage').then((m) => ({ default: m.BhModulesIndexPage })),
+)
+const BhModuleDetailPage = lazy(() =>
+  import('@/pages/public/BhModuleDetailPage').then((m) => ({ default: m.BhModuleDetailPage })),
+)
 const BilirkisiCampaignRedirectPage = lazy(() =>
   import('@/pages/public/BilirkisiCampaignRedirectPage').then((m) => ({
     default: m.BilirkisiCampaignRedirectPage,
@@ -353,6 +359,14 @@ export const router = createBrowserRouter([
       {
         path: 'yazilimlar/bilirkisi-hesap/satin-al',
         element: <LazyPage><BilirkisiCheckoutPage /></LazyPage>,
+      },
+      {
+        path: 'yazilimlar/bilirkisi-hesap/moduller',
+        element: <LazyPage><BhModulesIndexPage /></LazyPage>,
+      },
+      {
+        path: 'yazilimlar/bilirkisi-hesap/moduller/:slug',
+        element: <LazyPage><BhModuleDetailPage /></LazyPage>,
       },
       { path: 'yazilimlar/:slug', element: <LazyPage><SoftwareDetailPage /></LazyPage> },
       { path: 'k/:code', element: <LazyPage><BilirkisiCampaignRedirectPage /></LazyPage> },

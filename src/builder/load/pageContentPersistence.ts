@@ -96,15 +96,23 @@ export function buildPageContentPayload(
   def: BuilderPageDefinition,
   blocks: BuilderBlock[],
   existingRaw: Record<string, unknown> | null,
+  meta?: {
+    seoTitle?: string
+    seoDescription?: string
+    pageMeta?: Record<string, unknown>
+  },
 ): Record<string, unknown> {
   const sorted = assignSortOrder(blocks)
   const base = cloneRaw(existingRaw)
+  const seoTitle = meta?.seoTitle?.trim()
+  const seoDescription = meta?.seoDescription?.trim()
 
   if (
     def.kind === 'service-detail' ||
     def.kind === 'solution-detail' ||
     def.kind === 'product-detail' ||
-    def.kind === 'blog-detail'
+    def.kind === 'blog-detail' ||
+    def.kind === 'bh-module-detail'
   ) {
     const slug = def.slug ?? ''
     const pages =
@@ -115,13 +123,22 @@ export function buildPageContentPayload(
       pages[slug] && typeof pages[slug] === 'object'
         ? { ...(pages[slug] as Record<string, unknown>) }
         : ({} as Record<string, unknown>)
-    pages[slug] = { ...prev, blocks: sorted }
+    const next: Record<string, unknown> = { ...prev, blocks: sorted }
+    if (seoTitle !== undefined) next.seoTitle = seoTitle
+    if (seoDescription !== undefined) next.seoDescription = seoDescription
+    if (def.kind === 'bh-module-detail' && meta?.pageMeta) {
+      Object.assign(next, meta.pageMeta)
+      if (!next.slug) next.slug = slug
+    }
+    pages[slug] = next
     base.pages = pages
     syncHeroImageForValidation(base, sorted, def)
     return base
   }
 
   const payload: Record<string, unknown> = { ...base, blocks: sorted }
+  if (seoTitle !== undefined) payload.seoTitle = seoTitle
+  if (seoDescription !== undefined) payload.seoDescription = seoDescription
   syncHeroImageForValidation(payload, sorted, def)
   return payload
 }

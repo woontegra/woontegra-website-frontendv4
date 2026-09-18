@@ -29,6 +29,11 @@ import {
   RichTextSettingsPanel,
 
 } from '@/builder/admin/settings/ContentBlockSettingsPanels'
+import {
+  CalloutSettingsPanel,
+  GallerySettingsPanel,
+  VideoEmbedSettingsPanel,
+} from '@/builder/admin/settings/ExtraContentSettingsPanels'
 import { LegacySectionSettingsPanel } from '@/builder/admin/settings/LegacySectionSettingsPanel'
 import { ProductDetailSettingsPanel } from '@/builder/admin/settings/ProductDetailSettingsPanel'
 import { BlogArticleSettingsPanel } from '@/builder/admin/settings/BlogArticleSettingsPanel'
@@ -36,6 +41,7 @@ import { MkSaasPurchaseSettingsPanel } from '@/builder/admin/settings/MkSaasPurc
 import { WhatsAppGuideSettingsPanel } from '@/builder/admin/settings/WhatsAppGuideSettingsPanel'
 import { MkCompareTableSettingsPanel } from '@/builder/admin/settings/MkCompareTableSettingsPanel'
 import { MkCompareDetailsSettingsPanel } from '@/builder/admin/settings/MkCompareDetailsSettingsPanel'
+import { PageMetaSettingsPanel } from '@/builder/admin/settings/PageMetaSettingsPanel'
 
 export function BlockSettingsPanel() {
   const canvasMode = useBuilderStore((s) => s.canvasMode)
@@ -170,27 +176,23 @@ export function BlockSettingsPanel() {
 
       {!block ? (
 
-        <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
-
-          <div className="rounded-2xl border border-dashed border-slate-200 px-6 py-8">
-
-            <p className="text-sm font-medium text-slate-600">Henüz seçim yok</p>
-
-            <p className="mt-1 max-w-[220px] text-xs leading-relaxed text-slate-400">
-
-              Orta alanda bir bloğa veya alana (ör. Hero başlığı) tıklayın. Sağ panelde ilgili input
-
-              açılır; değişiklikler canvas&apos;a anında yansır.
-
-            </p>
-
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <PageMetaSettingsPanel />
+          <div className="flex flex-col items-center justify-center p-6 text-center">
+            <div className="rounded-2xl border border-dashed border-slate-200 px-6 py-8">
+              <p className="text-sm font-medium text-slate-600">Henüz blok seçimi yok</p>
+              <p className="mt-1 max-w-[220px] text-xs leading-relaxed text-slate-400">
+                Yukarıdan SEO / katalog alanlarını düzenleyin veya canvas&apos;ta bir bloğa tıklayın.
+              </p>
+            </div>
           </div>
-
         </div>
 
       ) : (
 
         <div className="min-h-0 flex-1 overflow-y-auto">
+
+          <PageMetaSettingsPanel />
 
           <SettingsFocusProvider focusTarget={focusTarget}>
 
@@ -249,6 +251,18 @@ function BlockSettingsRouter({ type }: { type: string }) {
     case 'image-text':
 
       return <ImageTextSettingsPanel />
+
+    case 'video-embed':
+
+      return <VideoEmbedSettingsPanel />
+
+    case 'callout':
+
+      return <CalloutSettingsPanel />
+
+    case 'gallery':
+
+      return <GallerySettingsPanel />
 
     case 'legacy-section':
 

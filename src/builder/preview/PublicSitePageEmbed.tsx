@@ -38,6 +38,9 @@ const SoftwareDetailPage = lazy(() =>
 const MuvekkilKasaComparePage = lazy(() =>
   import('@/pages/public/MuvekkilKasaComparePage').then((m) => ({ default: m.MuvekkilKasaComparePage })),
 )
+const BhModuleDetailPage = lazy(() =>
+  import('@/pages/public/BhModuleDetailPage').then((m) => ({ default: m.BhModuleDetailPage })),
+)
 const BlogDetailPage = lazy(() => import('@/pages/public/BlogDetailPage').then((m) => ({ default: m.BlogDetailPage })))
 
 type Props = {
@@ -98,6 +101,9 @@ function DetailPageEmbed({ def }: { def: BuilderPageDefinition }) {
       break
     case 'product-detail':
       Page = isMuvekkilKasaCompareSlug(slug) ? MuvekkilKasaComparePage : SoftwareDetailPage
+      break
+    case 'bh-module-detail':
+      Page = BhModuleDetailPage
       break
     case 'blog-detail':
       Page = BlogDetailPage

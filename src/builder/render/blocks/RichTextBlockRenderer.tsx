@@ -2,6 +2,7 @@ import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { BuilderField } from '@/builder/edit/BuilderField'
 import { BlockSectionHeader, SectionBlockShell } from '@/builder/render/SectionBlockShell'
 import { renderIfText } from '@/builder/render/renderRules'
+import { looksLikeHtml, sanitizeRichHtml } from '@/builder/lib/richTextHtml'
 import { resolveIcon } from '@/lib/iconRegistry'
 import type { CardGridItem, RichTextBlock } from '@/builder/types'
 
@@ -32,7 +33,16 @@ export function RichTextBlockRenderer({ block }: BlockRendererProps) {
         showDescription={b.visibility.showDescription}
       />
       {body ? (
-        <div className="prose prose-slate max-w-none whitespace-pre-wrap text-slate-700">{body}</div>
+        looksLikeHtml(body) ? (
+          <div
+            className="builder-rich-article mx-auto max-w-3xl text-slate-700"
+            dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(body) }}
+          />
+        ) : (
+          <div className="builder-rich-article mx-auto max-w-3xl whitespace-pre-wrap text-slate-700">
+            {body}
+          </div>
+        )
       ) : null}
     </SectionBlockShell>
   )

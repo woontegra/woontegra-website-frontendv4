@@ -38,7 +38,7 @@ export function resolveBuilderPageLoad(
   def: BuilderPageDefinition,
   raw: Record<string, unknown> | null,
 ): ResolvedBuilderPage {
-  const seo = extractSeoFromRaw(raw)
+  const seo = extractSeoFromRaw(raw, def.slug)
   const builderBlocks = extractBlocksForPage(raw, def) ?? parseBuilderBlocksFromRaw(raw)
 
   if (builderBlocks && builderBlocks.length > 0) {

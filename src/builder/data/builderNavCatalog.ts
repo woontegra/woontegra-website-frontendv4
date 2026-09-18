@@ -112,11 +112,22 @@ export const BUILDER_PAGE_GROUP_LABELS = {
   services: 'Hizmet Sayfaları',
   solutions: 'Çözüm Sayfaları',
   products: 'Yazılım / Ürün Sayfaları',
+  bhModules: 'Bilirkişi Hesap Modülleri',
   blog: 'Blog Sayfaları',
   legal: 'Yasal Sayfalar',
 } as const
 
 export type BuilderPageGroupId = keyof typeof BUILDER_PAGE_GROUP_LABELS
+
+export type BuilderNavBhModule = {
+  slug: string
+  title: string
+  path: string
+  /** Yerel fixture / şablon — henüz production migrate değil */
+  isFixture?: boolean
+}
+
+export { BUILDER_MENU_BH_MODULES } from '@/builder/data/bhModuleBuilderMenu'
 
 export function serviceBuilderPageKey(slug: string): string {
   return `service-${slug}`

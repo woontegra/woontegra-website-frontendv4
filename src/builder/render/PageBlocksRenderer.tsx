@@ -7,6 +7,8 @@ type Props = {
   mode?: 'public' | 'preview'
   /** Builder canvas — her blok köküne data-builder-block-* ekler */
   annotateBlocks?: boolean
+  /** false: tüm blokları hemen render et (uzun landing sayfaları) */
+  deferBelowFold?: boolean
 }
 
 const lazyRendererCache = new Map<string, ComponentType<BlockRendererProps>>()
@@ -96,9 +98,14 @@ function DeferredBlockSlot({
   )
 }
 
-export function PageBlocksRenderer({ blocks, mode = 'public', annotateBlocks = false }: Props) {
+export function PageBlocksRenderer({
+  blocks,
+  mode = 'public',
+  annotateBlocks = false,
+  deferBelowFold: deferBelowFoldProp,
+}: Props) {
   const sorted = useMemo(() => [...blocks].sort((a, b) => a.sortOrder - b.sortOrder), [blocks])
-  const deferBelowFold = mode === 'public' && !annotateBlocks
+  const deferBelowFold = deferBelowFoldProp ?? (mode === 'public' && !annotateBlocks)
 
   if (!deferBelowFold) {
     return (

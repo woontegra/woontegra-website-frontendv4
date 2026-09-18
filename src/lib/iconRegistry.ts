@@ -158,6 +158,13 @@ export function resolveIcon(name?: string): LucideIcon {
   return iconMap[key] ?? iconMap[key.toLowerCase()] ?? Box
 }
 
+/** Builder kart ikonu — bilinmeyen identifier için null (raw string basma) */
+export function tryResolveIcon(name?: string | null): LucideIcon | null {
+  const key = String(name || '').trim()
+  if (!key) return null
+  return iconMap[key] ?? iconMap[key.toLowerCase()] ?? null
+}
+
 export const GRADIENT_OPTIONS = [
   'from-blue-500 to-cyan-500',
   'from-emerald-500 to-teal-500',

@@ -15,14 +15,31 @@ import { enrichParityRaw } from '@/builder/parity/enrichParityRaw'
 import { pageContentService, getErrorMessage } from '@/services/pageContentService'
 import { buildPageContentPayload, extractBlocksForPage } from '@/builder/load/pageContentPersistence'
 import { useToastStore } from '@/store/toastStore'
+import { extractSeoFromRaw } from '@/builder/load/parseBuilderBlocks'
+import { getBhModulePageFromRaw, normalizeBhModuleCatalog } from '@/builder/types/bhModule'
 
 export const BUILDER_DRAFT_STORAGE_PREFIX = 'woontegra_builder_draft_v1'
 const MAX_HISTORY = 40
+
+export type BuilderPageMetaState = {
+  title: string
+  slug: string
+  shortDescription: string
+  category: string
+  cardImage: string
+  iconName: string
+  sortOrder: number
+  published: boolean
+  showOnBhProductPage: boolean
+}
 
 export type BuilderPageState = {
   pageKey: string
   pageTitle: string
   blocks: BuilderBlock[]
+  seoTitle: string
+  seoDescription: string
+  pageMeta: BuilderPageMetaState
 }
 
 export type BuilderDraftPayload = BuilderPageState & {
@@ -66,12 +83,29 @@ type BuilderStore = BuilderPageState & {
   exportJson: () => string
   undo: () => void
   redo: () => void
+  updateSeo: (patch: { seoTitle?: string; seoDescription?: string }) => void
+  updatePageMeta: (patch: Partial<BuilderPageMetaState>) => void
+}
+
+const EMPTY_PAGE_META: BuilderPageMetaState = {
+  title: '',
+  slug: '',
+  shortDescription: '',
+  category: 'İşçilik alacağı',
+  cardImage: '',
+  iconName: '',
+  sortOrder: 0,
+  published: true,
+  showOnBhProductPage: false,
 }
 
 const DEFAULT_PAGE: BuilderPageState = {
   pageKey: 'home',
   pageTitle: 'Ana Sayfa',
   blocks: [],
+  seoTitle: '',
+  seoDescription: '',
+  pageMeta: EMPTY_PAGE_META,
 }
 
 let history: HistoryEntry[] = []
@@ -97,6 +131,38 @@ function clonePageState(state: BuilderPageState): HistoryEntry {
   return JSON.parse(JSON.stringify(state)) as HistoryEntry
 }
 
+function emptyMetaForDef(def: { title: string; slug?: string } | null | undefined): BuilderPageMetaState {
+  return {
+    ...EMPTY_PAGE_META,
+    title: def?.title ?? '',
+    slug: def?.slug ?? '',
+  }
+}
+
+function pageMetaFromRaw(
+  raw: Record<string, unknown> | null,
+  def: { kind: string; slug?: string; title: string },
+): BuilderPageMetaState {
+  const base = emptyMetaForDef(def)
+  if (def.kind !== 'bh-module-detail' || !def.slug) return base
+  const page = getBhModulePageFromRaw(raw, def.slug)
+  if (!page) {
+    return base
+  }
+  const catalog = normalizeBhModuleCatalog(page, def.slug)
+  return {
+    title: catalog.title,
+    slug: catalog.slug,
+    shortDescription: catalog.shortDescription,
+    category: catalog.category,
+    cardImage: catalog.cardImage ?? '',
+    iconName: catalog.iconName ?? '',
+    sortOrder: catalog.sortOrder,
+    published: catalog.published,
+    showOnBhProductPage: catalog.showOnBhProductPage,
+  }
+}
+
 function reorder(blocks: BuilderBlock[]): BuilderBlock[] {
   return blocks.map((b, i) => ({ ...b, sortOrder: i }))
 }
@@ -120,6 +186,9 @@ function pushHistory(get: () => BuilderStore, set: (partial: Partial<BuilderStor
     pageKey: get().pageKey,
     pageTitle: get().pageTitle,
     blocks: get().blocks,
+    seoTitle: get().seoTitle,
+    seoDescription: get().seoDescription,
+    pageMeta: get().pageMeta,
   })
   history = history.slice(0, historyIndex + 1)
   history.push(snap)
@@ -136,6 +205,9 @@ function applySnapshot(snap: HistoryEntry, set: (partial: Partial<BuilderStore>)
     pageKey: snap.pageKey,
     pageTitle: snap.pageTitle,
     blocks: snap.blocks,
+    seoTitle: snap.seoTitle,
+    seoDescription: snap.seoDescription,
+    pageMeta: snap.pageMeta,
     isDirty: true,
     selectedBlockId: null,
     selectedFieldPath: null,
@@ -160,6 +232,9 @@ function applyLoadedPage(
     pageKey: loaded.pageKey,
     pageTitle: loaded.pageTitle,
     blocks: loaded.blocks,
+    seoTitle: loaded.seoTitle,
+    seoDescription: loaded.seoDescription,
+    pageMeta: loaded.pageMeta,
     selectedBlockId: null,
     selectedFieldPath: null,
     isDirty: false,
@@ -198,7 +273,7 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
     set({ selectedBlockId: blockId, selectedFieldPath: fieldPath }),
 
   convertToBuilderDraft: () => {
-    const { pageKey, pageTitle, pageRawContent } = get()
+    const { pageKey, pageTitle, pageRawContent, seoTitle, seoDescription, pageMeta } = get()
     const def = getBuilderPageDefinition(pageKey)
     if (!def) return
 
@@ -211,7 +286,14 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
           ? sanitizeMkCompareBuilderBlocks(existing)
           : existing
       if (usable?.length) {
-        const nextState: BuilderPageState = { pageKey, pageTitle, blocks: usable }
+        const nextState: BuilderPageState = {
+          pageKey,
+          pageTitle,
+          blocks: usable,
+          seoTitle,
+          seoDescription,
+          pageMeta,
+        }
         initHistory(nextState)
         set({
           blocks: usable,
@@ -231,7 +313,14 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
       const { blocks, report } = convertPageToBlocks(def, raw)
       if (blocks.length === 0) return
 
-      const nextState: BuilderPageState = { pageKey, pageTitle, blocks }
+      const nextState: BuilderPageState = {
+        pageKey,
+        pageTitle,
+        blocks,
+        seoTitle,
+        seoDescription,
+        pageMeta,
+      }
       initHistory(nextState)
 
       set({
@@ -250,12 +339,21 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
   },
 
   revertToLegacyView: () => {
-    const { pageKey, pageTitle } = get()
-    const nextState: BuilderPageState = { pageKey, pageTitle, blocks: [] }
+    const { pageKey, pageTitle, pageMeta } = get()
+    const nextState: BuilderPageState = {
+      pageKey,
+      pageTitle,
+      blocks: [],
+      seoTitle: '',
+      seoDescription: '',
+      pageMeta,
+    }
     initHistory(nextState)
     localStorage.removeItem(draftStorageKey(pageKey))
     set({
       blocks: [],
+      seoTitle: '',
+      seoDescription: '',
       canvasMode: 'legacy-public',
       pageLoadSource: 'legacy-public',
       conversionReport: null,
@@ -358,6 +456,8 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
       const raw = await pageContentService.getRawByKey(def.contentKey)
       const enriched = await enrichParityRaw(def, raw)
       const resolved = resolveBuilderPageLoad(def, raw)
+      const seo = extractSeoFromRaw(enriched ?? raw, def.slug)
+      const pageMeta = pageMetaFromRaw(enriched ?? raw, def)
 
       set({ pageRawContent: enriched ?? raw })
 
@@ -372,6 +472,9 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
             pageKey: resolved.pageKey,
             pageTitle: resolved.pageTitle,
             blocks: draftBlocks,
+            seoTitle: localDraft?.seoTitle ?? seo.seoTitle ?? '',
+            seoDescription: localDraft?.seoDescription ?? seo.seoDescription ?? '',
+            pageMeta: localDraft?.pageMeta ?? pageMeta,
             source: 'builder-draft',
             canvasMode: 'builder-blocks',
             previewPath: def.previewPath,
@@ -396,6 +499,9 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
               pageKey: def.key,
               pageTitle: def.title,
               blocks,
+              seoTitle: seo.seoTitle ?? '',
+              seoDescription: seo.seoDescription ?? '',
+              pageMeta,
               source: 'builder-draft',
               canvasMode: 'builder-blocks',
               previewPath: def.previewPath,
@@ -416,6 +522,9 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
           pageKey: resolved.pageKey,
           pageTitle: resolved.pageTitle,
           blocks: resolved.blocks,
+          seoTitle: resolved.seoTitle ?? seo.seoTitle ?? '',
+          seoDescription: resolved.seoDescription ?? seo.seoDescription ?? '',
+          pageMeta,
           source: resolved.source,
           canvasMode: resolved.canvasMode,
           previewPath: def.previewPath,
@@ -428,12 +537,17 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Sayfa yüklenemedi'
       const fallback = resolveBuilderPageLoad(def, null)
+      const pageMeta = pageMetaFromRaw(null, def)
       set({ pageRawContent: null })
+
       applyLoadedPage(
         {
           pageKey: fallback.pageKey,
           pageTitle: fallback.pageTitle,
           blocks: fallback.blocks,
+          seoTitle: '',
+          seoDescription: '',
+          pageMeta,
           source: 'legacy-public',
           canvasMode: 'legacy-public',
           previewPath: def.previewPath,
@@ -442,6 +556,23 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
       )
       set({ loadPageError: message })
     }
+  },
+
+  updateSeo: (patch) => {
+    set({
+      seoTitle: patch.seoTitle ?? get().seoTitle,
+      seoDescription: patch.seoDescription ?? get().seoDescription,
+      isDirty: true,
+    })
+    get().saveDraftLocal()
+  },
+
+  updatePageMeta: (patch) => {
+    set({
+      pageMeta: { ...get().pageMeta, ...patch },
+      isDirty: true,
+    })
+    get().saveDraftLocal()
   },
 
   undo: () => {
@@ -459,15 +590,23 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
   },
 
   saveDraftLocal: () => {
-    const { pageKey, pageTitle, blocks } = get()
+    const { pageKey, pageTitle, blocks, seoTitle, seoDescription, pageMeta } = get()
     const savedAt = new Date().toISOString()
-    const payload: BuilderDraftPayload = { pageKey, pageTitle, blocks, savedAt }
+    const payload: BuilderDraftPayload = {
+      pageKey,
+      pageTitle,
+      blocks,
+      seoTitle,
+      seoDescription,
+      pageMeta,
+      savedAt,
+    }
     localStorage.setItem(draftStorageKey(pageKey), JSON.stringify(payload))
     set({ lastSavedAt: savedAt })
   },
 
   savePageToApi: async () => {
-    const { pageKey, blocks, pageRawContent, canvasMode } = get()
+    const { pageKey, blocks, pageRawContent, canvasMode, seoTitle, seoDescription, pageMeta } = get()
     if (canvasMode !== 'builder-blocks' || blocks.length === 0) return false
 
     const def = getBuilderPageDefinition(pageKey)
@@ -476,7 +615,25 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
     set({ isSaving: true, saveError: null })
 
     try {
-      const content = buildPageContentPayload(def, blocks, pageRawContent)
+      const content = buildPageContentPayload(def, blocks, pageRawContent, {
+        seoTitle,
+        seoDescription,
+        pageMeta:
+          def.kind === 'bh-module-detail'
+            ? {
+                title: pageMeta.title,
+                slug: pageMeta.slug || def.slug,
+                shortDescription: pageMeta.shortDescription,
+                category: pageMeta.category,
+                cardImage: pageMeta.cardImage || undefined,
+                iconName: pageMeta.iconName || undefined,
+                sortOrder: pageMeta.sortOrder,
+                published: pageMeta.published,
+                showOnBhProductPage: pageMeta.showOnBhProductPage,
+                status: pageMeta.published ? 'published' : 'draft',
+              }
+            : undefined,
+      })
       const saved = await pageContentService.updateByKey(def.contentKey, content)
       const savedAt = new Date().toISOString()
       localStorage.removeItem(draftStorageKey(pageKey))
@@ -505,8 +662,8 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
   },
 
   exportJson: () => {
-    const { pageKey, pageTitle, blocks } = get()
-    return JSON.stringify({ pageKey, pageTitle, blocks }, null, 2)
+    const { pageKey, pageTitle, blocks, seoTitle, seoDescription, pageMeta } = get()
+    return JSON.stringify({ pageKey, pageTitle, seoTitle, seoDescription, pageMeta, blocks }, null, 2)
   },
 }))
 

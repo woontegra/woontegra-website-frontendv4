@@ -7,7 +7,7 @@ export const BLOCK_LIBRARY_CATEGORIES = [
   {
     id: 'content',
     label: 'İçerik',
-    types: ['image-text', 'faq', 'card-grid'] as const,
+    types: ['image-text', 'faq', 'card-grid', 'video-embed', 'callout', 'gallery'] as const,
   },
   {
     id: 'showcase',

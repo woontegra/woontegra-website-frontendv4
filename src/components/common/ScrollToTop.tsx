@@ -8,16 +8,20 @@ function scrollToHashTarget(hash: string) {
   const tryScroll = () => {
     const el = document.getElementById(id)
     if (!el) return false
-    el.scrollIntoView({ behavior: 'auto', block: 'start' })
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     return true
   }
 
   if (tryScroll()) return
 
   requestAnimationFrame(() => {
-    if (!tryScroll()) {
-      window.setTimeout(tryScroll, 50)
-    }
+    if (tryScroll()) return
+    // Geç mount olan bölümler (ör. BH modül listesi) için kısa retry
+    let n = 0
+    const timer = window.setInterval(() => {
+      n += 1
+      if (tryScroll() || n >= 20) window.clearInterval(timer)
+    }, 50)
   })
 }
 

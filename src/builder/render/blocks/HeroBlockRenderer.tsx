@@ -17,6 +17,7 @@ import { isRemovedServicePublicLink } from '@/lib/serviceSlugs'
 import { MuvekkilKasaCompareHeroVisual } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareHeroVisual'
 import { useMkComparePageContextOptional } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
 import { MK_COMPARE_SHELL } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { BhModuleHeroBreadcrumb } from '@/components/public/product/BhModuleHeroBreadcrumb'
 
 function heroButtonClass(variant: BlockButton['variant'], outlineClass: string, primaryClass: string) {
   return variant === 'outline' ? outlineClass : primaryClass
@@ -164,17 +165,24 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
   }
 
   if (settings.layout === 'compact') {
+    const descParts = String(description || '')
+      .split(/\n\n+/)
+      .map((p) => p.trim())
+      .filter(Boolean)
+    const introText = descParts[0] || ''
+    const noteText = descParts.slice(1).join('\n\n')
+
     return (
       <section
-        className="relative w-full overflow-hidden border-b border-slate-200 bg-slate-900 py-10 sm:py-12"
+        className="relative w-full overflow-hidden border-b border-slate-200 bg-slate-900 py-14 sm:py-16 md:py-20"
         style={{
           background:
             style.backgroundGradient ??
             bgStyle.background ??
             'linear-gradient(135deg, #0f172a, #1e293b)',
-          ['--hero-h' as string]: settings.height?.desktop ?? '240px',
+          ['--hero-h' as string]: settings.height?.desktop ?? '320px',
           ['--hero-h-mobile' as string]:
-            settings.height?.mobile ?? settings.height?.tablet ?? '240px',
+            settings.height?.mobile ?? settings.height?.tablet ?? '280px',
         }}
       >
         {style.overlay?.enabled ? (
@@ -186,24 +194,34 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
             }}
           />
         ) : null}
-        <div className="relative z-[2] mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="relative z-[2] mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <BhModuleHeroBreadcrumb />
           {visibility.showBadge !== false && settings.badge?.trim() ? (
-            <BuilderField path="badge" label="Badge" type="text" className="mb-2 inline-block">
-              <span className="text-xs font-medium uppercase tracking-wider text-emerald-400">{settings.badge}</span>
+            <BuilderField path="badge" label="Badge" type="text" className="mb-4 inline-block">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-400 sm:text-xs">
+                {settings.badge}
+              </span>
             </BuilderField>
           ) : null}
           {showTitle ? (
             <BuilderField path="title" label="Başlık" type="text" className="w-fit max-w-full">
-              <h1 className="text-2xl font-bold text-white md:text-3xl">{title}</h1>
+              <h1 className="max-w-3xl text-balance text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-[2.75rem] md:leading-[1.15]">
+                {title}
+              </h1>
             </BuilderField>
           ) : null}
-          {showDescription ? (
-            <BuilderField path="description" label="Açıklama" type="text" className="mt-2 w-fit max-w-2xl">
-              <p className="text-sm text-slate-300 md:text-base">{description}</p>
+          {showDescription && introText ? (
+            <BuilderField path="description" label="Açıklama" type="text" className="mt-5 w-fit max-w-3xl">
+              <p className="text-base leading-relaxed text-slate-200 sm:text-lg">{introText}</p>
             </BuilderField>
+          ) : null}
+          {showDescription && noteText ? (
+            <p className="mt-5 max-w-2xl rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm leading-relaxed text-slate-300">
+              {noteText}
+            </p>
           ) : null}
           {showButtons ? (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-8 flex flex-wrap gap-3">
               {visibleButtons.map((btn, btnIndex) => (
                 <BuilderField
                   key={btn.id}
@@ -216,8 +234,8 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
                     btn={btn}
                     className={heroButtonClass(
                       btn.variant,
-                      'inline-flex rounded-lg border border-white/30 px-4 py-2 text-sm font-medium text-white',
-                      'inline-flex rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white',
+                      'inline-flex min-h-11 items-center rounded-lg border border-white/35 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10',
+                      'inline-flex min-h-11 items-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500',
                     )}
                   />
                 </BuilderField>

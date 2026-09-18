@@ -24,6 +24,14 @@ export const blockRendererLoaders: Record<string, BlockLoader> = {
     import('@/builder/render/blocks/CardGridBlockRenderer').then((m) => ({ default: m.CardGridBlockRenderer })),
   cta: () => import('@/builder/render/blocks/CtaBlockRenderer').then((m) => ({ default: m.CtaBlockRenderer })),
   faq: () => import('@/builder/render/blocks/FaqBlockRenderer').then((m) => ({ default: m.FaqBlockRenderer })),
+  'video-embed': () =>
+    import('@/builder/render/blocks/VideoEmbedBlockRenderer').then((m) => ({
+      default: m.VideoEmbedBlockRenderer,
+    })),
+  callout: () =>
+    import('@/builder/render/blocks/CalloutBlockRenderer').then((m) => ({ default: m.CalloutBlockRenderer })),
+  gallery: () =>
+    import('@/builder/render/blocks/GalleryBlockRenderer').then((m) => ({ default: m.GalleryBlockRenderer })),
   'services-showcase': () =>
     import('@/builder/render/blocks/ShowcaseBlockRenderer').then((m) => ({ default: m.ShowcaseBlockRenderer })),
   'products-showcase': () =>

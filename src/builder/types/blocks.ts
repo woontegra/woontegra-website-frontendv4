@@ -17,6 +17,7 @@ import type { MkSaasPurchaseBlock } from './mkSaasPurchase'
 import type { WhatsAppGuideBlock } from './whatsappGuide'
 import type { MkCompareTableBlock } from './mkCompareTable'
 import type { MkCompareDetailsBlock } from './mkCompareDetails'
+import type { CalloutBlock, GalleryBlock, VideoEmbedBlock } from './contentBlocks'
 
 export type BuilderBlock =
   | HeroBlock
@@ -25,6 +26,9 @@ export type BuilderBlock =
   | CardGridBlock
   | CtaBlock
   | FaqBlock
+  | VideoEmbedBlock
+  | CalloutBlock
+  | GalleryBlock
   | ProductsShowcaseBlock
   | BlogShowcaseBlock
   | ServicesShowcaseBlock
@@ -53,6 +57,8 @@ export type BlockTypeId =
   | 'blog-showcase'
   | 'cta'
   | 'faq'
+  | 'video-embed'
+  | 'callout'
   | 'gallery'
   | 'process-steps'
   | 'stats'
@@ -79,6 +85,8 @@ export const BLOCK_TYPE_LABELS: Record<BlockTypeId, string> = {
   'blog-showcase': 'Blog Vitrini',
   cta: 'CTA',
   faq: 'SSS',
+  'video-embed': 'Video Embed',
+  callout: 'Callout',
   gallery: 'Galeri',
   'process-steps': 'Süreç Adımları',
   stats: 'İstatistik',
