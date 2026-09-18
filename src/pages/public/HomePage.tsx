@@ -60,7 +60,10 @@ export function HomePage() {
     <div className="bg-white">
       <HomePageView content={plan.content} />
     </div>
-  ) : null
+  ) : (
+    // Avoid blank white <main> if CMS is empty/error — keep site surface visible
+    <div className="min-h-[520px] bg-white" aria-hidden />
+  )
 
   return (
     <>

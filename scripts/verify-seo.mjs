@@ -202,6 +202,8 @@ function verifySitemap() {
   const xml = fs.readFileSync(SITEMAP, 'utf8')
   const required = [
     '/yazilimlar/bilirkisi-hesap',
+    '/yazilimlar/bilirkisi-hesap/moduller/fazla-mesai-nasil-hesaplanir',
+    '/yazilimlar/bilirkisi-hesap/moduller/kidem-tazminati-nasil-hesaplanir',
     '/gizlilik-politikasi',
     '/kvkk-aydinlatma-metni',
     '/cerez-politikasi',
@@ -215,6 +217,12 @@ function verifySitemap() {
   for (const pathPart of required) {
     assert('sitemap', xml.includes(`https://www.woontegra.com${pathPart}`), `sitemap: ${pathPart}`)
   }
+  assert(
+    'sitemap',
+    !xml.includes('/moduller/fazla-mesai<') && !xml.includes('/moduller/fazla-mesai/'),
+    'sitemap alias fazla-mesai olmamalı',
+  )
+  assert('sitemap', !/sendikal/i.test(xml), 'sitemap Sendikal olmamalı')
   const forbidden = ['/admin', '/giris', '/sepet', '/odeme', '/hesabim']
   for (const pathPart of forbidden) {
     assert(

@@ -1,7 +1,7 @@
 /** Lazy route ve detay sayfaları için bölüm iskeleti — full-page spinner yerine */
 export function PublicRouteSkeleton() {
   return (
-    <div className="bg-white" aria-busy aria-label="Sayfa yükleniyor">
+    <div className="min-h-[70vh] bg-white" aria-busy aria-label="Sayfa yükleniyor">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl space-y-4">
           <div className="h-4 w-32 animate-pulse rounded bg-slate-100" />

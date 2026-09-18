@@ -8,6 +8,11 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createElement as h, Fragment } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import {
+  BH_MODULE_SEO_SLUGS,
+  bhModuleDetailPath,
+  isCanonicalBhModuleSeoSlug,
+} from './lib/bhModuleSeoSlugs.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -376,11 +381,20 @@ function collectRoutes() {
     const p = normalizePath(route)
     if (!isBlocked(p)) set.add(p)
   }
+  // Canonical BH module SEO pages (same registry as sitemap generator)
+  for (const slug of BH_MODULE_SEO_SLUGS) {
+    const p = normalizePath(bhModuleDetailPath(slug))
+    if (!isBlocked(p)) set.add(p)
+  }
   return [...set].sort((a, b) => a.localeCompare(b))
 }
 
 function scrubAdminPreloads(html) {
-  return html.replace(/<link[^>]+rel="modulepreload"[^>]+href="[^"]*admin-[^"]+\.js"[^>]*>\s*/gi, '')
+  // Public HTML must not render-block on admin chunk assets (JS preload or CSS).
+  return html
+    .replace(/<link[^>]+rel="modulepreload"[^>]+href="[^"]*admin-[^"]+\.js"[^>]*>\s*/gi, '')
+    .replace(/<link[^>]+rel="stylesheet"[^>]+href="[^"]*admin-[^"]+\.css"[^>]*>\s*/gi, '')
+    .replace(/<link[^>]+href="[^"]*admin-[^"]+\.css"[^>]+rel="stylesheet"[^>]*>\s*/gi, '')
 }
 
 function outputPathForRoute(route) {
@@ -519,6 +533,33 @@ async function resolvePageModel(route, cache) {
       breadcrumbSchema(crumbs),
     )
     return { title, description, h1, bodyText, jsonLd, crumbs }
+  }
+
+  // BH module detail pages — CMS bhModulePages ∩ canonical SEO slug registry
+  const bhModulePrefix = '/yazilimlar/bilirkisi-hesap/moduller/'
+  if (route.startsWith(bhModulePrefix)) {
+    const slug = route.slice(bhModulePrefix.length)
+    if (isCanonicalBhModuleSeoSlug(slug)) {
+      if (!cache.bhModulePages) {
+        const raw = unwrapData(await fetchJson('/page-content/bhModulePages'))
+        cache.bhModulePages = raw?.pages && typeof raw.pages === 'object' ? raw.pages : {}
+      }
+      const page = cache.bhModulePages[slug]
+      const fallbackTitle = slug.replace(/-/g, ' ')
+      h1 = String(page?.title || fallbackTitle).trim() || fallbackTitle
+      title = String(page?.seoTitle || `${h1} | Bilirkişi Hesap`).trim()
+      description = String(
+        page?.seoDescription || page?.shortDescription || `${h1} hesaplama — Bilirkişi Hesap | Woontegra.`,
+      ).trim()
+      bodyText = `${h1}. ${description} Woontegra Bilirkişi Hesap modülü.`
+      crumbs.push(
+        { name: 'Yazılımlar', path: '/yazilimlar' },
+        { name: 'Bilirkişi Hesap', path: '/yazilimlar/bilirkisi-hesap' },
+        { name: h1, path: route },
+      )
+      jsonLd.push(breadcrumbSchema(crumbs))
+      return { title, description, h1, bodyText, jsonLd, crumbs }
+    }
   }
 
   if (route.startsWith('/yazilimlar/') && route !== '/yazilimlar') {

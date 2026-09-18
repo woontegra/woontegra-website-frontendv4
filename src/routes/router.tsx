@@ -10,8 +10,9 @@ import { clearChunkReloadAttemptFlag } from '@/lib/chunkLoadError'
 import { SiteLayout } from '@/layouts/SiteLayout'
 import { PartnerLayout } from '@/layouts/PartnerLayout'
 import { PublicRouteSkeleton } from '@/components/public/PublicRouteSkeleton'
+import { HomePage } from '@/pages/public/HomePage'
 
-const HomePage = lazy(() => import('@/pages/public/HomePage').then((m) => ({ default: m.HomePage })))
+/** Landing is eager — avoids Suspense blank main while HomePage chunk downloads after createRoot wipes prerender. */
 const AboutPage = lazy(() => import('@/pages/public/AboutPage').then((m) => ({ default: m.AboutPage })))
 const ServicesPage = lazy(() => import('@/pages/public/ServicesPage').then((m) => ({ default: m.ServicesPage })))
 const ServiceDetailPage = lazy(() =>
@@ -335,7 +336,7 @@ export const router = createBrowserRouter([
     element: <SiteLayout />,
     errorElement: <AppRouteErrorBoundary />,
     children: [
-      { index: true, element: <LazyPage><HomePage /></LazyPage> },
+      { index: true, element: <HomePage /> },
       { path: 'hakkimizda', element: <LazyPage><AboutPage /></LazyPage> },
       { path: 'e-ticaret-altyapisi', element: <Navigate to="/hizmetler/e-ticaret" replace /> },
       { path: 'web-tasarim', element: <Navigate to="/hizmetler/web-tasarim" replace /> },

@@ -4,6 +4,19 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+function stripAdminAssetsFromHtmlPlugin(): Plugin {
+  return {
+    name: 'strip-admin-assets-from-html',
+    enforce: 'post',
+    transformIndexHtml(html) {
+      return html
+        .replace(/<link[^>]+rel="modulepreload"[^>]+href="[^"]*admin-[^"]+\.js"[^>]*>\s*/gi, '')
+        .replace(/<link[^>]+rel="stylesheet"[^>]+href="[^"]*admin-[^"]+\.css"[^>]*>\s*/gi, '')
+        .replace(/<link[^>]+href="[^"]*admin-[^"]+\.css"[^>]+rel="stylesheet"[^>]*>\s*/gi, '')
+    },
+  }
+}
+
 function devV3PublicImagesPlugin(): Plugin {
   const imagesRoot = path.resolve(__dirname, '../frontendV3/public/images')
   return {
@@ -84,7 +97,7 @@ export default defineConfig(({ mode }) => {
   const previewProxyTarget = env.VITE_PRERENDER_API_PROXY?.trim() || railwayApi
 
   return {
-    plugins: [react(), tailwindcss(), devV3PublicImagesPlugin(), previewPrerenderFirstPlugin()],
+    plugins: [react(), tailwindcss(), stripAdminAssetsFromHtmlPlugin(), devV3PublicImagesPlugin(), previewPrerenderFirstPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

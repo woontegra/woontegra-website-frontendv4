@@ -5,6 +5,11 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  BH_MODULE_SEO_SLUGS,
+  bhModuleDetailPath,
+  isCanonicalBhModuleSeoSlug,
+} from './lib/bhModuleSeoSlugs.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -91,6 +96,7 @@ const BLOCKED_EXACT = new Set([
   '/yazilimlar/muvekkil-kasa-defteri-web-tabanli',
   '/yazilimlar/muvekkil-kasa-defteri-saas',
   '/yazilimlar/muvekkil-kasa-saas',
+  '/yazilimlar/bilirkisi-hesap/moduller',
 ])
 
 const BLOCKED_PREFIXES = [
@@ -108,7 +114,7 @@ const BLOCKED_PREFIXES = [
 ]
 
 /** Harici marka/slug parçaları — bilirkisi artık Woontegra ürün sayfası olarak dahil */
-const BLOCKED_SLUG_PARTS = ['optimoon', 'datca', 'mercan']
+const BLOCKED_SLUG_PARTS = ['optimoon', 'datca', 'mercan', 'sendikal']
 
 function isBlockedPath(p) {
   const pathname = p.split('?')[0].split('#')[0]
@@ -117,6 +123,13 @@ function isBlockedPath(p) {
   const lower = pathname.toLowerCase()
   if (BLOCKED_SLUG_PARTS.some((part) => lower.includes(part))) return true
   return false
+}
+
+function toLastmodDate(value) {
+  if (value == null || value === '') return null
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return null
+  return d.toISOString().slice(0, 10)
 }
 
 async function fetchJson(url) {
@@ -133,6 +146,41 @@ async function fetchJson(url) {
   }
 }
 
+/**
+ * Published BH module detail pages — CMS bhModulePages ∩ canonical SEO slug registry.
+ * Alias/short slugs and invented modules (e.g. Sendikal) are excluded.
+ */
+async function fetchBhModuleEntries() {
+  const res = await fetchJson(`${API_BASE}/page-content/bhModulePages`)
+  const pages = res?.data?.pages
+  const fromCms = []
+
+  if (pages && typeof pages === 'object') {
+    for (const [slug, row] of Object.entries(pages)) {
+      if (!isCanonicalBhModuleSeoSlug(slug)) continue
+      if (!row || typeof row !== 'object') continue
+      if (row.published === false || row.status === 'draft') continue
+      fromCms.push({
+        path: bhModuleDetailPath(slug),
+        priority: '0.7',
+        changefreq: 'monthly',
+      })
+    }
+  }
+
+  if (fromCms.length === BH_MODULE_SEO_SLUGS.length) return fromCms
+
+  // Fallback / fill gaps from SEO registry (same SoT as Frontend bhModule.ts)
+  const map = new Map(fromCms.map((e) => [e.path, e]))
+  for (const slug of BH_MODULE_SEO_SLUGS) {
+    const p = bhModuleDetailPath(slug)
+    if (!map.has(p)) {
+      map.set(p, { path: p, priority: '0.7', changefreq: 'monthly' })
+    }
+  }
+  return [...map.values()]
+}
+
 async function fetchDynamicPaths() {
   const dynamic = []
 
@@ -143,7 +191,13 @@ async function fetchDynamicPaths() {
       const slug = String(post?.slug ?? '').trim()
       const published = post?.published !== false && post?.status !== 'draft'
       if (slug && published) {
-        dynamic.push({ path: `/blog/${slug}`, priority: '0.7', changefreq: 'monthly' })
+        const lastmod = toLastmodDate(post.updatedAt || post.publishedAt || post.createdAt)
+        dynamic.push({
+          path: `/blog/${slug}`,
+          priority: '0.7',
+          changefreq: 'monthly',
+          ...(lastmod ? { lastmod } : {}),
+        })
       }
     }
   }
@@ -162,10 +216,19 @@ async function fetchDynamicPaths() {
         ) {
           continue
         }
-        dynamic.push({ path: `/yazilimlar/${slug}`, priority: '0.8', changefreq: 'monthly' })
+        const lastmod = toLastmodDate(product.updatedAt || product.createdAt)
+        dynamic.push({
+          path: `/yazilimlar/${slug}`,
+          priority: '0.8',
+          changefreq: 'monthly',
+          ...(lastmod ? { lastmod } : {}),
+        })
       }
     }
   }
+
+  const bhModules = await fetchBhModuleEntries()
+  dynamic.push(...bhModules)
 
   return dynamic
 }
@@ -192,16 +255,24 @@ function escapeXml(value) {
     .replace(/'/g, '&apos;')
 }
 
-function buildXml(entries, lastmod) {
+function buildXml(entries) {
   const urls = entries
-    .map(
-      (e) => `  <url>
-    <loc>${escapeXml(`${SITE}${e.path === '/' ? '/' : e.path}`)}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>${e.changefreq}</changefreq>
-    <priority>${e.priority}</priority>
-  </url>`,
-    )
+    .map((e) => {
+      const lines = [
+        '  <url>',
+        `    <loc>${escapeXml(`${SITE}${e.path === '/' ? '/' : e.path}`)}</loc>`,
+      ]
+      // Only emit lastmod when we have a real content date — never stamp build/deploy day on all URLs
+      if (e.lastmod) {
+        lines.push(`    <lastmod>${escapeXml(e.lastmod)}</lastmod>`)
+      }
+      lines.push(
+        `    <changefreq>${e.changefreq}</changefreq>`,
+        `    <priority>${e.priority}</priority>`,
+        '  </url>',
+      )
+      return lines.join('\n')
+    })
     .join('\n')
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -212,23 +283,26 @@ ${urls}
 }
 
 async function main() {
-  const lastmod = new Date().toISOString().slice(0, 10)
   let dynamic = []
   try {
     dynamic = await fetchDynamicPaths()
     if (dynamic.length) {
-      console.log(`[sitemap] API: ${dynamic.length} dynamic URL eklendi`)
+      console.log(`[sitemap] API/registry: ${dynamic.length} dynamic URL eklendi`)
     }
   } catch {
-    console.warn('[sitemap] API atlandı — yalnızca statik liste kullanılıyor')
+    console.warn('[sitemap] API atlandı — statik + BH SEO registry kullanılacak')
+    dynamic = await fetchBhModuleEntries()
   }
 
   const entries = mergeEntries(STATIC_ENTRIES, dynamic)
-  const xml = buildXml(entries, lastmod)
+  const xml = buildXml(entries)
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true })
   fs.writeFileSync(OUT, xml, 'utf8')
-  console.log(`[sitemap] ${entries.length} URL → ${path.relative(ROOT, OUT)}`)
+  const withLastmod = entries.filter((e) => e.lastmod).length
+  console.log(
+    `[sitemap] ${entries.length} URL (${withLastmod} lastmod) → ${path.relative(ROOT, OUT)}`,
+  )
 }
 
 main().catch((err) => {
