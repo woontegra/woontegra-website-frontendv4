@@ -240,15 +240,24 @@ function campaignCustomerFacingTitle(campaign: NonNullable<BhQuote['campaign']>)
 
 function campaignCustomerBanner(
   campaign: BhQuote['campaign'] | null | undefined,
-): { title: string; subtitle: string } | null {
+  opts?: { isRenewal?: boolean },
+): { title: string; subtitle: string | null } | null {
   if (!campaign || campaign.discountRate == null || !Number.isFinite(Number(campaign.discountRate))) {
     return null
   }
   const title = campaignCustomerFacingTitle(campaign)
   if (!title) return null
+  const rate = Number(campaign.discountRate)
+  const type = String(campaign.campaignType || '').toUpperCase()
+  if (opts?.isRenewal && type === 'BAR_ASSOCIATION') {
+    return {
+      title: `${title} – Yenilemede %${rate} indirim uygulanıyor`,
+      subtitle: null,
+    }
+  }
   return {
     title,
-    subtitle: `Tüm paketlerde %${campaign.discountRate} indirim uygulanır.`,
+    subtitle: `Tüm paketlerde %${rate} indirim uygulanır.`,
   }
 }
 
@@ -349,7 +358,10 @@ export function BilirkisiCheckoutPage() {
     fulfillmentOk?: boolean
   } | null>(null)
 
-  const campaignBanner = useMemo(() => campaignCustomerBanner(quote?.campaign), [quote?.campaign])
+  const campaignBanner = useMemo(
+    () => campaignCustomerBanner(quote?.campaign, { isRenewal }),
+    [quote?.campaign, isRenewal],
+  )
   const campaignFacingTitle = useMemo(
     () => (quote?.campaign ? campaignCustomerFacingTitle(quote.campaign) : null),
     [quote?.campaign],
@@ -846,7 +858,9 @@ export function BilirkisiCheckoutPage() {
       {campaignBanner ? (
         <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-amber-950 sm:px-5">
           <p className="font-bold text-amber-950">{campaignBanner.title}</p>
-          <p className="mt-1 text-sm text-amber-900/90">{campaignBanner.subtitle}</p>
+          {campaignBanner.subtitle ? (
+            <p className="mt-1 text-sm text-amber-900/90">{campaignBanner.subtitle}</p>
+          ) : null}
         </div>
       ) : null}
 
