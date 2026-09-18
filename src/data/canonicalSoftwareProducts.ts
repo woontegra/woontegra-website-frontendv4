@@ -89,7 +89,7 @@ const PROMOTIONAL_SOFTWARE: Record<string, { meta: PromotionalSoftwareMeta; deta
         'Demo talebi 7 günlük deneme lisansı oluşturur (panel e-postası ile).',
       ],
       licenseSummary: 'Abonelik · panel erişimi',
-      demoCtaLabel: 'Ücretsiz Dene',
+      demoCtaLabel: 'Demo Talep Et',
     },
     detail: {
       id: 'promotional-bilirkisi-hesap',

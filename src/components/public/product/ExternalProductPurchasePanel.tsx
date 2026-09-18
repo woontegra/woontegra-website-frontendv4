@@ -166,7 +166,7 @@ export function ExternalProductPurchasePanel({ product }: Props) {
             onClick={() => setDemoOpen(true)}
             className="flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
           >
-            {meta.demoCtaLabel || 'Ücretsiz Dene'}
+            {meta.demoCtaLabel || 'Demo Talep Et'}
           </button>
         </div>
       </div>

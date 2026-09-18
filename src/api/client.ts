@@ -43,8 +43,11 @@ export const adminApi = createClient(true, ADMIN_API_TIMEOUT_MS)
 
 export function getErrorMessage(error: unknown, fallback = 'İşlem başarısız'): string {
   if (axios.isAxiosError(error)) {
-    const apiMessage = error.response?.data?.message
+    const data = error.response?.data as { message?: unknown; error?: unknown } | undefined
+    const apiMessage = data?.message
     if (typeof apiMessage === 'string' && apiMessage.trim()) return apiMessage.trim()
+    const apiError = data?.error
+    if (typeof apiError === 'string' && apiError.trim()) return apiError.trim()
     const status = error.response?.status
     if (status && status >= 500) return 'Sunucuya şu an ulaşılamıyor. Lütfen biraz sonra tekrar deneyin.'
     if (status === 404) return 'İstenen kayıt bulunamadı.'

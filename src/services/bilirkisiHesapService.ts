@@ -100,6 +100,9 @@ export const bilirkisiHesapService = {
     phone: string
     name?: string
     company?: string
+    professionGroup: string
+    isExpertWitness: boolean
+    expertiseAreas?: Array<{ code: string; name: string }>
   }): Promise<{ success: boolean; message?: string }> {
     const { data } = await publicApi.post<{ success: boolean; message?: string; error?: string }>(
       '/bh/demo/request',

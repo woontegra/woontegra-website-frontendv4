@@ -60,12 +60,20 @@ export type BhBarAssociation = {
   [key: string]: unknown
 }
 
+export type BhDemoExpertiseAreaStored = {
+  code: string
+  name: string
+}
+
 export type BhDemoRequest = {
   id: string | number
   email: string
   name: string | null
   phone: string | null
   company: string | null
+  professionGroup?: string | null
+  isExpertWitness?: boolean | null
+  expertiseAreas?: BhDemoExpertiseAreaStored[] | null
   city?: string | null
   country?: string | null
   createdAt: string
