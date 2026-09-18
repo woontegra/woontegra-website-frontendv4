@@ -19,6 +19,9 @@ import { useToastStore } from '@/store/toastStore'
 import { formatBhDateTime } from '@/utils/bhAdminUi'
 import { bilirkisiHesapCampaignCheckoutUrl } from '@/data/canonicalSoftwareProducts'
 
+/** Modal package scope — maps to API eligibleProductTypes (null = all). */
+type PackageEligibility = 'all' | 'monthly' | 'annual'
+
 type CampaignForm = {
   name: string
   discountRate: string
@@ -30,6 +33,7 @@ type CampaignForm = {
   barAssociationKey: string
   appliesToNewPurchase: boolean
   appliesToRenewal: boolean
+  packageEligibility: PackageEligibility
 }
 
 const emptyForm = (): CampaignForm => ({
@@ -43,7 +47,36 @@ const emptyForm = (): CampaignForm => ({
   barAssociationKey: '',
   appliesToNewPurchase: true,
   appliesToRenewal: true,
+  packageEligibility: 'all',
 })
+
+/** null / empty / both monthly+annual → Tüm paketler. */
+function packageEligibilityFromCampaign(
+  types: BhCampaign['eligibleProductTypes'],
+): PackageEligibility {
+  if (types == null || !Array.isArray(types) || types.length === 0) return 'all'
+  const normalized = [
+    ...new Set(types.map((t) => String(t || '').toLowerCase()).filter(Boolean)),
+  ]
+  const hasMonthly = normalized.includes('monthly')
+  const hasAnnual = normalized.includes('annual')
+  if (hasMonthly && !hasAnnual) return 'monthly'
+  if (hasAnnual && !hasMonthly) return 'annual'
+  return 'all'
+}
+
+function packageEligibilityToApi(scope: PackageEligibility): {
+  eligibleProductTypes: string[] | null
+  eligiblePeriods: number[] | null
+} {
+  if (scope === 'monthly') {
+    return { eligibleProductTypes: ['monthly'], eligiblePeriods: null }
+  }
+  if (scope === 'annual') {
+    return { eligibleProductTypes: ['annual'], eligiblePeriods: null }
+  }
+  return { eligibleProductTypes: null, eligiblePeriods: null }
+}
 
 function toDatetimeLocal(value?: string | null): string {
   if (!value) return ''
@@ -65,11 +98,13 @@ function campaignToForm(c: BhCampaign): CampaignForm {
     barAssociationKey: String(c.barAssociationKey || ''),
     appliesToNewPurchase: c.appliesToNewPurchase !== false,
     appliesToRenewal: Boolean(c.appliesToRenewal),
+    packageEligibility: packageEligibilityFromCampaign(c.eligibleProductTypes),
   }
 }
 
 function formToPayload(form: CampaignForm, mode: 'create' | 'edit') {
   const discountRate = Number.parseInt(form.discountRate, 10)
+  const eligibility = packageEligibilityToApi(form.packageEligibility)
   const payload: Record<string, unknown> = {
     name: form.name.trim(),
     discountRate,
@@ -80,6 +115,8 @@ function formToPayload(form: CampaignForm, mode: 'create' | 'edit') {
     startsAt: form.startsAt ? new Date(form.startsAt).toISOString() : null,
     expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
     usageLimit: form.usageLimit.trim() ? Number.parseInt(form.usageLimit, 10) : null,
+    eligibleProductTypes: eligibility.eligibleProductTypes,
+    eligiblePeriods: eligibility.eligiblePeriods,
   }
   if (form.campaignType === 'BAR_ASSOCIATION') {
     payload.barAssociationKey = form.barAssociationKey.trim()
@@ -323,6 +360,27 @@ export function AdminBhCampaignsPage() {
             value={form.expiresAt}
             onChange={(e) => setForm((f) => ({ ...f, expiresAt: e.target.value }))}
           />
+          <label className="block text-sm sm:col-span-2">
+            <span className="mb-1 block text-slate-600">Paket uygunluğu</span>
+            <select
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+              value={form.packageEligibility}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  packageEligibility: e.target.value as PackageEligibility,
+                }))
+              }
+            >
+              <option value="all">Tüm paketler</option>
+              <option value="monthly">Aylık</option>
+              <option value="annual">Yıllık</option>
+            </select>
+            <span className="mt-1 block text-xs text-slate-500">
+              Tüm paketler: aylık ve yıllık indirimli. Aylık / Yıllık: yalnız seçilen paket
+              indirimli.
+            </span>
+          </label>
           <label className="block text-sm">
             <span className="mb-1 block text-slate-600">Kampanya türü</span>
             <select
