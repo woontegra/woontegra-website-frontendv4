@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { bilirkisiHesapService } from '@/services/bilirkisiHesapService'
 import { getErrorMessage } from '@/api/client'
-import { BILIRKISI_HESAP_PANEL_URL } from '@/data/canonicalSoftwareProducts'
+import { BILIRKISI_HESAP_CHECKOUT_PATH, BILIRKISI_HESAP_PANEL_URL } from '@/data/canonicalSoftwareProducts'
 import {
   BH_DEMO_EXPERTISE_AREAS,
   BH_DEMO_PROFESSION_GROUPS,
@@ -261,12 +261,14 @@ export function BilirkisiDemoRequestModal({ open, onClose }: Props) {
   const [form, setForm] = useState<FormState>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [demoAlreadyUsed, setDemoAlreadyUsed] = useState(false)
   const [success, setSuccess] = useState(false)
   const [panelLoginUrl, setPanelLoginUrl] = useState(BILIRKISI_HESAP_PANEL_URL)
 
   useEffect(() => {
     if (!open) return
     setError(null)
+    setDemoAlreadyUsed(false)
     setSuccess(false)
     setForm(emptyForm())
     bilirkisiHesapService
@@ -296,6 +298,7 @@ export function BilirkisiDemoRequestModal({ open, onClose }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setDemoAlreadyUsed(false)
     if (!form.fullName.trim()) {
       setError('Ad soyad zorunludur.')
       return
@@ -337,7 +340,18 @@ export function BilirkisiDemoRequestModal({ open, onClose }: Props) {
       })
       setSuccess(true)
     } catch (err) {
-      setError(getErrorMessage(err, 'Demo talebi gönderilemedi.'))
+      const code = err && typeof err === 'object' && 'code' in err ? String((err as { code?: string }).code) : ''
+      if (code === 'DEMO_ALREADY_USED') {
+        setDemoAlreadyUsed(true)
+        setError(
+          getErrorMessage(
+            err,
+            'Bu e-posta adresi veya telefon numarasıyla daha önce 7 günlük demo kullanılmış. Demo hakkı yalnızca bir kez kullanılabilir. Mevcut hesabınıza giriş yapabilir veya abonelik satın alarak kullanmaya devam edebilirsiniz.',
+          ),
+        )
+      } else {
+        setError(getErrorMessage(err, 'Demo talebi gönderilemedi.'))
+      }
     } finally {
       setSubmitting(false)
     }
@@ -422,6 +436,40 @@ export function BilirkisiDemoRequestModal({ open, onClose }: Props) {
             </p>
             <Button type="button" className="w-full" onClick={onClose}>
               Tamam
+            </Button>
+          </div>
+        ) : demoAlreadyUsed ? (
+          <div className="space-y-4 overflow-y-auto px-5 py-6 md:px-6" data-testid="bh-demo-already-used">
+            <div
+              className="flex gap-3 rounded-xl border border-amber-200/80 bg-amber-50 px-3.5 py-3 text-sm leading-relaxed text-amber-950"
+              role="status"
+            >
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden />
+              <p>
+                {error ||
+                  'Bu e-posta adresi veya telefon numarasıyla daha önce 7 günlük demo kullanılmış. Demo hakkı yalnızca bir kez kullanılabilir. Mevcut hesabınıza giriş yapabilir veya abonelik satın alarak kullanmaya devam edebilirsiniz.'}
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <a
+                href={panelLoginUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-10 flex-1 items-center justify-center rounded-xl bg-sky-600 px-4 text-sm font-semibold text-white transition hover:bg-sky-700"
+                data-testid="bh-demo-cta-panel"
+              >
+                Panele Giriş
+              </a>
+              <a
+                href={BILIRKISI_HESAP_CHECKOUT_PATH}
+                className="inline-flex h-10 flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                data-testid="bh-demo-cta-purchase"
+              >
+                Abonelik Satın Al
+              </a>
+            </div>
+            <Button type="button" variant="ghost" className="w-full" onClick={onClose}>
+              Kapat
             </Button>
           </div>
         ) : (

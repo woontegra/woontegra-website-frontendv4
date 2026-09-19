@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { publicApi, getErrorMessage } from '@/api/client'
 import { customerAuthHeaders } from '@/lib/customerAuth'
 
@@ -104,12 +105,38 @@ export const bilirkisiHesapService = {
     isExpertWitness: boolean
     expertiseAreas?: Array<{ code: string; name: string }>
   }): Promise<{ success: boolean; message?: string }> {
-    const { data } = await publicApi.post<{ success: boolean; message?: string; error?: string }>(
-      '/bh/demo/request',
-      input,
-    )
-    if (!data.success) throw new Error(data.error || data.message || 'Demo talebi başarısız.')
-    return data
+    try {
+      const { data } = await publicApi.post<{
+        success: boolean
+        message?: string
+        error?: string
+        code?: string
+      }>('/bh/demo/request', input)
+      if (!data.success) {
+        const err = new Error(data.error || data.message || 'Demo talebi başarısız.') as Error & {
+          code?: string
+        }
+        if (data.code) err.code = data.code
+        throw err
+      }
+      return data
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        const payload = e.response?.data as
+          | { code?: string; error?: string; message?: string }
+          | undefined
+        if (payload?.code === 'DEMO_ALREADY_USED') {
+          const msg =
+            payload.error ||
+            payload.message ||
+            'Bu e-posta adresi veya telefon numarasıyla daha önce 7 günlük demo kullanılmış. Demo hakkı yalnızca bir kez kullanılabilir. Mevcut hesabınıza giriş yapabilir veya abonelik satın alarak kullanmaya devam edebilirsiniz.'
+          const err = new Error(msg) as Error & { code: string }
+          err.code = 'DEMO_ALREADY_USED'
+          throw err
+        }
+      }
+      throw e
+    }
   },
 
   async getCampaign(code: string) {
