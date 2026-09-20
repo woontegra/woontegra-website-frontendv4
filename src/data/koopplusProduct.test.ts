@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
+  getKoopPlusWindowsTrialDownload,
   isKoopPlusMacCheckoutReady,
   isKoopPlusWindowsCheckoutReady,
   isKoopPlusWindowsDownloadReady,
@@ -11,8 +12,10 @@ import {
   KOOPPLUS_PATH,
   KOOPPLUS_PRICE_AMOUNT,
   KOOPPLUS_SLUG,
+  KOOPPLUS_TRIAL,
   KOOPPLUS_WINDOWS_CHECKOUT_PATH,
   KOOPPLUS_WINDOWS_DOWNLOAD_URL,
+  KOOPPLUS_WINDOWS_SETUP_FILENAME,
 } from '@/data/koopplusProduct'
 import { CANONICAL_SOFTWARE_NAV } from '@/data/canonicalSoftwareProducts'
 import { SOFTWARE_SHOWCASE_ITEMS, isSoftwareNavItem } from '@/data/softwareShowcase'
@@ -26,12 +29,10 @@ describe('KoopPlus website catalog', () => {
     expect(CANONICAL_SOFTWARE_NAV.some((item) => item.slug === KOOPPLUS_SLUG && item.path === KOOPPLUS_PATH)).toBe(true)
   })
 
-  it('does not invent a price, checkout endpoint, or installer URL', () => {
+  it('does not invent a catalog price or checkout endpoint', () => {
     expect(KOOPPLUS_PRICE_AMOUNT).toBeNull()
     expect(KOOPPLUS_WINDOWS_CHECKOUT_PATH).toBeNull()
-    expect(KOOPPLUS_WINDOWS_DOWNLOAD_URL).toBeNull()
     expect(isKoopPlusWindowsCheckoutReady()).toBe(false)
-    expect(isKoopPlusWindowsDownloadReady()).toBe(false)
   })
 
   it('keeps the official KoopPlus icon in public + Vite build output', () => {
@@ -44,10 +45,30 @@ describe('KoopPlus website catalog', () => {
     }
   })
 
-  it('reserves Windows artifacts for R2 without a live download URL', () => {
+  it('points the trial CTA at the recorded KoopPlus Setup EXE, not the update feed', () => {
     expect(KOOPPLUS_DISTRIBUTION.windows.artifacts).toBe('r2')
-    expect(KOOPPLUS_DISTRIBUTION.windows.downloadUrl).toBeNull()
     expect(KOOPPLUS_DISTRIBUTION.windows.checkoutPath).toBeNull()
+    expect(KOOPPLUS_WINDOWS_SETUP_FILENAME).toBe('KoopPlus-Setup-1.0.0.exe')
+    expect(KOOPPLUS_WINDOWS_DOWNLOAD_URL).toBe(
+      'https://pub-57d992373eaf4ebd92cd37366668fafd.r2.dev/windows/KoopPlus-Setup-1.0.0.exe',
+    )
+    expect(isKoopPlusWindowsDownloadReady()).toBe(true)
+    const trial = getKoopPlusWindowsTrialDownload()
+    expect(trial?.filename).toBe('KoopPlus-Setup-1.0.0.exe')
+    expect(trial?.href).toBe(KOOPPLUS_WINDOWS_DOWNLOAD_URL)
+    expect(trial?.href.endsWith('/windows/KoopPlus-Setup-1.0.0.exe')).toBe(true)
+    expect(trial?.href.includes('latest.yml')).toBe(false)
+    expect(trial?.href.includes('.blockmap')).toBe(false)
+    expect(trial?.href.includes('/updates/koopplus-aidat-takip/')).toBe(false)
+  })
+
+  it('keeps trial copy on installer + in-app LicenseGate, not website signup', () => {
+    expect(KOOPPLUS_TRIAL.title).toBe('7 Gün Ücretsiz Deneyin')
+    expect(KOOPPLUS_TRIAL.intro).toContain('Windows bilgisayarınıza indirip')
+    expect(KOOPPLUS_TRIAL.points[0]).toContain('uygulama içinde başlatılır')
+    expect(KOOPPLUS_TRIAL.footnote).toContain('demo hesabı oluşturmanız gerekmez')
+    expect(KOOPPLUS_TRIAL.downloadCta).toBe('Windows için Ücretsiz İndir')
+    expect(KOOPPLUS_TRIAL.downloadHint).toContain('uygulama içinden başlatabilirsiniz')
   })
 
   it('keeps macOS sales behind a manual flag', () => {
@@ -101,5 +122,17 @@ describe('KoopPlus website catalog', () => {
     expect(software?.children.some((child) => child.href === '/yazilimlar/bilirkisi-hesap')).toBe(true)
     expect(software?.children.some((child) => child.href === '/yazilimlar/muvekkil-kasa-defteri')).toBe(true)
     expect(software?.children.some((child) => child.href === '/yazilimlar/sifre-kasasi')).toBe(true)
+  })
+
+  it('renders a Windows trial download CTA instead of navigating to a coming-soon notice', () => {
+    const root = join(dirname(fileURLToPath(import.meta.url)), '../..')
+    const view = join(root, 'src/components/public/koopplus/KoopPlusProductView.tsx')
+    const src = readFileSync(view, 'utf8')
+    expect(src).toContain('KoopPlusWindowsTrialDownloadLink')
+    expect(src).toContain('getKoopPlusWindowsTrialDownload')
+    expect(src).toContain('download={trialDownload.filename}')
+    expect(src).toContain('target="_blank"')
+    expect(src).toContain('rel="noopener noreferrer"')
+    expect(src).not.toMatch(/window\.location\.assign\(url\)/)
   })
 })

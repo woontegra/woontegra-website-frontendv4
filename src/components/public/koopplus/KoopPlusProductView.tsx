@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Monitor, MonitorSmartphone } from 'lucide-react'
+import { ArrowRight, Download, Monitor, MonitorSmartphone } from 'lucide-react'
 import { Breadcrumbs } from '@/components/public/Breadcrumbs'
 import { DesktopLicenseRenewalPanel } from '@/components/public/product/DesktopLicenseRenewalPanel'
 import {
+  getKoopPlusWindowsTrialDownload,
   isKoopPlusMacCheckoutReady,
   KOOPPLUS_BRAND_ICON,
   KOOPPLUS_FAQ,
@@ -19,7 +20,6 @@ import {
   KOOPPLUS_TAGLINE,
   KOOPPLUS_TRIAL,
   KOOPPLUS_WHY,
-  KOOPPLUS_WINDOWS_DOWNLOAD_URL,
 } from '@/data/koopplusProduct'
 import { trackKoopplusEvent } from '@/integrations/trackingEvents'
 import { addToCart } from '@/lib/cartStorage'
@@ -34,6 +34,35 @@ const SALES_PREP_NOTICE = 'Satışa hazırlanıyor. Windows satın alma henüz a
 const DOWNLOAD_NOTICE = 'Windows indirme bağlantısı yakında açılacaktır.'
 const PLATFORM_SECTION_ID = 'koopplus-satin-al'
 const TRIAL_SECTION_ID = 'koopplus-deneme'
+const trialDownload = getKoopPlusWindowsTrialDownload()
+
+function KoopPlusWindowsTrialDownloadLink({
+  className,
+  wrapClassName,
+  showHint = false,
+}: {
+  className: string
+  wrapClassName?: string
+  showHint?: boolean
+}) {
+  if (!trialDownload) return null
+  return (
+    <div className={wrapClassName}>
+      <a
+        href={trialDownload.href}
+        download={trialDownload.filename}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => trackKoopplusEvent('koopplus_trial_click')}
+        className={className}
+      >
+        <Download className="mr-2 h-4 w-4" aria-hidden />
+        {KOOPPLUS_TRIAL.downloadCta}
+      </a>
+      {showHint ? <p className="mt-3 text-sm text-slate-500">{KOOPPLUS_TRIAL.downloadHint}</p> : null}
+    </div>
+  )
+}
 
 type Props = {
   product?: PublicProductDetail | null
@@ -119,10 +148,9 @@ export function KoopPlusProductView({
 
   const handleTrial = () => {
     trackKoopplusEvent('koopplus_trial_click')
-    const url = KOOPPLUS_WINDOWS_DOWNLOAD_URL?.trim()
-    if (url) {
+    if (trialDownload) {
       setDownloadNotice(null)
-      window.location.assign(url)
+      scrollToId(TRIAL_SECTION_ID)
       return
     }
     setDownloadNotice(DOWNLOAD_NOTICE)
@@ -185,7 +213,7 @@ export function KoopPlusProductView({
                   {windowsNotice}
                 </p>
               ) : null}
-              {downloadNotice ? (
+              {downloadNotice && !trialDownload ? (
                 <p className="mt-3 text-sm text-amber-200" role="status">
                   {downloadNotice}
                 </p>
@@ -251,20 +279,27 @@ export function KoopPlusProductView({
                   {windowsReady ? 'Windows için Satın Al' : 'Satışa hazırlanıyor'}
                   {windowsReady ? <ArrowRight className="ml-2 h-4 w-4" aria-hidden /> : null}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleTrial}
-                  className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                >
-                  7 Gün Ücretsiz Dene
-                </button>
+                {trialDownload ? (
+                  <KoopPlusWindowsTrialDownloadLink
+                    wrapClassName="flex-1"
+                    className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleTrial}
+                    className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    7 Gün Ücretsiz Dene
+                  </button>
+                )}
               </div>
               {windowsNotice ? (
                 <p className="mt-3 text-sm text-amber-800" role="status">
                   {windowsNotice}
                 </p>
               ) : null}
-              {downloadNotice ? (
+              {downloadNotice && !trialDownload ? (
                 <p className="mt-3 text-sm text-amber-800" role="status">
                   {downloadNotice}
                 </p>
@@ -329,10 +364,15 @@ export function KoopPlusProductView({
               </li>
             ))}
           </ul>
-          <p className="mt-6 text-sm text-slate-500">
-            Deneme kaydı web sitesinden oluşturulmaz; 7 günlük süre masaüstü uygulamada başlar.
-          </p>
-          {downloadNotice ? (
+          <p className="mt-6 max-w-3xl text-sm text-slate-500">{KOOPPLUS_TRIAL.footnote}</p>
+          {trialDownload ? (
+            <div className="mt-8 max-w-xl">
+              <KoopPlusWindowsTrialDownloadLink
+                showHint
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:w-auto"
+              />
+            </div>
+          ) : downloadNotice ? (
             <p className="mt-3 text-sm text-amber-800" role="status">
               {downloadNotice}
             </p>

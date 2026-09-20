@@ -60,6 +60,13 @@ describe('KoopPlus catalog from Product API', () => {
     expect(KOOPPLUS_WINDOWS_CHECKOUT_PATH).toBeNull()
   })
 
+  it('does not expose an installer URL on the public product fixture mapping', () => {
+    const product = normalizePublicDetail({ ...KOOPPLUS_API_FIXTURE, purchaseEnabled: true })
+    expect(product && 'downloadUrl' in product).toBe(false)
+    expect(JSON.stringify(mapKoopPlusCatalogOffer(product))).not.toContain('KoopPlus-Setup')
+    expect(JSON.stringify(mapKoopPlusCatalogOffer(product))).not.toContain('r2.dev')
+  })
+
   it('blocks Windows checkout when purchaseEnabled=false', () => {
     const product = normalizePublicDetail(KOOPPLUS_API_FIXTURE)
     expect(resolveKoopPlusWindowsBuyAction(product)).toEqual({

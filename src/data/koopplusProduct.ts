@@ -22,12 +22,16 @@ export const KOOPPLUS_TAGLINE = 'Kooperatif Yönetim Sistemi'
 /** Özel checkout route yok. Satış açılınca generic addToCart(productId) → /sepet. */
 export const KOOPPLUS_WINDOWS_CHECKOUT_PATH: string | null = null
 
+/** Satış teslimatı ve 7 günlük deneme aynı Setup EXE’yi kullanır. */
+export const KOOPPLUS_WINDOWS_SETUP_FILENAME = 'KoopPlus-Setup-1.0.0.exe'
+
 /**
- * Windows installer public URL — Cloudflare R2 (ileride).
- * Vercel public, GitHub Release veya lisans sunucusu kullanılmaz.
- * Gerçek R2 URL’si bağlanana kadar null; r2.dev / custom domain uydurulmaz.
+ * KoopPlus trial CTA için public installer URL.
+ * Product downloadFiles kaydındaki satış Setup EXE’sidir (koopplus-download /windows/…).
+ * Product API / cart-preview’a konmaz; update feed / latest.yml / blockmap değildir.
  */
-export const KOOPPLUS_WINDOWS_DOWNLOAD_URL: string | null = null
+export const KOOPPLUS_WINDOWS_DOWNLOAD_URL =
+  'https://pub-57d992373eaf4ebd92cd37366668fafd.r2.dev/windows/KoopPlus-Setup-1.0.0.exe'
 
 /**
  * macOS satış anahtarı. D-U-N-S/onay tamamlanmadan true yapılmamalı.
@@ -83,12 +87,17 @@ export const KOOPPLUS_HERO = {
 
 export const KOOPPLUS_TRIAL = {
   title: '7 Gün Ücretsiz Deneyin',
-  intro: 'KoopPlus’ı masaüstü uygulamada 7 gün ücretsiz deneyebilirsiniz.',
+  intro: 'KoopPlus’ı Windows bilgisayarınıza indirip 7 gün ücretsiz deneyebilirsiniz.',
   points: [
-    'Deneme süresi 7 gündür ve masaüstü uygulamada başlatılır.',
+    'Deneme süresi 7 gündür ve uygulama içinde başlatılır.',
     'Demo sonunda verileriniz silinmez.',
     'Lisans etkinleştirildiğinde aynı verilerle çalışmaya devam edilir.',
   ],
+  footnote:
+    'Web sitesinde demo hesabı oluşturmanız gerekmez. KoopPlus’ı indirip kurduktan sonra ücretsiz denemenizi başlatabilirsiniz.',
+  downloadCta: 'Windows için Ücretsiz İndir',
+  downloadHint:
+    'KoopPlus’ı indirip kurduktan sonra 7 günlük ücretsiz denemenizi uygulama içinden başlatabilirsiniz.',
 } as const
 
 export type KoopPlusFeature = {
@@ -233,8 +242,28 @@ export function isKoopPlusWindowsCheckoutReady(): boolean {
   return Boolean(KOOPPLUS_WINDOWS_CHECKOUT_PATH?.trim())
 }
 
+export type KoopPlusWindowsTrialDownload = {
+  href: string
+  filename: typeof KOOPPLUS_WINDOWS_SETUP_FILENAME
+}
+
+function isSalesSetupInstallerUrl(url: string): boolean {
+  if (!url.endsWith(`/${KOOPPLUS_WINDOWS_SETUP_FILENAME}`) && !url.endsWith(KOOPPLUS_WINDOWS_SETUP_FILENAME)) {
+    return false
+  }
+  if (/latest\.yml|\.blockmap|\/updates\/koopplus-aidat-takip\//i.test(url)) return false
+  return true
+}
+
+/** Trial CTA yalnız kayıtlardaki Setup EXE’yi kullanır; update feed teslimat sayılmaz. */
+export function getKoopPlusWindowsTrialDownload(): KoopPlusWindowsTrialDownload | null {
+  const href = KOOPPLUS_WINDOWS_DOWNLOAD_URL.trim()
+  if (!href || !isSalesSetupInstallerUrl(href)) return null
+  return { href, filename: KOOPPLUS_WINDOWS_SETUP_FILENAME }
+}
+
 export function isKoopPlusWindowsDownloadReady(): boolean {
-  return Boolean(KOOPPLUS_WINDOWS_DOWNLOAD_URL?.trim())
+  return getKoopPlusWindowsTrialDownload() != null
 }
 
 export function isKoopPlusMacCheckoutReady(): boolean {
