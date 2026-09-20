@@ -134,5 +134,6 @@ describe('KoopPlus website catalog', () => {
     expect(src).toContain('target="_blank"')
     expect(src).toContain('rel="noopener noreferrer"')
     expect(src).not.toMatch(/window\.location\.assign\(url\)/)
+    expect(src).not.toContain('Windows indirme bağlantısı yakında açılacaktır.')
   })
 })

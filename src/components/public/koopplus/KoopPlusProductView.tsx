@@ -31,7 +31,6 @@ import { buildCartSnapshot } from '@/utils/productPurchase'
 
 const SHELL = 'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'
 const SALES_PREP_NOTICE = 'Satışa hazırlanıyor. Windows satın alma henüz açılmamıştır.'
-const DOWNLOAD_NOTICE = 'Windows indirme bağlantısı yakında açılacaktır.'
 const PLATFORM_SECTION_ID = 'koopplus-satin-al'
 const TRIAL_SECTION_ID = 'koopplus-deneme'
 const trialDownload = getKoopPlusWindowsTrialDownload()
@@ -110,7 +109,6 @@ export function KoopPlusProductView({
 }: Props) {
   const navigate = useNavigate()
   const [windowsNotice, setWindowsNotice] = useState<string | null>(null)
-  const [downloadNotice, setDownloadNotice] = useState<string | null>(null)
   const [openFaq, setOpenFaq] = useState<string | null>(KOOPPLUS_FAQ[0]?.question ?? null)
   const offer = useMemo(() => mapKoopPlusCatalogOffer(product), [product])
   const buyAction = useMemo(() => resolveKoopPlusWindowsBuyAction(product), [product])
@@ -148,12 +146,6 @@ export function KoopPlusProductView({
 
   const handleTrial = () => {
     trackKoopplusEvent('koopplus_trial_click')
-    if (trialDownload) {
-      setDownloadNotice(null)
-      scrollToId(TRIAL_SECTION_ID)
-      return
-    }
-    setDownloadNotice(DOWNLOAD_NOTICE)
     scrollToId(TRIAL_SECTION_ID)
   }
 
@@ -211,11 +203,6 @@ export function KoopPlusProductView({
               {windowsNotice ? (
                 <p className="mt-3 text-sm text-amber-200" role="status">
                   {windowsNotice}
-                </p>
-              ) : null}
-              {downloadNotice && !trialDownload ? (
-                <p className="mt-3 text-sm text-amber-200" role="status">
-                  {downloadNotice}
                 </p>
               ) : null}
             </div>
@@ -299,11 +286,6 @@ export function KoopPlusProductView({
                   {windowsNotice}
                 </p>
               ) : null}
-              {downloadNotice && !trialDownload ? (
-                <p className="mt-3 text-sm text-amber-800" role="status">
-                  {downloadNotice}
-                </p>
-              ) : null}
             </article>
 
             <article className="rounded-2xl border border-slate-200 bg-white p-6">
@@ -372,10 +354,6 @@ export function KoopPlusProductView({
                 className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:w-auto"
               />
             </div>
-          ) : downloadNotice ? (
-            <p className="mt-3 text-sm text-amber-800" role="status">
-              {downloadNotice}
-            </p>
           ) : null}
         </div>
       </section>
