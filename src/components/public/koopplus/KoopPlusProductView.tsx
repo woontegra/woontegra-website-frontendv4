@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, Download, Monitor, MonitorSmartphone } from 'lucide-react'
+import { ArrowRight, CalendarDays, Download, FolderSync, Monitor, MonitorSmartphone, ShieldCheck } from 'lucide-react'
 import { Breadcrumbs } from '@/components/public/Breadcrumbs'
 import { DesktopLicenseRenewalPanel } from '@/components/public/product/DesktopLicenseRenewalPanel'
 import {
@@ -23,6 +23,8 @@ import {
 } from '@/data/koopplusProduct'
 import { trackKoopplusEvent } from '@/integrations/trackingEvents'
 import { addToCart } from '@/lib/cartStorage'
+import { ProductScreenshotCarousel } from '@/components/public/product/ProductScreenshotCarousel'
+import { koopPlusScreenshotEntries } from '@/lib/productScreenshots'
 import { cn } from '@/lib/cn'
 import { mapKoopPlusCatalogOffer, resolveKoopPlusWindowsBuyAction } from '@/lib/koopplusCatalog'
 import { isDesktopLicenseRenewalContext, type DesktopLicenseRenewalView } from '@/lib/desktopLicenseRenewal'
@@ -35,14 +37,16 @@ const PLATFORM_SECTION_ID = 'koopplus-satin-al'
 const TRIAL_SECTION_ID = 'koopplus-deneme'
 const trialDownload = getKoopPlusWindowsTrialDownload()
 
+const TRIAL_HIGHLIGHT_ICONS = [CalendarDays, ShieldCheck, FolderSync] as const
+
 function KoopPlusWindowsTrialDownloadLink({
   className,
   wrapClassName,
-  showHint = false,
+  iconClassName = 'mr-2 h-4 w-4',
 }: {
   className: string
   wrapClassName?: string
-  showHint?: boolean
+  iconClassName?: string
 }) {
   if (!trialDownload) return null
   return (
@@ -55,10 +59,9 @@ function KoopPlusWindowsTrialDownloadLink({
         onClick={() => trackKoopplusEvent('koopplus_trial_click')}
         className={className}
       >
-        <Download className="mr-2 h-4 w-4" aria-hidden />
+        <Download className={iconClassName} aria-hidden />
         {KOOPPLUS_TRIAL.downloadCta}
       </a>
-      {showHint ? <p className="mt-3 text-sm text-slate-500">{KOOPPLUS_TRIAL.downloadHint}</p> : null}
     </div>
   )
 }
@@ -74,7 +77,12 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-function KoopPlusHeroVisual() {
+function KoopPlusHeroVisual({ product }: { product: PublicProductDetail | null }) {
+  const screenshots = koopPlusScreenshotEntries(product?.galleryImages)
+  if (screenshots.length > 0) {
+    return <ProductScreenshotCarousel images={screenshots} productName={KOOPPLUS_NAME} />
+  }
+
   if (KOOPPLUS_HERO_IMAGE) {
     return (
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-2xl shadow-emerald-950/40">
@@ -94,9 +102,6 @@ function KoopPlusHeroVisual() {
       </span>
       <p className="mt-4 text-lg font-semibold text-white">{KOOPPLUS_NAME}</p>
       <p className="mt-1 text-sm text-emerald-200">{KOOPPLUS_TAGLINE}</p>
-      <p className="mt-3 max-w-sm text-sm leading-relaxed text-slate-400">
-        Ürün ekran görüntüsü yakında eklenecek.
-      </p>
     </div>
   )
 }
@@ -206,7 +211,7 @@ export function KoopPlusProductView({
                 </p>
               ) : null}
             </div>
-            <KoopPlusHeroVisual />
+            <KoopPlusHeroVisual product={product} />
           </div>
         </div>
       </section>
@@ -334,27 +339,55 @@ export function KoopPlusProductView({
         </div>
       </section>
 
-      <section id={TRIAL_SECTION_ID} className="scroll-mt-24 border-b border-slate-200 bg-emerald-50/60 py-16 sm:py-20">
-        <div className={SHELL}>
-          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Ücretsiz deneme</p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{KOOPPLUS_TRIAL.title}</h2>
-          <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">{KOOPPLUS_TRIAL.intro}</p>
-          <ul className="mt-8 grid gap-4 md:grid-cols-3">
-            {KOOPPLUS_TRIAL.points.map((point) => (
-              <li key={point} className="rounded-2xl border border-emerald-100 bg-white p-5 text-sm leading-relaxed text-slate-700">
-                {point}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-6 max-w-3xl text-sm text-slate-500">{KOOPPLUS_TRIAL.footnote}</p>
-          {trialDownload ? (
-            <div className="mt-8 max-w-xl">
-              <KoopPlusWindowsTrialDownloadLink
-                showHint
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-emerald-600 px-6 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:w-auto"
-              />
+      <section
+        id={TRIAL_SECTION_ID}
+        className="relative scroll-mt-24 overflow-hidden border-y border-slate-800 bg-gradient-to-br from-slate-950 via-[#0f2744] to-slate-900 py-10 sm:py-12 lg:py-14"
+      >
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.18),transparent_42%),radial-gradient(circle_at_88%_80%,rgba(56,189,248,0.10),transparent_36%)]" />
+        <div className={`relative ${SHELL}`}>
+          <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-white/5 px-5 py-8 shadow-2xl shadow-emerald-950/40 sm:px-8 sm:py-10 lg:px-10 lg:py-11">
+            <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
+            <div className="relative mx-auto max-w-2xl text-center">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
+                {KOOPPLUS_TRIAL.eyebrow}
+              </p>
+              <h2 className="mt-3 text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl lg:text-[2.45rem] lg:leading-[1.15]">
+                <span className="text-emerald-300">7 Gün</span>
+                {KOOPPLUS_TRIAL.title.replace(/^7 Gün/, '')}
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300 sm:text-lg">{KOOPPLUS_TRIAL.intro}</p>
             </div>
-          ) : null}
+
+            <ul className="relative mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {KOOPPLUS_TRIAL.highlights.map((item, index) => {
+                const Icon = TRIAL_HIGHLIGHT_ICONS[index] ?? ShieldCheck
+                return (
+                  <li
+                    key={item.title}
+                    className="rounded-2xl border border-white/10 bg-slate-950/55 p-5 shadow-lg shadow-black/20 transition hover:border-emerald-400/35 hover:bg-slate-950/75"
+                  >
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-300">
+                      <Icon className="h-5 w-5" aria-hidden />
+                    </span>
+                    <p className="mt-4 text-base font-semibold text-white">{item.title}</p>
+                    <p className="mt-1.5 text-sm leading-relaxed text-slate-300">{item.description}</p>
+                  </li>
+                )
+              })}
+            </ul>
+
+            {trialDownload ? (
+              <div className="relative mt-8 flex flex-col items-center text-center">
+                <KoopPlusWindowsTrialDownloadLink
+                  iconClassName="mr-2.5 h-5 w-5"
+                  wrapClassName="w-full sm:w-auto"
+                  className="inline-flex min-h-14 w-full items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-sky-400 px-8 text-base font-bold text-slate-950 shadow-lg shadow-emerald-500/25 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:brightness-95 sm:min-w-[20rem]"
+                />
+                <p className="mt-4 text-sm font-medium text-slate-200">{KOOPPLUS_TRIAL.trustLine}</p>
+                <p className="mt-1.5 text-sm text-slate-400">{KOOPPLUS_TRIAL.downloadHint}</p>
+              </div>
+            ) : null}
+          </div>
         </div>
       </section>
 

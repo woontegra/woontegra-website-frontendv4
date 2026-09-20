@@ -87,11 +87,17 @@ describe('KoopPlus website catalog', () => {
 
   it('keeps trial copy on installer + in-app LicenseGate, not website signup', () => {
     expect(KOOPPLUS_TRIAL.title).toBe('7 Gün Ücretsiz Deneyin')
-    expect(KOOPPLUS_TRIAL.intro).toContain('Windows bilgisayarınıza indirip')
-    expect(KOOPPLUS_TRIAL.points[0]).toContain('uygulama içinde başlatılır')
-    expect(KOOPPLUS_TRIAL.footnote).toContain('demo hesabı oluşturmanız gerekmez')
+    expect(KOOPPLUS_TRIAL.eyebrow).toBe('Ücretsiz Deneyin')
+    expect(KOOPPLUS_TRIAL.intro).toBe(
+      'KoopPlus’ı Windows bilgisayarınıza indirip 7 gün boyunca tüm özellikleriyle deneyin.',
+    )
+    expect(KOOPPLUS_TRIAL.highlights).toHaveLength(3)
+    expect(KOOPPLUS_TRIAL.highlights[0].title).toBe('7 Gün Ücretsiz')
+    expect(KOOPPLUS_TRIAL.highlights[1].title).toBe('Verileriniz Güvende')
+    expect(KOOPPLUS_TRIAL.highlights[2].title).toBe('Kaldığınız Yerden Devam Edin')
     expect(KOOPPLUS_TRIAL.downloadCta).toBe('Windows için Ücretsiz İndir')
-    expect(KOOPPLUS_TRIAL.downloadHint).toContain('uygulama içinden başlatabilirsiniz')
+    expect(KOOPPLUS_TRIAL.trustLine).toContain('Kredi kartı gerekmez')
+    expect(KOOPPLUS_TRIAL.downloadHint).toBe('Denemeniz uygulama içinde başlar.')
   })
 
   it('keeps macOS sales behind a manual flag', () => {
@@ -158,5 +164,15 @@ describe('KoopPlus website catalog', () => {
     expect(src).toContain('rel="noopener noreferrer"')
     expect(src).not.toMatch(/window\.location\.assign\(url\)/)
     expect(src).not.toContain('Windows indirme bağlantısı yakında açılacaktır.')
+  })
+
+  it('uses Product galleryImages for the hero screenshot carousel, not a coming-soon placeholder', () => {
+    const root = join(dirname(fileURLToPath(import.meta.url)), '../..')
+    const view = join(root, 'src/components/public/koopplus/KoopPlusProductView.tsx')
+    const src = readFileSync(view, 'utf8')
+    expect(src).toContain('ProductScreenshotCarousel')
+    expect(src).toContain('koopPlusScreenshotEntries(product?.galleryImages)')
+    expect(src).not.toContain('Ürün ekran görüntüsü yakında eklenecek.')
+    expect(src).toContain('download={trialDownload.filename}')
   })
 })

@@ -96,18 +96,26 @@ export const KOOPPLUS_HERO = {
 } as const
 
 export const KOOPPLUS_TRIAL = {
+  eyebrow: 'Ücretsiz Deneyin',
   title: '7 Gün Ücretsiz Deneyin',
-  intro: 'KoopPlus’ı Windows bilgisayarınıza indirip 7 gün ücretsiz deneyebilirsiniz.',
-  points: [
-    'Deneme süresi 7 gündür ve uygulama içinde başlatılır.',
-    'Demo sonunda verileriniz silinmez.',
-    'Lisans etkinleştirildiğinde aynı verilerle çalışmaya devam edilir.',
+  intro: 'KoopPlus’ı Windows bilgisayarınıza indirip 7 gün boyunca tüm özellikleriyle deneyin.',
+  highlights: [
+    {
+      title: '7 Gün Ücretsiz',
+      description: 'Deneme süreniz uygulamayı etkinleştirdiğinizde başlar.',
+    },
+    {
+      title: 'Verileriniz Güvende',
+      description: 'Deneme süresi sona erdiğinde kayıtlarınız silinmez.',
+    },
+    {
+      title: 'Kaldığınız Yerden Devam Edin',
+      description: 'Lisansınızı etkinleştirdiğinizde aynı verilerle çalışmaya devam edersiniz.',
+    },
   ],
-  footnote:
-    'Web sitesinde demo hesabı oluşturmanız gerekmez. KoopPlus’ı indirip kurduktan sonra ücretsiz denemenizi başlatabilirsiniz.',
   downloadCta: 'Windows için Ücretsiz İndir',
-  downloadHint:
-    'KoopPlus’ı indirip kurduktan sonra 7 günlük ücretsiz denemenizi uygulama içinden başlatabilirsiniz.',
+  trustLine: 'Kredi kartı gerekmez · Web kaydı gerekmez',
+  downloadHint: 'Denemeniz uygulama içinde başlar.',
 } as const
 
 export type KoopPlusFeature = {

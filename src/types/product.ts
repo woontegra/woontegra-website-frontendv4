@@ -124,7 +124,8 @@ function normalizeGalleryImages(raw: unknown): PublicProductGalleryImage[] {
         url,
         sortOrder: toNumber(row.sortOrder, index),
       }
-      const alt = row.alt == null || row.alt === '' ? undefined : toString(row.alt)
+      const altRaw = row.alt ?? row.altText
+      const alt = altRaw == null || altRaw === '' ? undefined : toString(altRaw)
       const title = row.title == null || row.title === '' ? undefined : toString(row.title)
       if (alt) image.alt = alt
       if (title) image.title = title
@@ -351,6 +352,8 @@ function extractAdminGalleryMediaId(g: Record<string, unknown>): string {
 }
 
 /** Galeri kaydı için benzersiz katalog medya kimlikleri — sırayı korur. */
+export const PRODUCT_GALLERY_MAX_IMAGES = 10
+
 export function collectGalleryMediaIdsForSave(rows: { mediaId: string }[]): string[] {
   const seen = new Set<string>()
   const out: string[] = []
@@ -359,8 +362,18 @@ export function collectGalleryMediaIdsForSave(rows: { mediaId: string }[]): stri
     if (!id || seen.has(id)) continue
     seen.add(id)
     out.push(id)
+    if (out.length >= PRODUCT_GALLERY_MAX_IMAGES) break
   }
   return out
+}
+
+export function moveGalleryRow<T>(rows: T[], index: number, direction: -1 | 1): T[] {
+  const next = index + direction
+  if (index < 0 || next < 0 || next >= rows.length) return rows
+  const copy = [...rows]
+  const [item] = copy.splice(index, 1)
+  copy.splice(next, 0, item)
+  return copy
 }
 
 export function normalizeAdminProduct(raw: unknown): AdminProduct | null {

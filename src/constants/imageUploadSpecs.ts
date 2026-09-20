@@ -36,8 +36,8 @@ export const IMAGE_UPLOAD_SPECS: Record<ImageUploadSpecKey, ImageUploadSpec> = {
     hint: 'Önerilen: 1200×900 px (4:3). Minimum 800×600 px. Ürün kartı ve detay sayfasında gösterilir.',
   },
   productGallery: {
-    label: 'Ürün galeri',
-    hint: 'Önerilen: 1200×900 px (4:3) veya 1000×1000 px (1:1). Minimum 800 px genişlik.',
+    label: 'Ürün ekran görüntüleri',
+    hint: 'Önerilen: 1600×1000 px (16:10) masaüstü ekran görüntüsü. Minimum 800 px genişlik. JPG/PNG/WebP.',
   },
   siteLogo: {
     label: 'Site logosu',

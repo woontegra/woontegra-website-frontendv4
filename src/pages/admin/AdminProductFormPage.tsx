@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { ArrowLeft, ImageIcon, Images, Save, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, ImageIcon, Images, Save, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -25,7 +25,7 @@ import { LicenseProgramPicker } from '@/components/admin/LicenseProgramPicker'
 import { adminProductsService, getErrorMessage } from '@/services/adminProductsService'
 import { productCategoriesService } from '@/services/productCategoriesService'
 import type { AdminProductInput } from '@/types/product'
-import { collectGalleryMediaIdsForSave } from '@/types/product'
+import { collectGalleryMediaIdsForSave, moveGalleryRow, PRODUCT_GALLERY_MAX_IMAGES } from '@/types/product'
 import type { CatalogMedia } from '@/types/catalogMedia'
 import { ImageUploadSizeNote } from '@/components/admin/ImageUploadSizeNote'
 import { MediaPickerModal } from '@/media/components/MediaPickerModal'
@@ -312,10 +312,10 @@ export function AdminProductFormPage() {
   const onGallerySelect = (media: CatalogMedia) => {
     if (media.fileType !== 'IMAGE') return
     if (galleryRows.some((r) => r.mediaId === media.id)) return
-    setGalleryRows((rows) => [
-      ...rows,
-      { key: `${media.id}-${Date.now()}`, mediaId: media.id, preview: resolveMediaUrl(media.url) },
-    ])
+    setGalleryRows((rows) => {
+      if (rows.length >= PRODUCT_GALLERY_MAX_IMAGES) return rows
+      return [...rows, { key: `${media.id}-${Date.now()}`, mediaId: media.id, preview: resolveMediaUrl(media.url) }]
+    })
   }
 
   const onDownloadSelect = (media: CatalogMedia) => {
@@ -761,37 +761,79 @@ export function AdminProductFormPage() {
                   </div>
 
                   <div className="rounded-lg border border-slate-200 p-4">
-                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-slate-800">Galeri görselleri</p>
-                      <ImageUploadSizeNote spec="productGallery" className="mt-1" />
-                      <Button type="button" variant="secondary" size="sm" onClick={() => setGalleryPickerOpen(true)}>
+                    <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-medium text-slate-800">Ürün Ekran Görüntüleri</p>
+                        <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                          Ürün sayfasındaki ekran görüntüsü galerisinde gösterilir. Kapak görseli ayrıdır. En fazla{' '}
+                          {PRODUCT_GALLERY_MAX_IMAGES} görsel.
+                        </p>
+                        <ImageUploadSizeNote spec="productGallery" className="mt-1" />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        disabled={galleryRows.length >= PRODUCT_GALLERY_MAX_IMAGES}
+                        onClick={() => setGalleryPickerOpen(true)}
+                      >
                         <Images className="h-4 w-4" />
-                        Görsel ekle
+                        Görsel Ekle
                       </Button>
                     </div>
                     {galleryRows.length === 0 ? (
-                      <p className="text-sm text-slate-500">Henüz galeri görseli seçilmedi.</p>
+                      <p className="text-sm text-slate-500">Henüz ekran görüntüsü seçilmedi.</p>
                     ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {galleryRows.map((row) => (
-                          <div key={row.key} className="relative">
+                      <ul className="space-y-2">
+                        {galleryRows.map((row, index) => (
+                          <li
+                            key={row.key}
+                            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-2"
+                          >
                             <SafeImage
                               src={row.preview}
-                              alt=""
-                              className="h-20 w-28 rounded-lg border object-cover"
+                              alt={`Ekran görüntüsü ${index + 1}`}
+                              className="h-16 w-24 shrink-0 rounded-lg border border-slate-200 object-cover"
                               productPlaceholder
                               placeholder
                             />
-                            <button
-                              type="button"
-                              className="absolute -right-2 -top-2 rounded-full border bg-white p-1 text-slate-600 shadow hover:text-red-600"
-                              onClick={() => setGalleryRows((rows) => rows.filter((r) => r.key !== row.key))}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-slate-800">
+                                {index === 0 ? 'İlk slayt' : `Slayt ${index + 1}`}
+                              </p>
+                              <p className="text-xs text-slate-500">Sıra: {index + 1}</p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1">
+                              <button
+                                type="button"
+                                className="rounded-lg border border-slate-200 p-1.5 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                                disabled={index === 0}
+                                onClick={() => setGalleryRows((rows) => moveGalleryRow(rows, index, -1))}
+                                aria-label="Yukarı taşı"
+                              >
+                                <ArrowUp className="h-4 w-4" />
+                              </button>
+                              <button
+                                type="button"
+                                className="rounded-lg border border-slate-200 p-1.5 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                                disabled={index === galleryRows.length - 1}
+                                onClick={() => setGalleryRows((rows) => moveGalleryRow(rows, index, 1))}
+                                aria-label="Aşağı taşı"
+                              >
+                                <ArrowDown className="h-4 w-4" />
+                              </button>
+                              <button
+                                type="button"
+                                className="rounded-lg border border-slate-200 p-1.5 text-slate-600 hover:bg-red-50 hover:text-red-600"
+                                onClick={() => setGalleryRows((rows) => rows.filter((r) => r.key !== row.key))}
+                                aria-label="Kaldır"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     )}
                   </div>
 
@@ -902,7 +944,7 @@ export function AdminProductFormPage() {
       />
       <MediaPickerModal
         open={galleryPickerOpen}
-        title="Galeri görseli ekle"
+        title="Ekran görüntüsü ekle"
         allowedTypes={['IMAGE']}
         onClose={() => setGalleryPickerOpen(false)}
         onSelect={onGallerySelect}
