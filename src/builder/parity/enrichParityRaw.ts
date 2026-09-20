@@ -1,5 +1,6 @@
 import type { BuilderPageDefinition } from '@/builder/pages/builderPageRegistry'
 import { isMuvekkilKasaCompareSlug } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { isKoopPlusBuilderSlug } from '@/builder/parity/koopplusBuilderPreview'
 import { pageContentService } from '@/services/pageContentService'
 import { productsService } from '@/services/productsService'
 import { SERVICE_CARDS_KEY } from '@/data/serviceCardsContent'
@@ -32,7 +33,12 @@ export async function enrichParityRaw(
     }
   }
 
-  if (def.kind === 'product-detail' && def.slug?.trim() && !isMuvekkilKasaCompareSlug(def.slug)) {
+  if (
+    def.kind === 'product-detail' &&
+    def.slug?.trim() &&
+    !isMuvekkilKasaCompareSlug(def.slug) &&
+    !isKoopPlusBuilderSlug(def.slug)
+  ) {
     try {
       base.__productDetail = await productsService.getBySlug(def.slug.trim())
     } catch {

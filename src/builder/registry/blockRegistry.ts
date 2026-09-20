@@ -90,6 +90,11 @@ const definitions: BlockDefinition[] = [
     description: 'Sekmeli masaüstü ve SaaS ürün detayları.',
   },
   {
+    type: 'koopplus-product',
+    label: BLOCK_TYPE_LABELS['koopplus-product'],
+    description: 'KoopPlus özel satış sayfası — mevcut public tasarım, Builder’dan düzenlenir.',
+  },
+  {
     type: 'legacy-html',
     label: BLOCK_TYPE_LABELS['legacy-html'],
     description: 'Mevcut HTML içeriği koruma bloğu.',

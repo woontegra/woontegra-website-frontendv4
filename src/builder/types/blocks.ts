@@ -17,6 +17,7 @@ import type { MkSaasPurchaseBlock } from './mkSaasPurchase'
 import type { WhatsAppGuideBlock } from './whatsappGuide'
 import type { MkCompareTableBlock } from './mkCompareTable'
 import type { MkCompareDetailsBlock } from './mkCompareDetails'
+import type { KoopPlusProductBlock } from './koopplusProduct'
 import type { CalloutBlock, GalleryBlock, VideoEmbedBlock } from './contentBlocks'
 
 export type BuilderBlock =
@@ -38,6 +39,7 @@ export type BuilderBlock =
   | WhatsAppGuideBlock
   | MkCompareTableBlock
   | MkCompareDetailsBlock
+  | KoopPlusProductBlock
   | LegacySectionBlock
   | GenericBlockPlaceholder
 
@@ -74,6 +76,7 @@ export type BlockTypeId =
   | 'whatsapp-guide'
   | 'mk-compare-table'
   | 'mk-compare-details'
+  | 'koopplus-product'
 
 export const BLOCK_TYPE_LABELS: Record<BlockTypeId, string> = {
   hero: 'Hero',
@@ -102,4 +105,5 @@ export const BLOCK_TYPE_LABELS: Record<BlockTypeId, string> = {
   'whatsapp-guide': 'WhatsApp Geçiş Rehberi',
   'mk-compare-table': 'Sürüm Karşılaştırması',
   'mk-compare-details': 'Sürüm Detay Sekmeleri',
+  'koopplus-product': 'KoopPlus Satış Sayfası',
 }

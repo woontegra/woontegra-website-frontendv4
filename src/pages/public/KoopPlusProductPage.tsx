@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useSearchParams, Navigate } from 'react-router-dom'
+import { resolvePublishedKoopPlusProductContent } from '@/builder/types/koopplusProduct'
 import { KoopPlusProductView } from '@/components/public/koopplus/KoopPlusProductView'
 import { ErrorState } from '@/components/public/ErrorState'
 import { SoftwareProductJsonLd } from '@/components/seo/SoftwareProductJsonLd'
@@ -12,6 +13,8 @@ import {
   KOOPPLUS_SLUG,
 } from '@/data/koopplusProduct'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
+import { PRODUCT_PAGES_CONTENT_KEY } from '@/lib/builderPageContentKeys'
 import { trackKoopplusEvent } from '@/integrations/trackingEvents'
 import { saveDesktopRenewalToken } from '@/lib/desktopLicenseRenewal'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
@@ -57,6 +60,8 @@ export function KoopPlusProductPage() {
     trackKoopplusEvent('koopplus_view')
   }, [])
 
+  const { blocks } = usePublicPageBlocks(PRODUCT_PAGES_CONTENT_KEY, KOOPPLUS_SLUG)
+  const publishedContent = resolvePublishedKoopPlusProductContent(blocks).content
   const product = productQuery.data ?? null
   const includeOffer =
     product != null && Number.isFinite(product.price) && product.price >= 0
@@ -93,6 +98,7 @@ export function KoopPlusProductPage() {
         ]}
       />
       <KoopPlusProductView
+        content={publishedContent ?? undefined}
         product={product}
         productLoading={productQuery.isPending}
         desktopLicenseRenewal={desktopRenewalQuery.data ?? null}

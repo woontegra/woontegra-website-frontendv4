@@ -63,6 +63,7 @@ function hasVisibleContent(block: BuilderBlock): boolean {
     case 'whatsapp-guide':
     case 'mk-compare-table':
     case 'mk-compare-details':
+    case 'koopplus-product':
       return true
     default:
       return false
@@ -133,6 +134,13 @@ export function validateBlocksForPublish(blocks: BuilderBlock[]): PublishValidat
     issues.push({
       field: 'mk-compare-details',
       message: 'Sayfada yalnızca bir Sürüm Detay Sekmeleri bloğu olabilir.',
+    })
+  }
+  const koopPlusBlocks = blocks.filter((b) => b.type === 'koopplus-product' && b.visibility.enabled)
+  if (koopPlusBlocks.length > 1) {
+    issues.push({
+      field: 'koopplus-product',
+      message: 'Sayfada yalnızca bir KoopPlus Satış Sayfası bloğu olabilir.',
     })
   }
 

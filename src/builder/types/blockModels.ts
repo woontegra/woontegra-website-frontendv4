@@ -4,6 +4,7 @@ import { createDefaultMkSaasPurchaseBlock, type MkSaasPurchaseBlock } from './mk
 import { createDefaultWhatsAppGuideBlock, type WhatsAppGuideBlock } from './whatsappGuide'
 import { createDefaultMkCompareTableBlock, type MkCompareTableBlock } from './mkCompareTable'
 import { createDefaultMkCompareDetailsBlock, type MkCompareDetailsBlock } from './mkCompareDetails'
+import { createDefaultKoopPlusProductBlock, type KoopPlusProductBlock } from './koopplusProduct'
 import {
   createDefaultCalloutBlock,
   createDefaultGalleryBlock,
@@ -30,6 +31,7 @@ export type MvpBlockTypeId =
   | 'whatsapp-guide'
   | 'mk-compare-table'
   | 'mk-compare-details'
+  | 'koopplus-product'
 
 export type { CalloutBlock, GalleryBlock, VideoEmbedBlock }
 
@@ -183,6 +185,7 @@ export type TypedBuilderBlock =
   | WhatsAppGuideBlock
   | MkCompareTableBlock
   | MkCompareDetailsBlock
+  | KoopPlusProductBlock
 
 function baseStyle(): BlockStyle {
   return {
@@ -368,6 +371,8 @@ export function createBlockByType(type: MvpBlockTypeId, sortOrder: number): Type
       return createDefaultMkCompareTableBlock(sortOrder)
     case 'mk-compare-details':
       return createDefaultMkCompareDetailsBlock(sortOrder)
+    case 'koopplus-product':
+      return createDefaultKoopPlusProductBlock(sortOrder)
     default:
       return createDefaultRichTextBlock(sortOrder)
   }
@@ -390,12 +395,14 @@ export const BUILDER_MVP_BLOCK_TYPES: MvpBlockTypeId[] = [
   'whatsapp-guide',
   'mk-compare-table',
   'mk-compare-details',
+  'koopplus-product',
 ]
 
 export const UNIQUE_BLOCK_TYPES = new Set<MvpBlockTypeId>([
   'mk-saas-purchase',
   'mk-compare-table',
   'mk-compare-details',
+  'koopplus-product',
 ])
 
 export function isUniqueBlockType(type: string): type is MvpBlockTypeId {

@@ -11,6 +11,7 @@ import {
   sanitizeMkCompareBuilderBlocks,
 } from '@/builder/templates/mkCompareBuilderTemplate'
 import { isMkCompareBuilderPageKey } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { shouldIgnoreKoopPlusGenericPdp } from '@/builder/parity/koopplusBuilderPreview'
 
 /** Builder store / canvas modu */
 export type BuilderCanvasMode = 'builder-blocks' | 'legacy-public'
@@ -42,6 +43,16 @@ export function resolveBuilderPageLoad(
   const builderBlocks = extractBlocksForPage(raw, def) ?? parseBuilderBlocksFromRaw(raw)
 
   if (builderBlocks && builderBlocks.length > 0) {
+    if (shouldIgnoreKoopPlusGenericPdp(def.key, def.slug, builderBlocks)) {
+      return {
+        pageKey: def.key,
+        pageTitle: def.title,
+        blocks: [],
+        source: 'legacy-public',
+        canvasMode: 'legacy-public',
+        ...seo,
+      }
+    }
     if (isMkCompareBuilderPageKey(def.key) && isAutoMkCompareLegacyDocument(builderBlocks)) {
       return {
         pageKey: def.key,

@@ -20,6 +20,8 @@ import { MK_SAAS_CANONICAL_SLUG } from '@/lib/muvekkilKasaSaasProduct'
 import { createMkSaasSalesBuilderTemplate } from '@/builder/templates/mkSaasSalesBuilderTemplate'
 import { createMuvekkilKasaCompareBuilderTemplate } from '@/builder/templates/mkCompareBuilderTemplate'
 import { isMuvekkilKasaCompareSlug } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { isKoopPlusBuilderSlug } from '@/builder/parity/koopplusBuilderPreview'
+import { convertKoopPlusPublicSourceToBuilder } from '@/builder/templates/koopplusProductBuilderTemplate'
 import { emptyParityReport } from '@/builder/parity/pushLegacy'
 
 function editableResult(pageKey: string, blocks: BuilderBlock[]): { blocks: BuilderBlock[]; report: ConversionReport } {
@@ -68,6 +70,9 @@ export function convertPageParityBlocks(
       }
       if (def.slug === MK_SAAS_CANONICAL_SLUG) {
         return editableResult(def.key, createMkSaasSalesBuilderTemplate())
+      }
+      if (isKoopPlusBuilderSlug(def.slug)) {
+        return convertKoopPlusPublicSourceToBuilder(def.key)
       }
       return editableResult(def.key, createProductDetailEditableTemplate(def.slug ?? '', raw))
     case 'blog-detail':

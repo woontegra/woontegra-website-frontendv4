@@ -70,6 +70,10 @@ export const blockRendererLoaders: Record<string, BlockLoader> = {
     import('@/builder/render/blocks/MkCompareDetailsBlockRenderer').then((m) => ({
       default: m.MkCompareDetailsBlockRenderer,
     })),
+  'koopplus-product': () =>
+    import('@/builder/render/blocks/KoopPlusProductBlockRenderer').then((m) => ({
+      default: m.KoopPlusProductBlockRenderer,
+    })),
 }
 
 export function getBlockRendererLoader(type: string): BlockLoader {

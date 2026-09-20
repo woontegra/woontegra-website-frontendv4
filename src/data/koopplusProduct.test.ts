@@ -155,7 +155,7 @@ describe('KoopPlus website catalog', () => {
 
   it('renders a Windows trial download CTA instead of navigating to a coming-soon notice', () => {
     const root = join(dirname(fileURLToPath(import.meta.url)), '../..')
-    const view = join(root, 'src/components/public/koopplus/KoopPlusProductView.tsx')
+    const view = join(root, 'src/components/public/koopplus/KoopPlusProductLayout.tsx')
     const src = readFileSync(view, 'utf8')
     expect(src).toContain('KoopPlusWindowsTrialDownloadLink')
     expect(src).toContain('getKoopPlusWindowsTrialDownload')
@@ -168,7 +168,7 @@ describe('KoopPlus website catalog', () => {
 
   it('uses Product galleryImages for the hero screenshot carousel, not a coming-soon placeholder', () => {
     const root = join(dirname(fileURLToPath(import.meta.url)), '../..')
-    const view = join(root, 'src/components/public/koopplus/KoopPlusProductView.tsx')
+    const view = join(root, 'src/components/public/koopplus/KoopPlusProductLayout.tsx')
     const src = readFileSync(view, 'utf8')
     expect(src).toContain('ProductScreenshotCarousel')
     expect(src).toContain('koopPlusScreenshotEntries(product?.galleryImages)')

@@ -10,6 +10,10 @@ import type { PageLoadSource, BuilderCanvasMode } from '@/builder/load/resolveBu
 import { convertPageToBlocks } from '@/builder/load/convertPageToBlocks'
 import { sanitizeMkCompareBuilderBlocks, isAutoMkCompareLegacyDocument } from '@/builder/templates/mkCompareBuilderTemplate'
 import { isMkCompareBuilderPageKey } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import {
+  clearStaleKoopPlusGenericDraft,
+  shouldIgnoreKoopPlusGenericPdp,
+} from '@/builder/parity/koopplusBuilderPreview'
 import type { ConversionReport } from '@/builder/load/conversionReport'
 import { enrichParityRaw } from '@/builder/parity/enrichParityRaw'
 import { pageContentService, getErrorMessage } from '@/services/pageContentService'
@@ -115,8 +119,9 @@ function draftStorageKey(pageKey: string): string {
   return `${BUILDER_DRAFT_STORAGE_PREFIX}:${pageKey}`
 }
 
-function readLocalDraft(pageKey: string): BuilderDraftPayload | null {
+function readLocalDraft(pageKey: string, slug?: string): BuilderDraftPayload | null {
   try {
+    clearStaleKoopPlusGenericDraft(localStorage, draftStorageKey(pageKey), pageKey, slug)
     const raw = localStorage.getItem(draftStorageKey(pageKey))
     if (!raw) return null
     const parsed = JSON.parse(raw) as BuilderDraftPayload
@@ -282,9 +287,11 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
       const raw = enriched ?? pageRawContent
       const existing = extractBlocksForPage(raw, def)
       const usable =
-        isMkCompareBuilderPageKey(def.key) && existing
-          ? sanitizeMkCompareBuilderBlocks(existing)
-          : existing
+        shouldIgnoreKoopPlusGenericPdp(def.key, def.slug, existing)
+          ? null
+          : isMkCompareBuilderPageKey(def.key) && existing
+            ? sanitizeMkCompareBuilderBlocks(existing)
+            : existing
       if (usable?.length) {
         const nextState: BuilderPageState = {
           pageKey,
@@ -461,7 +468,7 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
 
       set({ pageRawContent: enriched ?? raw })
 
-      const localDraft = readLocalDraft(def.key)
+      const localDraft = readLocalDraft(def.key, def.slug)
       const draftBlocks =
         localDraft?.blocks?.length && isMkCompareBuilderPageKey(def.key)
           ? sanitizeMkCompareBuilderBlocks(localDraft.blocks)

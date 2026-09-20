@@ -1,6 +1,6 @@
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 import { getBuilderPageDefinition, type BuilderPageDefinition } from '@/builder/pages/builderPageRegistry'
-import { isMuvekkilKasaCompareSlug } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { resolveProductDetailPreviewKind } from '@/builder/parity/koopplusBuilderPreview'
 import { PreviewSlugProvider } from '@/lib/previewRouteParams'
 
 const LANDING_COMPONENTS: Record<string, ComponentType> = {
@@ -34,6 +34,9 @@ const SolutionDetailPage = lazy(() =>
 )
 const SoftwareDetailPage = lazy(() =>
   import('@/pages/public/SoftwareDetailPage').then((m) => ({ default: m.SoftwareDetailPage })),
+)
+const KoopPlusProductPage = lazy(() =>
+  import('@/pages/public/KoopPlusProductPage').then((m) => ({ default: m.KoopPlusProductPage })),
 )
 const MuvekkilKasaComparePage = lazy(() =>
   import('@/pages/public/MuvekkilKasaComparePage').then((m) => ({ default: m.MuvekkilKasaComparePage })),
@@ -99,9 +102,16 @@ function DetailPageEmbed({ def }: { def: BuilderPageDefinition }) {
     case 'solution-detail':
       Page = SolutionDetailPage
       break
-    case 'product-detail':
-      Page = isMuvekkilKasaCompareSlug(slug) ? MuvekkilKasaComparePage : SoftwareDetailPage
+    case 'product-detail': {
+      const previewKind = resolveProductDetailPreviewKind(slug)
+      Page =
+        previewKind === 'mk-compare'
+          ? MuvekkilKasaComparePage
+          : previewKind === 'koopplus'
+            ? KoopPlusProductPage
+            : SoftwareDetailPage
       break
+    }
     case 'bh-module-detail':
       Page = BhModuleDetailPage
       break

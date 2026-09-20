@@ -41,6 +41,7 @@ import { MkSaasPurchaseSettingsPanel } from '@/builder/admin/settings/MkSaasPurc
 import { WhatsAppGuideSettingsPanel } from '@/builder/admin/settings/WhatsAppGuideSettingsPanel'
 import { MkCompareTableSettingsPanel } from '@/builder/admin/settings/MkCompareTableSettingsPanel'
 import { MkCompareDetailsSettingsPanel } from '@/builder/admin/settings/MkCompareDetailsSettingsPanel'
+import { KoopPlusProductSettingsPanel } from '@/builder/admin/settings/KoopPlusProductSettingsPanel'
 import { PageMetaSettingsPanel } from '@/builder/admin/settings/PageMetaSettingsPanel'
 
 export function BlockSettingsPanel() {
@@ -291,6 +292,10 @@ function BlockSettingsRouter({ type }: { type: string }) {
     case 'mk-compare-details':
 
       return <MkCompareDetailsSettingsPanel />
+
+    case 'koopplus-product':
+
+      return <KoopPlusProductSettingsPanel />
 
     default:
 
