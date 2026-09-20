@@ -133,7 +133,12 @@ const iconMap: Record<string, LucideIcon> = {
   Key,
   Cpu,
   Sparkles,
-  // Hakkımızda CMS ikon alias'ları (kebab-case / lowercase)
+  Award,
+  Building2,
+  Eye,
+  Rocket,
+  Wrench,
+  // CMS / builder kebab + kısa alias
   boxes: Boxes,
   sparkles: Sparkles,
   eye: Eye,
@@ -148,21 +153,44 @@ const iconMap: Record<string, LucideIcon> = {
   'bar-chart-3': BarChart3,
   'refresh-cw': RefreshCw,
   target: Target,
+  code: Code2,
   'code-2': Code2,
   lightbulb: Lightbulb,
 }
 
+function iconLookupKeys(name: string): string[] {
+  const raw = name.trim()
+  if (!raw) return []
+  const lower = raw.toLocaleLowerCase('en')
+  const kebab = raw
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/([a-zA-Z])([0-9])/g, '$1-$2')
+    .replace(/[_\s]+/g, '-')
+    .toLocaleLowerCase('en')
+  const compact = lower.replace(/[-_\s]/g, '')
+  return [...new Set([raw, lower, kebab, compact])]
+}
+
+const iconLookup: Record<string, LucideIcon> = {}
+for (const [key, icon] of Object.entries(iconMap)) {
+  for (const variant of iconLookupKeys(key)) {
+    if (!iconLookup[variant]) iconLookup[variant] = icon
+  }
+}
+
 export function resolveIcon(name?: string): LucideIcon {
-  if (!name?.trim()) return Box
-  const key = name.trim()
-  return iconMap[key] ?? iconMap[key.toLowerCase()] ?? Box
+  return tryResolveIcon(name) ?? Box
 }
 
 /** Builder kart ikonu — bilinmeyen identifier için null (raw string basma) */
 export function tryResolveIcon(name?: string | null): LucideIcon | null {
   const key = String(name || '').trim()
   if (!key) return null
-  return iconMap[key] ?? iconMap[key.toLowerCase()] ?? null
+  for (const variant of iconLookupKeys(key)) {
+    const found = iconLookup[variant]
+    if (found) return found
+  }
+  return null
 }
 
 export const GRADIENT_OPTIONS = [
