@@ -1,16 +1,28 @@
 import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams, Navigate } from 'react-router-dom'
 import { KoopPlusProductView } from '@/components/public/koopplus/KoopPlusProductView'
 import { ErrorState } from '@/components/public/ErrorState'
 import { SoftwareProductJsonLd } from '@/components/seo/SoftwareProductJsonLd'
-import { KOOPPLUS_NAME, KOOPPLUS_PATH, KOOPPLUS_SEO, KOOPPLUS_SLUG } from '@/data/koopplusProduct'
+import {
+  KOOPPLUS_NAME,
+  KOOPPLUS_PATH,
+  KOOPPLUS_SEO,
+  KOOPPLUS_SEO_TOPIC,
+  KOOPPLUS_SLUG,
+} from '@/data/koopplusProduct'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { trackKoopplusEvent } from '@/integrations/trackingEvents'
 import { saveDesktopRenewalToken } from '@/lib/desktopLicenseRenewal'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { desktopLicenseRenewalService } from '@/services/desktopLicenseRenewalService'
 import { productsService } from '@/services/productsService'
+
+export function KoopPlusLegacyPathRedirect() {
+  const [searchParams] = useSearchParams()
+  const search = searchParams.toString()
+  return <Navigate to={search ? `${KOOPPLUS_PATH}?${search}` : KOOPPLUS_PATH} replace />
+}
 
 export function KoopPlusProductPage() {
   const [searchParams] = useSearchParams()
@@ -34,8 +46,8 @@ export function KoopPlusProductPage() {
   })
 
   usePageMeta({
-    title: productQuery.data?.seoTitle || KOOPPLUS_SEO.title,
-    description: productQuery.data?.seoDescription || KOOPPLUS_SEO.description,
+    title: KOOPPLUS_SEO.title,
+    description: KOOPPLUS_SEO.description,
     canonicalPath: KOOPPLUS_PATH,
     ogType: 'product',
     ogImage: productQuery.data?.coverImage ?? null,
@@ -67,7 +79,7 @@ export function KoopPlusProductPage() {
     <>
       <SoftwareProductJsonLd
         name={product?.name || KOOPPLUS_NAME}
-        description={product?.seoDescription?.trim() || KOOPPLUS_SEO.description}
+        description={KOOPPLUS_SEO.description}
         path={KOOPPLUS_PATH}
         applicationCategory="BusinessApplication"
         operatingSystem="Windows"
@@ -77,7 +89,7 @@ export function KoopPlusProductPage() {
         breadcrumbs={[
           { name: 'Ana Sayfa', path: '/' },
           { name: 'Yazılımlar', path: '/yazilimlar' },
-          { name: KOOPPLUS_NAME, path: KOOPPLUS_PATH },
+          { name: KOOPPLUS_SEO_TOPIC, path: KOOPPLUS_PATH },
         ]}
       />
       <KoopPlusProductView

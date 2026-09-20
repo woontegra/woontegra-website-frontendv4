@@ -20,6 +20,26 @@
 
     {
 
+      "source": "/yazilimlar/koopplus",
+
+      "destination": "/yazilimlar/kooperatif-yonetim-yazilimi",
+
+      "permanent": true
+
+    },
+
+    {
+
+      "source": "/yazilimlar/koopplus/",
+
+      "destination": "/yazilimlar/kooperatif-yonetim-yazilimi",
+
+      "permanent": true
+
+    },
+
+    {
+
       "source": "/e-ticaret-altyapisi",
 
       "destination": "/hizmetler/e-ticaret",

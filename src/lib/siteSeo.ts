@@ -49,7 +49,7 @@ export const SOFTWARE_ENTITY_HUB = [
   },
   {
     name: 'KoopPlus',
-    path: '/yazilimlar/koopplus',
+    path: '/yazilimlar/kooperatif-yonetim-yazilimi',
     description: 'Kooperatif üye, aidat, tahsilat, kasa ve banka süreçleri için masaüstü yazılım.',
   },
   {
@@ -86,10 +86,10 @@ export const PAGE_SEO_BY_PATH: Record<string, PageSeo> = {
     description:
       'Woontegra yazılımları: Bilirkişi Hesap, Müvekkil Kasa Defteri, KoopPlus ve Şifre Kasası — masaüstü, web ve lisanslı dijital ürünler.',
   },
-  '/yazilimlar/koopplus': {
-    title: 'KoopPlus | Kooperatif Yönetim Programı | Woontegra',
+  '/yazilimlar/kooperatif-yonetim-yazilimi': {
+    title: 'Kooperatif Yönetim Yazılımı | KoopPlus | Woontegra',
     description:
-      'Kooperatif aidat, tahsilat, üye, faiz, kasa ve banka işlemlerini tek masaüstü uygulamasında yönetin. KoopPlus’ı 7 gün ücretsiz deneyin.',
+      'Kooperatif yönetim yazılımı KoopPlus ile üye, aidat, tahsilat, faiz, kasa ve banka yönetimini tek masaüstü uygulamada toplayın. 7 gün ücretsiz deneyin.',
   },
   '/blog': {
     title: 'Woontegra Blog | Yazılım ve Dijital Dönüşüm',

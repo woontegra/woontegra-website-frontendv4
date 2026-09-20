@@ -40,7 +40,7 @@ const SOFTWARE_ENTITY_HUB = [
   },
   {
     name: 'KoopPlus',
-    path: '/yazilimlar/koopplus',
+    path: '/yazilimlar/kooperatif-yonetim-yazilimi',
     description: 'Kooperatif üye, aidat, tahsilat, kasa ve banka süreçleri için masaüstü yazılım.',
   },
   {
@@ -65,7 +65,7 @@ const PRIORITY_ROUTES = [
   '/iletisim',
   '/yazilimlar',
   '/yazilimlar/muvekkil-kasa-defteri',
-  '/yazilimlar/koopplus',
+  '/yazilimlar/kooperatif-yonetim-yazilimi',
   '/yazilimlar/sifre-kasasi',
   '/yazilimlar/bilirkisi-hesap',
   '/hizmetler',
@@ -100,6 +100,8 @@ const BLOCKED_PREFIXES = [
   '/r/',
 ]
 
+const BLOCKED_EXACT = new Set(['/yazilimlar/koopplus'])
+
 const PAGE_SEO = {
   '/': {
     title: 'Woontegra | Yazılım, E-Ticaret ve Dijital Dönüşüm Çözümleri',
@@ -125,10 +127,10 @@ const PAGE_SEO = {
       'Woontegra yazılımları; işletmeler için masaüstü programlar, SaaS ürünleri ve lisanslı dijital çözümler sunar.',
     h1: 'Dijital Ürünler ve Yazılımlar',
   },
-  '/yazilimlar/koopplus': {
-    title: 'KoopPlus | Kooperatif Yönetim Programı | Woontegra',
+  '/yazilimlar/kooperatif-yonetim-yazilimi': {
+    title: 'Kooperatif Yönetim Yazılımı | KoopPlus | Woontegra',
     description:
-      'Kooperatif aidat, tahsilat, üye, faiz, kasa ve banka işlemlerini tek masaüstü uygulamasında yönetin. KoopPlus’ı 7 gün ücretsiz deneyin.',
+      'Kooperatif yönetim yazılımı KoopPlus ile üye, aidat, tahsilat, faiz, kasa ve banka yönetimini tek masaüstü uygulamada toplayın. 7 gün ücretsiz deneyin.',
     h1: 'Kooperatif yönetimini tek merkezde toplayın.',
   },
   '/hizmetler': {
@@ -217,10 +219,10 @@ const PRODUCT_FALLBACKS = {
   },
   koopplus: {
     name: 'KoopPlus',
-    title: 'KoopPlus | Kooperatif Yönetim Programı | Woontegra',
+    title: 'Kooperatif Yönetim Yazılımı | KoopPlus | Woontegra',
     description:
-      'Kooperatif aidat, tahsilat, üye, faiz, kasa ve banka işlemlerini tek masaüstü uygulamasında yönetin. KoopPlus’ı 7 gün ücretsiz deneyin.',
-    body: 'KoopPlus, kooperatif üye, aidat, tahsilat, faiz, kasa ve banka süreçlerini tek masaüstü uygulamada yönetmek için geliştirilen Woontegra yazılımıdır. 7 gün ücretsiz denenebilir. Windows sürümü kullanıma hazırdır; macOS sürümü yakında sunulacaktır.',
+      'Kooperatif yönetim yazılımı KoopPlus ile üye, aidat, tahsilat, faiz, kasa ve banka yönetimini tek masaüstü uygulamada toplayın. 7 gün ücretsiz deneyin.',
+    body: 'KoopPlus, kooperatif yönetim yazılımıdır. Üye, aidat, tahsilat, faiz, kasa ve banka süreçlerini tek masaüstü uygulamada yönetmek için geliştirilen Woontegra yazılımıdır. 7 gün ücretsiz denenebilir. Windows sürümü kullanıma hazırdır; macOS sürümü yakında sunulacaktır.',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Windows',
     h1: 'Kooperatif yönetimini tek merkezde toplayın.',
@@ -263,6 +265,7 @@ function normalizePath(p) {
 
 function isBlocked(route) {
   const p = normalizePath(route)
+  if (BLOCKED_EXACT.has(p)) return true
   return BLOCKED_PREFIXES.some((prefix) => p === prefix || p.startsWith(prefix))
 }
 
@@ -534,13 +537,14 @@ async function resolvePageModel(route, cache) {
     return { title, description, h1, bodyText, jsonLd, crumbs }
   }
 
-  if (route === '/yazilimlar/koopplus') {
+  if (route === '/yazilimlar/kooperatif-yonetim-yazilimi') {
     const fb = PRODUCT_FALLBACKS.koopplus
+    const product = await loadProduct('koopplus')
     title = fb.title
     description = fb.description
     h1 = fb.h1
     bodyText = fb.body
-    crumbs.push({ name: 'Yazılımlar', path: '/yazilimlar' }, { name: 'KoopPlus', path: route })
+    crumbs.push({ name: 'Yazılımlar', path: '/yazilimlar' }, { name: 'Kooperatif Yönetim Yazılımı', path: route })
     jsonLd.push(
       softwareApplicationSchema({
         name: fb.name,
@@ -548,6 +552,8 @@ async function resolvePageModel(route, cache) {
         url: siteUrl(route),
         applicationCategory: fb.applicationCategory,
         operatingSystem: fb.operatingSystem,
+        price: typeof product?.price === 'number' ? product.price : null,
+        priceCurrency: product?.currency || 'TRY',
       }),
       breadcrumbSchema(crumbs),
     )
@@ -1062,7 +1068,7 @@ async function main() {
     '/yazilimlar',
     '/yazilimlar/bilirkisi-hesap',
     '/yazilimlar/muvekkil-kasa-defteri',
-    '/yazilimlar/koopplus',
+    '/yazilimlar/kooperatif-yonetim-yazilimi',
     '/yazilimlar/sifre-kasasi',
   ])
 

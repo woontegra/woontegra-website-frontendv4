@@ -50,7 +50,7 @@ const ABOUT_SOFTWARE_CARDS = [
   {
     title: 'KoopPlus',
     description: 'Kooperatif üye, aidat, tahsilat, faiz, kasa ve banka süreçlerini tek masaüstü uygulamada yönetin.',
-    href: '/yazilimlar/koopplus',
+    href: '/yazilimlar/kooperatif-yonetim-yazilimi',
   },
   {
     title: 'Woontegra Şifre Kasası',

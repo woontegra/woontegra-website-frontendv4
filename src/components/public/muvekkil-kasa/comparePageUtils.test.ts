@@ -22,5 +22,9 @@ describe('mk compare affiliate landing helpers', () => {
     expect(publicSoftwareDetailHref('muvekkil-kasa-defteri-web-tabanli')).toBe(
       '/yazilimlar/muvekkil-kasa-defteri?surum=saas',
     )
+    expect(publicSoftwareDetailHref('koopplus')).toBe('/yazilimlar/kooperatif-yonetim-yazilimi')
+    expect(publicSoftwareDetailHref('kooperatif-yonetim-yazilimi')).toBe(
+      '/yazilimlar/kooperatif-yonetim-yazilimi',
+    )
   })
 })

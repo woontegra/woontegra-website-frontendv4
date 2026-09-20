@@ -48,6 +48,9 @@ const MuvekkilKasaComparePage = lazy(() =>
 const KoopPlusProductPage = lazy(() =>
   import('@/pages/public/KoopPlusProductPage').then((m) => ({ default: m.KoopPlusProductPage })),
 )
+const KoopPlusLegacyPathRedirect = lazy(() =>
+  import('@/pages/public/KoopPlusProductPage').then((m) => ({ default: m.KoopPlusLegacyPathRedirect })),
+)
 const AffiliateReferralRedirectPage = lazy(() =>
   import('@/pages/public/AffiliateReferralRedirectPage').then((m) => ({
     default: m.AffiliateReferralRedirectPage,
@@ -360,7 +363,8 @@ export const router = createBrowserRouter([
       { path: 'cozumler/:slug', element: <LazyPage><SolutionDetailPage /></LazyPage> },
       { path: 'yazilimlar', element: <LazyPage><SoftwareListPage /></LazyPage> },
       { path: 'yazilimlar/muvekkil-kasa-defteri', element: <LazyPage><MuvekkilKasaComparePage /></LazyPage> },
-      { path: 'yazilimlar/koopplus', element: <LazyPage><KoopPlusProductPage /></LazyPage> },
+      { path: 'yazilimlar/kooperatif-yonetim-yazilimi', element: <LazyPage><KoopPlusProductPage /></LazyPage> },
+      { path: 'yazilimlar/koopplus', element: <LazyPage><KoopPlusLegacyPathRedirect /></LazyPage> },
       {
         path: 'yazilimlar/bilirkisi-hesap/satin-al',
         element: <LazyPage><BilirkisiCheckoutPage /></LazyPage>,

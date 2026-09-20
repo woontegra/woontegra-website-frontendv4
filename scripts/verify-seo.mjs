@@ -21,7 +21,7 @@ const SOCIAL_URLS = [
 const PRODUCT_HUB_PATHS = [
   '/yazilimlar/bilirkisi-hesap',
   '/yazilimlar/muvekkil-kasa-defteri',
-  '/yazilimlar/koopplus',
+  '/yazilimlar/kooperatif-yonetim-yazilimi',
   '/yazilimlar/sifre-kasasi',
 ]
 
@@ -204,7 +204,7 @@ function verifySitemap() {
   const xml = fs.readFileSync(SITEMAP, 'utf8')
   const required = [
     '/yazilimlar/bilirkisi-hesap',
-    '/yazilimlar/koopplus',
+    '/yazilimlar/kooperatif-yonetim-yazilimi',
     '/yazilimlar/bilirkisi-hesap/moduller/fazla-mesai-nasil-hesaplanir',
     '/yazilimlar/bilirkisi-hesap/moduller/kidem-tazminati-nasil-hesaplanir',
     '/gizlilik-politikasi',
@@ -226,6 +226,11 @@ function verifySitemap() {
     'sitemap alias fazla-mesai olmamalı',
   )
   assert('sitemap', !/sendikal/i.test(xml), 'sitemap Sendikal olmamalı')
+  assert(
+    'sitemap',
+    !xml.includes('/yazilimlar/koopplus'),
+    'sitemap legacy /yazilimlar/koopplus olmamalı',
+  )
   const forbidden = ['/admin', '/giris', '/sepet', '/odeme', '/hesabim']
   for (const pathPart of forbidden) {
     assert(
@@ -263,8 +268,9 @@ function main() {
     mustInclude: ['Müvekkil'],
     requireSoftware: true,
   })
-  verifyPage('/yazilimlar/koopplus', {
-    mustInclude: ['KoopPlus'],
+  verifyPage('/yazilimlar/kooperatif-yonetim-yazilimi', {
+    mustInclude: ['KoopPlus', 'Kooperatif Yönetim Yazılımı'],
+    titleIncludes: 'Kooperatif Yönetim Yazılımı',
     requireSoftware: true,
   })
   verifyPage('/yazilimlar/sifre-kasasi', {
@@ -278,8 +284,39 @@ function main() {
   verifyYazilimlarHub()
   verifySoftwareWoontegraRelation('/yazilimlar/bilirkisi-hesap', 'Bilirkişi')
   verifySoftwareWoontegraRelation('/yazilimlar/muvekkil-kasa-defteri', 'Müvekkil')
-  verifySoftwareWoontegraRelation('/yazilimlar/koopplus', 'KoopPlus')
+  verifySoftwareWoontegraRelation('/yazilimlar/kooperatif-yonetim-yazilimi', 'KoopPlus')
   verifySoftwareWoontegraRelation('/yazilimlar/sifre-kasasi', 'Şifre')
+
+  assert(
+    'prerender',
+    !fs.existsSync(fileFor('/yazilimlar/koopplus')),
+    'legacy /yazilimlar/koopplus HTML üretilmemeli',
+  )
+  const koopHtml = readHtml('/yazilimlar/kooperatif-yonetim-yazilimi')
+  if (koopHtml) {
+    const koopBlocks = extractJsonLdBlocks(koopHtml)
+    const koopApp = findSchema(koopBlocks, 'SoftwareApplication')
+    assert(
+      '/yazilimlar/kooperatif-yonetim-yazilimi',
+      koopApp?.url === 'https://www.woontegra.com/yazilimlar/kooperatif-yonetim-yazilimi',
+      'SoftwareApplication url = canonical SEO path',
+    )
+    assert(
+      '/yazilimlar/kooperatif-yonetim-yazilimi',
+      koopApp?.name === 'KoopPlus',
+      'SoftwareApplication name = KoopPlus',
+    )
+    assert(
+      '/yazilimlar/kooperatif-yonetim-yazilimi',
+      String(koopApp?.description || '').includes('Kooperatif yönetim yazılımı'),
+      'SoftwareApplication description konu ifadesi',
+    )
+    assert(
+      '/yazilimlar/kooperatif-yonetim-yazilimi',
+      !koopHtml.includes('https://www.woontegra.com/yazilimlar/koopplus'),
+      'eski koopplus canonical/JSON-LD URL olmamalı',
+    )
+  }
 
   // Internal linking smoke (prerender nav)
   const home = readHtml('/')

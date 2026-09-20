@@ -9,9 +9,14 @@ import {
   isKoopPlusWindowsDownloadReady,
   KOOPPLUS_DISTRIBUTION,
   KOOPPLUS_MACOS_AVAILABLE,
+  KOOPPLUS_LEGACY_PATH,
   KOOPPLUS_PATH,
   KOOPPLUS_PRICE_AMOUNT,
+  KOOPPLUS_SEO,
+  KOOPPLUS_SEO_SLUG,
+  KOOPPLUS_SEO_TOPIC,
   KOOPPLUS_SLUG,
+  KOOPPLUS_TAGLINE,
   KOOPPLUS_TRIAL,
   KOOPPLUS_WINDOWS_CHECKOUT_PATH,
   KOOPPLUS_WINDOWS_DOWNLOAD_URL,
@@ -23,10 +28,28 @@ import { buildCanonicalSoftwareNavChildren } from '@/lib/publicSoftwareCatalog'
 import { resolvePublicNavigation } from '@/lib/headerNavigation'
 
 describe('KoopPlus website catalog', () => {
-  it('uses the canonical /yazilimlar/koopplus route', () => {
+  it('keeps Product API slug koopplus and uses the SEO public path', () => {
     expect(KOOPPLUS_SLUG).toBe('koopplus')
-    expect(KOOPPLUS_PATH).toBe('/yazilimlar/koopplus')
+    expect(KOOPPLUS_SEO_SLUG).toBe('kooperatif-yonetim-yazilimi')
+    expect(KOOPPLUS_PATH).toBe('/yazilimlar/kooperatif-yonetim-yazilimi')
+    expect(KOOPPLUS_LEGACY_PATH).toBe('/yazilimlar/koopplus')
+    expect(KOOPPLUS_SEO_TOPIC).toBe('Kooperatif Yönetim Yazılımı')
+    expect(KOOPPLUS_TAGLINE).toBe('Kooperatif Yönetim Yazılımı')
+    expect(KOOPPLUS_SEO.title).toBe('Kooperatif Yönetim Yazılımı | KoopPlus | Woontegra')
+    expect(KOOPPLUS_SEO.description).toContain('Kooperatif yönetim yazılımı')
+    expect(KOOPPLUS_SEO.description).toContain('7 gün')
     expect(CANONICAL_SOFTWARE_NAV.some((item) => item.slug === KOOPPLUS_SLUG && item.path === KOOPPLUS_PATH)).toBe(true)
+    expect(CANONICAL_SOFTWARE_NAV.some((item) => item.path === KOOPPLUS_LEGACY_PATH)).toBe(false)
+  })
+
+  it('declares a Vercel permanent redirect from the legacy KoopPlus URL', () => {
+    const root = join(dirname(fileURLToPath(import.meta.url)), '../..')
+    const vercel = JSON.parse(readFileSync(join(root, 'vercel.json'), 'utf8')) as {
+      redirects: Array<{ source: string; destination: string; permanent?: boolean }>
+    }
+    const hit = vercel.redirects.find((row) => row.source === KOOPPLUS_LEGACY_PATH)
+    expect(hit?.destination).toBe(KOOPPLUS_PATH)
+    expect(hit?.permanent).toBe(true)
   })
 
   it('does not invent a catalog price or checkout endpoint', () => {

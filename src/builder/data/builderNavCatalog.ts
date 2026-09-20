@@ -70,7 +70,7 @@ export const BUILDER_MENU_PRODUCTS: BuilderNavProduct[] = [
   {
     slug: 'koopplus',
     title: 'KoopPlus',
-    path: '/yazilimlar/koopplus',
+    path: '/yazilimlar/kooperatif-yonetim-yazilimi',
   },
   {
     slug: 'sifre-kasasi',

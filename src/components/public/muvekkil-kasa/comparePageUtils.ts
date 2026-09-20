@@ -1,4 +1,5 @@
 import type { PublicProductDetail } from '@/types/product'
+import { isKoopPlusPublicSlug, KOOPPLUS_PATH } from '@/data/koopplusProduct'
 import {
   MK_COMPARE_DESKTOP_DELIVERY_NOTE,
   MK_COMPARE_WEB_DELIVERY_NOTE,
@@ -43,6 +44,9 @@ export function publicSoftwareDetailHref(slug: string): string {
   }
   if (isMuvekkilKasaSaasProduct({ slug: normalized })) {
     return `${MK_COMPARE_PATH}?surum=saas`
+  }
+  if (isKoopPlusPublicSlug(normalized)) {
+    return KOOPPLUS_PATH
   }
   return `/yazilimlar/${slug}`
 }

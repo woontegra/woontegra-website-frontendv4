@@ -56,7 +56,7 @@ const STATIC_ENTRIES = [
   })),
   { path: '/yazilimlar', priority: '0.9', changefreq: 'weekly' },
   { path: '/yazilimlar/muvekkil-kasa-defteri', priority: '0.8', changefreq: 'monthly' },
-  { path: '/yazilimlar/koopplus', priority: '0.8', changefreq: 'monthly' },
+  { path: '/yazilimlar/kooperatif-yonetim-yazilimi', priority: '0.8', changefreq: 'monthly' },
   { path: '/yazilimlar/sifre-kasasi', priority: '0.8', changefreq: 'monthly' },
   { path: '/yazilimlar/bilirkisi-hesap', priority: '0.8', changefreq: 'monthly' },
   { path: '/blog', priority: '0.9', changefreq: 'weekly' },
@@ -97,6 +97,7 @@ const BLOCKED_EXACT = new Set([
   '/yazilimlar/muvekkil-kasa-defteri-web-tabanli',
   '/yazilimlar/muvekkil-kasa-defteri-saas',
   '/yazilimlar/muvekkil-kasa-saas',
+  '/yazilimlar/koopplus',
   '/yazilimlar/bilirkisi-hesap/moduller',
 ])
 
@@ -213,7 +214,8 @@ async function fetchDynamicPaths() {
         // MK satış slug'ları compare canonical'a yönlenir; sitemap'te duplicate olmasın
         if (
           /muvekkil-kasa-defteri-(yazilimi|desktop|web-tabanli|saas)/i.test(slug) ||
-          slug === 'muvekkil-kasa-saas'
+          slug === 'muvekkil-kasa-saas' ||
+          slug === 'koopplus'
         ) {
           continue
         }

@@ -14,10 +14,20 @@ import {
   Wallet,
 } from 'lucide-react'
 
+/** Product API / cart kimliği — public SEO path değildir. */
 export const KOOPPLUS_SLUG = 'koopplus'
-export const KOOPPLUS_PATH = `/yazilimlar/${KOOPPLUS_SLUG}`
+/** Public canonical path slug — Product DB slug değildir. */
+export const KOOPPLUS_SEO_SLUG = 'kooperatif-yonetim-yazilimi'
+export const KOOPPLUS_PATH = `/yazilimlar/${KOOPPLUS_SEO_SLUG}`
+export const KOOPPLUS_LEGACY_PATH = `/yazilimlar/${KOOPPLUS_SLUG}`
 export const KOOPPLUS_NAME = 'KoopPlus'
-export const KOOPPLUS_TAGLINE = 'Kooperatif Yönetim Sistemi'
+export const KOOPPLUS_SEO_TOPIC = 'Kooperatif Yönetim Yazılımı'
+export const KOOPPLUS_TAGLINE = KOOPPLUS_SEO_TOPIC
+
+export function isKoopPlusPublicSlug(slug?: string | null): boolean {
+  const normalized = slug?.trim().toLowerCase()
+  return normalized === KOOPPLUS_SLUG || normalized === KOOPPLUS_SEO_SLUG
+}
 
 /** Özel checkout route yok. Satış açılınca generic addToCart(productId) → /sepet. */
 export const KOOPPLUS_WINDOWS_CHECKOUT_PATH: string | null = null
@@ -70,9 +80,9 @@ export const KOOPPLUS_PRICE_AMOUNT: number | null = null
 export const KOOPPLUS_PRICE_CURRENCY = 'TRY'
 
 export const KOOPPLUS_SEO = {
-  title: 'KoopPlus | Kooperatif Yönetim Programı | Woontegra',
+  title: 'Kooperatif Yönetim Yazılımı | KoopPlus | Woontegra',
   description:
-    'Kooperatif aidat, tahsilat, üye, faiz, kasa ve banka işlemlerini tek masaüstü uygulamasında yönetin. KoopPlus’ı 7 gün ücretsiz deneyin.',
+    'Kooperatif yönetim yazılımı KoopPlus ile üye, aidat, tahsilat, faiz, kasa ve banka yönetimini tek masaüstü uygulamada toplayın. 7 gün ücretsiz deneyin.',
 } as const
 
 export const KOOPPLUS_HERO = {
