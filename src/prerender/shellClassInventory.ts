@@ -38,6 +38,7 @@ export const PRERENDER_SHELL_CLASS_INVENTORY = [
   'border-b border-slate-200 bg-slate-50 py-10',
   'text-sm font-semibold uppercase tracking-wide text-slate-500',
   'mt-5 grid gap-4 sm:grid-cols-3',
+  'mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4',
   'block rounded-2xl border border-slate-200 bg-white p-5',
   'text-base font-semibold text-slate-900',
   'mt-2 text-sm leading-relaxed text-slate-600',

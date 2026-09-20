@@ -21,6 +21,7 @@ const SOCIAL_URLS = [
 const PRODUCT_HUB_PATHS = [
   '/yazilimlar/bilirkisi-hesap',
   '/yazilimlar/muvekkil-kasa-defteri',
+  '/yazilimlar/koopplus',
   '/yazilimlar/sifre-kasasi',
 ]
 
@@ -191,6 +192,7 @@ function verifyYazilimlarHub() {
   }
   assert('/yazilimlar', /bilirkişi/i.test(html), 'hub Bilirkişi adı')
   assert('/yazilimlar', /müvekkil/i.test(html), 'hub Müvekkil adı')
+  assert('/yazilimlar', /koopplus/i.test(html), 'hub KoopPlus adı')
   assert('/yazilimlar', /şifre/i.test(html), 'hub Şifre Kasası adı')
 }
 
@@ -202,6 +204,7 @@ function verifySitemap() {
   const xml = fs.readFileSync(SITEMAP, 'utf8')
   const required = [
     '/yazilimlar/bilirkisi-hesap',
+    '/yazilimlar/koopplus',
     '/yazilimlar/bilirkisi-hesap/moduller/fazla-mesai-nasil-hesaplanir',
     '/yazilimlar/bilirkisi-hesap/moduller/kidem-tazminati-nasil-hesaplanir',
     '/gizlilik-politikasi',
@@ -260,6 +263,10 @@ function main() {
     mustInclude: ['Müvekkil'],
     requireSoftware: true,
   })
+  verifyPage('/yazilimlar/koopplus', {
+    mustInclude: ['KoopPlus'],
+    requireSoftware: true,
+  })
   verifyPage('/yazilimlar/sifre-kasasi', {
     mustInclude: ['Şifre'],
     requireSoftware: true,
@@ -271,6 +278,7 @@ function main() {
   verifyYazilimlarHub()
   verifySoftwareWoontegraRelation('/yazilimlar/bilirkisi-hesap', 'Bilirkişi')
   verifySoftwareWoontegraRelation('/yazilimlar/muvekkil-kasa-defteri', 'Müvekkil')
+  verifySoftwareWoontegraRelation('/yazilimlar/koopplus', 'KoopPlus')
   verifySoftwareWoontegraRelation('/yazilimlar/sifre-kasasi', 'Şifre')
 
   // Internal linking smoke (prerender nav)

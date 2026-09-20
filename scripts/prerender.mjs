@@ -39,6 +39,11 @@ const SOFTWARE_ENTITY_HUB = [
     description: 'Avukat büroları için Woontegra masaüstü ve web tabanlı kasa defteri.',
   },
   {
+    name: 'KoopPlus',
+    path: '/yazilimlar/koopplus',
+    description: 'Kooperatif üye, aidat, tahsilat, kasa ve banka süreçleri için masaüstü yazılım.',
+  },
+  {
     name: 'Şifre Kasası',
     path: '/yazilimlar/sifre-kasasi',
     description: 'Woontegra’nın ücretsiz Windows şifre yönetim aracı.',
@@ -60,6 +65,7 @@ const PRIORITY_ROUTES = [
   '/iletisim',
   '/yazilimlar',
   '/yazilimlar/muvekkil-kasa-defteri',
+  '/yazilimlar/koopplus',
   '/yazilimlar/sifre-kasasi',
   '/yazilimlar/bilirkisi-hesap',
   '/hizmetler',
@@ -118,6 +124,12 @@ const PAGE_SEO = {
     description:
       'Woontegra yazılımları; işletmeler için masaüstü programlar, SaaS ürünleri ve lisanslı dijital çözümler sunar.',
     h1: 'Dijital Ürünler ve Yazılımlar',
+  },
+  '/yazilimlar/koopplus': {
+    title: 'KoopPlus | Kooperatif Yönetim Programı | Woontegra',
+    description:
+      'Kooperatif aidat, tahsilat, üye, faiz, kasa ve banka işlemlerini tek masaüstü uygulamasında yönetin. KoopPlus’ı 7 gün ücretsiz deneyin.',
+    h1: 'Kooperatif yönetimini tek merkezde toplayın.',
   },
   '/hizmetler': {
     title: 'Woontegra Hizmetleri | Yazılım ve Dijital Çözümler',
@@ -202,6 +214,16 @@ const PRODUCT_FALLBACKS = {
     body: 'Müvekkil Kasa Defteri: Size Uygun Sürümü Seçin. Woontegra’nın avukat büroları için geliştirdiği masaüstü ve web tabanlı kasa defteri yazılımlarını karşılaştırın.',
     applicationCategory: 'BusinessApplication',
     h1: 'Müvekkil Kasa Defteri: Size Uygun Sürümü Seçin',
+  },
+  koopplus: {
+    name: 'KoopPlus',
+    title: 'KoopPlus | Kooperatif Yönetim Programı | Woontegra',
+    description:
+      'Kooperatif aidat, tahsilat, üye, faiz, kasa ve banka işlemlerini tek masaüstü uygulamasında yönetin. KoopPlus’ı 7 gün ücretsiz deneyin.',
+    body: 'KoopPlus, kooperatif üye, aidat, tahsilat, faiz, kasa ve banka süreçlerini tek masaüstü uygulamada yönetmek için geliştirilen Woontegra yazılımıdır. 7 gün ücretsiz denenebilir. Windows sürümü kullanıma hazırdır; macOS sürümü yakında sunulacaktır.',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Windows',
+    h1: 'Kooperatif yönetimini tek merkezde toplayın.',
   },
   'sifre-kasasi': {
     name: 'Woontegra Şifre Kasası',
@@ -463,7 +485,7 @@ async function resolvePageModel(route, cache) {
   if (route === '/yazilimlar') {
     crumbs.push({ name: 'Yazılımlar', path: route })
     jsonLd.push(breadcrumbSchema(crumbs))
-    bodyText = `${h1}. Woontegra yazılımları: Bilirkişi Hesap, Müvekkil Kasa Defteri ve Şifre Kasası.`
+    bodyText = `${h1}. Woontegra yazılımları: Bilirkişi Hesap, Müvekkil Kasa Defteri, KoopPlus ve Şifre Kasası.`
     return { title, description, h1, bodyText, jsonLd, crumbs, hubProducts: true }
   }
 
@@ -506,6 +528,26 @@ async function resolvePageModel(route, cache) {
         description,
         url: siteUrl(route),
         applicationCategory: fb.applicationCategory,
+      }),
+      breadcrumbSchema(crumbs),
+    )
+    return { title, description, h1, bodyText, jsonLd, crumbs }
+  }
+
+  if (route === '/yazilimlar/koopplus') {
+    const fb = PRODUCT_FALLBACKS.koopplus
+    title = fb.title
+    description = fb.description
+    h1 = fb.h1
+    bodyText = fb.body
+    crumbs.push({ name: 'Yazılımlar', path: '/yazilimlar' }, { name: 'KoopPlus', path: route })
+    jsonLd.push(
+      softwareApplicationSchema({
+        name: fb.name,
+        description,
+        url: siteUrl(route),
+        applicationCategory: fb.applicationCategory,
+        operatingSystem: fb.operatingSystem,
       }),
       breadcrumbSchema(crumbs),
     )
@@ -847,7 +889,7 @@ function renderBody(model) {
           h('h2', { className: 'text-sm font-semibold uppercase tracking-wide text-slate-500' }, 'Woontegra ürünleri'),
           h(
             'ul',
-            { className: 'mt-5 grid gap-4 sm:grid-cols-3' },
+            { className: 'mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4' },
             SOFTWARE_ENTITY_HUB.map((product) =>
               h(
                 'li',
@@ -1020,6 +1062,7 @@ async function main() {
     '/yazilimlar',
     '/yazilimlar/bilirkisi-hesap',
     '/yazilimlar/muvekkil-kasa-defteri',
+    '/yazilimlar/koopplus',
     '/yazilimlar/sifre-kasasi',
   ])
 

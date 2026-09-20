@@ -248,6 +248,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.woontegra.com/yazilimlar/koopplus</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.woontegra.com/yazilimlar/muvekkil-kasa-defteri</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

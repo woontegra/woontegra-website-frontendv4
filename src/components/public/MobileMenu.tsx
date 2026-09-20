@@ -1,6 +1,8 @@
-import { ChevronDown } from 'lucide-react'
+import { ArrowRight, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import { extraSoftwareNavItems, isSoftwareNavItem, SOFTWARE_SHOWCASE_ITEMS } from '@/data/softwareShowcase'
+import { SoftwareShowcaseMark } from '@/components/public/SoftwareShowcaseMark'
 import type { PublicNavigationMenuItem } from '@/types/navigationMenu'
 import { cn } from '@/lib/cn'
 
@@ -48,7 +50,8 @@ export function MobileMenu({ items, onNavigate }: Props) {
     <nav className="space-y-1 px-4 py-3 pb-6">
       {items.map((item) => {
         const hasChildren = item.children.length > 0
-        if (!hasChildren) {
+        const software = isSoftwareNavItem(item)
+        if (!hasChildren && !software) {
           return <NavLeaf key={item.id} item={item} onNavigate={onNavigate} />
         }
         const isOpen = expanded[item.id] ?? false
@@ -56,7 +59,7 @@ export function MobileMenu({ items, onNavigate }: Props) {
           <div key={item.id}>
             <button
               type="button"
-              className={cn(linkClass(false), 'flex w-full items-center justify-between')}
+              className={cn(linkClass(false), 'flex min-h-12 w-full items-center justify-between')}
               onClick={() => toggle(item.id)}
               aria-expanded={isOpen}
             >
@@ -64,18 +67,55 @@ export function MobileMenu({ items, onNavigate }: Props) {
               <ChevronDown className={cn('h-4 w-4 text-slate-400 transition-transform', isOpen && 'rotate-180')} />
             </button>
             {isOpen ? (
-              <div className="space-y-0.5 pb-1">
-                <NavLink
-                  to={item.href}
-                  className={({ isActive }) => linkClass(isActive, true)}
-                  onClick={onNavigate}
-                >
-                  Tümünü gör
-                </NavLink>
-                {item.children.map((child) => (
-                  <NavLeaf key={child.id} item={child} nested onNavigate={onNavigate} />
-                ))}
-              </div>
+              software ? (
+                <div className="space-y-2 pb-3 pt-1">
+                  <NavLink
+                    to={item.href}
+                    className={({ isActive }) => linkClass(isActive, true)}
+                    onClick={onNavigate}
+                  >
+                    Tümünü gör
+                  </NavLink>
+                  {SOFTWARE_SHOWCASE_ITEMS.map((product) => {
+                    return (
+                      <Link
+                        key={product.id}
+                        to={product.href}
+                        onClick={onNavigate}
+                        className="flex min-h-14 items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3"
+                      >
+                        <span className="mt-0.5">
+                          <SoftwareShowcaseMark item={product} size="sm" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-semibold text-slate-900">{product.title}</span>
+                          <span className="mt-0.5 block text-xs leading-snug text-slate-500">{product.description}</span>
+                          <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-emerald-700">
+                            {product.ctaLabel}
+                            <ArrowRight className="h-3 w-3" aria-hidden />
+                          </span>
+                        </span>
+                      </Link>
+                    )
+                  })}
+                  {extraSoftwareNavItems(item.children).map((child) => (
+                    <NavLeaf key={child.id} item={child} nested onNavigate={onNavigate} />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-0.5 pb-1">
+                  <NavLink
+                    to={item.href}
+                    className={({ isActive }) => linkClass(isActive, true)}
+                    onClick={onNavigate}
+                  >
+                    Tümünü gör
+                  </NavLink>
+                  {item.children.map((child) => (
+                    <NavLeaf key={child.id} item={child} nested onNavigate={onNavigate} />
+                  ))}
+                </div>
+              )
             ) : null}
           </div>
         )

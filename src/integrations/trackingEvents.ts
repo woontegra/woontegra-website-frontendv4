@@ -163,3 +163,22 @@ export function trackSearch(query: string) {
   fbqEvent('Search', params)
   logDebug('search', params)
 }
+
+export type KoopplusTrackingEvent =
+  | 'koopplus_view'
+  | 'koopplus_trial_click'
+  | 'koopplus_windows_buy_click'
+  | 'koopplus_mac_coming_soon_click'
+
+/** KoopPlus CTA takibi — mevcut consent/gtag katmanını kullanır; yeni analytics sistemi kurmaz. */
+export function trackKoopplusEvent(name: KoopplusTrackingEvent, extra?: Record<string, unknown>) {
+  if (!analyticsConsentGranted()) return
+  const params = { product: 'koopplus', ...(extra ?? {}) }
+  if (name === 'koopplus_view') {
+    if (eventEnabled('viewContent')) {
+      trackViewContent({ id: 'koopplus', name: 'KoopPlus' })
+    }
+  }
+  gtagEvent(name, params)
+  logDebug(name, params)
+}

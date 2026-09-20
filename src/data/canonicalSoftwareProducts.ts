@@ -1,3 +1,4 @@
+import { KOOPPLUS_PATH, KOOPPLUS_SLUG } from '@/data/koopplusProduct'
 import type { PublicProductDetail, PublicProductListItem } from '@/types/product'
 
 export const BILIRKISI_HESAP_SLUG = 'bilirkisi-hesap'
@@ -60,10 +61,16 @@ export const CANONICAL_SOFTWARE_NAV: CanonicalSoftwareNavItem[] = [
     order: 2,
   },
   {
+    slug: KOOPPLUS_SLUG,
+    title: 'KoopPlus',
+    path: KOOPPLUS_PATH,
+    order: 3,
+  },
+  {
     slug: 'sifre-kasasi',
     title: 'Ücretsiz Woontegra Şifre Kasası',
     path: '/yazilimlar/sifre-kasasi',
-    order: 3,
+    order: 4,
   },
 ]
 

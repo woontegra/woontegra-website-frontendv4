@@ -56,6 +56,7 @@ const STATIC_ENTRIES = [
   })),
   { path: '/yazilimlar', priority: '0.9', changefreq: 'weekly' },
   { path: '/yazilimlar/muvekkil-kasa-defteri', priority: '0.8', changefreq: 'monthly' },
+  { path: '/yazilimlar/koopplus', priority: '0.8', changefreq: 'monthly' },
   { path: '/yazilimlar/sifre-kasasi', priority: '0.8', changefreq: 'monthly' },
   { path: '/yazilimlar/bilirkisi-hesap', priority: '0.8', changefreq: 'monthly' },
   { path: '/blog', priority: '0.9', changefreq: 'weekly' },

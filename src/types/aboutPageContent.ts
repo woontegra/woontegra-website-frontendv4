@@ -166,11 +166,20 @@ function createCanonicalAboutSoftwareCards(): AboutBrandCard[] {
     },
     {
       id: uid(),
+      name: 'KoopPlus',
+      image: '',
+      text: 'Kooperatif üye, aidat, tahsilat, faiz, kasa ve banka süreçlerini tek masaüstü uygulamada yönetin.',
+      url: '/yazilimlar/koopplus',
+      order: 3,
+      enabled: true,
+    },
+    {
+      id: uid(),
       name: 'Woontegra Şifre Kasası',
       image: '',
       text: 'Ücretsiz kullanım sunan, temel güvenli kayıt ve erişim ihtiyacına odaklanan pratik yardımcı yazılım.',
       url: '/yazilimlar/sifre-kasasi',
-      order: 3,
+      order: 4,
       enabled: true,
     },
   ]

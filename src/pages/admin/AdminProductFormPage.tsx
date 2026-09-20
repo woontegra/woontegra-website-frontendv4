@@ -33,6 +33,8 @@ import { imageUploadSizeHint } from '@/constants/imageUploadSpecs'
 import { slugifySoftwareName } from '@/types/product'
 import {
   PRODUCT_FORM_TABS,
+  PUBLISH_IMAGE_REQUIRED_MESSAGE,
+  hasAdminCoverImage,
   tabForValidationError,
   validateAdminProductForm,
   type ProductFormTabId,
@@ -239,6 +241,14 @@ export function AdminProductFormPage() {
     return raw ? resolveMediaUrl(raw) : null
   }, [useCoverUrl, form.coverImage, coverPreviewUrl, form.coverImageMediaId, data])
 
+  const hasCover = hasAdminCoverImage(form, coverPreview)
+  const bannerError =
+    form.isActive && !hasCover
+      ? PUBLISH_IMAGE_REQUIRED_MESSAGE
+      : formError && formError !== PUBLISH_IMAGE_REQUIRED_MESSAGE
+        ? formError
+        : null
+
   const savePayloadPreview = useMemo(
     () =>
       buildAdminProductSavePayload({
@@ -267,7 +277,7 @@ export function AdminProductFormPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const err = validateAdminProductForm(form, presetId)
+      const err = validateAdminProductForm(form, presetId, coverPreview)
       if (err) {
         setTab(tabForValidationError(err))
         throw new Error(err)
@@ -296,6 +306,7 @@ export function AdminProductFormPage() {
     setUseCoverUrl(false)
     setForm((p) => ({ ...p, coverImageMediaId: media.id, coverImage: '' }))
     setCoverPreviewUrl(resolveMediaUrl(media.url))
+    if (formError === PUBLISH_IMAGE_REQUIRED_MESSAGE) setFormError(null)
   }
 
   const onGallerySelect = (media: CatalogMedia) => {
@@ -371,10 +382,10 @@ export function AdminProductFormPage() {
           void saveMutation.mutateAsync()
         }}
       >
-        {formError ? (
+        {bannerError ? (
           <Card className="mb-4 border-red-200 bg-red-50">
             <CardBody>
-              <p className="text-sm text-red-700">{formError}</p>
+              <p className="text-sm text-red-700">{bannerError}</p>
             </CardBody>
           </Card>
         ) : null}

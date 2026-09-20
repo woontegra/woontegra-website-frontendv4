@@ -37,7 +37,7 @@ export function DesktopLicenseRenewalPanel({ data, renewalDays, renewalLabel }: 
 
   return (
     <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/90 px-4 py-4 text-sm text-emerald-950">
-      <p className="font-semibold">Mevcut Müvekkil Kasa Defteri lisansınızı yeniliyorsunuz</p>
+      <p className="font-semibold">Mevcut masaüstü lisansınızı yeniliyorsunuz</p>
       <dl className="mt-3 space-y-1.5 text-sm">
         {data.customerName ? (
           <div className="flex flex-wrap gap-x-2">

@@ -3,7 +3,7 @@ export const DESKTOP_RENEWAL_TOKEN_KEY = 'woontegra_desktop_license_renewal_toke
 export type DesktopLicenseRenewalView = {
   purchaseContext: 'DESKTOP_LICENSE_RENEWAL'
   sessionId: string
-  productCode: 'MUVEKKIL_KASA_DESKTOP'
+  productCode: string
   purpose: 'DESKTOP_LICENSE_RENEWAL'
   licenseId: string | null
   licenseKeyMasked: string

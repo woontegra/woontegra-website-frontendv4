@@ -8,6 +8,7 @@ import { ErrorState } from '@/components/public/ErrorState'
 import { EmptyState } from '@/components/public/EmptyState'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { mergePageSeo, SOFTWARE_ENTITY_HUB } from '@/lib/siteSeo'
+import { showcaseItemByPath, SoftwareShowcaseMark } from '@/components/public/SoftwareShowcaseMark'
 import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { SOFTWARE_PAGE_CONTENT_KEY } from '@/lib/builderPageContentKeys'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
@@ -30,24 +31,32 @@ export function SoftwareListPage() {
       <PageHero
         eyebrow="Yazılımlar"
         title="Dijital Ürünler ve Yazılımlar"
-        description="Woontegra’nın geliştirdiği Bilirkişi Hesap, Müvekkil Kasa Defteri ve Şifre Kasası yazılımlarına buradan ulaşın."
+        description="Woontegra’nın geliştirdiği Bilirkişi Hesap, Müvekkil Kasa Defteri, KoopPlus ve Şifre Kasası yazılımlarına buradan ulaşın."
         breadcrumbs={[{ label: 'Ana Sayfa', href: '/' }, { label: 'Yazılımlar' }]}
       />
       <section className="border-b border-slate-200 bg-slate-50 py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Woontegra ürünleri</h2>
-          <ul className="mt-5 grid gap-4 sm:grid-cols-3">
-            {SOFTWARE_ENTITY_HUB.map((product) => (
+          <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {SOFTWARE_ENTITY_HUB.map((product) => {
+              const showcase = showcaseItemByPath(product.path)
+              return (
               <li key={product.path}>
                 <Link
                   to={product.path}
                   className="block rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-emerald-300 hover:shadow-sm"
                 >
+                  {showcase ? (
+                    <div className="mb-3">
+                      <SoftwareShowcaseMark item={showcase} />
+                    </div>
+                  ) : null}
                   <p className="text-base font-semibold text-slate-900">{product.name}</p>
                   <p className="mt-2 text-sm leading-relaxed text-slate-600">{product.description}</p>
                 </Link>
               </li>
-            ))}
+              )
+            })}
           </ul>
         </div>
       </section>

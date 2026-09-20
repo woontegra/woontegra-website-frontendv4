@@ -68,6 +68,11 @@ export const BUILDER_MENU_PRODUCTS: BuilderNavProduct[] = [
     path: MK_COMPARE_PATH,
   },
   {
+    slug: 'koopplus',
+    title: 'KoopPlus',
+    path: '/yazilimlar/koopplus',
+  },
+  {
     slug: 'sifre-kasasi',
     title: 'Ücretsiz Woontegra Şifre Kasası',
     path: '/yazilimlar/sifre-kasasi',

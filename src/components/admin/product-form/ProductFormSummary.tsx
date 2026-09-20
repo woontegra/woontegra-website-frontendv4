@@ -15,7 +15,7 @@ import {
   hasPortableDownloadFile,
   hasSetupDownloadFile,
 } from '@/lib/productDownloadFiles'
-import { isReadyForSale } from '@/lib/adminProductForm'
+import { hasAdminCoverImage, isReadyForSale } from '@/lib/adminProductForm'
 import { adminLicenseProgramsService } from '@/services/adminLicenseProgramsService'
 import { licenseProgramReadinessLabel } from '@/components/admin/LicenseProgramPicker'
 
@@ -26,7 +26,8 @@ type Props = {
 }
 
 export function ProductFormSummary({ form, presetId, coverPreview }: Props) {
-  const ready = isReadyForSale(form, presetId)
+  const hasCover = hasAdminCoverImage(form, coverPreview)
+  const ready = isReadyForSale(form, presetId, coverPreview)
   const hasPrice = Number.isFinite(form.price) && form.price > 0
   const appCode = form.licenseAppCode?.trim() ?? ''
 
@@ -140,9 +141,11 @@ export function ProductFormSummary({ form, presetId, coverPreview }: Props) {
         >
           {saleReady
             ? 'Satışa hazır görünüyor. Kaydettikten sonra public sayfada kontrol edin.'
-            : form.licenseRequired && licenseReady.tone !== 'success'
-              ? 'Satışa açmak için lisans sunucusunda aktif bir program seçin.'
-              : 'Satışa açmak için fiyat, teslimat veya lisans alanlarını tamamlayın.'}
+            : form.isActive && !hasCover
+              ? 'Bu içerik yayına alınamaz. Görsel alanı zorunludur.'
+              : form.licenseRequired && licenseReady.tone !== 'success'
+                ? 'Satışa açmak için lisans sunucusunda aktif bir program seçin.'
+                : 'Satışa açmak için fiyat, teslimat veya lisans alanlarını tamamlayın.'}
         </div>
       </CardBody>
     </Card>

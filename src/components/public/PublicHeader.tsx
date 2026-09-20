@@ -3,7 +3,9 @@ import { Menu, ShoppingCart, X } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { MobileMenu } from '@/components/public/MobileMenu'
+import { SoftwareMegaMenu } from '@/components/public/SoftwareMegaMenu'
 import { AccountMenu } from '@/components/public/AccountMenu'
+import { isSoftwareNavItem } from '@/data/softwareShowcase'
 import { useCart } from '@/hooks/useCart'
 import { DEFAULT_PUBLIC_SITE_SETTINGS, siteLogoUrl, usePublicSiteSettings } from '@/hooks/usePublicSiteSettings'
 import { DEFAULT_NAVBAR_LOGO_WIDTH, navbarLogoImgStyle } from '@/lib/logoSize'
@@ -41,6 +43,10 @@ function CartBadge({ count }: { count: number }) {
 function DesktopNavItem({ item }: { item: PublicNavigationMenuItem }) {
   const hasChildren = item.children.length > 0
   const [open, setOpen] = useState(false)
+
+  if (isSoftwareNavItem(item)) {
+    return <SoftwareMegaMenu item={item} />
+  }
 
   if (!hasChildren) {
     const external = item.href.startsWith('http')

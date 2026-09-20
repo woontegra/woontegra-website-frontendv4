@@ -48,6 +48,11 @@ export const SOFTWARE_ENTITY_HUB = [
     description: 'Avukat büroları için Woontegra masaüstü ve web tabanlı kasa defteri.',
   },
   {
+    name: 'KoopPlus',
+    path: '/yazilimlar/koopplus',
+    description: 'Kooperatif üye, aidat, tahsilat, kasa ve banka süreçleri için masaüstü yazılım.',
+  },
+  {
     name: 'Şifre Kasası',
     path: '/yazilimlar/sifre-kasasi',
     description: 'Woontegra’nın ücretsiz Windows şifre yönetim aracı.',
@@ -79,7 +84,12 @@ export const PAGE_SEO_BY_PATH: Record<string, PageSeo> = {
   '/yazilimlar': {
     title: 'Woontegra Yazılımları | İşletmelere Özel Yazılım Çözümleri',
     description:
-      'Woontegra yazılımları: Bilirkişi Hesap, Müvekkil Kasa Defteri ve Şifre Kasası — masaüstü, web ve lisanslı dijital ürünler.',
+      'Woontegra yazılımları: Bilirkişi Hesap, Müvekkil Kasa Defteri, KoopPlus ve Şifre Kasası — masaüstü, web ve lisanslı dijital ürünler.',
+  },
+  '/yazilimlar/koopplus': {
+    title: 'KoopPlus | Kooperatif Yönetim Programı | Woontegra',
+    description:
+      'Kooperatif aidat, tahsilat, üye, faiz, kasa ve banka işlemlerini tek masaüstü uygulamasında yönetin. KoopPlus’ı 7 gün ücretsiz deneyin.',
   },
   '/blog': {
     title: 'Woontegra Blog | Yazılım ve Dijital Dönüşüm',

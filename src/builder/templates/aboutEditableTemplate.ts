@@ -48,6 +48,11 @@ const ABOUT_SOFTWARE_CARDS = [
     href: '/yazilimlar/muvekkil-kasa-defteri?surum=saas',
   },
   {
+    title: 'KoopPlus',
+    description: 'Kooperatif üye, aidat, tahsilat, faiz, kasa ve banka süreçlerini tek masaüstü uygulamada yönetin.',
+    href: '/yazilimlar/koopplus',
+  },
+  {
     title: 'Woontegra Şifre Kasası',
     description: 'Ücretsiz kullanım sunan, temel güvenli kayıt ve erişim ihtiyacına odaklanan pratik yardımcı yazılım.',
     href: '/yazilimlar/sifre-kasasi',

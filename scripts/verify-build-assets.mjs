@@ -41,4 +41,15 @@ if (missing.length > 0) {
   process.exit(1)
 }
 
-console.log(`[verify:assets] OK — ${assetRefs.length} asset references exist in dist/`)
+const requiredPublicFiles = ['images/products/koopplus-icon.png']
+for (const rel of requiredPublicFiles) {
+  const filePath = path.join(distDir, rel)
+  if (!fs.existsSync(filePath)) {
+    console.error(`[verify:assets] missing public file in dist/: /${rel}`)
+    process.exit(1)
+  }
+}
+
+console.log(
+  `[verify:assets] OK — ${assetRefs.length} asset references exist in dist/; public icons copied`,
+)

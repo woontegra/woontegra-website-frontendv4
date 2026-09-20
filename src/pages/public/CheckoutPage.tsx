@@ -26,7 +26,7 @@ import {
 } from '@/lib/cartStorage'
 import { matchDistrictName, matchProvinceName } from '@/data/turkeyLocation'
 import { isMuvekkilKasaSaasProduct, SAAS_LOGIN_REQUIRED_MESSAGE } from '@/lib/muvekkilKasaSaasProduct'
-import { isMuvekkilKasaDesktopCentralLicenseProduct } from '@/lib/muvekkilKasaDesktopProduct'
+import { isCentralDesktopLicenseProduct } from '@/lib/centralDesktopLicenseProduct'
 import { MkSaasLicensePurchasePanel } from '@/components/public/product/MkSaasLicensePurchasePanel'
 import { DesktopLicenseRenewalPanel } from '@/components/public/product/DesktopLicenseRenewalPanel'
 import {
@@ -212,13 +212,13 @@ export function CheckoutPage() {
     () => merged.some((m) => isMuvekkilKasaSaasProduct({ slug: m.slug, productType: m.productType })),
     [merged],
   )
-  const cartHasMkDesktop = useMemo(
+  const cartHasDesktopLicense = useMemo(
     () =>
       merged.some((m) =>
-        isMuvekkilKasaDesktopCentralLicenseProduct({
+        isCentralDesktopLicenseProduct({
           slug: m.slug,
           productType: m.productType,
-          licenseRequired: true,
+          licenseRequired: m.licenseRequired === true,
         }),
       ),
     [merged],
@@ -234,7 +234,7 @@ export function CheckoutPage() {
   const desktopRenewalQuery = useQuery({
     queryKey: ['checkout', 'desktop-license-renewal', desktopRenewalToken],
     queryFn: () => desktopLicenseRenewalService.resolve(desktopRenewalToken!),
-    enabled: Boolean(desktopRenewalToken) && cartHasMkDesktop && !cartHasMkSaas,
+    enabled: Boolean(desktopRenewalToken) && cartHasDesktopLicense && !cartHasMkSaas,
     retry: false,
   })
   const licensePurchase: MkSaasLicensePurchaseView | null = licensePurchaseQuery.data ?? null
@@ -251,7 +251,7 @@ export function CheckoutPage() {
     desktopLicenseRenewal && isDesktopLicenseRenewalCheckoutContext(desktopLicenseRenewal),
   )
   const isDesktopRenewalFlow = Boolean(
-    desktopRenewalToken && cartHasMkDesktop && !cartHasMkSaas && (desktopRenewalQuery.isPending || isDesktopRenewalCheckout),
+    desktopRenewalToken && cartHasDesktopLicense && !cartHasMkSaas && (desktopRenewalQuery.isPending || isDesktopRenewalCheckout),
   )
   const isRenewalAccountCheckout = isExistingAccountCheckout || isDesktopRenewalCheckout
   const showContextAwareBillingUi = showExistingAccountCheckoutUi || isDesktopRenewalFlow
@@ -767,7 +767,7 @@ export function CheckoutPage() {
           Satın alma bağlantısı geçersiz veya süresi dolmuş. Müvekkil Kasa uygulamasından yeni bağlantı oluşturun.
         </div>
       ) : null}
-      {desktopRenewalToken && cartHasMkDesktop && !cartHasMkSaas && desktopRenewalQuery.isError ? (
+      {desktopRenewalToken && cartHasDesktopLicense && !cartHasMkSaas && desktopRenewalQuery.isError ? (
         <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" role="alert">
           Yenileme bağlantısı geçersiz veya süresi dolmuş. Müvekkil Kasa Defteri uygulamasından yeni bağlantı oluşturun.
         </div>

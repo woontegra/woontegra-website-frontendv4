@@ -18,10 +18,8 @@ import { productsService } from '@/services/productsService'
 import { mkSaasLicensePurchaseService } from '@/services/mkSaasLicensePurchaseService'
 import { getErrorMessage } from '@/api/client'
 import { isMuvekkilKasaSaasProduct, resolveMkSaasBlocksSlug } from '@/lib/muvekkilKasaSaasProduct'
-import {
-  isMuvekkilKasaDesktopCentralLicenseProduct,
-  isMuvekkilKasaDesktopSalesSlug,
-} from '@/lib/muvekkilKasaDesktopProduct'
+import { isCentralDesktopLicenseProduct } from '@/lib/centralDesktopLicenseProduct'
+import { isMuvekkilKasaDesktopSalesSlug } from '@/lib/muvekkilKasaDesktopProduct'
 import { saveMkSaasRenewalToken } from '@/lib/mkSaasLicensePurchase'
 import { saveDesktopRenewalToken } from '@/lib/desktopLicenseRenewal'
 import { desktopLicenseRenewalService } from '@/services/desktopLicenseRenewalService'
@@ -62,9 +60,10 @@ export function SoftwareDetailPage() {
     ...publicQueryOptions,
   })
 
-  const isMkDesktopProduct = isMuvekkilKasaDesktopCentralLicenseProduct({
-    slug,
-    licenseRequired: true,
+  const isDesktopLicenseProduct = isCentralDesktopLicenseProduct({
+    slug: data?.slug ?? slug,
+    licenseRequired: data?.licenseRequired === true,
+    productType: data?.productType,
   })
   const licensePurchaseQuery = useQuery({
     ...publicQueryOptions,
@@ -84,7 +83,7 @@ export function SoftwareDetailPage() {
       saveDesktopRenewalToken(renewalToken)
       return desktopLicenseRenewalService.resolve(renewalToken)
     },
-    enabled: Boolean(renewalToken) && isMkDesktopProduct && !isMkSaasProduct,
+    enabled: Boolean(renewalToken) && isDesktopLicenseProduct && !isMkSaasProduct,
     retry: false,
   })
 
@@ -148,7 +147,7 @@ export function SoftwareDetailPage() {
       <div className="mx-auto max-w-3xl px-6 py-24">
         <ErrorState message="Yenileme bağlantısı geçersiz veya süresi dolmuş." />
         <p className="mt-4 text-sm text-slate-600">
-          Müvekkil Kasa Defteri uygulamasından &quot;Lisansı Yenile&quot; ile yeni bağlantı oluşturun.
+          Masaüstü uygulamasından &quot;Lisansı Yenile&quot; ile yeni bağlantı oluşturun.
         </p>
       </div>
     ) : (

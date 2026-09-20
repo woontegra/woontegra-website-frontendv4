@@ -17,9 +17,21 @@ export const PRODUCT_FORM_TABS: { id: ProductFormTabId; label: string }[] = [
   { id: 'seo', label: 'SEO & Yayın' },
 ]
 
+export const PUBLISH_IMAGE_REQUIRED_MESSAGE = 'Bu içerik yayına alınamaz. Görsel alanı zorunludur.'
+
+export function hasAdminCoverImage(
+  form: Pick<AdminProductInput, 'coverImage' | 'coverImageMediaId'>,
+  coverPreview?: string | null,
+): boolean {
+  return Boolean(
+    form.coverImageMediaId?.trim() || form.coverImage?.trim() || coverPreview?.trim(),
+  )
+}
+
 export function validateAdminProductForm(
   form: AdminProductInput,
   presetId: AdminProductPresetId,
+  coverPreview?: string | null,
 ): string | null {
   if (form.name.trim().length < 2) {
     return 'Ürün adı en az 2 karakter olmalıdır.'
@@ -77,10 +89,15 @@ export function validateAdminProductForm(
     }
   }
 
+  if (form.isActive && !hasAdminCoverImage(form, coverPreview)) {
+    return PUBLISH_IMAGE_REQUIRED_MESSAGE
+  }
+
   return null
 }
 
 export function tabForValidationError(message: string): ProductFormTabId {
+  if (message.includes('Görsel') || message.includes('görsel')) return 'media'
   if (message.includes('fiyat') || message.includes('Satış')) return 'pricing'
   if (
     message.includes('teslimat') ||
@@ -114,9 +131,14 @@ export function isDeliveryReadyForSale(form: AdminProductInput, presetId: AdminP
   return true
 }
 
-export function isReadyForSale(form: AdminProductInput, presetId?: AdminProductPresetId): boolean {
+export function isReadyForSale(
+  form: AdminProductInput,
+  presetId?: AdminProductPresetId,
+  coverPreview?: string | null,
+): boolean {
   const preset = presetId ?? inferPresetFromForm(form)
   if (!form.isActive || !form.purchaseEnabled || form.price <= 0) return false
+  if (!hasAdminCoverImage(form, coverPreview)) return false
   if (!isDeliveryReadyForSale(form, preset)) return false
   if (form.licenseRequired && !form.licenseAppCode?.trim()) return false
   return true
