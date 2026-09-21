@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn'
+import { BuilderCardIcon } from '@/builder/render/BuilderCardIcon'
 import type { HomePageContent } from '@/types/homePageContent'
 
 type Props = { intro: HomePageContent['intro']; titleAs?: 'h1' | 'h2' }
@@ -42,7 +43,7 @@ export function HomeIntro({ intro, titleAs = 'h2' }: Props) {
                     )}
                     aria-hidden
                   >
-                    {card.icon?.trim() || String(idx + 1).padStart(2, '0')}
+                    <BuilderCardIcon name={card.icon || String(idx + 1).padStart(2, '0')} className="h-4 w-4" />
                   </div>
                   <p className="text-base font-semibold text-slate-900">{card.title}</p>
                 </div>

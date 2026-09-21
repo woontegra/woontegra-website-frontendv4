@@ -33,9 +33,15 @@ describe('iconRegistry homepage card identifiers', () => {
     expect(resolveBuilderCardIcon('check-circle')).toBe(CheckCircle)
   })
 
+  it('resolves homepage intro step identifiers to design-system icons', () => {
+    expect(resolveBuilderCardIcon('01')).toBe(Target)
+    expect(resolveBuilderCardIcon('02')).toBe(Code2)
+    expect(resolveBuilderCardIcon('03')).toBe(tryResolveIcon('Settings'))
+  })
+
   it('keeps unknown builder icons null so raw strings are not rendered', () => {
     expect(tryResolveIcon('not-a-real-icon')).toBeNull()
-    expect(resolveBuilderCardIcon('01')).toBeNull()
+    expect(resolveBuilderCardIcon('not-a-real-icon')).toBeNull()
     expect(resolveIcon('missing')).toBeTruthy()
   })
 })

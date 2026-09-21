@@ -156,6 +156,10 @@ const iconMap: Record<string, LucideIcon> = {
   code: Code2,
   'code-2': Code2,
   lightbulb: Lightbulb,
+  // Ana sayfa intro kartları (Planlarız / Geliştiririz / Yönetiriz) CMS'de '01'..'03' saklıyor
+  '01': Target,
+  '02': Code2,
+  '03': Settings,
 }
 
 function iconLookupKeys(name: string): string[] {

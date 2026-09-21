@@ -136,9 +136,9 @@ export const defaultHomePageContent: HomePageContent = {
     title:
       'Woontegra, fikrinizi yalnızca yayına almakla kalmaz; onu çalışan, ölçülebilir ve sürdürülebilir bir dijital sisteme dönüştürür.',
     cards: [
-      { id: 'intro-1', title: 'Planlarız', description: 'İhtiyacı, hedefi ve doğru teknolojiyi birlikte netleştiririz.', icon: '01', order: 0, enabled: true },
-      { id: 'intro-2', title: 'Geliştiririz', description: 'Web, e-ticaret ve yazılım çözümlerini sürdürülebilir şekilde üretiriz.', icon: '02', order: 1, enabled: true },
-      { id: 'intro-3', title: 'Yönetiriz', description: 'Yayın sonrası destek, bakım ve geliştirme sürecini takip ederiz.', icon: '03', order: 2, enabled: true },
+      { id: 'intro-1', title: 'Planlarız', description: 'İhtiyacı, hedefi ve doğru teknolojiyi birlikte netleştiririz.', icon: 'Target', order: 0, enabled: true },
+      { id: 'intro-2', title: 'Geliştiririz', description: 'Web, e-ticaret ve yazılım çözümlerini sürdürülebilir şekilde üretiriz.', icon: 'Code2', order: 1, enabled: true },
+      { id: 'intro-3', title: 'Yönetiriz', description: 'Yayın sonrası destek, bakım ve geliştirme sürecini takip ederiz.', icon: 'Settings', order: 2, enabled: true },
     ],
   },
   services: {
