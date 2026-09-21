@@ -33,15 +33,14 @@ export function isKoopPlusPublicSlug(slug?: string | null): boolean {
 export const KOOPPLUS_WINDOWS_CHECKOUT_PATH: string | null = null
 
 /** Satış teslimatı ve 7 günlük deneme aynı Setup EXE’yi kullanır. */
-export const KOOPPLUS_WINDOWS_SETUP_FILENAME = 'KoopPlus-Setup-1.0.0.exe'
+export const KOOPPLUS_WINDOWS_SETUP_FILENAME = 'KoopPlus-Setup-1.0.3.exe'
 
 /**
  * KoopPlus trial CTA için public installer URL.
- * Product downloadFiles kaydındaki satış Setup EXE’sidir (koopplus-download /windows/…).
- * Product API / cart-preview’a konmaz; update feed / latest.yml / blockmap değildir.
+ * Production custom domain (download.woontegra.com) — auto-update feed değildir.
  */
 export const KOOPPLUS_WINDOWS_DOWNLOAD_URL =
-  'https://pub-57d992373eaf4ebd92cd37366668fafd.r2.dev/windows/KoopPlus-Setup-1.0.0.exe'
+  'https://download.woontegra.com/downloads/koopplus/windows/KoopPlus-Setup-1.0.3.exe'
 
 /**
  * macOS satış anahtarı. D-U-N-S/onay tamamlanmadan true yapılmamalı.
@@ -266,11 +265,17 @@ export type KoopPlusWindowsTrialDownload = {
 }
 
 function isSalesSetupInstallerUrl(url: string): boolean {
-  if (!url.endsWith(`/${KOOPPLUS_WINDOWS_SETUP_FILENAME}`) && !url.endsWith(KOOPPLUS_WINDOWS_SETUP_FILENAME)) {
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'https:') return false
+    const name = decodeURIComponent(parsed.pathname.split('/').pop() || '')
+    if (name !== KOOPPLUS_WINDOWS_SETUP_FILENAME) return false
+    if (parsed.hostname === 'updates.woontegra.com') return false
+    if (/latest\.yml|\.blockmap|\/updates\//i.test(url)) return false
+    return true
+  } catch {
     return false
   }
-  if (/latest\.yml|\.blockmap|\/updates\/koopplus-aidat-takip\//i.test(url)) return false
-  return true
 }
 
 /** Trial CTA yalnız kayıtlardaki Setup EXE’yi kullanır; update feed teslimat sayılmaz. */

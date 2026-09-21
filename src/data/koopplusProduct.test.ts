@@ -68,21 +68,23 @@ describe('KoopPlus website catalog', () => {
     }
   })
 
-  it('points the trial CTA at the recorded KoopPlus Setup EXE, not the update feed', () => {
+  it('points the trial CTA at the production KoopPlus Setup EXE, not the update feed', () => {
     expect(KOOPPLUS_DISTRIBUTION.windows.artifacts).toBe('r2')
     expect(KOOPPLUS_DISTRIBUTION.windows.checkoutPath).toBeNull()
-    expect(KOOPPLUS_WINDOWS_SETUP_FILENAME).toBe('KoopPlus-Setup-1.0.0.exe')
+    expect(KOOPPLUS_WINDOWS_SETUP_FILENAME).toBe('KoopPlus-Setup-1.0.3.exe')
     expect(KOOPPLUS_WINDOWS_DOWNLOAD_URL).toBe(
-      'https://pub-57d992373eaf4ebd92cd37366668fafd.r2.dev/windows/KoopPlus-Setup-1.0.0.exe',
+      'https://download.woontegra.com/downloads/koopplus/windows/KoopPlus-Setup-1.0.3.exe',
     )
+    expect(KOOPPLUS_WINDOWS_DOWNLOAD_URL).not.toContain('pub-57d992373eaf4ebd92cd37366668fafd.r2.dev')
     expect(isKoopPlusWindowsDownloadReady()).toBe(true)
     const trial = getKoopPlusWindowsTrialDownload()
-    expect(trial?.filename).toBe('KoopPlus-Setup-1.0.0.exe')
+    expect(trial?.filename).toBe('KoopPlus-Setup-1.0.3.exe')
     expect(trial?.href).toBe(KOOPPLUS_WINDOWS_DOWNLOAD_URL)
-    expect(trial?.href.endsWith('/windows/KoopPlus-Setup-1.0.0.exe')).toBe(true)
+    expect(trial?.href.endsWith('/downloads/koopplus/windows/KoopPlus-Setup-1.0.3.exe')).toBe(true)
     expect(trial?.href.includes('latest.yml')).toBe(false)
     expect(trial?.href.includes('.blockmap')).toBe(false)
     expect(trial?.href.includes('/updates/koopplus-aidat-takip/')).toBe(false)
+    expect(trial?.href.includes('updates.woontegra.com')).toBe(false)
   })
 
   it('keeps trial copy on installer + in-app LicenseGate, not website signup', () => {
