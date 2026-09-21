@@ -3,6 +3,7 @@ import { BookOpen } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { PublicBlogPost } from '@/types/blog'
 import { pickBlogCoverUrl } from '@/lib/publicContentImages'
+import { MediaImage } from '@/media/components/MediaImage'
 import { cn } from '@/lib/cn'
 
 const GRADIENTS = [
@@ -45,11 +46,11 @@ export function BlogCardCover({ post, compact = false }: Props) {
     <Link to={`/blog/${post.slug}`} className="block shrink-0 overflow-hidden">
       <div className={cn('relative w-full overflow-hidden bg-slate-100', coverAspectClass(compact))}>
         {showImage ? (
-          <img
+          <MediaImage
             src={coverUrl}
             alt={post.title}
             loading="lazy"
-            decoding="async"
+            sizes="(max-width: 640px) 100vw, 420px"
             className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
             onError={() => setImageFailed(true)}
           />

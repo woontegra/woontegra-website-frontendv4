@@ -1,5 +1,12 @@
 export type CatalogMediaFileType = 'IMAGE' | 'DOWNLOAD' | 'DOCUMENT'
 
+export type CatalogImageVariant = {
+  width: number
+  format: string
+  mimeType?: string
+  url: string
+}
+
 export type CatalogMedia = {
   id: string
   fileName: string
@@ -14,6 +21,10 @@ export type CatalogMedia = {
   publicUrl?: string | null
   createdAt: string
   updatedAt: string
+  width?: number
+  height?: number
+  format?: string
+  variants?: CatalogImageVariant[]
 }
 
 export function extractMediaUrl(raw: unknown): string {
@@ -69,6 +80,25 @@ export function normalizeCatalogMedia(raw: unknown): CatalogMedia | null {
     publicUrl: row.publicUrl == null ? null : toString(row.publicUrl),
     createdAt: toString(row.createdAt),
     updatedAt: toString(row.updatedAt),
+    width: typeof row.width === 'number' ? row.width : undefined,
+    height: typeof row.height === 'number' ? row.height : undefined,
+    format: row.format == null ? undefined : toString(row.format),
+    variants: Array.isArray(row.variants)
+      ? row.variants.reduce<CatalogImageVariant[]>((list, item) => {
+          if (!item || typeof item !== 'object') return list
+          const variant = item as Record<string, unknown>
+          const url = typeof variant.url === 'string' ? variant.url : ''
+          const width = Number(variant.width)
+          if (!url || !width) return list
+          list.push({
+            width,
+            format: toString(variant.format),
+            mimeType: variant.mimeType == null ? undefined : toString(variant.mimeType),
+            url,
+          })
+          return list
+        }, [])
+      : undefined,
   }
 }
 

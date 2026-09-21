@@ -2,6 +2,7 @@ import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { BlockSectionHeader, SectionBlockShell } from '@/builder/render/SectionBlockShell'
 import { renderIfText } from '@/builder/render/renderRules'
 import type { GalleryBlock } from '@/builder/types/contentBlocks'
+import { MediaImage } from '@/media/components/MediaImage'
 import { cn } from '@/lib/cn'
 
 export function GalleryBlockRenderer({ block }: BlockRendererProps) {
@@ -34,11 +35,12 @@ export function GalleryBlockRenderer({ block }: BlockRendererProps) {
               key={img.id}
               className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm"
             >
-              <img
+              <MediaImage
                 src={img.url}
                 alt={img.alt || b.title || 'Galeri görseli'}
                 className="h-full w-full object-cover aspect-[4/3]"
                 loading="lazy"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
               {img.alt ? (
                 <figcaption className="px-3 py-2 text-xs text-slate-500">{img.alt}</figcaption>

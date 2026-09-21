@@ -5,12 +5,16 @@ import { buildHeroPreloadBundle, buildSingleImagePreloadBundle } from '@/media/o
 import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 import type { HomePageContent } from '@/types/homePageContent'
 import { defaultHomePageContent, normalizeHomePageContent } from '@/types/homePageContent'
-export type HomeHeroShellLayout = 'split' | 'fullscreen' | 'compact' | 'none'
+export type HomeHeroShellLayout = 'split' | 'fullscreen' | 'compact' | 'none' | 'banner'
 
 export type HomeHeroPreloadBundle = {
   href: string
+  mobileHref?: string
+  desktopHref?: string
   imageSrcSet: string
   imageSizes: string
+  mobileImageSrcSet?: string
+  desktopImageSrcSet?: string
 }
 
 export type HomeHeroShell = {
@@ -103,8 +107,10 @@ function heroPreloadFromBlock(hero: HeroBlock): HomeHeroPreloadBundle | null {
   return sources ? buildHeroPreloadBundle(sources) : null
 }
 
-function heroLayoutFromBlock(hero: HeroBlock): HomeHeroShellLayout {  if (hero.settings.layout === 'compact') return 'compact'
+function heroLayoutFromBlock(hero: HeroBlock): HomeHeroShellLayout {
+  if (hero.settings.layout === 'compact') return 'compact'
   if (hero.settings.layout === 'split') return 'split'
+  if (hero.settings.mode === 'carousel') return 'banner'
   return 'fullscreen'
 }
 

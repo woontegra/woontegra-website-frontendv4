@@ -1,12 +1,20 @@
 import { SITE_ORIGIN } from '@/lib/siteSeo'
 import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 import type { HeroImageSources } from '@/builder/render/heroResponsiveImage'
+import {
+  buildOptimizedSrcSet,
+  pickOptimizedPreloadUrl,
+} from '@/media/optimizedMediaVariants'
 
 export const HERO_IMAGE_WIDTHS = {
   mobile: 768,
   tablet: 1024,
   desktop: 1920,
 } as const
+
+/** Canlı hero banner oranları — her iki mevcut slide aynı. */
+export const HOME_BANNER_DESKTOP_ASPECT = '3 / 1'
+export const HOME_BANNER_MOBILE_ASPECT = '9 / 16'
 
 const DEFAULT_QUALITY = 85
 
@@ -32,8 +40,15 @@ export function shouldOptimizeMediaUrl(url: string): boolean {
 }
 
 /**
- * Vercel Image Optimization — production'da mobil/desktop için boyut sınırlı URL üretir.
- * Dev ortamında orijinal URL döner.
+ * Vite SPA'da `/_vercel/image` Next.js optimizer değildir — Vercel rewrite ile
+ * index.html döner. Opt-in olmadan kullanmak LCP'yi bir failed request ile geciktirir.
+ */
+export function isVercelImageOptimizationEnabled(): boolean {
+  return import.meta.env.VITE_VERCEL_IMAGE_OPTIMIZATION === 'true'
+}
+
+/**
+ * Production görsel URL'si. Optimizer kapalıysa orijinal (Blob/R2) URL döner.
  */
 export function buildOptimizedMediaUrl(
   url: string | null | undefined,
@@ -42,7 +57,7 @@ export function buildOptimizedMediaUrl(
   const resolved = resolveMediaUrl(url ?? '')
   if (!resolved) return ''
   if (!shouldOptimizeMediaUrl(resolved)) return resolved
-  if (!import.meta.env.PROD) return resolved
+  if (!import.meta.env.PROD || !isVercelImageOptimizationEnabled()) return resolved
 
   const width = options.width ?? HERO_IMAGE_WIDTHS.desktop
   const quality = options.quality ?? DEFAULT_QUALITY
@@ -66,26 +81,39 @@ export function buildHeroOptimizedSources(sources: HeroImageSources): HeroImageS
   }
 }
 
-export function buildHeroPreloadBundle(sources: HeroImageSources): {
+export type HeroPreloadBundle = {
   href: string
+  mobileHref: string
+  desktopHref: string
   imageSrcSet: string
   imageSizes: string
-} | null {
+  mobileImageSrcSet?: string
+  desktopImageSrcSet?: string
+}
+
+export function buildHeroPreloadBundle(sources: HeroImageSources): HeroPreloadBundle | null {
   const optimized = buildHeroOptimizedSources(sources)
   if (!optimized.desktop) return null
 
+  const mobile = optimized.mobile || optimized.desktop
+  const desktop = optimized.desktop
+  const mobileHref = pickOptimizedPreloadUrl(mobile, HERO_IMAGE_WIDTHS.mobile, 'webp')
+  const desktopHref = pickOptimizedPreloadUrl(desktop, HERO_IMAGE_WIDTHS.desktop, 'webp')
+
   return {
-    href: optimized.mobile || optimized.desktop,
-    imageSrcSet: `${optimized.mobile} ${HERO_IMAGE_WIDTHS.mobile}w, ${optimized.tablet} ${HERO_IMAGE_WIDTHS.tablet}w, ${optimized.desktop} ${HERO_IMAGE_WIDTHS.desktop}w`,
+    href: mobileHref,
+    mobileHref,
+    desktopHref,
+    imageSrcSet:
+      buildOptimizedSrcSet(desktop, 'webp') ||
+      `${mobile} ${HERO_IMAGE_WIDTHS.mobile}w, ${optimized.tablet} ${HERO_IMAGE_WIDTHS.tablet}w, ${desktop} ${HERO_IMAGE_WIDTHS.desktop}w`,
     imageSizes: '100vw',
+    mobileImageSrcSet: buildOptimizedSrcSet(mobile, 'webp') || undefined,
+    desktopImageSrcSet: buildOptimizedSrcSet(desktop, 'webp') || undefined,
   }
 }
 
-export function buildSingleImagePreloadBundle(url: string | null | undefined): {
-  href: string
-  imageSrcSet: string
-  imageSizes: string
-} | null {
+export function buildSingleImagePreloadBundle(url: string | null | undefined): HeroPreloadBundle | null {
   const resolved = resolveMediaUrl(url ?? '')
   if (!resolved) return null
   return buildHeroPreloadBundle({

@@ -6,6 +6,12 @@ export {
   hasPublicImage,
 } from './resolvePublicImage'
 export { resolveCatalogMediaPreviewUrl } from './resolveCatalogMediaPreviewUrl'
+export {
+  buildOptimizedSrcSet,
+  buildResponsivePictureModel,
+  isOptimizedMediaUrl,
+  parseOptimizedMediaUrl,
+} from './optimizedMediaVariants'
 export { MediaImage } from './components/MediaImage'
 export { PublicHeroImage } from './components/PublicHeroImage'
 export { PublicImagePlaceholder } from './components/PublicImagePlaceholder'
