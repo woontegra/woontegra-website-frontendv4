@@ -19,6 +19,12 @@ import { paymentsService } from '@/services/paymentsService'
 import { getErrorMessage } from '@/api/client'
 import { BILIRKISI_HESAP_SLUG } from '@/data/canonicalSoftwareProducts'
 import {
+  bilirkisiCheckoutCopy,
+  isLicenseStillActive,
+  parsePurchaseContext,
+  resolveBilirkisiCheckoutKind,
+} from '@/pages/public/bilirkisiCheckoutCopy'
+import {
   sanitizeTurkishIdentityNumberInput,
   validateTurkishIdentityNumber,
 } from '@/utils/turkishIdentityNumber'
@@ -325,10 +331,10 @@ export function BilirkisiCheckoutPage() {
   const [productType, setProductType] = useState<ProductType>(initialPlan)
   const period = 1
   const [quote, setQuote] = useState<BhQuote | null>(null)
-  const [quoteLoading, setQuoteLoading] = useState(false)
+  const [quoteLoading, setQuoteLoading] = useState(() => Boolean(renewalToken))
   const [renewalContext, setRenewalContext] = useState<RenewalContext | null>(null)
   const isDemoUpgrade = renewalContext?.purchaseContext === 'DEMO_CONVERSION'
-  const isPaidRenewal = isRenewal && Boolean(renewalContext) && !isDemoUpgrade
+  const isDemoStillActive = isDemoUpgrade && isLicenseStillActive(renewalContext?.subscriptionEndsAt)
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card')
   const [bankAvailable, setBankAvailable] = useState(false)
   const [consentGroups, setConsentGroups] = useState({ sale: false, terms: false })
@@ -355,6 +361,15 @@ export function BilirkisiCheckoutPage() {
   const [prefillDone, setPrefillDone] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const checkoutKind = resolveBilirkisiCheckoutKind({
+    hasRenewToken: isRenewal,
+    purchaseContext: renewalContext?.purchaseContext ?? null,
+    quoteFailed: Boolean((error || productError) && !renewalContext),
+  })
+  const checkoutCopy = bilirkisiCheckoutCopy(checkoutKind, {
+    demoStillActive: isDemoStillActive,
+    isDevUi: isDevUi(),
+  })
   const [success, setSuccess] = useState<{
     kind: 'card_dry_run' | 'card' | 'bank'
     merchantOid?: string
@@ -495,14 +510,7 @@ export function BilirkisiCheckoutPage() {
           const root = asRecord(raw)
           const data = asRecord(root.data && Object.keys(asRecord(root.data)).length ? root.data : root)
           setRenewalContext({
-            purchaseContext:
-              String(data.purchaseContext || '').toUpperCase() === 'DEMO_CONVERSION'
-                ? 'DEMO_CONVERSION'
-                : String(data.currentPackage || data.licenseType || '')
-                      .trim()
-                      .toLowerCase() === 'demo'
-                  ? 'DEMO_CONVERSION'
-                  : 'LICENSE_RENEWAL',
+            purchaseContext: parsePurchaseContext(data),
             accountEmail: (data.accountEmail as string | null) || (data.targetEmail as string | null) || null,
             customerName: (data.customerName as string | null) || null,
             maskedEmail: (data.maskedEmail as string | null) || null,
@@ -828,31 +836,27 @@ export function BilirkisiCheckoutPage() {
     <div className="mx-auto max-w-6xl px-4 py-8 sm:py-10 lg:py-12">
       <div className="mb-6 lg:mb-8">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Bilirkişi Hesap</p>
-        <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-          {isDemoUpgrade ? 'Demo aboneliğinizi satın alın' : isPaidRenewal ? 'Aboneliğinizi Uzatın' : 'Satın al'}
-        </h1>
-        {isDemoUpgrade ? (
-          <p className="mt-2 text-sm text-slate-600">
-            Ödeme sonrası mevcut demo lisansınız ücretli aboneliğe dönüşür; kalan demo süresi satın alınan süreye eklenir.
-            Yeni Bilirkişi Hesap hesabı oluşturulmaz.
-          </p>
-        ) : isPaidRenewal ? (
-          <p className="mt-2 text-sm text-slate-600">
-            Ödeme sonrası mevcut lisansınız uzatılır; yeni hesap veya bağımsız lisans oluşturulmaz.
-          </p>
-        ) : isDevUi() ? (
-          <p className="mt-2 text-sm text-slate-500">
-            Fiyat Bilirkişi Hesap satış motorundan gelir. Ödeme local ortamda dry-run ile çalışır.
-          </p>
+        {checkoutKind === 'loading' ? (
+          <div className="mt-2 space-y-2" aria-busy="true" aria-label="Satın alma bilgileri yükleniyor">
+            <div className="h-8 w-72 max-w-full animate-pulse rounded bg-slate-200 sm:h-9" />
+            <div className="h-4 w-full max-w-xl animate-pulse rounded bg-slate-100" />
+          </div>
         ) : (
-          <p className="mt-2 text-sm text-slate-600">Abonelik paketini seçin, fatura bilgilerinizi tamamlayın ve ödemeye geçin.</p>
+          <>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+              {checkoutCopy.title}
+            </h1>
+            {checkoutCopy.subtitle ? (
+              <p className="mt-2 text-sm text-slate-600">{checkoutCopy.subtitle}</p>
+            ) : null}
+          </>
         )}
       </div>
 
       {isRenewal && renewalContext ? (
         <div className="mb-5 rounded-2xl border border-sky-200 bg-sky-50/80 px-4 py-3.5 text-sm text-slate-800 sm:px-5">
           <p className="font-semibold text-sky-900">
-            {isDemoUpgrade ? 'Demo yükseltme oturumu' : 'Yenileme oturumu'}
+            {checkoutCopy.sessionTitle}
           </p>
           <dl className="mt-2 grid gap-1.5 sm:grid-cols-2">
             <div>
@@ -1061,16 +1065,17 @@ export function BilirkisiCheckoutPage() {
               </>
             ) : (
               <div className="rounded-xl border border-sky-100 bg-sky-50/70 px-4 py-5 sm:px-5">
-                <h2 className="text-base font-semibold text-slate-900">
-                  {isRenewal
-                    ? 'Aboneliğinizi uzatmak için hesabınıza giriş yapın'
-                    : 'Satın almaya devam etmek için hesabınıza giriş yapın'}
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  {isRenewal
-                    ? 'Ödeme Woontegra hesabınız üzerinden alınır; Bilirkişi Hesap lisansınız aynı kullanıcıda uzatılır.'
-                    : 'Siparişiniz ve lisans bilgileriniz Woontegra hesabınızla ilişkilendirilecektir.'}
-                </p>
+                {checkoutKind === 'loading' ? (
+                  <div className="space-y-2" aria-busy="true" aria-label="Giriş bilgileri yükleniyor">
+                    <div className="h-5 w-full max-w-md animate-pulse rounded bg-slate-200" />
+                    <div className="h-4 w-5/6 animate-pulse rounded bg-slate-100" />
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="text-base font-semibold text-slate-900">{checkoutCopy.guestTitle}</h2>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{checkoutCopy.guestBody}</p>
+                  </>
+                )}
                 <div className="mt-5 flex flex-wrap gap-3">
                   <Link
                     to={loginHref}
@@ -1092,14 +1097,12 @@ export function BilirkisiCheckoutPage() {
           {/* SAĞ: Özet + ödeme (sticky desktop) — guest ve authed aynı görünüm */}
           <div className="mt-6 space-y-4 lg:sticky lg:top-24 lg:mt-0">
             <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
-              <h2 className="text-sm font-semibold text-slate-900">
-                {isRenewal ? 'Uzatma paketi' : 'Abonelik paketi'}
-              </h2>
-              <p className="mt-1 text-xs text-slate-500">
-                {isRenewal
-                  ? 'Seçtiğiniz süre, mevcut lisans bitiş tarihine eklenir.'
-                  : 'Aylık ve yıllık birbirinden bağımsız iki pakettir.'}
-              </p>
+              <h2 className="text-sm font-semibold text-slate-900">{checkoutCopy.packageTitle}</h2>
+              {checkoutKind === 'loading' ? (
+                <div className="mt-1 h-3 w-64 max-w-full animate-pulse rounded bg-slate-100" />
+              ) : checkoutCopy.packageNote ? (
+                <p className="mt-1 text-xs text-slate-500">{checkoutCopy.packageNote}</p>
+              ) : null}
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <button
                   type="button"
