@@ -24,6 +24,7 @@ export const DEFAULT_MK_COMPARE_DESKTOP_COPY: MkComparePurchaseCardCopy = {
     'Tek bilgisayarda çalışan, kurulum ile kullanılan masaüstü sürüm. Basit müvekkil kasa takibi için uygundur.',
   detailsButtonLabel: 'Masaüstü Detaylarını Gör',
   addToCartLabel: 'Sepete Ekle',
+  demoButtonLabel: '7 Gün Ücretsiz Dene',
 }
 
 export const DEFAULT_MK_COMPARE_SAAS_COPY: MkComparePurchaseCardCopy = {

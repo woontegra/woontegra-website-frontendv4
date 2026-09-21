@@ -19,8 +19,12 @@ import {
   desktopDeliveryNotes,
   MK_COMPARE_CARD_DESKTOP_ID,
   MK_COMPARE_CARD_SAAS_ID,
+  MK_COMPARE_DESKTOP_LICENSE_CAPTION,
+  MK_COMPARE_SAAS_LICENSE_CAPTION,
+  MK_COMPARE_TRIAL_CTA_LABEL,
   webDeliveryNotes,
 } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { getMuvekkilKasaDesktopTrialDownload } from '@/lib/muvekkilKasaDesktopProduct'
 import { useMkComparePageContextOptional } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
 
 type Query = UseQueryResult<PublicProductDetail, Error>
@@ -61,6 +65,45 @@ function ReferralCartHint({ tone }: { tone: 'emerald' | 'sky' }) {
       }
     >
       İş ortağı bağlantısıyla seçilen ürün
+    </p>
+  )
+}
+
+function DesktopTrialCta({
+  label,
+  download,
+}: {
+  label: string
+  download: { href: string; filename?: string } | null
+}) {
+  const className =
+    'flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-sm font-semibold text-emerald-900 transition hover:border-emerald-300 hover:bg-emerald-100'
+  const inner = (
+    <>
+      <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
+      {label}
+    </>
+  )
+  if (download) {
+    const external = /^https:/i.test(download.href)
+    return (
+      <a
+        href={download.href}
+        className={className}
+        data-desktop-trial-cta="ready"
+        {...(download.filename ? { download: download.filename } : {})}
+        {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      >
+        {inner}
+      </a>
+    )
+  }
+  return (
+    <p
+      className={`${className} cursor-default hover:border-emerald-200 hover:bg-emerald-50`}
+      data-desktop-trial-cta="pending"
+    >
+      {inner}
     </p>
   )
 }
@@ -214,7 +257,7 @@ function DesktopCard({
                 Kampanya bitiş: {formatCampaignDate(product.campaign.endsAt)}
               </p>
             ) : null}
-            <p className="mt-1 text-sm text-slate-500">KDV dahil · tek lisans</p>
+            <p className="mt-1 text-sm text-slate-500">{MK_COMPARE_DESKTOP_LICENSE_CAPTION}</p>
           </div>
         ) : (
           <p className="text-sm text-slate-500">Fiyat ürün detayında belirtilir.</p>
@@ -236,6 +279,10 @@ function DesktopCard({
             onContinue={() => setFeedback(null)}
           />
         ) : null}
+        <DesktopTrialCta
+          label={copy?.demoButtonLabel?.trim() || MK_COMPARE_TRIAL_CTA_LABEL}
+          download={getMuvekkilKasaDesktopTrialDownload(product)}
+        />
         <button
           type="button"
           onClick={onShowDetails}
@@ -350,7 +397,7 @@ function SaasCard({
                 {formatMkSaasTryMoney(unitPrice, product.currency)} / yıl × {years} yıl
               </p>
             ) : (
-              <p className="mt-1 text-sm text-slate-500">KDV dahil · 1 yıl birim fiyat</p>
+              <p className="mt-1 text-sm text-slate-500">{MK_COMPARE_SAAS_LICENSE_CAPTION}</p>
             )}
           </div>
         ) : (
@@ -401,7 +448,7 @@ function SaasCard({
           className="flex w-full items-center justify-center gap-2 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3.5 text-sm font-semibold text-sky-900 transition hover:border-sky-300 hover:bg-sky-100"
         >
           <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
-          {copy?.demoButtonLabel?.trim() || '7 Gün Ücretsiz Dene'}
+          {copy?.demoButtonLabel?.trim() || MK_COMPARE_TRIAL_CTA_LABEL}
         </button>
         <button
           type="button"

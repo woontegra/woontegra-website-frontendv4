@@ -26,6 +26,9 @@ export const MK_COMPARE_DETAILS_ID = 'urun-detaylari'
 export const MK_COMPARE_CARD_DESKTOP_ID = 'mk-card-masaustu'
 export const MK_COMPARE_CARD_SAAS_ID = 'mk-card-saas'
 export const MK_COMPARE_SHELL = 'mx-auto w-full max-w-[1180px] px-4 sm:px-6'
+export const MK_COMPARE_DESKTOP_LICENSE_CAPTION = 'KDV dahil · 1 yıl lisans'
+export const MK_COMPARE_SAAS_LICENSE_CAPTION = 'KDV dahil · 1 yıl birim fiyat'
+export const MK_COMPARE_TRIAL_CTA_LABEL = '7 Gün Ücretsiz Dene'
 
 export type MkCompareEdition = 'desktop' | 'saas'
 

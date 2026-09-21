@@ -54,6 +54,7 @@ export type PublicProductDetail = PublicProductListItem & {
   licenseDays: number | null
   licenseMaxDevices: number | null
   hasDownload: boolean
+  /** Ücretsiz araçlarda proxy path; MK Desktop’ta admin Kurulum sürümü public R2 URL’si */
   publicDownloadFiles?: PublicProductDownloadFile[]
 }
 
