@@ -11,7 +11,11 @@
     "test": "vitest run",
     "prerender": "node scripts/prerender.mjs",
     "verify:seo": "node scripts/verify-seo.mjs",
-    "build": "npm run generate:sitemap && npm run test:gallery && tsc -b && vite build && npm run prerender && npm run verify:assets && npm run verify:seo",
+    "indexnow:key": "node scripts/generate-indexnow-key.mjs",
+    "indexnow:submit": "node scripts/submit-indexnow.mjs",
+    "indexnow:dry-run": "node scripts/submit-indexnow.mjs --dry-run",
+    "test:indexnow": "node --test scripts/lib/indexnow.test.mjs",
+    "build": "npm run generate:sitemap && npm run test:gallery && tsc -b && vite build && npm run prerender && npm run verify:assets && npm run indexnow:key && npm run verify:seo && npm run indexnow:submit",
     "verify:assets": "node scripts/verify-build-assets.mjs",
     "preview": "vite preview"
   },

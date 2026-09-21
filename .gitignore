@@ -2,6 +2,9 @@ node_modules
 .env
 .env.local
 dist
+# IndexNow key files are generated into dist/ at build time — never commit them
+public/*.txt
+!public/robots.txt
 build
 .next
 coverage

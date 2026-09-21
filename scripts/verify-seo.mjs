@@ -4,6 +4,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { readIndexNowKey, validateIndexNowKey } from './lib/indexnow.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -196,6 +197,37 @@ function verifyYazilimlarHub() {
   assert('/yazilimlar', /şifre/i.test(html), 'hub Şifre Kasası adı')
 }
 
+function verifyRobots() {
+  const robots = path.join(DIST, 'robots.txt')
+  if (!fs.existsSync(robots)) {
+    failures.push('robots.txt eksik')
+    return
+  }
+  const txt = fs.readFileSync(robots, 'utf8')
+  assert('robots', /Sitemap:\s*https:\/\/www\.woontegra\.com\/sitemap\.xml/i.test(txt), 'Sitemap satırı')
+  assert('robots', /Disallow:\s*\/admin/i.test(txt), 'Disallow /admin')
+}
+
+function verifyIndexNowArtifacts() {
+  const publicDir = path.join(ROOT, 'public')
+  const leaked = fs
+    .readdirSync(publicDir)
+    .filter((name) => name.endsWith('.txt') && name !== 'robots.txt')
+  assert('indexnow', leaked.length === 0, 'public/ içinde IndexNow key dosyası olmamalı')
+
+  const key = readIndexNowKey()
+  if (!key) return
+  if (!validateIndexNowKey(key)) {
+    failures.push('INDEXNOW_KEY format geçersiz')
+    return
+  }
+  const keyFile = path.join(DIST, `${key}.txt`)
+  assert('indexnow', fs.existsSync(keyFile), 'dist/<INDEXNOW_KEY>.txt üretilmeli')
+  if (fs.existsSync(keyFile)) {
+    assert('indexnow', fs.readFileSync(keyFile, 'utf8').trim() === key, 'verification dosyası key içermeli')
+  }
+}
+
 function verifySitemap() {
   if (!fs.existsSync(SITEMAP)) {
     failures.push('sitemap.xml eksik')
@@ -278,6 +310,8 @@ function main() {
     requireSoftware: true,
   })
   verifySitemap()
+  verifyRobots()
+  verifyIndexNowArtifacts()
   assertNoWebsiteOnInnerPages()
 
   verifyOrganizationAndSocial()

@@ -20,6 +20,8 @@ Backend proxy: `/api` ve `/uploads` → `VITE_DEV_API_PROXY` (varsayılan `http:
 npm run build
 ```
 
+IndexNow (Bing URL bildirimi) build/deploy katmanındadır; `VITE_` ile client’a çıkmaz. Kurulum: [docs/indexnow.md](docs/indexnow.md).
+
 ## Mimari
 
 - `src/builder/` — esnek blok tipleri, registry, public renderer, yayın validasyonu
