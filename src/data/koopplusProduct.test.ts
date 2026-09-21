@@ -60,8 +60,8 @@ describe('KoopPlus website catalog', () => {
 
   it('keeps the official KoopPlus icon in public + Vite build output', () => {
     const root = join(dirname(fileURLToPath(import.meta.url)), '../..')
-    const publicIcon = join(root, 'public/images/products/koopplus-icon.png')
-    expect(existsSync(publicIcon), 'public/images/products/koopplus-icon.png').toBe(true)
+    const publicIcon = join(root, 'public/images/products/koopplus-icon.optavif-w512.webp')
+    expect(existsSync(publicIcon), 'public/images/products/koopplus-icon.optavif-w512.webp').toBe(true)
     const distIcon = join(root, 'dist/images/products/koopplus-icon.png')
     if (existsSync(join(root, 'dist'))) {
       expect(existsSync(distIcon), 'dist/images/products/koopplus-icon.png').toBe(true)
@@ -114,10 +114,10 @@ describe('KoopPlus website catalog', () => {
 
   it('binds official square brand icons from product data, not hardcoded menu logic', () => {
     const byId = Object.fromEntries(SOFTWARE_SHOWCASE_ITEMS.map((item) => [item.id, item]))
-    expect(byId['bilirkisi-hesap']?.logoSrc).toBe('/images/products/bilirkisi-hesap-icon.png')
-    expect(byId['muvekkil-kasa-defteri']?.logoSrc).toBe('/images/products/muvekkil-kasa-defteri-icon.png')
-    expect(byId.koopplus?.logoSrc).toBe('/images/products/koopplus-icon.png')
-    expect(byId['sifre-kasasi']?.logoSrc).toBe('/images/products/sifre-kasasi-icon.png')
+    expect(byId['bilirkisi-hesap']?.logoSrc).toBe('/images/products/bilirkisi-hesap-icon.optavif-w512.webp')
+    expect(byId['muvekkil-kasa-defteri']?.logoSrc).toBe('/images/products/muvekkil-kasa-defteri-icon.optavif-w1254.webp')
+    expect(byId.koopplus?.logoSrc).toBe('/images/products/koopplus-icon.optavif-w512.webp')
+    expect(byId['sifre-kasasi']?.logoSrc).toBe('/images/products/sifre-kasasi-icon.optavif-w256.webp')
     expect(SOFTWARE_SHOWCASE_ITEMS.every((item) => item.logoSrc)).toBe(true)
     const root = join(dirname(fileURLToPath(import.meta.url)), '../..')
     for (const item of SOFTWARE_SHOWCASE_ITEMS) {

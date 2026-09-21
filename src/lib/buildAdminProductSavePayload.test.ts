@@ -28,7 +28,7 @@ function form(overrides: Partial<AdminProductInput> = {}): AdminProductInput {
     seoDescription: '',
     coverImageMediaId: null,
     downloadMediaId: null,
-    coverImage: '/images/products/koopplus-icon.png',
+    coverImage: '/images/products/koopplus-icon.optavif-w512.webp',
     downloadUrl: '',
     ...overrides,
   }
@@ -45,7 +45,7 @@ describe('buildAdminProductSavePayload cover', () => {
       existingDownloadFiles: null,
     })
     expect(payload.coverImageMediaId).toBeNull()
-    expect(payload.coverImage).toBe('/images/products/koopplus-icon.png')
+    expect(payload.coverImage).toBe('/images/products/koopplus-icon.optavif-w512.webp')
   })
 
   it('media kapağında mediaId gönderir, coverImage göndermez', () => {

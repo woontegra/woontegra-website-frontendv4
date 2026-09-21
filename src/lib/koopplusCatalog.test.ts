@@ -22,7 +22,7 @@ const KOOPPLUS_API_FIXTURE = {
   version: null,
   purchaseEnabled: false,
   licenseMonths: 12,
-  coverImage: '/images/products/koopplus-icon.png',
+  coverImage: '/images/products/koopplus-icon.optavif-w512.webp',
   category: null,
   seoTitle: null,
   seoDescription: null,

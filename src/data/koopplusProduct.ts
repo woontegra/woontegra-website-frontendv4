@@ -71,7 +71,7 @@ export const KOOPPLUS_DISTRIBUTION = {
 export const KOOPPLUS_HERO_IMAGE: string | null = null
 
 /** Resmi kare KoopPlus uygulama ikonu (Desktop favicon kopyası). Screenshot değil. */
-export const KOOPPLUS_BRAND_ICON = '/images/products/koopplus-icon.png'
+export const KOOPPLUS_BRAND_ICON = '/images/products/koopplus-icon.optavif-w512.webp'
 
 export const KOOPPLUS_PRICE_LABEL = 'Yıllık Lisans'
 /** Satış fiyatı Product API’den gelir; burada ikinci bir tutar tutulmaz. */

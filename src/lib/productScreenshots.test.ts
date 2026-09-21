@@ -27,7 +27,7 @@ describe('product screenshots', () => {
   it('ignores cover-shaped objects unless they are gallery url rows', () => {
     expect(
       koopPlusScreenshotEntries({
-        coverImage: '/images/products/koopplus-icon.png',
+        coverImage: '/images/products/koopplus-icon.optavif-w512.webp',
         galleryImages: [],
       }),
     ).toEqual([])

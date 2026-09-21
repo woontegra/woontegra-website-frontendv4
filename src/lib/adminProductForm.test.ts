@@ -42,7 +42,7 @@ function baseForm(overrides: Partial<AdminProductInput> = {}): AdminProductInput
 
 describe('admin product cover publish validation', () => {
   it('URL-only kapak yayın validasyonunu geçer', () => {
-    const form = baseForm({ coverImage: '/images/products/koopplus-icon.png' })
+    const form = baseForm({ coverImage: '/images/products/koopplus-icon.optavif-w512.webp' })
     expect(hasAdminCoverImage(form)).toBe(true)
     expect(validateAdminProductForm(form, 'DOWNLOADABLE')).toBeNull()
     expect(isReadyForSale(form, 'DOWNLOADABLE')).toBe(true)

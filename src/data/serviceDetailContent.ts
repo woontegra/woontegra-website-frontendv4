@@ -244,7 +244,7 @@ export const webDesignDetail: ServiceDetailContent = {
     title: 'Dönüşüm Odaklı Kurumsal Web Siteleri Tasarlıyoruz',
     description:
       'Sadece estetik değil; hız, güven ve dönüşüm odaklı kurumsal web siteleri ile markanızı dijitalde güçlendiriyoruz.',
-    image: '/images/web-tasarim-hero.png',
+    image: '/images/web-tasarim-hero.optavif-w1536.jpg',
     imageAlt: 'Woontegra web tasarım örneği',
     primaryCta: { text: 'Teklif Al', to: '/teklif-al' },
     secondaryCta: { text: 'İletişime Geç', to: '/iletisim' },
@@ -406,7 +406,7 @@ export const saasProductDetail: ServiceDetailContent = {
     title: 'Ölçeklenebilir SaaS Ürünleri Geliştiriyoruz',
     description:
       'Abonelik modeliyle çalışan, çok kiracılı ve büyümeye hazır yazılım ürünleri tasarlıyor ve hayata geçiriyoruz.',
-    image: '/images/saas-hero.png',
+    image: '/images/saas-hero.optavif-w1189.jpg',
     imageAlt: 'Woontegra SaaS dashboard',
     primaryCta: { text: 'Teklif Al', to: '/teklif-al' },
     secondaryCta: { text: 'İletişime Geç', to: '/iletisim' },
@@ -487,7 +487,7 @@ export const trademarkPatentDetail: ServiceDetailContent = {
     title: 'Markanızı ve Fikri Mülkiyetinizi Koruyoruz',
     description:
       'Marka tescil, patent başvurusu ve fikri mülkiyet süreçlerinde uçtan uca danışmanlık hizmeti sunuyoruz.',
-    image: '/images/hero-dashboard.jpg',
+    image: '/images/hero-dashboard.optavif-w1536.jpg',
     imageAlt: 'Marka ve patent belgeleri',
     primaryCta: { text: 'Teklif Al', to: '/teklif-al' },
     secondaryCta: { text: 'İletişime Geç', to: '/iletisim' },

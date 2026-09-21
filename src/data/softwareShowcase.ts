@@ -26,7 +26,7 @@ export const SOFTWARE_SHOWCASE_ITEMS: SoftwareShowcaseItem[] = [
     href: '/yazilimlar/bilirkisi-hesap',
     ctaLabel: 'Ürünü İncele',
     icon: Calculator,
-    logoSrc: '/images/products/bilirkisi-hesap-icon.png',
+    logoSrc: '/images/products/bilirkisi-hesap-icon.optavif-w512.webp',
     logoFlush: true,
   },
   {
@@ -36,7 +36,7 @@ export const SOFTWARE_SHOWCASE_ITEMS: SoftwareShowcaseItem[] = [
     href: '/yazilimlar/muvekkil-kasa-defteri',
     ctaLabel: 'Ürünü İncele',
     icon: Wallet,
-    logoSrc: '/images/products/muvekkil-kasa-defteri-icon.png',
+    logoSrc: '/images/products/muvekkil-kasa-defteri-icon.optavif-w1254.webp',
   },
   {
     id: 'koopplus',
@@ -55,7 +55,7 @@ export const SOFTWARE_SHOWCASE_ITEMS: SoftwareShowcaseItem[] = [
     href: '/yazilimlar/sifre-kasasi',
     ctaLabel: 'Ücretsiz',
     icon: Shield,
-    logoSrc: '/images/products/sifre-kasasi-icon.png',
+    logoSrc: '/images/products/sifre-kasasi-icon.optavif-w256.webp',
   },
 ]
 

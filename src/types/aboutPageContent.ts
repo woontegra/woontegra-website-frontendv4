@@ -230,7 +230,7 @@ export const defaultAboutPageContent: AboutPageContent = {
     title: 'Yazılım Üreten, Lisanslayan ve Geliştiren Woontegra',
     subtitle:
       'Woontegra; masaüstü yazılımlar, web tabanlı ürünler ve lisans yönetimli çözümler geliştiren, güvenli satış ve teslimat akışlarını tek çatı altında kurgulayan bir yazılım şirketidir.',
-    image: '/images/hakkimizda-hero.jpg',
+    image: '/images/hakkimizda-hero.optavif-w1536.jpg',
     highlights: [
       {
         id: uid(),

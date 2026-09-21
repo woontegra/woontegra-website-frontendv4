@@ -54,6 +54,16 @@ describe('optimizedMediaVariants', () => {
     expect(buildOptimizedSrcSet(WEBP_ONLY, 'webp')).toContain('opt-w1920.webp')
   })
 
+  it('recognizes backfilled static canonical URLs as responsive', () => {
+    const backfilled = '/images/web-tasarim-hero.opt-w1536.jpg'
+    expect(isOptimizedMediaUrl(backfilled)).toBe(true)
+    expect(parseOptimizedMediaUrl(backfilled)?.hasWebp).toBe(true)
+    expect(buildOptimizedSrcSet(backfilled, 'webp')).toContain('web-tasarim-hero.opt-w480.webp')
+    expect(buildOptimizedSrcSet(backfilled, 'webp')).toContain('web-tasarim-hero.opt-w1536.webp')
+    expect(buildOptimizedSrcSet(backfilled, 'webp')).not.toContain('opt-w1920')
+    expect(buildResponsivePictureModel(backfilled)?.imgSrc).toBe(backfilled)
+  })
+
   it('does not upscale srcset widths past the canonical max', () => {
     const small = 'https://cdn.example.com/website-media/blog/cover-1.opt-w800.jpg'
     expect(listOptimizedWidths(800)).toEqual([480, 800])
