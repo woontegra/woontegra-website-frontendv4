@@ -618,9 +618,9 @@ export function HeroCarouselSection({ hero }: Props) {
                         <HeroResponsiveImage
                           sources={sources}
                           alt={imageAlt}
-                          className="block h-auto w-full object-contain object-center"
+                          lockAspect="banner"
                           loading="eager"
-                          fetchPriority={safeIndex === 0 ? 'high' : 'auto'}
+                          fetchPriority={safeIndex === 0 ? 'high' : 'low'}
                         />
                         {overlay ? (
                           <div

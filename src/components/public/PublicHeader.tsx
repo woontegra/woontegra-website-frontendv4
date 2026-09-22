@@ -7,12 +7,16 @@ import { SoftwareMegaMenu } from '@/components/public/SoftwareMegaMenu'
 import { AccountMenu } from '@/components/public/AccountMenu'
 import { isSoftwareNavItem } from '@/data/softwareShowcase'
 import { useCart } from '@/hooks/useCart'
-import { DEFAULT_PUBLIC_SITE_SETTINGS, siteLogoUrl, usePublicSiteSettings } from '@/hooks/usePublicSiteSettings'
-import { DEFAULT_NAVBAR_LOGO_WIDTH, navbarLogoImgStyle } from '@/lib/logoSize'
+import {
+  DEFAULT_PUBLIC_SITE_SETTINGS,
+  firstPaintLogoUrl,
+  usePublicSiteSettings,
+} from '@/hooks/usePublicSiteSettings'
+import { DEFAULT_NAVBAR_LOGO_WIDTH, NAVBAR_LOGO_MAX_HEIGHT, navbarLogoImgStyle } from '@/lib/logoSize'
+import { mergePublicLogoFields, readPublicBootState } from '@/lib/publicBootState'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { cn } from '@/lib/cn'
 import { navigationMenuService } from '@/services/navigationMenuService'
-import { MediaImage } from '@/media/components/MediaImage'
 import type { PublicNavigationMenuItem } from '@/types/navigationMenu'
 
 function useIsMobileViewport(): boolean {
@@ -113,10 +117,11 @@ export function PublicHeader() {
     ...publicQueryOptions,
   })
 
-  const siteName = settings.siteName?.trim() || DEFAULT_PUBLIC_SITE_SETTINGS.siteName
-  const logoUrl = siteLogoUrl(settings)
-  const logoWidth = settings.navbarLogoWidth ?? DEFAULT_NAVBAR_LOGO_WIDTH
-  const { style: logoStyle } = navbarLogoImgStyle(logoWidth, isMobile)
+  const logoFields = mergePublicLogoFields(settings, readPublicBootState())
+  const siteName = logoFields.siteName
+  const logoUrl = firstPaintLogoUrl(settings)
+  const logoWidth = logoFields.navbarLogoWidth || DEFAULT_NAVBAR_LOGO_WIDTH
+  const { width: reservedLogoWidth, style: logoStyle } = navbarLogoImgStyle(logoWidth, isMobile)
 
   useEffect(() => {
     if (!menuOpen) return
@@ -131,18 +136,27 @@ export function PublicHeader() {
     <header className="sticky top-0 z-[100] w-full border-b border-slate-100 bg-white">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex shrink-0 items-center gap-2" aria-label={`${siteName} Ana Sayfa`} onClick={() => setMenuOpen(false)}>
-          {logoUrl ? (
-            <MediaImage
-              src={logoUrl}
-              alt={siteName}
-              loading="eager"
-              fetchPriority="high"
-              className="block shrink-0 object-contain object-left"
-              style={logoStyle}
-            />
-          ) : (
-            <span className="text-lg font-semibold tracking-tight text-slate-900">{siteName}</span>
-          )}
+          <span
+            className="flex shrink-0 items-center"
+            style={{
+              width: reservedLogoWidth,
+              minWidth: reservedLogoWidth,
+              height: NAVBAR_LOGO_MAX_HEIGHT,
+            }}
+          >
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={siteName}
+                width={reservedLogoWidth}
+                height={NAVBAR_LOGO_MAX_HEIGHT}
+                decoding="async"
+                fetchPriority="auto"
+                className="block shrink-0 object-contain object-left"
+                style={logoStyle}
+              />
+            ) : null}
+          </span>
         </Link>
 
         <nav aria-label="Ana menü" className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex">

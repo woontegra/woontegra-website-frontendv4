@@ -1,5 +1,6 @@
-import { Suspense, lazy, useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react'
 import type { BuilderBlock } from '@/builder/types'
+import { HeroBlockRenderer } from '@/builder/render/blocks/HeroBlockRenderer'
 import { getBlockRendererLoader, type BlockRendererProps } from '@/builder/registry/renderRegistry'
 
 type Props = {
@@ -27,25 +28,8 @@ function BlockRenderFallback() {
   return <div className="min-h-0 w-full" aria-hidden />
 }
 
-function BlockSlot({
-  block,
-  mode,
-  annotateBlocks,
-}: {
-  block: BuilderBlock
-  mode: 'public' | 'preview'
-  annotateBlocks: boolean
-}) {
-  const Renderer = useMemo(() => resolveLazyRenderer(block.type), [block.type])
-
-  const content = (
-    <Suspense fallback={<BlockRenderFallback />}>
-      <Renderer block={block} mode={mode} />
-    </Suspense>
-  )
-
+function annotateWrap(block: BuilderBlock, annotateBlocks: boolean, content: ReactNode) {
   if (!annotateBlocks) return content
-
   return (
     <div
       data-builder-block-id={block.id}
@@ -55,6 +39,40 @@ function BlockSlot({
       {content}
     </div>
   )
+}
+
+function LazyBlockSlot({
+  block,
+  mode,
+  annotateBlocks,
+}: {
+  block: BuilderBlock
+  mode: 'public' | 'preview'
+  annotateBlocks: boolean
+}) {
+  const Renderer = useMemo(() => resolveLazyRenderer(block.type), [block.type])
+  return annotateWrap(
+    block,
+    annotateBlocks,
+    <Suspense fallback={<BlockRenderFallback />}>
+      <Renderer block={block} mode={mode} />
+    </Suspense>,
+  )
+}
+
+function BlockSlot({
+  block,
+  mode,
+  annotateBlocks,
+}: {
+  block: BuilderBlock
+  mode: 'public' | 'preview'
+  annotateBlocks: boolean
+}) {
+  if (block.type === 'hero') {
+    return annotateWrap(block, annotateBlocks, <HeroBlockRenderer block={block} mode={mode} />)
+  }
+  return <LazyBlockSlot block={block} mode={mode} annotateBlocks={annotateBlocks} />
 }
 
 function DeferredBlockSlot({

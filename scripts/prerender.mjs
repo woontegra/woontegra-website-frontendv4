@@ -18,6 +18,14 @@ import {
   extractHomeLcp,
   serializeLcpPreloadLink,
 } from '../src/media/lcpHeroPreload.mjs'
+import {
+  BOOT_LOGO_HEIGHT,
+  BOOT_LOGO_WIDTH_DEFAULT,
+  buildPublicLogoUrl,
+  clampBootLogoWidth,
+  extractPublicLogoBoot,
+  serializePublicBootScript,
+} from '../src/lib/publicBootState.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -710,8 +718,46 @@ async function resolvePageModel(route, cache) {
   return { title, description, h1, bodyText, jsonLd, crumbs }
 }
 
+function renderHeaderLogo(model) {
+  const boot = model.logoBoot
+  const siteName = String(boot?.siteName || 'Woontegra').trim() || 'Woontegra'
+  const src = boot ? buildPublicLogoUrl(boot.logo, boot.logoUpdatedAt) : ''
+  const width = boot ? clampBootLogoWidth(boot.navbarLogoWidth) : 0
+  if (src && width) {
+    // Raw img HTML: React 19 renderToStaticMarkup otherwise emits <link rel=preload as=image>
+    // for logo and races the homepage LCP AVIF preloads.
+    const imgHtml =
+      `<img class="woontegra-boot-logo block shrink-0 object-contain object-left"` +
+      ` src="${escapeHtml(src)}" alt="${escapeHtml(siteName)}"` +
+      ` width="${width}" height="${BOOT_LOGO_HEIGHT}" decoding="async"` +
+      ` style="width:${width}px;height:auto;max-height:${BOOT_LOGO_HEIGHT}px;object-fit:contain;object-position:left center" />`
+    return h('span', {
+      className: 'woontegra-boot-logo-slot flex shrink-0 items-center',
+      style: {
+        width: `${width}px`,
+        minWidth: `${width}px`,
+        height: `${BOOT_LOGO_HEIGHT}px`,
+      },
+      dangerouslySetInnerHTML: { __html: imgHtml },
+    })
+  }
+  return h('span', {
+    className: 'woontegra-boot-logo-slot flex shrink-0 items-center',
+    style: {
+      width: `${BOOT_LOGO_WIDTH_DEFAULT}px`,
+      minWidth: `${BOOT_LOGO_WIDTH_DEFAULT}px`,
+      height: `${BOOT_LOGO_HEIGHT}px`,
+    },
+    'aria-hidden': true,
+  })
+}
+
 function renderBody(model) {
   const home = model.isHome === true || model.route === '/'
+  const boot = model.logoBoot
+  const siteName = String(boot?.siteName || 'Woontegra').trim() || 'Woontegra'
+  const logoWidth = boot ? clampBootLogoWidth(boot.navbarLogoWidth) : 0
+  const headerLogo = renderHeaderLogo(model)
   const navItems = [
     { href: '/hakkimizda', label: 'Hakkımızda' },
     { href: '/yazilimlar', label: 'Yazılımlar' },
@@ -721,14 +767,22 @@ function renderBody(model) {
 
   const header = h(
     'header',
-    { className: 'sticky top-0 z-[100] w-full border-b border-slate-100 bg-white' },
+    {
+      className: 'woontegra-boot-header sticky top-0 z-[100] w-full border-b border-slate-100 bg-white',
+      style: logoWidth
+        ? { ['--woontegra-logo-w']: `${logoWidth}px` }
+        : undefined,
+    },
     h(
       'div',
-      { className: 'mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8' },
+      {
+        className:
+          'woontegra-boot-header-inner mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8',
+      },
       h(
         'a',
-        { href: '/', className: 'flex shrink-0 items-center gap-2', 'aria-label': 'Woontegra Ana Sayfa' },
-        h('span', { className: 'text-lg font-semibold tracking-tight text-slate-900' }, 'Woontegra'),
+        { href: '/', className: 'flex shrink-0 items-center gap-2', 'aria-label': `${siteName} Ana Sayfa` },
+        headerLogo,
       ),
       h(
         'nav',
@@ -791,58 +845,53 @@ function renderBody(model) {
     ? h(
         'section',
         {
-          className:
-            'relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-green-900 py-12 sm:py-16 lg:py-20',
+          className: 'woontegra-boot-hero relative w-full overflow-hidden bg-slate-900',
         },
         h('div', {
           className:
-            'absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,197,94,0.2),transparent_70%)]',
+            'relative w-full overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-green-900 aspect-[3/1] max-[640px]:aspect-[9/16]',
         }),
         h(
           'div',
-          { className: 'relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8' },
+          { className: 'pointer-events-none absolute inset-0 z-[2]' },
           h(
             'div',
-            { className: 'grid max-w-3xl items-center gap-10 lg:gap-12' },
+            { className: 'mx-auto flex h-full w-full max-w-7xl flex-col justify-center px-4 py-8 text-white sm:py-16' },
             h(
               'div',
-              { className: 'text-white' },
+              { className: 'mb-4 inline-block rounded-full bg-green-500/20 px-3 py-1.5' },
+              h('span', { className: 'text-xs font-medium text-green-400' }, 'Woontegra Yazılım'),
+            ),
+            h(
+              'h1',
+              { className: 'mb-4 text-3xl font-semibold leading-tight text-white drop-shadow md:text-4xl lg:text-5xl' },
+              model.h1,
+            ),
+            h(
+              'p',
+              { className: 'mb-6 max-w-xl text-base leading-relaxed text-gray-300 drop-shadow md:text-lg' },
+              model.bodyText,
+            ),
+            h(
+              'div',
+              { className: 'flex flex-wrap gap-3' },
               h(
-                'div',
-                { className: 'mb-4 inline-block rounded-full bg-green-500/20 px-3 py-1.5' },
-                h('span', { className: 'text-xs font-medium text-green-400' }, 'Woontegra Yazılım'),
+                'a',
+                {
+                  href: '/yazilimlar',
+                  className:
+                    'inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-2.5 text-sm font-medium text-white',
+                },
+                'Yazılımlar',
               ),
               h(
-                'h1',
-                { className: 'mb-4 text-3xl font-semibold leading-tight text-white md:text-4xl lg:text-5xl' },
-                model.h1,
-              ),
-              h(
-                'p',
-                { className: 'mb-6 max-w-xl text-base leading-relaxed text-gray-300 md:text-lg' },
-                model.bodyText,
-              ),
-              h(
-                'div',
-                { className: 'flex flex-wrap gap-3' },
-                h(
-                  'a',
-                  {
-                    href: '/yazilimlar',
-                    className:
-                      'inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-2.5 text-sm font-medium text-white',
-                  },
-                  'Yazılımlar',
-                ),
-                h(
-                  'a',
-                  {
-                    href: '/iletisim',
-                    className:
-                      'inline-flex items-center justify-center rounded-lg border border-white/30 px-6 py-2.5 text-sm font-medium text-white',
-                  },
-                  'İletişim',
-                ),
+                'a',
+                {
+                  href: '/iletisim',
+                  className:
+                    'inline-flex items-center justify-center rounded-lg border border-white/30 px-6 py-2.5 text-sm font-medium text-white',
+                },
+                'İletişim',
               ),
             ),
           ),
@@ -852,7 +901,7 @@ function renderBody(model) {
         'section',
         {
           className:
-            'relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 py-12 md:py-16 lg:py-20',
+            'woontegra-boot-inner-hero relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 py-12 md:py-16 lg:py-20',
         },
         h('div', {
           className:
@@ -997,7 +1046,7 @@ function renderBody(model) {
   return renderToStaticMarkup(
     h(
       'div',
-      { className: 'flex min-h-screen flex-col bg-white' },
+      { className: 'woontegra-boot-shell flex min-h-screen flex-col bg-white' },
       header,
       h('main', { className: 'flex-1' }, hero, hub, content),
       footer,
@@ -1045,8 +1094,9 @@ function injectIntoShell(shellHtml, model, route, bodyHtml) {
   html = html.replace(/<link\s+rel="canonical"[^>]*>\s*/i, '')
 
   const headExtras = buildHeadExtras(model, route)
+  const bootScript = serializePublicBootScript(model.logoBoot)
   if (!html.includes('</head>')) throw new Error('Shell HTML missing </head>')
-  html = html.replace('</head>', `${headExtras}\n</head>`)
+  html = html.replace('</head>', `${headExtras}\n${bootScript}\n</head>`)
 
   if (!html.includes('<div id="root"></div>')) {
     throw new Error('Shell HTML missing empty #root')
@@ -1069,6 +1119,11 @@ async function main() {
   console.log(`[prerender] browserless — ${ordered.length} route (API: ${API_BASE})`)
 
   const cache = {}
+  const logoBoot = extractPublicLogoBoot(unwrapData(await fetchJson('/settings')))
+  if (!logoBoot?.logo) {
+    throw new Error('public /settings logo yok — grafik header logo üretilemedi')
+  }
+  console.log(`[prerender] public logo boot: ${logoBoot.logo}`)
   let ok = 0
   const critical = new Set([
     '/',
@@ -1090,9 +1145,9 @@ async function main() {
       if (critical.has(route) && !/woontegra/i.test(`${model.title} ${model.bodyText} ${model.h1}`)) {
         throw new Error('kritik sayfada Woontegra metni yok')
       }
-      const bodyHtml = renderBody({ ...model, isHome: route === '/', route })
+      const bodyHtml = renderBody({ ...model, isHome: route === '/', route, logoBoot })
       // Always start from pristine SPA shell for asset tags
-      const html = injectIntoShell(spaShell, model, route, bodyHtml)
+      const html = injectIntoShell(spaShell, { ...model, logoBoot }, route, bodyHtml)
       if (!/<h1[\s>]/i.test(html)) throw new Error('H1 yazılamadı')
       const out = outputPathForRoute(route)
       fs.mkdirSync(path.dirname(out), { recursive: true })

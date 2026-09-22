@@ -1,4 +1,6 @@
-import { Outlet } from 'react-router-dom'
+import { useLayoutEffect } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
+import { releasePrerenderHold } from '@/lib/prerenderHold'
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd'
 import { useQuery } from '@tanstack/react-query'
 import { PublicHeader } from '@/components/public/PublicHeader'
@@ -15,6 +17,11 @@ const _prerenderShellCssAnchor = PRERENDER_SHELL_CLASS_INVENTORY
 void _prerenderShellCssAnchor
 
 export function SiteLayout() {
+  const location = useLocation()
+  useLayoutEffect(() => {
+    if (location.pathname !== '/') releasePrerenderHold()
+  }, [location.pathname])
+
   const campaignsQuery = useQuery({
     queryKey: ['campaigns', 'public'],
     queryFn: () => campaignsService.getPublic(),

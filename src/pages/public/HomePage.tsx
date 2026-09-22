@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { PageBlocksRenderer, prefetchHeroBlockRenderer } from '@/builder/render/PageBlocksRenderer'
 import { JsonLd } from '@/components/seo/JsonLd'
@@ -11,6 +11,7 @@ import { mergePageSeo, webSiteSchema } from '@/lib/siteSeo'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { pageContentService } from '@/services/pageContentService'
 import { HOME_PAGE_KEY } from '@/types/homePageContent'
+import { releasePrerenderHold } from '@/lib/prerenderHold'
 
 export function HomePage() {
   useEffect(() => {
@@ -31,6 +32,10 @@ export function HomePage() {
 
   useLcpImagePreload(heroShell?.preload)
 
+  useLayoutEffect(() => {
+    if (plan !== null || !isPending) releasePrerenderHold()
+  }, [plan, isPending])
+
   const seo = plan ? homePlanSeo(plan) : {}
   const meta = mergePageSeo('/', seo)
   const websiteSchema = useMemo(() => webSiteSchema(), [])
@@ -44,7 +49,7 @@ export function HomePage() {
   const showSkeleton = plan === null && isPending
 
   const pageBody = showSkeleton ? (
-    <HomePageHeroSkeleton layout="split" minHeight="520px" />
+    <HomePageHeroSkeleton layout="banner" />
   ) : plan?.mode === 'builder' ? (
     <div className="bg-white">
       <PageBlocksRenderer blocks={plan.blocks} mode="public" />

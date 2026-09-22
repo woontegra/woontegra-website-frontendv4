@@ -10,17 +10,74 @@
     <meta name="description" content="Woontegra Teknoloji Yazılım ve Dijital Hizmetler Ltd. Şti.; işletmeler için özel yazılım, e-ticaret altyapısı, web sitesi, masaüstü yazılım ve dijital dönüşüm çözümleri geliştirir." />
     <link rel="canonical" href="https://www.woontegra.com/" />
     <title>Woontegra | Yazılım, E-Ticaret ve Dijital Dönüşüm Çözümleri</title>
-    <!-- Critical boot paint: matches src/index.css body bg-white / --color-surface before CSS bundle -->
+    <!-- Tiny branded first-paint shell. Not full Tailwind. Hero LCP preloads stay in generated HTML. -->
     <style id="woontegra-critical-boot">
       html,
       body {
         margin: 0;
         min-height: 100%;
-        background-color: #ffffff;
+        background-color: #0f172a;
       }
       #root {
         min-height: 100vh;
+        background-color: #0f172a;
+      }
+      .woontegra-boot-shell {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .woontegra-boot-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-sizing: border-box;
+        width: 100%;
+        height: 64px;
         background-color: #ffffff;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .woontegra-boot-header-inner {
+        display: flex;
+        align-items: center;
+        height: 64px;
+        max-width: 80rem;
+        margin: 0 auto;
+        padding: 0 1rem;
+      }
+      .woontegra-boot-logo-slot {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        width: var(--woontegra-logo-w, 185px);
+        min-width: var(--woontegra-logo-w, 185px);
+        height: 52px;
+      }
+      .woontegra-boot-logo {
+        display: block;
+        width: var(--woontegra-logo-w, 185px);
+        max-width: min(var(--woontegra-logo-w, 185px), 46vw, 100%);
+        height: auto;
+        max-height: 52px;
+        object-fit: contain;
+        object-position: left center;
+      }
+      .woontegra-boot-hero {
+        box-sizing: border-box;
+        width: 100%;
+        background-color: #0f172a;
+        min-height: 33.33vw;
+      }
+      .woontegra-boot-inner-hero {
+        box-sizing: border-box;
+        width: 100%;
+        background-color: #020617;
+        min-height: 12rem;
+      }
+      @media (max-width: 640px) {
+        .woontegra-boot-hero {
+          min-height: 177.78vw;
+        }
       }
     </style>
     <script>

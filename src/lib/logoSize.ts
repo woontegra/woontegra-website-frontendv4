@@ -6,6 +6,7 @@ export const DEFAULT_NAVBAR_LOGO_WIDTH = 150
 export const MOBILE_NAVBAR_LOGO_WIDTH_CAP = 180
 
 export const NAVBAR_LOGO_ASPECT_RATIO = 3.2
+export const NAVBAR_LOGO_MAX_HEIGHT = 52
 
 export function clampNavbarLogoWidth(value: unknown, fallback = DEFAULT_NAVBAR_LOGO_WIDTH): number {
   const parsed = Number.parseInt(String(value ?? '').trim(), 10)
@@ -29,7 +30,7 @@ export function navbarLogoImgStyle(
     style: {
       width: `${width}px`,
       height: 'auto',
-      maxHeight: '52px',
+      maxHeight: `${NAVBAR_LOGO_MAX_HEIGHT}px`,
       maxWidth: isMobile ? `min(${width}px, 46vw, 100%)` : `${width}px`,
       minWidth: `${width}px`,
       objectFit: 'contain',

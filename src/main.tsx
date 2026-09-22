@@ -9,6 +9,7 @@ import { AppRootErrorBoundary } from '@/components/common/AppRootErrorBoundary'
 import { initChunkLoadRecovery } from '@/lib/chunkLoadRecovery'
 
 import { cleanupLegacyClientCaches } from '@/lib/legacyCacheCleanup'
+import { capturePrerenderHold } from '@/lib/prerenderHold'
 
 import { applyRecoveryBypassOnBoot } from '@/lib/recoveryStorage'
 
@@ -77,6 +78,7 @@ if (!rootEl) {
 } else {
 
   try {
+    capturePrerenderHold(rootEl)
 
     createRoot(rootEl).render(
 

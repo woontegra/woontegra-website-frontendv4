@@ -13,6 +13,20 @@ type Props = {
 export function HomePageHeroSkeleton({ layout = 'split', minHeight = '520px' }: Props) {
   const sectionStyle = { minHeight, ['--hero-h' as string]: minHeight }
 
+  if (layout === 'banner') {
+    return (
+      <div className="bg-white">
+        <section
+          className="relative w-full overflow-hidden bg-slate-900 aspect-[3/1] max-[640px]:aspect-[9/16]"
+          aria-busy="true"
+          aria-label="Ana sayfa yükleniyor"
+        >
+          <div className="absolute inset-0 animate-pulse bg-slate-800" />
+        </section>
+      </div>
+    )
+  }
+
   if (layout === 'fullscreen') {
     return (
       <div className="bg-white">

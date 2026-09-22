@@ -100,6 +100,59 @@ function hasCrawlableHref(html, href) {
   )
 }
 
+function headerHtml(html) {
+  const root = rootHtml(html)
+  const match = root.match(/<header[\s\S]*?<\/header>/i)
+  return match ? match[0] : ''
+}
+
+function verifyHomeBrandedFirstPaint() {
+  const home = readHtml('/')
+  if (!home) return
+
+  const criticalMatch = home.match(/<style id="woontegra-critical-boot">([\s\S]*?)<\/style>/)
+  const criticalCss = criticalMatch?.[1] || ''
+  assert('/', Boolean(criticalCss), 'branded critical shell CSS')
+  const rootRule = criticalCss.match(/#root\s*\{[^}]+\}/)?.[0] || ''
+  assert('/', /background-color:\s*#0f172a/i.test(rootRule), '#root branded slate, not white lock')
+  assert('/', !/#root\s*\{[^}]*background-color:\s*#ffffff/i.test(criticalCss), '#root white lock yok')
+  assert('/', criticalCss.includes('.woontegra-boot-header'), 'critical header surface')
+  assert('/', criticalCss.includes('.woontegra-boot-logo'), 'critical logo box')
+  assert('/', criticalCss.includes('.woontegra-boot-hero'), 'critical hero surface')
+  assert('/', /height:\s*64px/.test(criticalCss), 'critical 64px header')
+  assert('/', home.includes('woontegra-boot-header'), 'prerender header boot class')
+  assert('/', home.includes('woontegra-boot-hero'), 'prerender hero boot class')
+
+  const header = headerHtml(home)
+  const headerImg = header.match(/<img\b[^>]*>/i)?.[0] || ''
+  assert('/', Boolean(headerImg), 'initial header gerçek logo img')
+  assert('/', /src=["']https?:\/\//i.test(headerImg), 'logo src CMS http(s) URL')
+  assert('/', !/\/logo\.png/i.test(headerImg), 'header /logo.png yok')
+  assert('/', !/woontegra-logo\.svg/i.test(headerImg), 'placeholder SVG logo yok')
+  assert(
+    '/',
+    !/text-lg font-semibold tracking-tight text-slate-900/.test(header),
+    'header text brand "Woontegra" logo yerine yok',
+  )
+  assert('/', /width=/i.test(headerImg) && /height=/i.test(headerImg), 'logo width/height rezervasyonu')
+  assert('/', home.includes('woontegra-boot-logo-slot') || /width:\s*\d+px/.test(header), 'logo container rezervasyonu')
+  assert('/', home.includes('__WOONTEGRA_PUBLIC_BOOTSTRAP__'), 'public boot embed')
+  const bootScript = home.match(/<script id="woontegra-public-boot">[\s\S]*?<\/script>/)?.[0] || ''
+  assert('/', Boolean(bootScript), 'public boot script tag')
+  assert('/', !bootScript.includes('/logo.png'), 'boot /logo.png yok')
+  assert('/', !bootScript.includes('woontegra-logo.svg'), 'boot placeholder SVG yok')
+
+  const imagePreloads = [...home.matchAll(/<link\b[^>]*>/gi)]
+    .map((match) => match[0])
+    .filter((tag) => /rel=["']preload["']/.test(tag) && /as=["']image["']/.test(tag))
+  assert('/', imagePreloads.length === 2, 'yalnız 2 image preload (logo preload yok)')
+  assert(
+    '/',
+    !imagePreloads.some((tag) => /website-media\/logo/i.test(tag)),
+    'logo asset preload edilmemeli',
+  )
+}
+
 function verifyPage(route, { mustInclude = [], titleIncludes, requireOrg, requireWebsite, requireSoftware } = {}) {
   const html = readHtml(route)
   if (!html) return
@@ -221,10 +274,10 @@ function verifyIndexNowArtifacts() {
     failures.push('INDEXNOW_KEY format geçersiz')
     return
   }
-  const keyFile = path.join(DIST, `${key}.txt`)
-  assert('indexnow', fs.existsSync(keyFile), 'dist/<INDEXNOW_KEY>.txt üretilmeli')
-  if (fs.existsSync(keyFile)) {
-    assert('indexnow', fs.readFileSync(keyFile, 'utf8').trim() === key, 'verification dosyası key içermeli')
+  const file = path.join(DIST, `${key}.txt`)
+  assert('indexnow', fs.existsSync(file), 'dist/<INDEXNOW_KEY>.txt üretilmeli')
+  if (fs.existsSync(file)) {
+    assert('indexnow', fs.readFileSync(file, 'utf8').trim() === key, 'verification dosyası key içermeli')
   }
 }
 
@@ -379,6 +432,7 @@ function main() {
       }
     }
     assert('/', !home.includes('/_vercel/image'), 'kırık /_vercel/image preload yok')
+    verifyHomeBrandedFirstPaint()
   }
 
   const ok = checks.filter((c) => c.ok).length

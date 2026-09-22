@@ -2,6 +2,12 @@ import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { DEFAULT_NAVBAR_LOGO_WIDTH } from '@/lib/logoSize'
+import {
+  buildPublicLogoUrl,
+  isUsablePublicLogoUrl,
+  mergePublicLogoFields,
+  readPublicBootState,
+} from '@/lib/publicBootState'
 import { siteSettingsService } from '@/services/siteSettingsService'
 import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 
@@ -21,27 +27,53 @@ export const DEFAULT_PUBLIC_SITE_SETTINGS: PublicSiteSettings = {
   contactEmail: 'info@woontegra.com',
   contactPhone: '',
   contactAddress: '',
-  logo: '/logo.png',
+  logo: '',
   logoUpdatedAt: '',
   favicon: '/favicon.svg',
   navbarLogoWidth: DEFAULT_NAVBAR_LOGO_WIDTH,
 }
 
+function settingsFromPublicBoot(): PublicSiteSettings {
+  const boot = readPublicBootState()
+  if (!boot?.logo) {
+    return { ...DEFAULT_PUBLIC_SITE_SETTINGS, logo: '' }
+  }
+  return {
+    ...DEFAULT_PUBLIC_SITE_SETTINGS,
+    siteName: boot.siteName || DEFAULT_PUBLIC_SITE_SETTINGS.siteName,
+    logo: boot.logo,
+    logoUpdatedAt: boot.logoUpdatedAt,
+    navbarLogoWidth: boot.navbarLogoWidth,
+  }
+}
+
+export const PUBLIC_SITE_SETTINGS_QUERY_KEY = ['public', 'siteSettings'] as const
+
 export function usePublicSiteSettings() {
+  const seeded = settingsFromPublicBoot()
   return useQuery({
-    queryKey: ['public', 'siteSettings'],
+    queryKey: PUBLIC_SITE_SETTINGS_QUERY_KEY,
     queryFn: () => siteSettingsService.getPublic(),
     ...publicQueryOptions,
-    placeholderData: (prev) => prev ?? DEFAULT_PUBLIC_SITE_SETTINGS,
+    initialData: seeded.logo ? seeded : undefined,
+    initialDataUpdatedAt: seeded.logo ? 0 : undefined,
+    placeholderData: (prev) => prev ?? (seeded.logo ? seeded : { ...DEFAULT_PUBLIC_SITE_SETTINGS, logo: '' }),
+    refetchOnMount: 'always',
   })
 }
 
 export function siteLogoUrl(settings?: { logo?: string; logoUpdatedAt?: string }): string {
-  const raw = settings?.logo?.trim() || DEFAULT_PUBLIC_SITE_SETTINGS.logo
-  const url = resolveMediaUrl(raw)
-  if (!settings?.logoUpdatedAt?.trim()) return url
-  const sep = url.includes('?') ? '&' : '?'
-  return `${url}${sep}v=${encodeURIComponent(settings.logoUpdatedAt.trim())}`
+  const raw = settings?.logo?.trim() || ''
+  if (!isUsablePublicLogoUrl(raw)) return ''
+  const resolved = resolveMediaUrl(raw)
+  if (!resolved || !isUsablePublicLogoUrl(resolved)) return ''
+  return buildPublicLogoUrl(resolved, settings?.logoUpdatedAt)
+}
+
+/** İlk React frame: query cache boş olsa bile prerender boot URL'sini kullan. */
+export function firstPaintLogoUrl(settings?: { logo?: string; logoUpdatedAt?: string }): string {
+  const merged = mergePublicLogoFields(settings, readPublicBootState())
+  return siteLogoUrl(merged)
 }
 
 export function SiteFaviconEffect() {
