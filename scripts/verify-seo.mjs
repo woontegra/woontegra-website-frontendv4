@@ -356,6 +356,29 @@ function main() {
   const home = readHtml('/')
   if (home) {
     assert('/', hasCrawlableHref(home, '/yazilimlar'), 'ana sayfa → Yazılımlar link')
+    const lcpLinks = [...home.matchAll(/<link\b[^>]*>/gi)]
+      .map((match) => match[0])
+      .filter((tag) => /rel=["']preload["']/.test(tag) && /as=["']image["']/.test(tag))
+    const mobileLink = lcpLinks.find((tag) => tag.includes('(max-width: 640px)'))
+    const desktopLink = lcpLinks.find((tag) => tag.includes('(min-width: 641px)'))
+    assert('/', Boolean(mobileLink), 'ana sayfa mobil LCP image preload')
+    assert('/', Boolean(desktopLink), 'ana sayfa desktop LCP image preload')
+    for (const tag of [mobileLink, desktopLink]) {
+      if (!tag) continue
+      assert('/', tag.includes('fetchpriority="high"'), 'LCP fetchpriority=high')
+      if (tag.includes('optavif-w')) {
+        assert('/', tag.includes('type="image/avif"'), 'optavif → AVIF preload type')
+        assert('/', tag.includes('imagesrcset='), 'optavif → imagesrcset')
+        assert('/', tag.includes('imagesizes="100vw"'), 'optavif → imagesizes')
+        assert('/', tag.includes('.avif'), 'optavif srcset AVIF')
+        assert('/', !tag.includes('.webp'), 'optavif preload WebP değil')
+      } else if (tag.includes('opt-w')) {
+        assert('/', tag.includes('type="image/webp"'), 'opt-w → WebP preload type')
+        assert('/', tag.includes('imagesrcset='), 'opt-w → imagesrcset')
+        assert('/', !tag.includes('.avif'), 'opt-w AVIF tahmin etmez')
+      }
+    }
+    assert('/', !home.includes('/_vercel/image'), 'kırık /_vercel/image preload yok')
   }
 
   const ok = checks.filter((c) => c.ok).length

@@ -7,7 +7,6 @@ import { HomePageView } from '@/components/public/home/HomePageView'
 import { useLcpImagePreload } from '@/hooks/useLcpImagePreload'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { extractHomeHeroShell, homePlanSeo, resolveHomeRenderPlan } from '@/lib/homePageAdapter'
-import { preloadImage } from '@/lib/preloadImage'
 import { mergePageSeo, webSiteSchema } from '@/lib/siteSeo'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { pageContentService } from '@/services/pageContentService'
@@ -31,12 +30,6 @@ export function HomePage() {
   const heroShell = useMemo(() => (plan ? extractHomeHeroShell(plan) : null), [plan])
 
   useLcpImagePreload(heroShell?.preload)
-
-  useEffect(() => {
-    const href = heroShell?.preload?.href
-    if (!href) return
-    void preloadImage(href)
-  }, [heroShell?.preload?.href])
 
   const seo = plan ? homePlanSeo(plan) : {}
   const meta = mergePageSeo('/', seo)

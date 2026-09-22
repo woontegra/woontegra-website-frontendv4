@@ -74,7 +74,7 @@ describe('optimizedMediaVariants', () => {
     expect(buildOptimizedSrcSet(small, 'avif')).toBeNull()
   })
 
-  it('preloads an optimized webp for new hero assets and keeps legacy hrefs', () => {
+  it('preloads optimized AVIF for optavif heroes and keeps legacy hrefs', () => {
     const legacy = buildHeroPreloadBundle({
       desktop: LEGACY_BLOB,
       tablet: LEGACY_BLOB,
@@ -88,8 +88,20 @@ describe('optimizedMediaVariants', () => {
       tablet: WITH_AVIF,
       mobile: WITH_AVIF,
     })
-    expect(next?.desktopHref).toContain('home-banner-123.optavif-w1920.webp')
-    expect(next?.mobileHref).toContain('home-banner-123.optavif-w960.webp')
-    expect(next?.desktopImageSrcSet).toContain('optavif-w480.webp')
+    expect(next?.desktopHref).toContain('home-banner-123.optavif-w1920.avif')
+    expect(next?.mobileHref).toContain('home-banner-123.optavif-w960.avif')
+    expect(next?.desktopType).toBe('image/avif')
+    expect(next?.mobileType).toBe('image/avif')
+    expect(next?.desktopImageSrcSet).toContain('optavif-w480.avif')
+    expect(next?.desktopImageSrcSet).not.toContain('.webp')
+
+    const webpOnly = buildHeroPreloadBundle({
+      desktop: WEBP_ONLY,
+      tablet: WEBP_ONLY,
+      mobile: WEBP_ONLY,
+    })
+    expect(webpOnly?.desktopType).toBe('image/webp')
+    expect(webpOnly?.desktopHref).toContain('.opt-w1920.webp')
+    expect(webpOnly?.desktopImageSrcSet).not.toContain('.avif')
   })
 })

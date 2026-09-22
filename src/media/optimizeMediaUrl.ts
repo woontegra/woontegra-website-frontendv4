@@ -3,6 +3,8 @@ import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 import type { HeroImageSources } from '@/builder/render/heroResponsiveImage'
 import {
   buildOptimizedSrcSet,
+  mimeForLcpPreloadFormat,
+  pickLcpPreloadFormat,
   pickOptimizedPreloadUrl,
 } from '@/media/optimizedMediaVariants'
 
@@ -89,6 +91,13 @@ export type HeroPreloadBundle = {
   imageSizes: string
   mobileImageSrcSet?: string
   desktopImageSrcSet?: string
+  mobileType?: string
+  desktopType?: string
+}
+
+function preloadSrcSet(url: string, format: ReturnType<typeof pickLcpPreloadFormat>): string | undefined {
+  if (format === 'canonical') return undefined
+  return buildOptimizedSrcSet(url, format) || undefined
 }
 
 export function buildHeroPreloadBundle(sources: HeroImageSources): HeroPreloadBundle | null {
@@ -97,19 +106,25 @@ export function buildHeroPreloadBundle(sources: HeroImageSources): HeroPreloadBu
 
   const mobile = optimized.mobile || optimized.desktop
   const desktop = optimized.desktop
-  const mobileHref = pickOptimizedPreloadUrl(mobile, HERO_IMAGE_WIDTHS.mobile, 'webp')
-  const desktopHref = pickOptimizedPreloadUrl(desktop, HERO_IMAGE_WIDTHS.desktop, 'webp')
+  const mobileFormat = pickLcpPreloadFormat(mobile)
+  const desktopFormat = pickLcpPreloadFormat(desktop)
+  const mobileHref = pickOptimizedPreloadUrl(mobile, HERO_IMAGE_WIDTHS.mobile, mobileFormat)
+  const desktopHref = pickOptimizedPreloadUrl(desktop, HERO_IMAGE_WIDTHS.desktop, desktopFormat)
+  const mobileImageSrcSet = preloadSrcSet(mobile, mobileFormat)
+  const desktopImageSrcSet = preloadSrcSet(desktop, desktopFormat)
 
   return {
     href: mobileHref,
     mobileHref,
     desktopHref,
     imageSrcSet:
-      buildOptimizedSrcSet(desktop, 'webp') ||
+      desktopImageSrcSet ||
       `${mobile} ${HERO_IMAGE_WIDTHS.mobile}w, ${optimized.tablet} ${HERO_IMAGE_WIDTHS.tablet}w, ${desktop} ${HERO_IMAGE_WIDTHS.desktop}w`,
     imageSizes: '100vw',
-    mobileImageSrcSet: buildOptimizedSrcSet(mobile, 'webp') || undefined,
-    desktopImageSrcSet: buildOptimizedSrcSet(desktop, 'webp') || undefined,
+    mobileImageSrcSet,
+    desktopImageSrcSet,
+    mobileType: mimeForLcpPreloadFormat(mobileFormat) || undefined,
+    desktopType: mimeForLcpPreloadFormat(desktopFormat) || undefined,
   }
 }
 

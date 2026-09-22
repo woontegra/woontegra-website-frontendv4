@@ -13,6 +13,11 @@ import {
   bhModuleDetailPath,
   isCanonicalBhModuleSeoSlug,
 } from './lib/bhModuleSeoSlugs.mjs'
+import {
+  buildHomeLcpPreloadLinks,
+  extractHomeLcp,
+  serializeLcpPreloadLink,
+} from '../src/media/lcpHeroPreload.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -464,7 +469,8 @@ async function resolvePageModel(route, cache) {
       }
     }
     bodyText = `${bodyText} Woontegra yazılım, e-ticaret ve dijital dönüşüm çözümleri sunar.`
-    return { title, description, h1, bodyText, jsonLd, crumbs }
+    const lcp = extractHomeLcp(home)
+    return { title, description, h1, bodyText, jsonLd, crumbs, lcp, lcpLinks: buildHomeLcpPreloadLinks(lcp) }
   }
 
   if (route === '/hakkimizda') {
@@ -1023,8 +1029,11 @@ function buildHeadExtras(model, route) {
     `<meta name="twitter:title" content="${escapeHtml(model.title)}" />`,
     `<meta name="twitter:description" content="${escapeHtml(model.description)}" />`,
     `<meta name="twitter:image" content="${escapeHtml(ogImage)}" />`,
+    ...(Array.isArray(model.lcpLinks) ? model.lcpLinks.map((link) => serializeLcpPreloadLink(link)) : []),
     jsonLdTags,
-  ].join('\n')
+  ]
+    .filter(Boolean)
+    .join('\n')
 }
 
 function injectIntoShell(shellHtml, model, route, bodyHtml) {

@@ -15,6 +15,8 @@ export type HomeHeroPreloadBundle = {
   imageSizes: string
   mobileImageSrcSet?: string
   desktopImageSrcSet?: string
+  mobileType?: string
+  desktopType?: string
 }
 
 export type HomeHeroShell = {
