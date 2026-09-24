@@ -18,6 +18,7 @@ export type LegalCompanyInfo = {
   facebook: string
   linkedin: string
   twitter: string
+  pinterest: string
   youtube: string
   lastUpdated: string
 }
@@ -39,7 +40,8 @@ export const defaultLegalCompanyInfo: LegalCompanyInfo = {
   instagram: 'https://www.instagram.com/woontegra_teknoloji/',
   facebook: 'https://www.facebook.com/woontegra',
   linkedin: 'https://www.linkedin.com/company/woontegra',
-  twitter: '',
+  twitter: 'https://x.com/woontegra',
+  pinterest: 'https://tr.pinterest.com/0ei678dnhl2k9nvivv87o3oaoay1bs/',
   youtube: 'https://www.youtube.com/@woontegra_teknoloji',
   lastUpdated: '2026-06-08',
 }
@@ -79,6 +81,7 @@ export function mergeLegalCompanyInfo(partial?: Partial<LegalCompanyInfo> | null
     facebook: pickString(partial.facebook, defaultLegalCompanyInfo.facebook),
     linkedin: pickString(partial.linkedin, defaultLegalCompanyInfo.linkedin),
     twitter: pickString(partial.twitter, defaultLegalCompanyInfo.twitter),
+    pinterest: pickString(partial.pinterest, defaultLegalCompanyInfo.pinterest),
     youtube: pickString(partial.youtube, defaultLegalCompanyInfo.youtube),
     lastUpdated: pickString(partial.lastUpdated, defaultLegalCompanyInfo.lastUpdated),
   }

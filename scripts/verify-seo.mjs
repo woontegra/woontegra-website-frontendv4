@@ -17,6 +17,8 @@ const SOCIAL_URLS = [
   'https://www.instagram.com/woontegra_teknoloji/',
   'https://www.facebook.com/woontegra',
   'https://www.youtube.com/@woontegra_teknoloji',
+  'https://x.com/woontegra',
+  'https://tr.pinterest.com/0ei678dnhl2k9nvivv87o3oaoay1bs/',
 ]
 
 const PRODUCT_HUB_PATHS = [

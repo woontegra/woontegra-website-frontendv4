@@ -39,6 +39,8 @@ const SOCIAL_PROFILES = [
   { label: 'Instagram', url: 'https://www.instagram.com/woontegra_teknoloji/' },
   { label: 'Facebook', url: 'https://www.facebook.com/woontegra' },
   { label: 'YouTube', url: 'https://www.youtube.com/@woontegra_teknoloji' },
+  { label: 'X', url: 'https://x.com/woontegra' },
+  { label: 'Pinterest', url: 'https://tr.pinterest.com/0ei678dnhl2k9nvivv87o3oaoay1bs/' },
 ]
 const SOFTWARE_ENTITY_HUB = [
   {

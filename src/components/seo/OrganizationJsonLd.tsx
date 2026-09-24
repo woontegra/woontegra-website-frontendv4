@@ -14,6 +14,8 @@ export function OrganizationJsonLd() {
     instagram: info.instagram,
     facebook: info.facebook,
     youtube: info.youtube,
+    x: info.twitter,
+    pinterest: info.pinterest,
   })
 
   const data = useMemo(

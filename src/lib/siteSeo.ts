@@ -10,7 +10,7 @@ export const SITE_LOGO_URL = `${SITE_ORIGIN}/images/woontegra-logo.svg`
 
 export const DEFAULT_OG_IMAGE = SITE_LOGO_URL
 
-export type SocialProfileId = 'linkedin' | 'instagram' | 'facebook' | 'youtube'
+export type SocialProfileId = 'linkedin' | 'instagram' | 'facebook' | 'youtube' | 'x' | 'pinterest'
 
 export type SocialProfile = {
   id: SocialProfileId
@@ -24,6 +24,8 @@ export const SOCIAL_PROFILES: readonly SocialProfile[] = [
   { id: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/woontegra_teknoloji/' },
   { id: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/woontegra' },
   { id: 'youtube', label: 'YouTube', url: 'https://www.youtube.com/@woontegra_teknoloji' },
+  { id: 'x', label: 'X', url: 'https://x.com/woontegra' },
+  { id: 'pinterest', label: 'Pinterest', url: 'https://tr.pinterest.com/0ei678dnhl2k9nvivv87o3oaoay1bs/' },
 ] as const
 
 export function socialProfileUrls(
