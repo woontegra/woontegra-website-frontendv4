@@ -1,12 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import axios from 'axios'
 import { Loader2, ShieldCheck, Sparkles } from 'lucide-react'
 import type { PublicProductDetail } from '@/types/product'
 import { getPromotionalSoftwareMeta } from '@/lib/publicSoftwareCatalog'
 import {
+  readCachedBhProduct,
+  productToKeepOnPriceError,
+  writeCachedBhProduct,
+} from '@/lib/bhPublicProductPriceCache'
+import {
   bilirkisiHesapService,
   formatBhPriceTl,
-  type BhProduct,
 } from '@/services/bilirkisiHesapService'
 import { BilirkisiDemoRequestModal } from '@/components/public/product/BilirkisiDemoRequestModal'
 import { BILIRKISI_HESAP_CHECKOUT_PATH } from '@/data/canonicalSoftwareProducts'
@@ -19,34 +25,31 @@ type Plan = 'monthly' | 'annual'
 
 export function ExternalProductPurchasePanel({ product }: Props) {
   const meta = getPromotionalSoftwareMeta(product.slug)
-  const [bhProduct, setBhProduct] = useState<BhProduct | null>(null)
-  const [priceError, setPriceError] = useState<string | null>(null)
-  const [loadingPrice, setLoadingPrice] = useState(true)
+  const [cachedProduct, setCachedProduct] = useState(() => readCachedBhProduct())
   const [demoOpen, setDemoOpen] = useState(false)
   const [plan, setPlan] = useState<Plan>('annual')
+  const priceQuery = useQuery({
+    queryKey: ['bh-public-product'],
+    queryFn: () => bilirkisiHesapService.getProduct(),
+    staleTime: 60_000,
+    gcTime: 30 * 60_000,
+    retry: false,
+    refetchOnWindowFocus: false,
+  })
 
   useEffect(() => {
-    let cancelled = false
-    setLoadingPrice(true)
-    setPriceError(null)
-    bilirkisiHesapService
-      .getProduct()
-      .then((p) => {
-        if (!cancelled) setBhProduct(p)
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setBhProduct(null)
-          setPriceError(bilirkisiHesapService.getErrorMessage(err, 'Fiyat bilgisi alınamadı.'))
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingPrice(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+    if (!priceQuery.data) return
+    writeCachedBhProduct(priceQuery.data)
+    setCachedProduct(priceQuery.data)
+  }, [priceQuery.data])
+
+  const errorStatus = axios.isAxiosError(priceQuery.error) ? priceQuery.error.response?.status : undefined
+  const bhProduct = priceQuery.data ?? productToKeepOnPriceError(errorStatus, cachedProduct)
+  const priceError =
+    !bhProduct && priceQuery.isError
+      ? bilirkisiHesapService.getErrorMessage(priceQuery.error, 'Fiyat bilgisi alınamadı.')
+      : null
+  const loadingPrice = priceQuery.isPending && !bhProduct
 
   const annualTl = bhProduct ? bilirkisiHesapService.annualPriceTl(bhProduct) : null
   const monthlyTl = bhProduct ? bilirkisiHesapService.monthlyPriceTl(bhProduct) : null
