@@ -70,7 +70,7 @@ export function resolveBilirkisiCheckoutKind(input: {
 
 export function bilirkisiCheckoutCopy(
   kind: BilirkisiCheckoutKind,
-  input: { demoStillActive?: boolean; isDevUi?: boolean } = {},
+  input: { demoStillActive?: boolean } = {},
 ): BilirkisiCheckoutCopy {
   if (kind === 'loading') {
     return {
@@ -116,9 +116,7 @@ export function bilirkisiCheckoutCopy(
   return {
     kind,
     title: 'Satın al',
-    subtitle: input.isDevUi
-      ? 'Fiyat Bilirkişi Hesap satış motorundan gelir. Ödeme local ortamda dry-run ile çalışır.'
-      : 'Abonelik paketini seçin, fatura bilgilerinizi tamamlayın ve ödemeye geçin.',
+    subtitle: 'Abonelik paketini seçin, fatura bilgilerinizi tamamlayın ve ödemeye geçin.',
     sessionTitle: null,
     guestTitle: 'Satın almaya devam etmek için hesabınıza giriş yapın',
     guestBody: 'Siparişiniz ve lisans bilgileriniz Woontegra hesabınızla ilişkilendirilecektir.',

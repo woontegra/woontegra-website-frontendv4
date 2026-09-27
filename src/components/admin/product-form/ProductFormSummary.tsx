@@ -23,9 +23,10 @@ type Props = {
   form: AdminProductInput
   presetId: AdminProductPresetId
   coverPreview: string | null
+  monthlyPriceTl?: number | null
 }
 
-export function ProductFormSummary({ form, presetId, coverPreview }: Props) {
+export function ProductFormSummary({ form, presetId, coverPreview, monthlyPriceTl = null }: Props) {
   const hasCover = hasAdminCoverImage(form, coverPreview)
   const ready = isReadyForSale(form, presetId, coverPreview)
   const hasPrice = Number.isFinite(form.price) && form.price > 0
@@ -85,9 +86,16 @@ export function ProductFormSummary({ form, presetId, coverPreview }: Props) {
           </div>
           <div>
             <p className="text-xs text-slate-500">Fiyat</p>
-            <p className="font-medium text-slate-900">
-              {hasPrice ? formatMoney(form.price, form.currency) : 'Fiyat yok / teklif'}
-            </p>
+            {monthlyPriceTl != null ? (
+              <div className="font-medium text-slate-900">
+                <p>Aylık: {formatMoney(monthlyPriceTl, form.currency)}</p>
+                <p>Yıllık: {hasPrice ? formatMoney(form.price, form.currency) : '—'}</p>
+              </div>
+            ) : (
+              <p className="font-medium text-slate-900">
+                {hasPrice ? formatMoney(form.price, form.currency) : 'Fiyat yok / teklif'}
+              </p>
+            )}
           </div>
           <div>
             <p className="text-xs text-slate-500">Satış durumu</p>

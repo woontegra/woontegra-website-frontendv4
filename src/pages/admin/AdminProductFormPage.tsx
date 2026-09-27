@@ -23,6 +23,10 @@ import {
 } from '@/constants/adminProductPresets'
 import { LicenseProgramPicker } from '@/components/admin/LicenseProgramPicker'
 import { adminProductsService, getErrorMessage } from '@/services/adminProductsService'
+import { adminBhService, formatTlInput, type BhProduct } from '@/services/adminBhService'
+import { publicApi } from '@/api/client'
+import { publishedProductGalleryUrls } from '@/lib/publishedProductGallery'
+import { BILIRKISI_HESAP_SLUG } from '@/data/canonicalSoftwareProducts'
 import { productCategoriesService } from '@/services/productCategoriesService'
 import type { AdminProductInput } from '@/types/product'
 import { collectGalleryMediaIdsForSave, moveGalleryRow, PRODUCT_GALLERY_MAX_IMAGES } from '@/types/product'
@@ -158,6 +162,10 @@ export function AdminProductFormPage() {
   const [coverPickerOpen, setCoverPickerOpen] = useState(false)
   const [galleryPickerOpen, setGalleryPickerOpen] = useState(false)
   const [downloadPickerOpen, setDownloadPickerOpen] = useState(false)
+  const [bhProduct, setBhProduct] = useState<BhProduct | null>(null)
+  const [monthlyPriceTl, setMonthlyPriceTl] = useState<number | null>(null)
+  const [bhPriceReady, setBhPriceReady] = useState(false)
+  const [bhPriceError, setBhPriceError] = useState<string | null>(null)
 
   const categoriesQuery = useQuery({
     queryKey: ['admin', 'product-categories'],
@@ -241,7 +249,47 @@ export function AdminProductFormPage() {
     return raw ? resolveMediaUrl(raw) : null
   }, [useCoverUrl, form.coverImage, coverPreviewUrl, form.coverImageMediaId, data])
 
-  const hasCover = hasAdminCoverImage(form, coverPreview)
+  const isBhPlans = !isNew && form.slug === BILIRKISI_HESAP_SLUG
+  const alreadyPublished = Boolean(data?.isActive)
+  const publicGalleryQuery = useQuery({
+    queryKey: ['page-content', 'productPages', 'gallery', form.slug],
+    enabled: !isNew && alreadyPublished && !coverPreview && Boolean(form.slug),
+    queryFn: async () => {
+      const res = await publicApi.get<{ success?: boolean; data?: unknown }>('/page-content/productPages')
+      return publishedProductGalleryUrls(res.data?.data, form.slug)
+    },
+    staleTime: 60_000,
+  })
+  const publishedCoverUrl =
+    alreadyPublished && !coverPreview ? (publicGalleryQuery.data?.[0] ?? null) : null
+  const effectiveCoverPreview = coverPreview || publishedCoverUrl
+  const hasCover = hasAdminCoverImage(form, effectiveCoverPreview)
+
+  useEffect(() => {
+    if (!isBhPlans) return
+    let cancelled = false
+    setBhPriceReady(false)
+    setBhPriceError(null)
+    adminBhService
+      .getProduct()
+      .then((product) => {
+        if (cancelled) return
+        const monthly = Number(formatTlInput(product.priceMonthly ?? product.monthlyPrice))
+        const annual = Number(formatTlInput(product.price))
+        setBhProduct(product)
+        setMonthlyPriceTl(Number.isFinite(monthly) ? monthly : null)
+        if (Number.isFinite(annual)) setForm((prev) => ({ ...prev, price: annual }))
+        setBhPriceReady(true)
+      })
+      .catch((err) => {
+        if (cancelled) return
+        setBhPriceError(getErrorMessage(err))
+        setBhPriceReady(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [isBhPlans])
   const bannerError =
     form.isActive && !hasCover
       ? PUBLISH_IMAGE_REQUIRED_MESSAGE
@@ -277,10 +325,49 @@ export function AdminProductFormPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const err = validateAdminProductForm(form, presetId, coverPreview)
+      const err = validateAdminProductForm(form, presetId, effectiveCoverPreview)
       if (err) {
         setTab(tabForValidationError(err))
         throw new Error(err)
+      }
+      if (isBhPlans) {
+        if (!bhPriceReady || !bhProduct || monthlyPriceTl == null) {
+          setTab('pricing')
+          throw new Error(bhPriceError || 'Aylık ve yıllık fiyatlar yüklenemedi.')
+        }
+        if (!Number.isFinite(monthlyPriceTl) || monthlyPriceTl < 0) {
+          setTab('pricing')
+          throw new Error('Geçerli bir aylık fiyat girin.')
+        }
+        await adminBhService.updateProduct({
+          name: bhProduct.name,
+          price: String(form.price),
+          priceMonthly: String(monthlyPriceTl),
+          monthlyPrice: String(monthlyPriceTl),
+          originalPrice:
+            bhProduct.originalPrice != null ? formatTlInput(bhProduct.originalPrice) : undefined,
+          price2Year:
+            bhProduct.price2Year != null ? (Number(bhProduct.price2Year) / 100).toFixed(2) : undefined,
+          originalPrice2Year:
+            bhProduct.originalPrice2Year != null
+              ? (Number(bhProduct.originalPrice2Year) / 100).toFixed(2)
+              : undefined,
+          price3Year:
+            bhProduct.price3Year != null ? (Number(bhProduct.price3Year) / 100).toFixed(2) : undefined,
+          originalPrice3Year:
+            bhProduct.originalPrice3Year != null
+              ? (Number(bhProduct.originalPrice3Year) / 100).toFixed(2)
+              : undefined,
+          price2YearActive: bhProduct.price2YearActive,
+          price3YearActive: bhProduct.price3YearActive,
+          imageUrl: bhProduct.imageUrl || '',
+          shortDescription: bhProduct.shortDescription || '',
+          longDescription: bhProduct.longDescription || '',
+          features: bhProduct.features || '[]',
+          targetAudience: bhProduct.targetAudience || '[]',
+          trustInfo: bhProduct.trustInfo || '{}',
+          isActive: bhProduct.isActive !== false,
+        })
       }
 
       const payload = buildAdminProductSavePayload({
@@ -485,13 +572,37 @@ export function AdminProductFormPage() {
                     Bu ürünü satışa açmak için fiyat ve &quot;Satışa açık&quot; alanını doldurun. Fiyat yoksa public
                     tarafta <strong>Teklif Al</strong> gösterilir; Sepete Ekle aktif olmaz.
                   </HelpBox>
+                  {isBhPlans ? (
+                    <p className="text-sm text-slate-600">
+                      Aylık ve yıllık paketlerin fiyatı ayrıdır. Sitedeki paket seçimi bu iki alanı kullanır.
+                    </p>
+                  ) : null}
+                  {isBhPlans && bhPriceError ? (
+                    <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">
+                      {bhPriceError}
+                    </p>
+                  ) : null}
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {isBhPlans ? (
+                      <Input
+                        label="Aylık fiyat"
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        value={monthlyPriceTl ?? ''}
+                        disabled={!bhPriceReady}
+                        onChange={(e) =>
+                          setMonthlyPriceTl(e.target.value === '' ? null : Number.parseFloat(e.target.value) || 0)
+                        }
+                      />
+                    ) : null}
                     <Input
-                      label="Satış fiyatı"
+                      label={isBhPlans ? 'Yıllık fiyat' : 'Satış fiyatı'}
                       type="number"
                       min={0}
                       step="0.01"
                       value={form.price}
+                      disabled={isBhPlans && !bhPriceReady}
                       onChange={(e) => update('price', Number.parseFloat(e.target.value) || 0)}
                     />
                     <Input
@@ -913,7 +1024,12 @@ export function AdminProductFormPage() {
           </div>
 
           <aside className="hidden lg:block">
-            <ProductFormSummary form={form} presetId={presetId} coverPreview={coverPreview} />
+            <ProductFormSummary
+              form={form}
+              presetId={presetId}
+              coverPreview={effectiveCoverPreview}
+              monthlyPriceTl={isBhPlans ? monthlyPriceTl : null}
+            />
           </aside>
         </div>
 
@@ -931,7 +1047,12 @@ export function AdminProductFormPage() {
       </form>
 
       <div className="lg:hidden">
-        <ProductFormSummary form={form} presetId={presetId} coverPreview={coverPreview} />
+        <ProductFormSummary
+          form={form}
+          presetId={presetId}
+          coverPreview={effectiveCoverPreview}
+          monthlyPriceTl={isBhPlans ? monthlyPriceTl : null}
+        />
       </div>
 
       <MediaPickerModal

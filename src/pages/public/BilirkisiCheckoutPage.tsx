@@ -368,7 +368,6 @@ export function BilirkisiCheckoutPage() {
   })
   const checkoutCopy = bilirkisiCheckoutCopy(checkoutKind, {
     demoStillActive: isDemoStillActive,
-    isDevUi: isDevUi(),
   })
   const [success, setSuccess] = useState<{
     kind: 'card_dry_run' | 'card' | 'bank'
@@ -769,11 +768,10 @@ export function BilirkisiCheckoutPage() {
         } catch (payErr) {
           throw new Error(getErrorMessage(payErr, 'Ödeme başlatılamadı.'))
         }
-        await persistDefaultAddressIfRequested()
         if (token.startsWith('dryrun_')) {
-          window.location.href = `/odeme/basarili/${encodeURIComponent(created.data.orderNo)}`
-          return
+          throw new Error('Kart ödeme ekranı açılamadı. Lütfen tekrar deneyin.')
         }
+        await persistDefaultAddressIfRequested()
         window.location.href = `https://www.paytr.com/odeme/guvenli/${token}`
       }
     } catch (err) {
