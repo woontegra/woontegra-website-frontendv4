@@ -15,7 +15,7 @@ import {
   formatBhPriceTl,
 } from '@/services/bilirkisiHesapService'
 import { BilirkisiDemoRequestModal } from '@/components/public/product/BilirkisiDemoRequestModal'
-import { BILIRKISI_HESAP_CHECKOUT_PATH } from '@/data/canonicalSoftwareProducts'
+import { BILIRKISI_HESAP_CHECKOUT_PATH, BILIRKISI_HESAP_SLUG } from '@/data/canonicalSoftwareProducts'
 
 type Props = {
   product: PublicProductDetail
@@ -132,6 +132,17 @@ export function ExternalProductPurchasePanel({ product }: Props) {
             </div>
           )}
         </div>
+
+        {product.slug === BILIRKISI_HESAP_SLUG && plan === 'annual' ? (
+          <div className="relative mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-3.5 py-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">
+              Yıllık pakete özel hediye
+            </p>
+            <p className="mt-1 text-sm font-semibold text-slate-900">
+              Müvekkil Kasa Masaüstü Programı — 1 Yıl Ücretsiz
+            </p>
+          </div>
+        ) : null}
 
         <div className="relative mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-white/70 bg-white/85 px-4 py-3 shadow-sm">

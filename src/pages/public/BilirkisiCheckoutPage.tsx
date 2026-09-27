@@ -1148,6 +1148,11 @@ export function BilirkisiCheckoutPage() {
                   </p>
                 </button>
               </div>
+              {productType === 'annual' ? (
+                <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-900">
+                  Hediye: Müvekkil Kasa Masaüstü Programı — 1 Yıl Ücretsiz
+                </p>
+              ) : null}
 
               <div className="mt-4 border-t border-slate-100 pt-3">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Ödenecek toplam</p>
