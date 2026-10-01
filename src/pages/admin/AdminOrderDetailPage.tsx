@@ -68,6 +68,29 @@ function InfoRow({
   )
 }
 
+function moneyDelta(subtotal: number, total: number): number {
+  return Math.round((subtotal - total) * 100) / 100
+}
+
+function signedDiscount(amount: number, currency: string): string {
+  return `-${formatMoney(Math.abs(amount), currency)}`
+}
+
+function couponTypeLabel(type: string | null | undefined): string {
+  if (type === 'percent') return 'Yüzde'
+  if (type === 'fixed_amount') return 'Sabit tutar'
+  return '—'
+}
+
+function couponValueLabel(type: string | null | undefined, value: number | null | undefined, currency: string): string {
+  if (value == null) return '—'
+  if (type === 'percent') {
+    const shown = Number.isInteger(value) ? String(value) : String(value).replace('.', ',')
+    return `%${shown}`
+  }
+  return formatMoney(value, currency)
+}
+
 export function AdminOrderDetailPage() {
   const { id = '' } = useParams()
   const queryClient = useQueryClient()
@@ -162,6 +185,16 @@ export function AdminOrderDetailPage() {
   }
 
   const orderMeta = orderStatusMeta(data.status)
+  const priceGap = moneyDelta(data.subtotal, data.total)
+  const couponAmount =
+    data.couponDiscountAmount != null && data.couponDiscountAmount > 0 ? data.couponDiscountAmount : priceGap
+  const hasCouponRecord = Boolean(
+    data.couponCodeSnapshot ||
+      data.couponCampaignNameSnapshot ||
+      data.couponDiscountTypeSnapshot ||
+      (data.couponDiscountAmount != null && data.couponDiscountAmount > 0),
+  )
+  const showPriceSplit = hasCouponRecord || priceGap > 0.009
   const payKind = resolvePaymentBadgeKind(data)
   const canConfirmBank = showHavaleConfirmButton(data)
   const isBank = isBankTransferLikeProvider(data.paymentProvider) || isBankTransferLikeProvider(data.paymentMethod)
@@ -219,14 +252,14 @@ export function AdminOrderDetailPage() {
           <CardBody className="space-y-3">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Sipariş özeti</h2>
             <InfoRow label="Oluşturulma" value={formatDateTime(data.createdAt)} />
-            {data.couponCodeSnapshot ? (
+            {showPriceSplit ? (
               <>
-                <InfoRow label="Ara toplam" value={formatMoney(data.subtotal, data.currency)} />
-                <InfoRow label="Kupon kodu" value={data.couponCodeSnapshot} />
-                <InfoRow label="Kupon adı" value={data.couponCampaignNameSnapshot ?? '—'} />
+                <InfoRow label="Ara Toplam" value={formatMoney(data.subtotal, data.currency)} />
+                {data.couponCodeSnapshot ? <InfoRow label="Kupon" value={data.couponCodeSnapshot} /> : null}
                 <InfoRow
-                  label="İndirim tutarı"
-                  value={formatMoney(-(data.couponDiscountAmount ?? 0), data.currency)}
+                  label="Kupon İndirimi"
+                  value={signedDiscount(couponAmount, data.currency)}
+                  valueClassName="font-medium text-rose-800"
                 />
               </>
             ) : null}
@@ -238,6 +271,26 @@ export function AdminOrderDetailPage() {
             </div>
           </CardBody>
         </Card>
+
+        {hasCouponRecord ? (
+          <Card>
+            <CardBody className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Kupon / İndirim</h2>
+              <InfoRow label="Kupon kodu" value={data.couponCodeSnapshot ?? '—'} />
+              <InfoRow label="Kampanya / kupon adı" value={data.couponCampaignNameSnapshot ?? '—'} />
+              <InfoRow label="İndirim türü" value={couponTypeLabel(data.couponDiscountTypeSnapshot)} />
+              <InfoRow
+                label="İndirim değeri"
+                value={couponValueLabel(data.couponDiscountTypeSnapshot, data.couponDiscountValueSnapshot, data.currency)}
+              />
+              <InfoRow
+                label="İndirim tutarı"
+                value={signedDiscount(data.couponDiscountAmount ?? couponAmount, data.currency)}
+                valueClassName="font-medium text-rose-800"
+              />
+            </CardBody>
+          </Card>
+        ) : null}
 
         {data.mkSaasPurchaseContext === 'EXISTING_ACCOUNT_LICENSE' ||
         data.mkSaasPurchaseContext === 'DEMO_CONVERSION' ||
