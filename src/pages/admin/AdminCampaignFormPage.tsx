@@ -24,17 +24,12 @@ import {
   type ProductTargetType,
   type TargetType,
 } from '@/types/campaign'
+import { productTypeLabel, type AdminProduct } from '@/types/product'
+import { formatMoney } from '@/utils/formatMoney'
 import { cn } from '@/lib/cn'
 import { useToastStore } from '@/store/toastStore'
 
-type TabId =
-  | 'general'
-  | 'discount'
-  | 'targeting'
-  | 'visual'
-  | 'schedule'
-  | 'coupon'
-  | 'advanced'
+type TabId = 'general' | 'discount' | 'targeting' | 'visual' | 'schedule' | 'advanced'
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'general', label: 'Genel Bilgiler' },
@@ -42,7 +37,6 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'targeting', label: 'Hedefleme' },
   { id: 'visual', label: 'Görsel & Tasarım' },
   { id: 'schedule', label: 'Tarih & Durum' },
-  { id: 'coupon', label: 'Kupon Ayarları' },
   { id: 'advanced', label: 'Gelişmiş' },
 ]
 
@@ -112,6 +106,56 @@ function TextArea({
   )
 }
 
+function ProductMultiSelect({
+  products,
+  selectedIds,
+  onToggle,
+  title,
+  hint,
+  loading,
+  loadError,
+}: {
+  products: AdminProduct[]
+  selectedIds: string[]
+  onToggle: (id: string) => void
+  title: string
+  hint?: string
+  loading?: boolean
+  loadError?: string | null
+}) {
+  return (
+    <div className="space-y-2">
+      <div>
+        <p className="text-sm font-medium text-slate-700">{title}</p>
+        {hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+      </div>
+      <div className="max-h-72 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-3">
+        {loading ? <p className="text-sm text-slate-500">Ürünler yükleniyor…</p> : null}
+        {loadError ? <p className="text-sm text-red-700">{loadError}</p> : null}
+        {!loading && !loadError && products.length === 0 ? (
+          <p className="text-sm text-slate-500">Seçilecek ürün bulunamadı.</p>
+        ) : null}
+        {products.map((product) => (
+          <label key={product.id} className="flex items-start gap-2 rounded-md px-1 py-1.5 text-sm hover:bg-slate-50">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={selectedIds.includes(product.id)}
+              onChange={() => onToggle(product.id)}
+            />
+            <span>
+              <span className="font-medium text-slate-900">{product.name}</span>
+              <span className="mt-0.5 block text-xs text-slate-500">
+                {productTypeLabel(product.productType)} · {formatMoney(product.price, product.currency || 'TRY')}
+              </span>
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function toDatetimeLocal(value: string | null | undefined): string {
   if (!value) return ''
   const d = new Date(value)
@@ -153,25 +197,22 @@ export function AdminCampaignFormPage() {
   })
 
   useEffect(() => {
-    if (detailQuery.data) {
-      setForm(detailQuery.data)
-      setSlugTouched(true)
-    }
+    if (!detailQuery.data) return
+    setForm(detailQuery.data)
+    setSlugTouched(true)
   }, [detailQuery.data])
 
   const visibleTabs = useMemo(() => {
-    const discountTabs = form.type === 'product_discount' || form.type === 'coupon'
-    const couponTab = form.type === 'coupon'
+    const discountTabs = form.type === 'product_discount'
     return TABS.filter((t) => {
       if (t.id === 'discount' || t.id === 'targeting') return discountTabs
-      if (t.id === 'coupon') return couponTab
       return true
     })
   }, [form.type])
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const payload = { ...form }
+      const payload: Partial<Campaign> = { ...form }
       if (isEdit && id) return adminCampaignsService.update(id, payload)
       return adminCampaignsService.create(payload as Campaign)
     },
@@ -285,13 +326,20 @@ export function AdminCampaignFormPage() {
                   onChange={(e) => patch('type', e.target.value as CampaignType)}
                   className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm"
                 >
-                  {Object.entries(CAMPAIGN_TYPE_LABELS).map(([k, v]) => (
-                    <option key={k} value={k}>
-                      {v}
-                    </option>
-                  ))}
+                  {Object.entries(CAMPAIGN_TYPE_LABELS)
+                    .filter(([k]) => k !== 'coupon' || form.type === 'coupon')
+                    .map(([k, v]) => (
+                      <option key={k} value={k}>
+                        {v}
+                      </option>
+                    ))}
                 </select>
               </div>
+              {form.type === 'coupon' ? (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                  Bu eski kupon kaydı checkout’ta kullanılmıyor. Yeni kuponlar Kupon Kodları ekranından tanımlanır.
+                </p>
+              ) : null}
               <Input
                 label="Kısa başlık"
                 value={form.shortTitle ?? ''}
@@ -394,19 +442,14 @@ export function AdminCampaignFormPage() {
               </div>
 
               {form.targetType === 'products' ? (
-                <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg border border-slate-200 p-3">
-                  <p className="text-sm font-medium text-slate-700">Belirli ürünler</p>
-                  {(productsQuery.data ?? []).map((p) => (
-                    <label key={p.id} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={(form.targetProductIds ?? []).includes(p.id)}
-                        onChange={() => toggleId('targetProductIds', p.id)}
-                      />
-                      {p.name}
-                    </label>
-                  ))}
-                </div>
+                <ProductMultiSelect
+                  title="Belirli ürünler"
+                  products={productsQuery.data ?? []}
+                  selectedIds={form.targetProductIds ?? []}
+                  onToggle={(productId) => toggleId('targetProductIds', productId)}
+                  loading={productsQuery.isLoading}
+                  loadError={productsQuery.isError ? getErrorMessage(productsQuery.error) : null}
+                />
               ) : null}
 
               {form.targetType === 'categories' ? (
@@ -522,50 +565,6 @@ export function AdminCampaignFormPage() {
                   Durum: {detailQuery.data.scheduleStatus ?? '—'} {detailQuery.data.isLive ? '(yayında)' : ''}
                 </p>
               ) : null}
-            </>
-          ) : null}
-
-          {tab === 'coupon' ? (
-            <>
-              <Input
-                label="Kupon kodu"
-                value={form.couponCode ?? ''}
-                onChange={(e) => patch('couponCode', e.target.value.toUpperCase())}
-              />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Input
-                  label="Kullanım limiti"
-                  type="number"
-                  value={form.couponUsageLimit == null ? '' : String(form.couponUsageLimit)}
-                  onChange={(e) => patch('couponUsageLimit', e.target.value ? Number(e.target.value) : null)}
-                />
-                <Input
-                  label="Müşteri başına limit"
-                  type="number"
-                  value={form.couponUsagePerCustomer == null ? '' : String(form.couponUsagePerCustomer)}
-                  onChange={(e) => patch('couponUsagePerCustomer', e.target.value ? Number(e.target.value) : null)}
-                />
-              </div>
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={form.couponFirstPurchaseOnly === true}
-                  onChange={(e) => patch('couponFirstPurchaseOnly', e.target.checked)}
-                />
-                İlk alışverişe özel
-              </label>
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={form.couponProductScopeOnly === true}
-                  onChange={(e) => patch('couponProductScopeOnly', e.target.checked)}
-                />
-                Sadece belirli ürünlerde
-              </label>
-              <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                Checkout kupon uygulaması bu aşamada devre dışıdır. Altyapı hazır; backend doğrulaması tamamlanınca
-                etkinleştirilecek.
-              </p>
             </>
           ) : null}
 

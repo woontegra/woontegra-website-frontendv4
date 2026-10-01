@@ -42,6 +42,7 @@ import {
 } from '@/lib/desktopLicenseRenewal'
 import { mkSaasLicensePurchaseService } from '@/services/mkSaasLicensePurchaseService'
 import { desktopLicenseRenewalService } from '@/services/desktopLicenseRenewalService'
+import { CheckoutCouponBox, useCheckoutCoupon } from '@/components/checkout/CheckoutCouponBox'
 import { checkoutService } from '@/services/checkoutService'
 import { customersService } from '@/services/customersService'
 import { getErrorMessage } from '@/api/client'
@@ -68,7 +69,6 @@ import {
   buildPaytrCartKey,
   clearPaytrPendingOrder,
   readPaytrPendingOrder,
-  readPaytrRetryOrder,
   savePaytrPendingOrder,
 } from '@/lib/paytrCheckoutStorage'
 
@@ -395,14 +395,20 @@ export function CheckoutPage() {
   const [paytrRetryOrderNo, setPaytrRetryOrderNo] = useState<string | null>(null)
   const submitLockRef = useRef(false)
 
-  const cartKey = useMemo(() => buildPaytrCartKey(productIds), [productIds])
+  const couponItems = useMemo(
+    () => merged.map((row) => ({ productId: row.id, quantity: row.quantity })),
+    [merged],
+  )
+  const coupon = useCheckoutCoupon(couponItems, form.customerEmail)
+  const payable = coupon.quote?.total ?? grand
+  const cartKey = useMemo(() => {
+    const base = buildPaytrCartKey(productIds)
+    if (!coupon.quote) return base
+    return `${base}|${coupon.quote.code}|${coupon.quote.total.toFixed(2)}`
+  }, [productIds, coupon.quote])
 
   useEffect(() => {
-    const stored = readPaytrPendingOrder(cartKey) ?? readPaytrRetryOrder()
-    if (stored) {
-      setPaytrRetryOrderNo(stored)
-      savePaytrPendingOrder(stored, cartKey)
-    }
+    setPaytrRetryOrderNo(readPaytrPendingOrder(cartKey))
   }, [cartKey])
 
   const bankQuery = useQuery({
@@ -445,10 +451,10 @@ export function CheckoutPage() {
           deliveryLine: form.deliveryLine,
         },
         merged,
-        grand,
+        grand: payable,
         currency,
       }),
-    [form, merged, grand, currency],
+    [form, merged, payable, currency],
   )
 
   const legalModalAccept: Record<CheckoutLegalModalId, () => void> = {
@@ -509,11 +515,25 @@ export function CheckoutPage() {
       return
     }
 
+    if (coupon.blocksCheckout) {
+      setFormError(coupon.error || 'Kupon doğrulanıyor. Lütfen kısa bir süre bekleyin.')
+      return
+    }
+
     submitLockRef.current = true
     setSubmitting(true)
     setFormError(null)
     const checkoutIdempotencyKey = getOrCreateCheckoutIdempotencyKey(cartKey)
+    let couponCode: string | undefined
     try {
+      if (coupon.appliedCode) {
+        const fresh = await ordersService.validateCoupon({
+          couponCode: coupon.appliedCode,
+          items: merged.map((row) => ({ productId: row.id, quantity: row.quantity })),
+          customerEmail,
+        })
+        couponCode = fresh.code
+      }
       if (paymentMethod === 'BANK_TRANSFER') {
         const created = await ordersService.create({
           items: merged.map((m) => ({ productId: m.id, quantity: m.quantity })),
@@ -545,6 +565,7 @@ export function CheckoutPage() {
           selectedAddressId: selectedAddressId || undefined,
           renewalToken: checkoutRenewalToken || undefined,
           checkoutIdempotencyKey,
+          couponCode,
         })
 
         if (created.addressBookWarning) {
@@ -624,6 +645,7 @@ export function CheckoutPage() {
           selectedAddressId: selectedAddressId || undefined,
           renewalToken: checkoutRenewalToken || undefined,
           checkoutIdempotencyKey,
+          couponCode,
         })
 
         if (created.addressBookWarning) {
@@ -1105,7 +1127,7 @@ export function CheckoutPage() {
 
           <button
             type="submit"
-            disabled={submitting || !legalOk || saasLoginRequired}
+            disabled={submitting || !legalOk || saasLoginRequired || coupon.blocksCheckout}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 disabled:opacity-60"
           >
             <ShieldCheck className="h-5 w-5" aria-hidden />
@@ -1142,9 +1164,10 @@ export function CheckoutPage() {
                 </li>
               ))}
             </ul>
+            <CheckoutCouponBox coupon={coupon} currency={currency} />
             <div className="mt-4 flex justify-between border-t border-slate-200 pt-4 text-base font-bold text-slate-900">
               <span>Toplam</span>
-              <span className="text-emerald-800">{formatMoney(grand, currency)}</span>
+              <span className="text-emerald-800">{formatMoney(payable, currency)}</span>
             </div>
             <Link to="/sepet" className="mt-4 block text-center text-sm font-medium text-emerald-700 hover:underline">
               Sepete dön

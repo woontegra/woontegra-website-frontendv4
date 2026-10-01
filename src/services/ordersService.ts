@@ -1,6 +1,6 @@
 import { publicApi } from '@/api/client'
 import type { ApiSuccess } from '@/types/api'
-import type { CreateOrderBody, CreateOrderResponse } from '@/types/checkout'
+import type { CouponQuote, CreateOrderBody, CreateOrderResponse } from '@/types/checkout'
 import type { OrderSuccessData } from '@/types/orderSuccess'
 import { unwrapApiData } from '@/types/api'
 import { customerAuthHeaders } from '@/lib/customerAuth'
@@ -13,6 +13,17 @@ export const ordersService = {
       timeout: 45_000,
     })
     return unwrapApiData(res.data, 'orders.create')
+  },
+
+  async validateCoupon(body: {
+    couponCode: string
+    items: { productId: string; quantity: number }[]
+    customerEmail?: string
+  }): Promise<CouponQuote> {
+    const res = await publicApi.post<ApiSuccess<CouponQuote>>('/orders/coupon/validate', body, {
+      headers: customerAuthHeaders(),
+    })
+    return unwrapApiData(res.data, 'orders.coupon')
   },
 
   async getSuccess(orderNo: string, customerEmail?: string): Promise<OrderSuccessData> {

@@ -239,6 +239,33 @@ export const bilirkisiHesapService = {
     }
   },
 
+  async validateCheckoutCoupon(body: {
+    couponCode: string
+    productType: 'monthly' | 'annual'
+    customerEmail?: string
+    campaignPublicCode?: string | null
+  }) {
+    const { data } = await publicApi.post('/bh/checkout/coupon/validate', body, {
+      headers: customerAuthHeaders(),
+      timeout: 20_000,
+    })
+    return data as {
+      success: boolean
+      data?: {
+        code: string
+        couponId: string
+        couponName: string
+        discountType: 'percent' | 'fixed_amount'
+        discountValue: number
+        discountAmount: number
+        subtotal: number
+        total: number
+        currency: string
+      }
+      message?: string
+    }
+  },
+
   /** Woontegra-central BH checkout: WT Order priced from BH prepare-sale. */
   async createCheckoutOrder(body: Record<string, unknown>) {
     const { data } = await publicApi.post('/bh/checkout/create-order', body, {
@@ -253,6 +280,8 @@ export const bilirkisiHesapService = {
         totalTl: number
         saleRef: string
         paymentProvider: string
+        amountFormatted?: string | null
+        bankTransfer?: Record<string, string> | null
       }
       message?: string
       code?: string

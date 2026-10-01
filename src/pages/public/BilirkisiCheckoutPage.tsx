@@ -4,6 +4,7 @@ import { CheckCircle2, Loader2, ShieldCheck } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { TurkeyCityDistrictFields, checkoutSelectCls } from '@/components/checkout/TurkeyCityDistrictFields'
+import { CheckoutCouponBox, useCheckoutCoupon } from '@/components/checkout/CheckoutCouponBox'
 import { CheckoutLegalModal } from '@/components/checkout/CheckoutLegalModal'
 import { LegalModalLink } from '@/components/checkout/LegalConsentCheckbox'
 import { usePageMeta } from '@/hooks/usePageMeta'
@@ -361,6 +362,20 @@ export function BilirkisiCheckoutPage() {
   const [prefillDone, setPrefillDone] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const couponItems = useMemo(() => [{ productId: BILIRKISI_HESAP_SLUG, quantity: 1 }], [])
+  const coupon = useCheckoutCoupon(couponItems, billing.email, {
+    scope: `${productType}|${campaignCode}`,
+    validate: async (input) => {
+      const res = await bilirkisiHesapService.validateCheckoutCoupon({
+        couponCode: input.couponCode,
+        productType,
+        customerEmail: input.customerEmail,
+        campaignPublicCode: campaignCode || null,
+      })
+      if (!res.success || !res.data) throw new Error(res.message || 'Kupon doğrulanamadı.')
+      return res.data
+    },
+  })
   const checkoutKind = resolveBilirkisiCheckoutKind({
     hasRenewToken: isRenewal,
     purchaseContext: renewalContext?.purchaseContext ?? null,
@@ -682,6 +697,10 @@ export function BilirkisiCheckoutPage() {
       setError('Geçerli bir fiyat teklifi yok. Kampanya veya paket seçimini kontrol edin.')
       return
     }
+    if (coupon.blocksCheckout) {
+      setError(coupon.error || 'Kupon doğrulanıyor. Lütfen kısa bir süre bekleyin.')
+      return
+    }
 
     const legalConsents = expandLegalConsents()
     const openAddress = billing.address.trim()
@@ -713,6 +732,7 @@ export function BilirkisiCheckoutPage() {
       campaign_id: campaignCode || undefined,
       campaignPublicCode: campaignCode || undefined,
       renewalToken: isRenewal ? renewalToken : undefined,
+      couponCode: coupon.quote?.code || undefined,
       billingInfo,
       legalConsents,
       legal_consents: legalConsents,
@@ -747,7 +767,22 @@ export function BilirkisiCheckoutPage() {
         }
       }
 
-      if (paymentMethod === 'bank_transfer') {
+      if (paymentMethod === 'bank_transfer' && coupon.quote?.code) {
+        const created = await bilirkisiHesapService.createCheckoutOrder({
+          ...body,
+          paymentProvider: 'BANK_TRANSFER',
+        })
+        if (!created.success || !created.data?.orderNo) {
+          throw new Error(created.message || 'Havale siparişi oluşturulamadı.')
+        }
+        await persistDefaultAddressIfRequested()
+        setSuccess({
+          kind: 'bank',
+          merchantOid: created.data.orderNo,
+          bankTransfer: created.data.bankTransfer || undefined,
+          amountFormatted: created.data.amountFormatted || undefined,
+        })
+      } else if (paymentMethod === 'bank_transfer') {
         const res = await bilirkisiHesapService.createBankTransferOrder(body)
         if (!res.success) throw new Error(res.message || res.error || 'Havale siparişi oluşturulamadı.')
         await persistDefaultAddressIfRequested()
@@ -1154,6 +1189,8 @@ export function BilirkisiCheckoutPage() {
                 </p>
               ) : null}
 
+              <CheckoutCouponBox coupon={coupon} currency="TRY" className="mt-4 space-y-2" />
+
               <div className="mt-4 border-t border-slate-100 pt-3">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Ödenecek toplam</p>
                 {quoteLoading ? (
@@ -1163,7 +1200,7 @@ export function BilirkisiCheckoutPage() {
                 ) : quote?.valid && quote.finalPrice != null ? (
                   <div className="mt-1">
                     <p className="text-2xl font-bold text-slate-950">
-                      {formatBhPriceTl(quote.finalPrice)}
+                      {formatBhPriceTl(coupon.quote?.total ?? quote.finalPrice)}
                       <span className="ml-1 text-sm font-semibold text-slate-500">
                         {productType === 'monthly' ? '/ ay' : '/ yıl'}
                       </span>
@@ -1280,7 +1317,7 @@ export function BilirkisiCheckoutPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={submitting || !quote?.valid || Boolean(productError)}
+                disabled={submitting || !quote?.valid || Boolean(productError) || coupon.blocksCheckout}
               >
                 {submitting
                   ? 'İşleniyor…'

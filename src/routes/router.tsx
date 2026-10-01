@@ -170,6 +170,12 @@ const AdminCampaignListPage = lazy(() =>
 const AdminCampaignFormPage = lazy(() =>
   import('@/pages/admin/AdminCampaignFormPage').then((m) => ({ default: m.AdminCampaignFormPage })),
 )
+const AdminCouponListPage = lazy(() =>
+  import('@/pages/admin/AdminCouponListPage').then((m) => ({ default: m.AdminCouponListPage })),
+)
+const AdminCouponFormPage = lazy(() =>
+  import('@/pages/admin/AdminCouponFormPage').then((m) => ({ default: m.AdminCouponFormPage })),
+)
 const AdminBhOverviewPage = lazy(() =>
   import('@/pages/admin/bh/AdminBhOverviewPage').then((m) => ({ default: m.AdminBhOverviewPage })),
 )
@@ -499,6 +505,9 @@ export const router = createBrowserRouter([
           { path: 'campaigns', element: <LazyPage><AdminCampaignListPage /></LazyPage> },
           { path: 'campaigns/new', element: <LazyPage><AdminCampaignFormPage /></LazyPage> },
           { path: 'campaigns/:id/edit', element: <LazyPage><AdminCampaignFormPage /></LazyPage> },
+          { path: 'coupons', element: <LazyPage><AdminCouponListPage /></LazyPage> },
+          { path: 'coupons/new', element: <LazyPage><AdminCouponFormPage /></LazyPage> },
+          { path: 'coupons/:id/edit', element: <LazyPage><AdminCouponFormPage /></LazyPage> },
           { path: 'bh', element: <LazyPage><AdminBhOverviewPage /></LazyPage> },
           { path: 'bh/fiyatlandirma', element: <LazyPage><AdminBhPricingPage /></LazyPage> },
           { path: 'bh/kampanyalar', element: <LazyPage><AdminBhCampaignsPage /></LazyPage> },

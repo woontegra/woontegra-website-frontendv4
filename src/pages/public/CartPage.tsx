@@ -16,6 +16,7 @@ import { mergeCartWithPreview } from '@/lib/cartMerge'
 import { isSaasSubscriptionProduct } from '@/utils/productPurchase'
 import { formatMoney } from '@/types/product'
 import { publicSoftwareDetailHref } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { CheckoutCouponBox, useCheckoutCoupon } from '@/components/checkout/CheckoutCouponBox'
 import { checkoutService } from '@/services/checkoutService'
 import { usePageMeta } from '@/hooks/usePageMeta'
 
@@ -113,6 +114,12 @@ export function CartPage() {
     [mergedRows],
   )
   const currency = mergedRows[0]?.currency ?? lines[0]?.snapshot?.currency ?? 'TRY'
+  const couponItems = useMemo(
+    () => mergedRows.map((row) => ({ productId: row.id, quantity: row.quantity })),
+    [mergedRows],
+  )
+  const coupon = useCheckoutCoupon(couponItems, '')
+  const payable = coupon.quote?.total ?? total
 
   return (
     <PageShell
@@ -190,9 +197,12 @@ export function CartPage() {
               <span className="font-semibold text-rose-800">-{formatMoney(totalDiscount, currency)}</span>
             </div>
           ) : null}
+          <div className="rounded-2xl border border-slate-200 bg-white px-6 py-4">
+            <CheckoutCouponBox coupon={coupon} currency={currency} />
+          </div>
           <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4">
             <span className="font-medium text-slate-700">Toplam</span>
-            <span className="text-xl font-bold text-slate-900">{formatMoney(total, currency)}</span>
+            <span className="text-xl font-bold text-slate-900">{formatMoney(payable, currency)}</span>
           </div>
           {previewQuery.isFetching ? (
             <p className="text-center text-xs text-slate-400">Fiyatlar sunucudan doğrulanıyor…</p>

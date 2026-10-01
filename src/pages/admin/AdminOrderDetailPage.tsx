@@ -219,6 +219,17 @@ export function AdminOrderDetailPage() {
           <CardBody className="space-y-3">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Sipariş özeti</h2>
             <InfoRow label="Oluşturulma" value={formatDateTime(data.createdAt)} />
+            {data.couponCodeSnapshot ? (
+              <>
+                <InfoRow label="Ara toplam" value={formatMoney(data.subtotal, data.currency)} />
+                <InfoRow label="Kupon kodu" value={data.couponCodeSnapshot} />
+                <InfoRow label="Kupon adı" value={data.couponCampaignNameSnapshot ?? '—'} />
+                <InfoRow
+                  label="İndirim tutarı"
+                  value={formatMoney(-(data.couponDiscountAmount ?? 0), data.currency)}
+                />
+              </>
+            ) : null}
             <InfoRow label="Toplam" value={formatMoney(data.total, data.currency)} />
             <InfoRow label="Ödeme yöntemi" value={paymentMethodLabel(data)} />
             <div className="flex flex-wrap gap-2 pt-1">

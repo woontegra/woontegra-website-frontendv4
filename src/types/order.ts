@@ -126,6 +126,12 @@ export type AdminOrderDetail = {
   paytrTransactionStatus?: string | null
   subtotal: number
   total: number
+  couponCodeSnapshot?: string | null
+  couponCampaignSlugSnapshot?: string | null
+  couponCampaignNameSnapshot?: string | null
+  couponDiscountTypeSnapshot?: string | null
+  couponDiscountValueSnapshot?: number | null
+  couponDiscountAmount?: number | null
   currency: string
   paidAt: string | null
   bankTransferPaymentDate: string | null
@@ -336,6 +342,13 @@ export function normalizeAdminOrderDetail(raw: unknown): AdminOrderDetail | null
       row.paytrTransactionStatus == null ? undefined : toString(row.paytrTransactionStatus),
     subtotal: toNumber(row.subtotal),
     total: toNumber(row.total),
+    couponCodeSnapshot: toNullableString(row.couponCodeSnapshot),
+    couponCampaignSlugSnapshot: toNullableString(row.couponCampaignSlugSnapshot),
+    couponCampaignNameSnapshot: toNullableString(row.couponCampaignNameSnapshot),
+    couponDiscountTypeSnapshot: toNullableString(row.couponDiscountTypeSnapshot),
+    couponDiscountValueSnapshot:
+      row.couponDiscountValueSnapshot == null ? null : toNumber(row.couponDiscountValueSnapshot),
+    couponDiscountAmount: row.couponDiscountAmount == null ? null : toNumber(row.couponDiscountAmount),
     currency: toString(row.currency, 'TRY') || 'TRY',
     paidAt: toNullableString(row.paidAt),
     bankTransferPaymentDate: toNullableString(row.bankTransferPaymentDate),

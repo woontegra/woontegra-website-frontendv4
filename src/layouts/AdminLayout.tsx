@@ -13,6 +13,7 @@ import {
   Package,
   Settings,
   ShoppingBag,
+  Ticket,
   Trash2,
   TrendingUp,
   Users,
@@ -70,6 +71,7 @@ const NAV_GROUPS: NavGroup[] = [
     title: 'Pazarlama',
     items: [
       { to: '/admin/campaigns', label: 'Kampanyalar' },
+      { to: '/admin/coupons', label: 'Kupon Kodları' },
       { to: '/admin/is-ortaklari', label: 'İş Ortakları' },
     ],
   },
@@ -106,6 +108,7 @@ function groupIcon(label: string) {
   if (label.includes('Ürün')) return Package
   if (label.includes('Medya')) return ImageIcon
   if (label.includes('Kampanya')) return Megaphone
+  if (label.includes('Kupon')) return Ticket
   if (label.includes('Baro')) return TrendingUp
   if (label.includes('Havale') || label.includes('Ödeme')) return Wallet
   if (label.includes('Sözleşme') || label.includes('Demo')) return FileText

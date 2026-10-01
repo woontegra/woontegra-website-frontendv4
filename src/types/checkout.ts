@@ -34,6 +34,19 @@ export type CreateOrderBody = {
   renewalToken?: string
   /** Aynı satın alma denemesinin yeniden denemelerinde sabit kalır */
   checkoutIdempotencyKey?: string
+  couponCode?: string
+}
+
+export type CouponQuote = {
+  code: string
+  couponId: string
+  couponName: string
+  discountType: 'percent' | 'fixed_amount'
+  discountValue: number
+  discountAmount: number
+  subtotal: number
+  total: number
+  currency: string
 }
 
 export type CreateOrderResponse = {
