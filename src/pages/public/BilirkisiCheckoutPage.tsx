@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { TurkeyCityDistrictFields, checkoutSelectCls } from '@/components/checkout/TurkeyCityDistrictFields'
 import { CheckoutCouponBox, useCheckoutCoupon } from '@/components/checkout/CheckoutCouponBox'
+import { BilirkisiOfferCheckoutHint } from '@/components/public/bilirkisi/BilirkisiOfferNote'
 import { CheckoutLegalModal } from '@/components/checkout/CheckoutLegalModal'
 import { LegalModalLink } from '@/components/checkout/LegalConsentCheckbox'
 import { usePageMeta } from '@/hooks/usePageMeta'
@@ -1189,7 +1190,10 @@ export function BilirkisiCheckoutPage() {
                 </p>
               ) : null}
 
-              <CheckoutCouponBox coupon={coupon} currency="TRY" className="mt-4 space-y-2" />
+              <div className="mt-4 space-y-2">
+                <BilirkisiOfferCheckoutHint />
+                <CheckoutCouponBox coupon={coupon} currency="TRY" className="space-y-2" />
+              </div>
 
               <div className="mt-4 border-t border-slate-100 pt-3">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Ödenecek toplam</p>
