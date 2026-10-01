@@ -2,6 +2,7 @@ import { Suspense, lazy, type ReactNode } from 'react'
 import type { HomePageContent } from '@/types/homePageContent'
 import { HomeHero } from '@/components/public/home/HomeHero'
 import { HomeIntro } from '@/components/public/home/HomeIntro'
+import { HomeSoftwarePicker } from '@/components/public/home/HomeSoftwarePicker'
 
 const HomeServices = lazy(() =>
   import('@/components/public/home/HomeServices').then((m) => ({ default: m.HomeServices })),
@@ -34,7 +35,9 @@ export function HomePageView({ content }: Props) {
   return (
     <>
       <HomeHero hero={content.hero} />
+      {content.hero.enabled ? <HomeSoftwarePicker /> : null}
       <HomeIntro intro={content.intro} titleAs={content.hero.enabled ? 'h2' : 'h1'} />
+      {content.hero.enabled ? null : <HomeSoftwarePicker />}
       <BelowFoldSection>
         <HomeServices services={content.services} />
       </BelowFoldSection>
