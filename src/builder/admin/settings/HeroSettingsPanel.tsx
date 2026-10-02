@@ -8,6 +8,7 @@ import {
   TextAreaField,
   TextField,
   ToggleField,
+  VideoUrlField,
 } from '@/builder/admin/ui/FormFields'
 import {
   SharedAdvancedSection,
@@ -20,6 +21,11 @@ import { useSelectedBlock } from '@/builder/admin/settings/useSelectedBlock'
 import { useFocusCollapsible } from '@/builder/admin/settings/useFocusCollapsible'
 import type { BlockButton, HeroBlock, HeroHighlight, HeroImageFit, HeroMode, HeroSlide } from '@/builder/types'
 import { createDefaultHeroSlide } from '@/builder/types'
+import {
+  HERO_VIDEO_URL_HINT,
+  heroVideoUrlMessage,
+  heroVideoUrlProblem,
+} from '@/builder/validation/heroVideoUrl'
 
 const HERO_MODE_OPTIONS = [
   { value: 'single-image', label: 'Tek Görsel', description: 'Tek arka plan görseli' },
@@ -551,17 +557,21 @@ function VideoFields({
   onChange: (b: HeroBlock) => void
 }) {
   const video = block.settings.video ?? {}
+  const videoProblem = heroVideoUrlProblem(video.videoUrl)
   const setVideo = (patch: Partial<typeof video>) =>
     onChange({ ...block, settings: { ...block.settings, video: { ...video, ...patch } } })
 
   return (
     <div className="space-y-3 rounded-xl border border-slate-100 bg-slate-50/50 p-3">
-      <TextField
+      <VideoUrlField
         label="Video URL"
-        hint="MP4 veya harici video adresi"
+        hint={HERO_VIDEO_URL_HINT}
         value={video.videoUrl ?? ''}
         onChange={(videoUrl) => setVideo({ videoUrl })}
       />
+      {videoProblem ? (
+        <p className="text-[11px] leading-relaxed text-amber-700">{heroVideoUrlMessage(videoProblem)}</p>
+      ) : null}
       <ImageUrlField
         label="Poster görsel"
         uploadFolder="hero"

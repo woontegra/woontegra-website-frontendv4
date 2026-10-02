@@ -18,6 +18,7 @@ import type { ConversionReport } from '@/builder/load/conversionReport'
 import { enrichParityRaw } from '@/builder/parity/enrichParityRaw'
 import { pageContentService, getErrorMessage } from '@/services/pageContentService'
 import { buildPageContentPayload, extractBlocksForPage } from '@/builder/load/pageContentPersistence'
+import { firstEnabledHeroVideoError } from '@/builder/validation/heroVideoUrl'
 import { useToastStore } from '@/store/toastStore'
 import { extractSeoFromRaw } from '@/builder/load/parseBuilderBlocks'
 import { getBhModulePageFromRaw, normalizeBhModuleCatalog } from '@/builder/types/bhModule'
@@ -618,6 +619,13 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
 
     const def = getBuilderPageDefinition(pageKey)
     if (!def) return false
+
+    const videoError = firstEnabledHeroVideoError(blocks)
+    if (videoError) {
+      set({ saveError: videoError })
+      useToastStore.getState().show(videoError, 'error')
+      return false
+    }
 
     set({ isSaving: true, saveError: null })
 

@@ -1,8 +1,18 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ChangeEvent, type ReactNode } from 'react'
 import { MediaPickerModal } from '@/media/components/MediaPickerModal'
 import { resolveMediaUrl } from '@/media/resolveMediaUrl'
+import { catalogMediaService } from '@/services/catalogMediaService'
 import { catalogMediaPickUrl } from '@/types/catalogMedia'
 import { cn } from '@/lib/cn'
+
+const HERO_VIDEO_UPLOAD_MAX_BYTES = 200 * 1024 * 1024
+const HERO_VIDEO_UPLOAD_ERROR = 'Video yüklenemedi. Dosya türünü ve boyutunu kontrol edin.'
+
+function isHeroVideoFile(file: File): boolean {
+  const type = file.type.toLowerCase()
+  if (type === 'video/mp4' || type === 'video/webm') return true
+  return /\.(mp4|webm)$/i.test(file.name) && (type === '' || type === 'application/octet-stream')
+}
 
 export function FieldLabel({
   label,
@@ -271,6 +281,77 @@ export function ImageUrlField({
         onSelect={(media) => onChange(catalogMediaPickUrl(media))}
         uploadFolder={uploadFolder}
       />
+    </div>
+  )
+}
+
+export function VideoUrlField({
+  label,
+  hint,
+  value,
+  onChange,
+}: {
+  label: string
+  hint?: string
+  value: string
+  onChange: (v: string) => void
+}) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+
+  const onFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    if (!isHeroVideoFile(file) || file.size <= 0 || file.size > HERO_VIDEO_UPLOAD_MAX_BYTES) {
+      setUploadError(HERO_VIDEO_UPLOAD_ERROR)
+      return
+    }
+    setUploading(true)
+    setUploadError(null)
+    try {
+      const created = await catalogMediaService.uploadVideo(file, 'hero')
+      const url = catalogMediaPickUrl(created)
+      if (!url) throw new Error('url')
+      onChange(url)
+    } catch {
+      setUploadError(HERO_VIDEO_UPLOAD_ERROR)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div>
+      <FieldLabel label={label} hint={hint} />
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="https://...mp4 veya https://...webm"
+          disabled={uploading}
+          className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 disabled:bg-slate-50"
+        />
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          aria-busy={uploading}
+          className="shrink-0 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-wait disabled:opacity-70"
+        >
+          {uploading ? 'Yükleniyor…' : 'Video Yükle'}
+        </button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="video/mp4,video/webm,.mp4,.webm"
+          className="hidden"
+          onChange={(event) => void onFile(event)}
+        />
+      </div>
+      {uploadError ? <p className="mt-1 text-[11px] leading-relaxed text-amber-700">{uploadError}</p> : null}
     </div>
   )
 }

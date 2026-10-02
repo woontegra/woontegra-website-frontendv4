@@ -9,6 +9,7 @@ import type {
   WhatsAppGuideBlock,
 } from '@/builder/types'
 import { heroRequiresImage } from '@/builder/types'
+import { heroVideoUrlMessage, heroVideoUrlProblem } from '@/builder/validation/heroVideoUrl'
 import {
   whatsAppGuidePlatformStepsComplete,
   whatsAppGuideStepHasImage,
@@ -97,6 +98,16 @@ export function validateBlocksForPublish(blocks: BuilderBlock[]): PublishValidat
           field: 'hero.image',
           message: 'Hero görseli zorunlu (gradient modunda değil ve görsel göster açık).',
         })
+      }
+      if (settings.mode === 'video') {
+        const videoProblem = heroVideoUrlProblem(settings.video?.videoUrl)
+        if (videoProblem) {
+          issues.push({
+            blockId: block.id,
+            field: 'hero.videoUrl',
+            message: heroVideoUrlMessage(videoProblem),
+          })
+        }
       }
     }
 

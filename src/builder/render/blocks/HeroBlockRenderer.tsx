@@ -10,6 +10,11 @@ import { resolveIcon } from '@/lib/iconRegistry'
 import { cn } from '@/lib/cn'
 import type { BlockButton, HeroBlock } from '@/builder/types'
 import { buildHeroGradientCss } from '@/builder/types'
+import { resolveMediaUrl } from '@/media/resolveMediaUrl'
+import {
+  HERO_VIDEO_PREVIEW_MESSAGE,
+  heroVideoUrlProblem,
+} from '@/builder/validation/heroVideoUrl'
 import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
 import { HeroProductPrice } from '@/builder/render/HeroProductPrice'
 import { HeroCarouselSection } from '@/builder/render/blocks/HeroCarouselSection'
@@ -126,6 +131,14 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
   )
   const showButtons = visibility.showButton !== false && visibleButtons.length > 0
 
+  const videoUrlRaw = settings.video?.videoUrl?.trim() ?? ''
+  const posterRaw = settings.video?.posterUrl?.trim() ?? ''
+  const videoProblem = settings.mode === 'video' ? heroVideoUrlProblem(videoUrlRaw) : null
+  const playableVideoSrc =
+    settings.mode === 'video' && videoProblem == null && videoUrlRaw ? resolveMediaUrl(videoUrlRaw) : ''
+  const posterSrc = settings.mode === 'video' && posterRaw ? resolveMediaUrl(posterRaw) : ''
+  const hasHeroCopy = Boolean(showTitle || showDescription || showButtons)
+
   const hasDarkBackground =
     settings.mode === 'gradient' ||
     settings.mode === 'solid-color' ||
@@ -155,7 +168,8 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
     !showImage &&
     !showButtons &&
     settings.mode !== 'gradient' &&
-    settings.mode !== 'solid-color'
+    settings.mode !== 'solid-color' &&
+    !(settings.mode === 'video' && (playableVideoSrc || posterSrc || hasHeroCopy || isPreview))
   ) {
     if (!isPreview) return null
   }
@@ -485,6 +499,15 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
     )
   }
 
+  const sectionBg: CSSProperties = {
+    ...bgStyle,
+    ...heroHeightVars(settings, '280px'),
+  }
+  if (settings.mode === 'video' && !playableVideoSrc && !posterSrc && style.backgroundGradient) {
+    sectionBg.background = style.backgroundGradient
+    delete sectionBg.backgroundColor
+  }
+
   return (
     <section
       className={cn(
@@ -493,21 +516,27 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
         naturalMobileImage && 'max-[640px]:bg-slate-900',
         height,
       )}
-      style={{
-        ...bgStyle,
-        ...heroHeightVars(settings, '280px'),
-      }}
+      style={sectionBg}
     >
-      {settings.mode === 'video' && settings.video?.videoUrl ? (
+      {playableVideoSrc ? (
         <video
           className="absolute inset-0 h-full w-full object-cover"
-          src={settings.video.videoUrl}
-          poster={settings.video.posterUrl}
-          muted={settings.video.muted}
-          loop={settings.video.loop}
-          autoPlay={settings.video.autoplay}
+          src={playableVideoSrc}
+          poster={posterSrc || undefined}
+          muted={settings.video?.muted}
+          loop={settings.video?.loop}
+          autoPlay={settings.video?.autoplay}
           playsInline
         />
+      ) : posterSrc ? (
+        <img src={posterSrc} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      ) : null}
+      {isPreview && videoProblem ? (
+        <div className="absolute inset-0 z-[4] flex items-center justify-center p-6">
+          <p className="max-w-lg rounded-xl border border-amber-200 bg-white px-4 py-3 text-center text-sm font-medium text-slate-800 shadow-lg">
+            {HERO_VIDEO_PREVIEW_MESSAGE}
+          </p>
+        </div>
       ) : null}
 
       {style.overlay?.enabled ? (
