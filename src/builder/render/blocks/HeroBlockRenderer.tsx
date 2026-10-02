@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { BuilderField } from '@/builder/edit/BuilderField'
 import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { renderIfText, shouldShowField } from '@/builder/render/renderRules'
@@ -31,9 +31,21 @@ function heroButtonClass(variant: BlockButton['variant'], outlineClass: string, 
 function heroHeightVars(settings: HeroBlock['settings'], desktopDefault: string): CSSProperties {
   return {
     ['--hero-h' as string]: settings.height?.desktop ?? desktopDefault,
+    ['--hero-h-tablet' as string]:
+      settings.height?.tablet ?? settings.height?.desktop ?? desktopDefault,
     ['--hero-h-mobile' as string]:
       settings.height?.mobile ?? settings.height?.tablet ?? desktopDefault,
   }
+}
+
+function heroVideoMobileImageSrc(settings: HeroBlock['settings']): string {
+  const raw = settings.mobileImage?.url?.trim() ?? ''
+  return raw ? resolveMediaUrl(raw) : ''
+}
+
+/** Video hero telefonda otomatik sığdırma alanı cover ile doldurur. Contain yalnız açık seçimde. */
+function heroVideoMobileFit(settings: HeroBlock['settings']): 'cover' | 'contain' {
+  return settings.imageFit?.mobile === 'contain' ? 'contain' : 'cover'
 }
 
 function heroMinHeightClass(settings: HeroBlock['settings'], fullscreen?: boolean): string {
@@ -79,6 +91,93 @@ function heroAboutImageClass(naturalMobile: boolean): string {
   return 'aspect-[4/3] w-full object-cover object-center'
 }
 
+function HeroVideoMedia({
+  videoSrc,
+  posterSrc,
+  mobileImageSrc,
+  fit,
+  muted,
+  loop,
+  autoPlay,
+}: {
+  videoSrc: string
+  posterSrc: string
+  mobileImageSrc: string
+  fit: 'cover' | 'contain'
+  muted: boolean
+  loop: boolean
+  autoPlay: boolean
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [failed, setFailed] = useState(false)
+  const [wide, setWide] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches,
+  )
+
+  useEffect(() => {
+    setFailed(false)
+  }, [videoSrc])
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 640px)')
+    const onChange = () => setWide(media.matches)
+    onChange()
+    media.addEventListener('change', onChange)
+    return () => media.removeEventListener('change', onChange)
+  }, [])
+
+  useEffect(() => {
+    const el = videoRef.current
+    if (!el || !videoSrc || !autoPlay || !wide || failed) return
+    let cancelled = false
+    const start = () => {
+      if (cancelled) return
+      el.play().catch(() => {
+        if (!cancelled) setFailed(true)
+      })
+    }
+    if (el.readyState >= 2) start()
+    else el.addEventListener('loadeddata', start)
+    return () => {
+      cancelled = true
+      el.removeEventListener('loadeddata', start)
+    }
+  }, [videoSrc, autoPlay, wide, failed])
+
+  const phoneStill = mobileImageSrc || posterSrc
+  if (!videoSrc && !phoneStill) return null
+
+  const fitClass = fit === 'contain' ? 'object-contain object-center' : 'object-cover object-center'
+  const showVideo = Boolean(videoSrc) && wide && !failed
+  const showFullMobileImage = !wide && Boolean(mobileImageSrc)
+
+  return (
+    <>
+      {showFullMobileImage ? (
+        <img src={mobileImageSrc} alt="" className="relative block h-auto w-full max-w-full" />
+      ) : !wide && posterSrc ? (
+        <img src={posterSrc} alt="" className={cn('absolute inset-0 h-full w-full', fitClass)} />
+      ) : null}
+      {wide && posterSrc && !showVideo ? (
+        <img src={posterSrc} alt="" className="absolute inset-0 h-full w-full object-cover object-center" />
+      ) : null}
+      {showVideo ? (
+        <video
+          ref={videoRef}
+          className="absolute inset-0 h-full w-full object-cover object-center"
+          src={videoSrc}
+          poster={posterSrc || undefined}
+          muted={muted}
+          loop={loop}
+          autoPlay={autoPlay}
+          playsInline
+          onError={() => setFailed(true)}
+        />
+      ) : null}
+    </>
+  )
+}
+
 export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps) {
   if (block.type !== 'hero') return null
   const hero = block as HeroBlock
@@ -87,8 +186,11 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
   const { settings, style, visibility } = hero
   const isPreview = mode === 'preview'
 
-  const height = heroMinHeightClass(settings, settings.fullscreen)
-  const naturalMobileImage = heroUsesMobileNaturalImageLayout(settings)
+  const videoMode = settings.mode === 'video'
+  const height = videoMode
+    ? 'min-h-[var(--hero-h-mobile,400px)] sm:min-h-[var(--hero-h-tablet,var(--hero-h,440px))] lg:min-h-[var(--hero-h,520px)]'
+    : heroMinHeightClass(settings, settings.fullscreen)
+  const naturalMobileImage = videoMode ? false : heroUsesMobileNaturalImageLayout(settings)
   const hideContentOnMobile =
     settings.hideContentOnMobile === true ||
     hero.responsiveSettings?.hideContentOnMobile === true ||
@@ -137,6 +239,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
   const playableVideoSrc =
     settings.mode === 'video' && videoProblem == null && videoUrlRaw ? resolveMediaUrl(videoUrlRaw) : ''
   const posterSrc = settings.mode === 'video' && posterRaw ? resolveMediaUrl(posterRaw) : ''
+  const mobileImageSrc = settings.mode === 'video' ? heroVideoMobileImageSrc(settings) : ''
   const hasHeroCopy = Boolean(showTitle || showDescription || showButtons)
 
   const hasDarkBackground =
@@ -169,7 +272,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
     !showButtons &&
     settings.mode !== 'gradient' &&
     settings.mode !== 'solid-color' &&
-    !(settings.mode === 'video' && (playableVideoSrc || posterSrc || hasHeroCopy || isPreview))
+    !(settings.mode === 'video' && (playableVideoSrc || posterSrc || mobileImageSrc || hasHeroCopy || isPreview))
   ) {
     if (!isPreview) return null
   }
@@ -503,7 +606,7 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
     ...bgStyle,
     ...heroHeightVars(settings, '280px'),
   }
-  if (settings.mode === 'video' && !playableVideoSrc && !posterSrc && style.backgroundGradient) {
+  if (settings.mode === 'video' && !playableVideoSrc && !posterSrc && !mobileImageSrc && style.backgroundGradient) {
     sectionBg.background = style.backgroundGradient
     delete sectionBg.backgroundColor
   }
@@ -518,19 +621,15 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
       )}
       style={sectionBg}
     >
-      {playableVideoSrc ? (
-        <video
-          className="absolute inset-0 h-full w-full object-cover"
-          src={playableVideoSrc}
-          poster={posterSrc || undefined}
-          muted={settings.video?.muted}
-          loop={settings.video?.loop}
-          autoPlay={settings.video?.autoplay}
-          playsInline
-        />
-      ) : posterSrc ? (
-        <img src={posterSrc} alt="" className="absolute inset-0 h-full w-full object-cover" />
-      ) : null}
+      <HeroVideoMedia
+        videoSrc={playableVideoSrc}
+        posterSrc={posterSrc}
+        mobileImageSrc={mobileImageSrc}
+        fit={heroVideoMobileFit(settings)}
+        muted={settings.video?.muted !== false}
+        loop={settings.video?.loop !== false}
+        autoPlay={settings.video?.autoplay !== false}
+      />
       {isPreview && videoProblem ? (
         <div className="absolute inset-0 z-[4] flex items-center justify-center p-6">
           <p className="max-w-lg rounded-xl border border-amber-200 bg-white px-4 py-3 text-center text-sm font-medium text-slate-800 shadow-lg">

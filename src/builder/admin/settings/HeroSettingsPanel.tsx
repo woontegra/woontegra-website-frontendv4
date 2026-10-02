@@ -358,14 +358,20 @@ export function HeroSettingsPanel() {
             onChange={(mobile) => setSettings({ height: { ...settings.height, mobile } })}
             placeholder="360px"
             hint={
-              settings.mobileImage?.url?.trim()
-                ? 'Ayrı mobil görsel + contain modunda yükseklik görsel oranına göre otomatik olur'
-                : undefined
+              settings.mode === 'video'
+                ? 'Video hero telefonda bu yüksekliği kullanır'
+                : settings.mobileImage?.url?.trim()
+                  ? 'Ayrı mobil görsel + contain modunda yükseklik görsel oranına göre otomatik olur'
+                  : undefined
             }
           />
           <SelectField
             label="Mobil görsel sığdırma"
-            hint="Ayrı mobil görsel seçiliyse varsayılan: Tamamını göster (contain)"
+            hint={
+              settings.mode === 'video'
+                ? 'Telefon görseli varsayılan olarak alanı doldurur. Tamamını göstermek için Contain seçin.'
+                : 'Ayrı mobil görsel seçiliyse varsayılan: Tamamını göster (contain)'
+            }
             value={settings.imageFit?.mobile ?? ''}
             onChange={(v) => {
               const mobile = (v || undefined) as HeroImageFit | undefined
@@ -374,7 +380,13 @@ export function HeroSettingsPanel() {
               })
             }}
             options={[
-              { value: '', label: 'Otomatik (mobil görsel varsa contain)' },
+              {
+                value: '',
+                label:
+                  settings.mode === 'video'
+                    ? 'Otomatik — alanı doldur'
+                    : 'Otomatik (mobil görsel varsa contain)',
+              },
               { value: 'contain', label: 'Contain — tamamını göster' },
               { value: 'cover', label: 'Cover — alanı doldur (kırpabilir)' },
             ]}
@@ -574,9 +586,25 @@ function VideoFields({
       ) : null}
       <ImageUrlField
         label="Poster görsel"
+        hint="Video yüklenene kadar veya hata durumunda gösterilir."
         uploadFolder="hero"
         value={video.posterUrl ?? ''}
         onChange={(posterUrl) => setVideo({ posterUrl })}
+      />
+      <ImageUrlField
+        label="Mobil görsel"
+        hint="Telefon ekranlarında video yerine gösterilecek görsel."
+        uploadFolder="hero"
+        value={block.settings.mobileImage?.url ?? ''}
+        onChange={(url) =>
+          onChange({
+            ...block,
+            settings: {
+              ...block.settings,
+              mobileImage: { ...block.settings.mobileImage, url },
+            },
+          })
+        }
       />
       <ToggleField
         label="Overlay"
