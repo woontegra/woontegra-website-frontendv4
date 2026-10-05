@@ -1198,12 +1198,12 @@ export function BilirkisiCheckoutPage() {
                 </p>
               ) : null}
 
-              <div className="mt-4 space-y-2">
-                <BilirkisiOfferCheckoutHint />
-                {campaignDiscountActive || campaignQuotePending ? null : (
+              {campaignDiscountActive || campaignQuotePending ? null : (
+                <div className="mt-4 space-y-2">
+                  <BilirkisiOfferCheckoutHint />
                   <CheckoutCouponBox coupon={coupon} currency="TRY" className="space-y-2" />
-                )}
-              </div>
+                </div>
+              )}
 
               <div className="mt-4 border-t border-slate-100 pt-3">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Ödenecek toplam</p>
