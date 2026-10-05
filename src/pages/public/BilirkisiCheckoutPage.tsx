@@ -776,7 +776,7 @@ export function BilirkisiCheckoutPage() {
         }
       }
 
-      if (paymentMethod === 'bank_transfer' && coupon.quote?.code) {
+      if (paymentMethod === 'bank_transfer') {
         const created = await bilirkisiHesapService.createCheckoutOrder({
           ...body,
           paymentProvider: 'BANK_TRANSFER',
@@ -790,16 +790,6 @@ export function BilirkisiCheckoutPage() {
           merchantOid: created.data.orderNo,
           bankTransfer: created.data.bankTransfer || undefined,
           amountFormatted: created.data.amountFormatted || undefined,
-        })
-      } else if (paymentMethod === 'bank_transfer') {
-        const res = await bilirkisiHesapService.createBankTransferOrder(body)
-        if (!res.success) throw new Error(res.message || res.error || 'Havale siparişi oluşturulamadı.')
-        await persistDefaultAddressIfRequested()
-        setSuccess({
-          kind: 'bank',
-          merchantOid: res.merchantOid,
-          bankTransfer: res.bankTransfer,
-          amountFormatted: res.amountFormatted,
         })
       } else {
         const created = await bilirkisiHesapService.createCheckoutOrder(body)
