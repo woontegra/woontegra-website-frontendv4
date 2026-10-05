@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronDown, Download, KeyRound, LogOut, Package, UserRound } from 'lucide-react'
 import { useCustomerSession } from '@/hooks/useCustomerSession'
 import { customersService } from '@/services/customersService'
+import { BILIRKISI_HESAP_CHECKOUT_PATH } from '@/data/canonicalSoftwareProducts'
+import { bilirkisiCheckoutAuthReturnPath, customerAuthHref } from '@/lib/bilirkisiCheckoutAuthReturn'
 import { cn } from '@/lib/cn'
 
 type Props = {
@@ -12,7 +14,14 @@ type Props = {
 
 export function AccountMenu({ compact, onNavigate }: Props) {
   const { authed, profile } = useCustomerSession()
+  const location = useLocation()
   const navigate = useNavigate()
+  const checkoutReturn =
+    location.pathname === BILIRKISI_HESAP_CHECKOUT_PATH
+      ? bilirkisiCheckoutAuthReturnPath(location.search)
+      : null
+  const loginTo = checkoutReturn ? customerAuthHref('giris', checkoutReturn) : '/giris'
+  const registerTo = checkoutReturn ? customerAuthHref('kayit', checkoutReturn) : '/kayit'
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
 
@@ -41,10 +50,10 @@ export function AccountMenu({ compact, onNavigate }: Props) {
       return (
         <div className="space-y-1 border-b border-slate-100 px-4 py-3">
           <p className="px-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Hesabım</p>
-          <Link to="/giris" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-50">
+          <Link to={loginTo} onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-50">
             Giriş Yap
           </Link>
-          <Link to="/kayit" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-50">
+          <Link to={registerTo} onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-slate-800 hover:bg-slate-50">
             Kayıt Ol
           </Link>
           <Link to="/sifremi-unuttum" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50">
@@ -70,10 +79,10 @@ export function AccountMenu({ compact, onNavigate }: Props) {
         {open ? (
           <div className="absolute right-0 top-full z-[110] pt-1">
             <div className="min-w-[200px] rounded-xl border border-slate-200 bg-white py-2 shadow-lg">
-              <AccountMenuLink to="/giris" onClick={close}>
+              <AccountMenuLink to={loginTo} onClick={close}>
                 Giriş Yap
               </AccountMenuLink>
-              <AccountMenuLink to="/kayit" onClick={close}>
+              <AccountMenuLink to={registerTo} onClick={close}>
                 Kayıt Ol
               </AccountMenuLink>
               <AccountMenuLink to="/sifremi-unuttum" onClick={close} muted>

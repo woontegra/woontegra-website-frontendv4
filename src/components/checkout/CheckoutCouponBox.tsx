@@ -31,6 +31,10 @@ export function useCheckoutCoupon(
   customerEmail: string,
   options?: {
     scope?: string
+    /** Kurum kampanyası aktifken kayıtlı kupon silinir ve sorgulanmaz. */
+    suspended?: boolean
+    /** Kampanya teklifi gelene kadar sorgu yapılmaz; kayıtlı kod silinmez. */
+    held?: boolean
     validate?: (input: {
       couponCode: string
       items: CheckoutCouponItem[]
@@ -45,6 +49,16 @@ export function useCheckoutCoupon(
   const email = customerEmail.trim().toLowerCase()
   const scope = options?.scope ?? ''
   const validate = options?.validate
+  const suspended = options?.suspended === true
+  const held = options?.held === true
+  const couponPaused = suspended || held
+
+  useEffect(() => {
+    if (!suspended) return
+    setEmptyError(null)
+    setDraft('')
+    setAppliedCode('')
+  }, [suspended])
 
   const query = useQuery({
     queryKey: ['checkout-coupon', appliedCode, itemKey, email, scope],
@@ -54,15 +68,16 @@ export function useCheckoutCoupon(
         items,
         customerEmail: email || undefined,
       }),
-    enabled: Boolean(appliedCode) && items.length > 0,
+    enabled: Boolean(appliedCode) && items.length > 0 && !couponPaused,
     retry: false,
   })
 
-  const quote: CouponQuote | null = query.data ?? null
-  const error =
-    emptyError || (appliedCode && query.isError ? getErrorMessage(query.error, 'Kupon doğrulanamadı.') : null)
-  const pending = Boolean(appliedCode) && query.isFetching
-  const blocksCheckout = Boolean(appliedCode) && (pending || query.isError || !quote)
+  const quote: CouponQuote | null = couponPaused ? null : (query.data ?? null)
+  const error = couponPaused
+    ? null
+    : emptyError || (appliedCode && query.isError ? getErrorMessage(query.error, 'Kupon doğrulanamadı.') : null)
+  const pending = !couponPaused && Boolean(appliedCode) && query.isFetching
+  const blocksCheckout = !couponPaused && Boolean(appliedCode) && (pending || query.isError || !quote)
 
   useEffect(() => {
     writeStoredCouponCode(appliedCode)

@@ -20,6 +20,7 @@ import { customersService } from '@/services/customersService'
 import { paymentsService } from '@/services/paymentsService'
 import { getErrorMessage } from '@/api/client'
 import { BILIRKISI_HESAP_SLUG } from '@/data/canonicalSoftwareProducts'
+import { bilirkisiCheckoutAuthReturnPath, customerAuthHref } from '@/lib/bilirkisiCheckoutAuthReturn'
 import {
   bilirkisiCheckoutCopy,
   isLicenseStillActive,
@@ -320,13 +321,13 @@ export function BilirkisiCheckoutPage() {
     return 'annual'
   }, [searchParams])
 
-  const returnPath = useMemo(() => {
-    const qs = searchParams.toString()
-    return `/yazilimlar/${BILIRKISI_HESAP_SLUG}/satin-al${qs ? `?${qs}` : ''}`
-  }, [searchParams])
+  const returnPath = useMemo(
+    () => bilirkisiCheckoutAuthReturnPath(searchParams.toString()),
+    [searchParams],
+  )
 
-  const loginHref = `/giris?return=${encodeURIComponent(returnPath)}`
-  const registerHref = `/kayit?return=${encodeURIComponent(returnPath)}`
+  const loginHref = customerAuthHref('giris', returnPath)
+  const registerHref = customerAuthHref('kayit', returnPath)
 
   const [product, setProduct] = useState<BhProduct | null>(null)
   const [productError, setProductError] = useState<string | null>(null)
@@ -363,9 +364,16 @@ export function BilirkisiCheckoutPage() {
   const [prefillDone, setPrefillDone] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const campaignDiscountActive = useMemo(() => {
+    const rate = Number(quote?.campaign?.discountRate)
+    return Number.isFinite(rate) && rate > 0
+  }, [quote])
+  const campaignQuotePending = Boolean(campaignCode) && !quote
   const couponItems = useMemo(() => [{ productId: BILIRKISI_HESAP_SLUG, quantity: 1 }], [])
   const coupon = useCheckoutCoupon(couponItems, billing.email, {
     scope: `${productType}|${campaignCode}`,
+    suspended: campaignDiscountActive,
+    held: campaignQuotePending,
     validate: async (input) => {
       const res = await bilirkisiHesapService.validateCheckoutCoupon({
         couponCode: input.couponCode,
@@ -733,7 +741,7 @@ export function BilirkisiCheckoutPage() {
       campaign_id: campaignCode || undefined,
       campaignPublicCode: campaignCode || undefined,
       renewalToken: isRenewal ? renewalToken : undefined,
-      couponCode: coupon.quote?.code || undefined,
+      couponCode: campaignDiscountActive ? undefined : coupon.quote?.code || undefined,
       billingInfo,
       legalConsents,
       legal_consents: legalConsents,
@@ -1192,7 +1200,9 @@ export function BilirkisiCheckoutPage() {
 
               <div className="mt-4 space-y-2">
                 <BilirkisiOfferCheckoutHint />
-                <CheckoutCouponBox coupon={coupon} currency="TRY" className="space-y-2" />
+                {campaignDiscountActive || campaignQuotePending ? null : (
+                  <CheckoutCouponBox coupon={coupon} currency="TRY" className="space-y-2" />
+                )}
               </div>
 
               <div className="mt-4 border-t border-slate-100 pt-3">
@@ -1204,7 +1214,9 @@ export function BilirkisiCheckoutPage() {
                 ) : quote?.valid && quote.finalPrice != null ? (
                   <div className="mt-1">
                     <p className="text-2xl font-bold text-slate-950">
-                      {formatBhPriceTl(coupon.quote?.total ?? quote.finalPrice)}
+                      {formatBhPriceTl(
+                        campaignDiscountActive ? quote.finalPrice : (coupon.quote?.total ?? quote.finalPrice),
+                      )}
                       <span className="ml-1 text-sm font-semibold text-slate-500">
                         {productType === 'monthly' ? '/ ay' : '/ yıl'}
                       </span>
