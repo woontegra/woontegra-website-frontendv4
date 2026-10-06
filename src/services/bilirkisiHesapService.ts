@@ -8,6 +8,14 @@ export type BhProduct = {
   price: number
   originalPrice?: number | null
   priceMonthly?: number | null
+  windowsPriceYearly?: number | null
+  windowsSalesEnabled?: boolean
+  windowsDeviceLimit?: number | null
+  windowsTrialDays?: number | null
+  macosPriceYearly?: number | null
+  macosSalesEnabled?: boolean
+  macosDeviceLimit?: number | null
+  macosTrialDays?: number | null
   priceStarter?: number | null
   price2Year?: number | null
   originalPrice2Year?: number | null
@@ -285,6 +293,59 @@ export const bilirkisiHesapService = {
       }
       message?: string
       code?: string
+    }
+  },
+
+  async quoteDesktopPlatform(platform: 'WINDOWS' | 'MACOS') {
+    const { data } = await publicApi.post('/bh/desktop-purchase/quote', { platform }, { timeout: 20_000 })
+    return data as {
+      success: boolean
+      data?: {
+        platform: 'WINDOWS' | 'MACOS'
+        priceKurus: number
+        licenseDays: number
+        maxDevices: number
+        fromTrial: boolean
+      }
+      message?: string
+    }
+  },
+
+  async resolveDesktopPurchase(purchaseToken: string) {
+    const { data } = await publicApi.post('/bh/desktop-purchase/resolve', { purchaseToken }, { timeout: 20_000 })
+    return data as {
+      success: boolean
+      data?: {
+        product: string
+        platform: 'WINDOWS' | 'MACOS'
+        period: 'yearly'
+        purpose: string
+        fromTrial: boolean
+        priceKurus: number
+        licenseDays: number
+        maxDevices: number
+      }
+      message?: string
+    }
+  },
+
+  async createDesktopPurchaseOrder(body: Record<string, unknown>) {
+    const { data } = await publicApi.post('/bh/desktop-purchase/checkout', body, {
+      headers: customerAuthHeaders(),
+      timeout: 45_000,
+    })
+    return data as {
+      success: boolean
+      data?: {
+        orderNo: string
+        orderId: string
+        totalTl: number
+        platform: string
+        paymentProvider: string
+        amountFormatted?: string | null
+        bankTransfer?: Record<string, string> | null
+      }
+      message?: string
     }
   },
 

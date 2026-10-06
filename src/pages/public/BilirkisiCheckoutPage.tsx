@@ -27,6 +27,7 @@ import {
   parsePurchaseContext,
   resolveBilirkisiCheckoutKind,
 } from '@/pages/public/bilirkisiCheckoutCopy'
+import { DesktopFirstPurchaseCheckout } from '@/pages/public/DesktopFirstPurchaseCheckout'
 import {
   sanitizeTurkishIdentityNumberInput,
   validateTurkishIdentityNumber,
@@ -292,6 +293,18 @@ function extractRenewalOptionPriceTl(
 }
 
 export function BilirkisiCheckoutPage() {
+  const [searchParams] = useSearchParams()
+  const purchaseToken = (searchParams.get('purchaseToken') || '').trim()
+  const platformRaw = (searchParams.get('platform') || '').trim().toUpperCase()
+  const platform = platformRaw === 'WINDOWS' || platformRaw === 'MACOS' ? platformRaw : null
+  const renewalToken = (searchParams.get('renew') || '').trim()
+  if (!renewalToken && (purchaseToken || platform)) {
+    return <DesktopFirstPurchaseCheckout purchaseToken={purchaseToken} platform={platform} />
+  }
+  return <BilirkisiSaasCheckoutPage />
+}
+
+function BilirkisiSaasCheckoutPage() {
   const { authed, profile } = useCustomerSession()
   const [searchParams, setSearchParams] = useSearchParams()
   const renewalToken = useMemo(() => (searchParams.get('renew') || '').trim(), [searchParams])
