@@ -344,14 +344,16 @@ export function AdminOrderDetailPage() {
                 label="T.C. Kimlik No"
                 value={data.customer.taxNumber?.trim() || 'Belirtilmedi'}
               />
-            ) : null}
-            {data.customer.companyName ? <InfoRow label="Firma" value={data.customer.companyName} /> : null}
-            {!isIndividualBillingType(data.customer.billingType) && data.customer.taxOffice ? (
-              <InfoRow label="Vergi dairesi" value={data.customer.taxOffice} />
-            ) : null}
-            {!isIndividualBillingType(data.customer.billingType) && data.customer.taxNumber ? (
-              <InfoRow label="Vergi no" value={data.customer.taxNumber} />
-            ) : null}
+            ) : (
+              <>
+                <InfoRow label="Firma / unvan" value={data.customer.companyName?.trim() || '—'} />
+                <InfoRow label="Vergi dairesi" value={data.customer.taxOffice?.trim() || '—'} />
+                <InfoRow label="Vergi no" value={data.customer.taxNumber?.trim() || '—'} />
+              </>
+            )}
+            <InfoRow label="İl" value={data.customer.billingCity?.trim() || '—'} />
+            <InfoRow label="İlçe" value={data.customer.billingDistrict?.trim() || '—'} />
+            <InfoRow label="Fatura Adresi" value={data.customer.billingAddress?.trim() || '—'} />
           </CardBody>
         </Card>
 

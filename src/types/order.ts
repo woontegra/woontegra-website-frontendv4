@@ -180,6 +180,9 @@ export type AdminOrderDetail = {
     taxOffice: string | null
     taxNumber: string | null
     companyName: string | null
+    billingCity: string | null
+    billingDistrict: string | null
+    billingAddress: string | null
   }
   items: AdminOrderItem[]
   paymentTransactions: AdminPaymentTransaction[]
@@ -410,6 +413,9 @@ export function normalizeAdminOrderDetail(raw: unknown): AdminOrderDetail | null
       taxOffice: toNullableString(customerRaw.taxOffice),
       taxNumber: toNullableString(customerRaw.taxNumber),
       companyName: toNullableString(customerRaw.companyName),
+      billingCity: toNullableString(customerRaw.billingCity),
+      billingDistrict: toNullableString(customerRaw.billingDistrict),
+      billingAddress: toNullableString(customerRaw.billingAddress),
     },
     items: itemsRaw
       .map(normalizeOrderItem)
