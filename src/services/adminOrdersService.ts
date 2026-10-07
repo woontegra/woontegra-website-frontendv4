@@ -63,6 +63,13 @@ export const adminOrdersService = {
     await adminApi.post(`/admin/orders/${encodeURIComponent(id)}/retry-delivery`)
   },
 
+  async resendDeliveryEmail(id: string): Promise<{ sentAt: string; resendCount: number; customerEmail: string }> {
+    const res = await adminApi.post<ApiSuccess<{ sentAt: string; resendCount: number; customerEmail: string }>>(
+      `/admin/orders/${encodeURIComponent(id)}/resend-delivery-email`,
+    )
+    return unwrapApiData(res.data, 'adminOrders.resendDeliveryEmail')
+  },
+
   async generateLegalArchive(
     orderId: string,
     force = false,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, CheckCircle, RefreshCw } from 'lucide-react'
+import { ArrowLeft, CheckCircle, Mail, RefreshCw } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody } from '@/components/ui/Card'
@@ -19,6 +19,7 @@ import { adminOrdersService } from '@/services/adminOrdersService'
 import { invalidateAdminSidebarBadges } from '@/services/adminSidebarBadgesService'
 import { getErrorMessage } from '@/api/client'
 import { isSaasOrderDeliveryUrl } from '@/lib/accountHelpers'
+import { canResendPaidDeliveryEmail } from '@/lib/resendDeliveryEmail'
 import { formatMoney } from '@/utils/formatMoney'
 import {
   formatDateTime,
@@ -103,6 +104,7 @@ export function AdminOrderDetailPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [retryConfirmOpen, setRetryConfirmOpen] = useState(false)
+  const [resendConfirmOpen, setResendConfirmOpen] = useState(false)
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['admin', 'orders', id],
@@ -165,6 +167,19 @@ export function AdminOrderDetailPage() {
     onError: (err) => setFormError(getErrorMessage(err)),
   })
 
+  const resendEmailMutation = useMutation({
+    mutationFn: () => adminOrdersService.resendDeliveryEmail(id),
+    onSuccess: () => {
+      setResendConfirmOpen(false)
+      setToast('Teslimat e-postası yeniden gönderildi.')
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'orders', id] })
+    },
+    onError: (err) => {
+      setResendConfirmOpen(false)
+      setFormError(getErrorMessage(err))
+    },
+  })
+
   if (!id) {
     return <EmptyState title="Geçersiz sipariş" description="Sipariş kimliği bulunamadı." />
   }
@@ -202,6 +217,7 @@ export function AdminOrderDetailPage() {
   const centralLicenseItems = data.items.filter((i) => i.licenseRequired)
   const centralLicenseErrors = centralLicenseItems.filter((i) => i.licenseServerLastError?.trim())
   const canRetryDelivery = paidLike && data.canRetryDigitalDelivery === true
+  const canResendEmail = canResendPaidDeliveryEmail(data)
   const deliveryEmailLabel =
     data.deliveryEmailStatusLabel ??
     (data.downloadEmailSentAt ? 'Gönderildi' : 'Henüz gönderilmedi')
@@ -369,6 +385,22 @@ export function AdminOrderDetailPage() {
               label="Tam aktivasyon maili"
               value={formatDateTime(data.downloadEmailSentAt)}
             />
+            <InfoRow label="Son tekrar gönderim" value={formatDateTime(data.deliveryEmailResentAt)} />
+            <InfoRow label="Tekrar gönderim sayısı" value={String(data.deliveryEmailResendCount ?? 0)} />
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={!canResendEmail || resendEmailMutation.isPending}
+              title={canResendEmail ? undefined : 'Yalnız ödenmiş siparişlerde e-posta yeniden gönderilir.'}
+              onClick={() => {
+                if (resendEmailMutation.isPending) return
+                setFormError(null)
+                setResendConfirmOpen(true)
+              }}
+            >
+              <Mail className={`mr-1.5 h-3.5 w-3.5 ${resendEmailMutation.isPending ? 'animate-pulse' : ''}`} />
+              E-postayı Tekrar Gönder
+            </Button>
             {saas ? (
               <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Müvekkil Kasa SaaS teslimat</p>
@@ -636,6 +668,23 @@ export function AdminOrderDetailPage() {
         onConfirm={() => {
           setFormError(null)
           void retryDeliveryMutation.mutateAsync()
+        }}
+      />
+
+      <ConfirmDialog
+        open={resendConfirmOpen}
+        title="E-postayı tekrar gönder"
+        description={`Teslimat e-postası ${data.customer.customerEmail} adresine yeniden gönderilecek. Yeni sipariş, ödeme veya lisans oluşturulmaz. Devam edilsin mi?`}
+        confirmLabel="Gönder"
+        loading={resendEmailMutation.isPending}
+        onCancel={() => {
+          if (resendEmailMutation.isPending) return
+          setResendConfirmOpen(false)
+        }}
+        onConfirm={() => {
+          if (resendEmailMutation.isPending) return
+          setFormError(null)
+          void resendEmailMutation.mutateAsync()
         }}
       />
 

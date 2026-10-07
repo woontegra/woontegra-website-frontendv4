@@ -140,6 +140,8 @@ export type AdminOrderDetail = {
   paymentConfirmedAt: string | null
   paymentConfirmedByEmail: string | null
   downloadEmailSentAt: string | null
+  deliveryEmailResentAt: string | null
+  deliveryEmailResendCount: number
   deliveryEmailStatus?: 'not_sent' | 'pending_info' | 'complete' | 'failed'
   deliveryEmailStatusLabel?: string
   saasDeliveryStatus?: {
@@ -360,6 +362,8 @@ export function normalizeAdminOrderDetail(raw: unknown): AdminOrderDetail | null
     paymentConfirmedAt: toNullableString(row.paymentConfirmedAt),
     paymentConfirmedByEmail: toNullableString(row.paymentConfirmedByEmail),
     downloadEmailSentAt: toNullableString(row.downloadEmailSentAt),
+    deliveryEmailResentAt: toNullableString(row.deliveryEmailResentAt),
+    deliveryEmailResendCount: toNumber(row.deliveryEmailResendCount),
     deliveryEmailStatus:
       row.deliveryEmailStatus === 'not_sent' ||
       row.deliveryEmailStatus === 'pending_info' ||
