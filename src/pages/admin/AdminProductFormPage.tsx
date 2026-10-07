@@ -24,9 +24,18 @@ import {
 import { LicenseProgramPicker } from '@/components/admin/LicenseProgramPicker'
 import { adminProductsService, getErrorMessage } from '@/services/adminProductsService'
 import { adminBhService, formatTlInput, type BhProduct } from '@/services/adminBhService'
+import { bhDesktopInstallerFieldError } from '@/lib/bhDesktopInstaller'
 import { publicApi } from '@/api/client'
 import { publishedProductGalleryUrls } from '@/lib/publishedProductGallery'
 import { BILIRKISI_HESAP_SLUG } from '@/data/canonicalSoftwareProducts'
+import {
+  AKTUERYA_DEFAULT_OFFERS,
+  AKTUERYA_DESKTOP_APP_CODE,
+  AKTUERYA_PRODUCT_SLUG,
+  AKTUERYA_SAAS_APP_CODE,
+  type AktueryaChannelPrices,
+  type AktueryaProductOffers,
+} from '@/data/aktueryaCatalog'
 import { productCategoriesService } from '@/services/productCategoriesService'
 import type { AdminProductInput } from '@/types/product'
 import { collectGalleryMediaIdsForSave, moveGalleryRow, PRODUCT_GALLERY_MAX_IMAGES } from '@/types/product'
@@ -81,6 +90,148 @@ const emptyForm: AdminProductInput = {
 }
 
 type GalleryRow = { key: string; mediaId: string; preview: string }
+
+type BhDesktopDraft = {
+  windowsYearlyTl: string
+  windowsSalesEnabled: boolean
+  windowsDeviceLimit: string
+  windowsTrialDays: string
+  windowsDownloadUrl: string
+  windowsVersion: string
+  windowsFileSize: string
+  windowsDownloadButtonLabel: string
+  macosYearlyTl: string
+  macosSalesEnabled: boolean
+  macosDeviceLimit: string
+  macosTrialDays: string
+  macosDownloadUrl: string
+  macosVersion: string
+  macosFileSize: string
+  macosDownloadButtonLabel: string
+}
+
+const emptyBhDesktop: BhDesktopDraft = {
+  windowsYearlyTl: '',
+  windowsSalesEnabled: false,
+  windowsDeviceLimit: '1',
+  windowsTrialDays: '7',
+  windowsDownloadUrl: '',
+  windowsVersion: '',
+  windowsFileSize: '',
+  windowsDownloadButtonLabel: '',
+  macosYearlyTl: '',
+  macosSalesEnabled: false,
+  macosDeviceLimit: '1',
+  macosTrialDays: '7',
+  macosDownloadUrl: '',
+  macosVersion: '',
+  macosFileSize: '',
+  macosDownloadButtonLabel: '',
+}
+
+function bhDesktopFromProduct(product: BhProduct): BhDesktopDraft {
+  return {
+    windowsYearlyTl: formatTlInput(product.windowsPriceYearly),
+    windowsSalesEnabled: product.windowsSalesEnabled === true,
+    windowsDeviceLimit: String(product.windowsDeviceLimit ?? 1),
+    windowsTrialDays: String(product.windowsTrialDays ?? 7),
+    windowsDownloadUrl: product.windowsDownloadUrl ?? '',
+    windowsVersion: product.windowsVersion ?? '',
+    windowsFileSize: product.windowsFileSize ?? '',
+    windowsDownloadButtonLabel: product.windowsDownloadButtonLabel ?? '',
+    macosYearlyTl: formatTlInput(product.macosPriceYearly),
+    macosSalesEnabled: product.macosSalesEnabled === true,
+    macosDeviceLimit: String(product.macosDeviceLimit ?? 1),
+    macosTrialDays: String(product.macosTrialDays ?? 7),
+    macosDownloadUrl: product.macosDownloadUrl ?? '',
+    macosVersion: product.macosVersion ?? '',
+    macosFileSize: product.macosFileSize ?? '',
+    macosDownloadButtonLabel: product.macosDownloadButtonLabel ?? '',
+  }
+}
+
+function isPositiveIntText(value: string): boolean {
+  return /^[1-9]\d*$/.test(value.trim())
+}
+
+function aktueryaOffersError(offers: AktueryaProductOffers): string | null {
+  for (const row of [offers.web, offers.windows, offers.macos]) {
+    if (!Number.isFinite(row.monthlyTl) || row.monthlyTl < 0 || !Number.isFinite(row.yearlyTl) || row.yearlyTl < 0) {
+      return 'Aktüerya aylık ve yıllık fiyatları 0 veya daha büyük olmalıdır.'
+    }
+    if (!Number.isInteger(row.deviceLimit) || row.deviceLimit < 1) {
+      return 'Cihaz limiti 1 veya daha büyük bir tam sayı olmalıdır.'
+    }
+    if (!isOptionalHttpsUrl(row.downloadUrl)) {
+      return 'Kurulum bağlantısı boş bırakılabilir veya https:// ile başlamalıdır.'
+    }
+  }
+  return null
+}
+
+function AktueryaPriceFields({
+  title,
+  hint,
+  licenseLabel,
+  prices,
+  showDeviceLimit,
+  onChange,
+}: {
+  title: string
+  hint: string
+  licenseLabel: string
+  prices: AktueryaChannelPrices
+  showDeviceLimit?: boolean
+  onChange: (next: AktueryaChannelPrices) => void
+}) {
+  return (
+    <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4">
+      <div>
+        <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
+        <p className="text-xs text-slate-500">{hint}</p>
+        <p className="mt-1 text-xs font-medium text-slate-700">{licenseLabel}</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Input
+          label="Aylık fiyat (TL)"
+          type="number"
+          min={0}
+          step="0.01"
+          value={prices.monthlyTl}
+          onChange={(e) => onChange({ ...prices, monthlyTl: Number.parseFloat(e.target.value) || 0 })}
+        />
+        <Input
+          label="Yıllık fiyat (TL)"
+          type="number"
+          min={0}
+          step="0.01"
+          value={prices.yearlyTl}
+          onChange={(e) => onChange({ ...prices, yearlyTl: Number.parseFloat(e.target.value) || 0 })}
+        />
+        {showDeviceLimit ? (
+          <Input
+            label="Cihaz limiti"
+            type="number"
+            min={1}
+            step={1}
+            value={prices.deviceLimit}
+            onChange={(e) => onChange({ ...prices, deviceLimit: Number.parseInt(e.target.value, 10) || 1 })}
+          />
+        ) : null}
+      </div>
+    </section>
+  )
+}
+
+function isOptionalHttpsUrl(value: string): boolean {
+  const text = value.trim()
+  if (!text) return true
+  try {
+    return new URL(text).protocol === 'https:' && text.length <= 2000
+  } catch {
+    return false
+  }
+}
 
 function TextArea({
   label,
@@ -166,6 +317,8 @@ export function AdminProductFormPage() {
   const [monthlyPriceTl, setMonthlyPriceTl] = useState<number | null>(null)
   const [bhPriceReady, setBhPriceReady] = useState(false)
   const [bhPriceError, setBhPriceError] = useState<string | null>(null)
+  const [bhDesktop, setBhDesktop] = useState<BhDesktopDraft>(emptyBhDesktop)
+  const [aktueryaOffers, setAktueryaOffers] = useState<AktueryaProductOffers>(AKTUERYA_DEFAULT_OFFERS)
 
   const categoriesQuery = useQuery({
     queryKey: ['admin', 'product-categories'],
@@ -250,6 +403,7 @@ export function AdminProductFormPage() {
   }, [useCoverUrl, form.coverImage, coverPreviewUrl, form.coverImageMediaId, data])
 
   const isBhPlans = !isNew && form.slug === BILIRKISI_HESAP_SLUG
+  const isAktueryaPlans = form.slug.trim().toLowerCase() === AKTUERYA_PRODUCT_SLUG
   const alreadyPublished = Boolean(data?.isActive)
   const publicGalleryQuery = useQuery({
     queryKey: ['page-content', 'productPages', 'gallery', form.slug],
@@ -277,6 +431,7 @@ export function AdminProductFormPage() {
         const monthly = Number(formatTlInput(product.priceMonthly ?? product.monthlyPrice))
         const annual = Number(formatTlInput(product.price))
         setBhProduct(product)
+        setBhDesktop(bhDesktopFromProduct(product))
         setMonthlyPriceTl(Number.isFinite(monthly) ? monthly : null)
         if (Number.isFinite(annual)) setForm((prev) => ({ ...prev, price: annual }))
         setBhPriceReady(true)
@@ -290,6 +445,12 @@ export function AdminProductFormPage() {
       cancelled = true
     }
   }, [isBhPlans])
+
+  useEffect(() => {
+    if (data?.slug !== AKTUERYA_PRODUCT_SLUG || !data.aktueryaOffers) return
+    setAktueryaOffers(data.aktueryaOffers)
+  }, [data?.id, data?.slug, data?.aktueryaOffers])
+
   const bannerError =
     form.isActive && !hasCover
       ? PUBLISH_IMAGE_REQUIRED_MESSAGE
@@ -339,6 +500,31 @@ export function AdminProductFormPage() {
           setTab('pricing')
           throw new Error('Geçerli bir aylık fiyat girin.')
         }
+        if (!isPositiveIntText(bhDesktop.windowsDeviceLimit) || !isPositiveIntText(bhDesktop.macosDeviceLimit)) {
+          setTab('pricing')
+          throw new Error('Cihaz limiti 1 veya daha büyük bir tam sayı olmalıdır.')
+        }
+        if (!isPositiveIntText(bhDesktop.windowsTrialDays) || !isPositiveIntText(bhDesktop.macosTrialDays)) {
+          setTab('pricing')
+          throw new Error('Ücretsiz deneme süresi 1 veya daha büyük bir tam sayı olmalıdır.')
+        }
+        const windowsInstallerError = bhDesktopInstallerFieldError(bhDesktop.windowsDownloadUrl, 'windows')
+        const macosInstallerError = bhDesktopInstallerFieldError(bhDesktop.macosDownloadUrl, 'macos')
+        if (windowsInstallerError || macosInstallerError) {
+          setTab('delivery')
+          throw new Error(windowsInstallerError || macosInstallerError || 'Kurulum dosyası geçersiz.')
+        }
+        if (bhDesktop.windowsFileSize.trim().length > 64 || bhDesktop.macosFileSize.trim().length > 64) {
+          setTab('delivery')
+          throw new Error('Dosya boyutu en fazla 64 karakter olabilir.')
+        }
+        if (
+          bhDesktop.windowsDownloadButtonLabel.trim().length > 80 ||
+          bhDesktop.macosDownloadButtonLabel.trim().length > 80
+        ) {
+          setTab('delivery')
+          throw new Error('İndirme butonu başlığı en fazla 80 karakter olabilir.')
+        }
         await adminBhService.updateProduct({
           name: bhProduct.name,
           price: String(form.price),
@@ -367,7 +553,30 @@ export function AdminProductFormPage() {
           targetAudience: bhProduct.targetAudience || '[]',
           trustInfo: bhProduct.trustInfo || '{}',
           isActive: bhProduct.isActive !== false,
+          windowsPriceYearly: bhDesktop.windowsYearlyTl,
+          windowsSalesEnabled: bhDesktop.windowsSalesEnabled,
+          windowsDeviceLimit: bhDesktop.windowsDeviceLimit.trim(),
+          windowsTrialDays: bhDesktop.windowsTrialDays.trim(),
+          windowsDownloadUrl: bhDesktop.windowsDownloadUrl.trim(),
+          windowsVersion: bhDesktop.windowsVersion.trim(),
+          windowsFileSize: bhDesktop.windowsFileSize.trim(),
+          windowsDownloadButtonLabel: bhDesktop.windowsDownloadButtonLabel.trim(),
+          macosPriceYearly: bhDesktop.macosYearlyTl,
+          macosSalesEnabled: bhDesktop.macosSalesEnabled,
+          macosDeviceLimit: bhDesktop.macosDeviceLimit.trim(),
+          macosTrialDays: bhDesktop.macosTrialDays.trim(),
+          macosDownloadUrl: bhDesktop.macosDownloadUrl.trim(),
+          macosVersion: bhDesktop.macosVersion.trim(),
+          macosFileSize: bhDesktop.macosFileSize.trim(),
+          macosDownloadButtonLabel: bhDesktop.macosDownloadButtonLabel.trim(),
         })
+      }
+      if (isAktueryaPlans) {
+        const offerError = aktueryaOffersError(aktueryaOffers)
+        if (offerError) {
+          setTab('pricing')
+          throw new Error(offerError)
+        }
       }
 
       const payload = buildAdminProductSavePayload({
@@ -378,6 +587,15 @@ export function AdminProductFormPage() {
         isNew,
         existingDownloadFiles: isNew ? null : data?.downloadFiles,
       })
+
+      if (isAktueryaPlans) {
+        payload.price = aktueryaOffers.web.yearlyTl
+        payload.aktueryaOffers = aktueryaOffers
+        payload.productType = 'SAAS'
+        payload.licenseRequired = true
+        payload.licenseAppCode = AKTUERYA_SAAS_APP_CODE
+        payload.licenseDays = 365
+      }
 
       if (isNew) return adminProductsService.create(payload)
       return adminProductsService.update(id!, payload)
@@ -574,7 +792,7 @@ export function AdminProductFormPage() {
                   </HelpBox>
                   {isBhPlans ? (
                     <p className="text-sm text-slate-600">
-                      Aylık ve yıllık paketlerin fiyatı ayrıdır. Sitedeki paket seçimi bu iki alanı kullanır.
+                      Web, Windows ve macOS fiyatları ayrıdır. Sitedeki satın alma mevcut Web fiyatlarını kullanır.
                     </p>
                   ) : null}
                   {isBhPlans && bhPriceError ? (
@@ -582,50 +800,219 @@ export function AdminProductFormPage() {
                       {bhPriceError}
                     </p>
                   ) : null}
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {isBhPlans ? (
-                      <Input
-                        label="Aylık fiyat"
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        value={monthlyPriceTl ?? ''}
-                        disabled={!bhPriceReady}
-                        onChange={(e) =>
-                          setMonthlyPriceTl(e.target.value === '' ? null : Number.parseFloat(e.target.value) || 0)
-                        }
+                  {isBhPlans ? (
+                    <div className="space-y-4">
+                      <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+                        <div>
+                          <h2 className="text-sm font-semibold text-slate-900">WEB / SaaS</h2>
+                          <p className="text-xs text-slate-500">Web tabanlı sürüm</p>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                          <Input
+                            label="Aylık fiyat"
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={monthlyPriceTl ?? ''}
+                            disabled={!bhPriceReady}
+                            onChange={(e) =>
+                              setMonthlyPriceTl(e.target.value === '' ? null : Number.parseFloat(e.target.value) || 0)
+                            }
+                          />
+                          <Input
+                            label="Yıllık fiyat"
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={form.price}
+                            disabled={!bhPriceReady}
+                            onChange={(e) => update('price', Number.parseFloat(e.target.value) || 0)}
+                          />
+                          <Input
+                            label="Eski fiyat (indirimli gösterim)"
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={form.compareAtPrice ?? ''}
+                            onChange={(e) =>
+                              update(
+                                'compareAtPrice',
+                                e.target.value === '' ? null : Number.parseFloat(e.target.value) || null,
+                              )
+                            }
+                          />
+                          <Input label="Para birimi" value={form.currency} readOnly />
+                        </div>
+                        <CheckboxField
+                          label="Satışa açık"
+                          checked={form.purchaseEnabled}
+                          onChange={(v) => update('purchaseEnabled', v)}
+                          description="Kapalıysa ürün görünse bile sepete eklenemez; Teklif Al veya bilgi kartı gösterilir."
+                        />
+                      </section>
+
+                      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4">
+                        <div>
+                          <h2 className="text-sm font-semibold text-slate-900">WINDOWS MASAÜSTÜ</h2>
+                          <p className="text-xs text-slate-500">Yalnızca yıllık lisans</p>
+                        </div>
+                        <Input
+                          label="Yıllık fiyat (TL)"
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          value={bhDesktop.windowsYearlyTl}
+                          disabled={!bhPriceReady}
+                          onChange={(e) =>
+                            setBhDesktop((d) => ({ ...d, windowsYearlyTl: e.target.value }))
+                          }
+                        />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <Input
+                            label="Cihaz limiti"
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={bhDesktop.windowsDeviceLimit}
+                            disabled={!bhPriceReady}
+                            onChange={(e) =>
+                              setBhDesktop((d) => ({ ...d, windowsDeviceLimit: e.target.value }))
+                            }
+                          />
+                          <Input
+                            label="Ücretsiz deneme süresi (gün)"
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={bhDesktop.windowsTrialDays}
+                            disabled={!bhPriceReady}
+                            onChange={(e) =>
+                              setBhDesktop((d) => ({ ...d, windowsTrialDays: e.target.value }))
+                            }
+                          />
+                        </div>
+                        <CheckboxField
+                          label="Satışa açık"
+                          checked={bhDesktop.windowsSalesEnabled}
+                          onChange={(v) => setBhDesktop((d) => ({ ...d, windowsSalesEnabled: v }))}
+                          description="Windows satışı macOS satışından bağımsızdır. Satın alma bu aşamada bağlanmaz."
+                        />
+                      </section>
+
+                      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4">
+                        <div>
+                          <h2 className="text-sm font-semibold text-slate-900">macOS MASAÜSTÜ</h2>
+                          <p className="text-xs text-slate-500">Yalnızca yıllık lisans</p>
+                        </div>
+                        <Input
+                          label="Yıllık fiyat (TL)"
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          value={bhDesktop.macosYearlyTl}
+                          disabled={!bhPriceReady}
+                          onChange={(e) => setBhDesktop((d) => ({ ...d, macosYearlyTl: e.target.value }))}
+                        />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <Input
+                            label="Cihaz limiti"
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={bhDesktop.macosDeviceLimit}
+                            disabled={!bhPriceReady}
+                            onChange={(e) => setBhDesktop((d) => ({ ...d, macosDeviceLimit: e.target.value }))}
+                          />
+                          <Input
+                            label="Ücretsiz deneme süresi (gün)"
+                            type="number"
+                            min={1}
+                            step={1}
+                            value={bhDesktop.macosTrialDays}
+                            disabled={!bhPriceReady}
+                            onChange={(e) => setBhDesktop((d) => ({ ...d, macosTrialDays: e.target.value }))}
+                          />
+                        </div>
+                        <CheckboxField
+                          label="Satışa açık"
+                          checked={bhDesktop.macosSalesEnabled}
+                          onChange={(v) => setBhDesktop((d) => ({ ...d, macosSalesEnabled: v }))}
+                          description="macOS satışı Windows satışından bağımsızdır. Satın alma bu aşamada bağlanmaz."
+                        />
+                      </section>
+                    </div>
+                  ) : isAktueryaPlans ? (
+                    <div className="space-y-4">
+                      <p className="text-sm text-slate-600">
+                        Web, Windows ve macOS fiyatları bu ürün kaydının içindedir. Katalog liste fiyatı web yıllık fiyattır.
+                      </p>
+                      <AktueryaPriceFields
+                        title="WEB / SaaS"
+                        hint="Tarayıcıdan kullanım"
+                        licenseLabel={`${AKTUERYA_SAAS_APP_CODE} · plan monthly / yearly`}
+                        prices={aktueryaOffers.web}
+                        onChange={(web) => {
+                          setAktueryaOffers((prev) => ({ ...prev, web }))
+                          update('price', web.yearlyTl)
+                        }}
                       />
-                    ) : null}
-                    <Input
-                      label={isBhPlans ? 'Yıllık fiyat' : 'Satış fiyatı'}
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      value={form.price}
-                      disabled={isBhPlans && !bhPriceReady}
-                      onChange={(e) => update('price', Number.parseFloat(e.target.value) || 0)}
-                    />
-                    <Input
-                      label="Eski fiyat (indirimli gösterim)"
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      value={form.compareAtPrice ?? ''}
-                      onChange={(e) =>
-                        update(
-                          'compareAtPrice',
-                          e.target.value === '' ? null : Number.parseFloat(e.target.value) || null,
-                        )
-                      }
-                    />
-                    <Input label="Para birimi" value={form.currency} readOnly />
-                  </div>
-                  <CheckboxField
-                    label="Satışa açık"
-                    checked={form.purchaseEnabled}
-                    onChange={(v) => update('purchaseEnabled', v)}
-                    description="Kapalıysa ürün görünse bile sepete eklenemez; Teklif Al veya bilgi kartı gösterilir."
-                  />
+                      <AktueryaPriceFields
+                        title="WINDOWS"
+                        hint="Windows masaüstü"
+                        licenseLabel={`${AKTUERYA_DESKTOP_APP_CODE} · platform WINDOWS`}
+                        prices={aktueryaOffers.windows}
+                        showDeviceLimit
+                        onChange={(windows) => setAktueryaOffers((prev) => ({ ...prev, windows }))}
+                      />
+                      <AktueryaPriceFields
+                        title="macOS"
+                        hint="Mac masaüstü"
+                        licenseLabel={`${AKTUERYA_DESKTOP_APP_CODE} · platform MACOS`}
+                        prices={aktueryaOffers.macos}
+                        showDeviceLimit
+                        onChange={(macos) => setAktueryaOffers((prev) => ({ ...prev, macos }))}
+                      />
+                      <CheckboxField
+                        label="Satışa açık"
+                        checked={form.purchaseEnabled}
+                        onChange={(v) => update('purchaseEnabled', v)}
+                        description="Kapalıysa ürün görünse bile sepete eklenemez."
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <Input
+                          label="Satış fiyatı"
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          value={form.price}
+                          onChange={(e) => update('price', Number.parseFloat(e.target.value) || 0)}
+                        />
+                        <Input
+                          label="Eski fiyat (indirimli gösterim)"
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          value={form.compareAtPrice ?? ''}
+                          onChange={(e) =>
+                            update(
+                              'compareAtPrice',
+                              e.target.value === '' ? null : Number.parseFloat(e.target.value) || null,
+                            )
+                          }
+                        />
+                        <Input label="Para birimi" value={form.currency} readOnly />
+                      </div>
+                      <CheckboxField
+                        label="Satışa açık"
+                        checked={form.purchaseEnabled}
+                        onChange={(v) => update('purchaseEnabled', v)}
+                        description="Kapalıysa ürün görünse bile sepete eklenemez; Teklif Al veya bilgi kartı gösterilir."
+                      />
+                    </>
+                  )}
                   {data?.deliveryLinkMissing && showDownload ? (
                     <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
                       Uyarı: Bu ürün için teslimat dosyası veya indirme adresi eksik.
@@ -751,7 +1138,14 @@ export function AdminProductFormPage() {
 
                   {showSaas ? (
                     <div className="space-y-4 rounded-lg border border-slate-200 p-4">
-                      <p className="text-sm font-medium text-slate-800">SaaS / abonelik teslimatı</p>
+                      <div>
+                        <p className="text-sm font-medium text-slate-800">
+                          {isBhPlans ? 'WEB / SaaS Teslimatı' : 'SaaS / abonelik teslimatı'}
+                        </p>
+                        {isBhPlans ? (
+                          <p className="mt-1 text-xs text-slate-500">SaaS / abonelik teslimatı</p>
+                        ) : null}
+                      </div>
                       <Input
                         label="Abonelik süresi (ay)"
                         type="number"
@@ -787,6 +1181,129 @@ export function AdminProductFormPage() {
                         rows={3}
                         hint="Hesap bilgileri ve erişim süreci müşteriye e-posta ile iletilir."
                       />
+                    </div>
+                  ) : null}
+
+                  {isBhPlans ? (
+                    <div className="space-y-4">
+                      <section className="space-y-4 rounded-lg border border-slate-200 p-4">
+                        <p className="text-sm font-semibold text-slate-900">Windows</p>
+                        <Input
+                          label="Kurulum dosyası URL'si"
+                          value={bhDesktop.windowsDownloadUrl}
+                          disabled={!bhPriceReady}
+                          onChange={(e) =>
+                            setBhDesktop((d) => ({ ...d, windowsDownloadUrl: e.target.value }))
+                          }
+                          placeholder="https://download.woontegra.com/downloads/bilirkisi-hesap/windows/....exe"
+                        />
+                        <Input
+                          label="Sürüm"
+                          value={bhDesktop.windowsVersion}
+                          disabled={!bhPriceReady}
+                          onChange={(e) => setBhDesktop((d) => ({ ...d, windowsVersion: e.target.value }))}
+                          placeholder="3.6.1"
+                        />
+                        <Input
+                          label="Dosya boyutu"
+                          value={bhDesktop.windowsFileSize}
+                          disabled={!bhPriceReady}
+                          onChange={(e) => setBhDesktop((d) => ({ ...d, windowsFileSize: e.target.value }))}
+                          placeholder="118 MB"
+                        />
+                        <Input
+                          label="İndirme butonu başlığı"
+                          value={bhDesktop.windowsDownloadButtonLabel}
+                          disabled={!bhPriceReady}
+                          onChange={(e) =>
+                            setBhDesktop((d) => ({ ...d, windowsDownloadButtonLabel: e.target.value }))
+                          }
+                          placeholder="Windows kurulumunu indir"
+                        />
+                      </section>
+                      <section className="space-y-4 rounded-lg border border-slate-200 p-4">
+                        <p className="text-sm font-semibold text-slate-900">macOS</p>
+                        <Input
+                          label="Kurulum dosyası URL'si"
+                          value={bhDesktop.macosDownloadUrl}
+                          disabled={!bhPriceReady}
+                          onChange={(e) => setBhDesktop((d) => ({ ...d, macosDownloadUrl: e.target.value }))}
+                          placeholder="https://download.woontegra.com/downloads/bilirkisi-hesap/macos/....dmg"
+                        />
+                        <Input
+                          label="Sürüm"
+                          value={bhDesktop.macosVersion}
+                          disabled={!bhPriceReady}
+                          onChange={(e) => setBhDesktop((d) => ({ ...d, macosVersion: e.target.value }))}
+                          placeholder="3.6.1"
+                        />
+                        <Input
+                          label="Dosya boyutu"
+                          value={bhDesktop.macosFileSize}
+                          disabled={!bhPriceReady}
+                          onChange={(e) => setBhDesktop((d) => ({ ...d, macosFileSize: e.target.value }))}
+                          placeholder="120 MB"
+                        />
+                        <Input
+                          label="İndirme butonu başlığı"
+                          value={bhDesktop.macosDownloadButtonLabel}
+                          disabled={!bhPriceReady}
+                          onChange={(e) =>
+                            setBhDesktop((d) => ({ ...d, macosDownloadButtonLabel: e.target.value }))
+                          }
+                          placeholder="Mac kurulumunu indir"
+                        />
+                      </section>
+                    </div>
+                  ) : null}
+
+                  {isAktueryaPlans ? (
+                    <div className="space-y-4">
+                      <section className="space-y-3 rounded-lg border border-slate-200 p-4">
+                        <p className="text-sm font-semibold text-slate-900">WEB / SaaS teslimatı</p>
+                        <p className="text-xs text-slate-600">
+                          Uygulama kodu {AKTUERYA_SAAS_APP_CODE}. Aylık seçim plan monthly, yıllık seçim plan yearly
+                          gönderir.
+                        </p>
+                      </section>
+                      <section className="space-y-4 rounded-lg border border-slate-200 p-4">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">WINDOWS teslimatı</p>
+                          <p className="mt-1 text-xs text-slate-600">
+                            {AKTUERYA_DESKTOP_APP_CODE} · platform WINDOWS
+                          </p>
+                        </div>
+                        <Input
+                          label="Kurulum bağlantısı"
+                          value={aktueryaOffers.windows.downloadUrl}
+                          onChange={(e) =>
+                            setAktueryaOffers((prev) => ({
+                              ...prev,
+                              windows: { ...prev.windows, downloadUrl: e.target.value },
+                            }))
+                          }
+                          placeholder="https://download.woontegra.com/....exe"
+                        />
+                      </section>
+                      <section className="space-y-4 rounded-lg border border-slate-200 p-4">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">macOS teslimatı</p>
+                          <p className="mt-1 text-xs text-slate-600">
+                            {AKTUERYA_DESKTOP_APP_CODE} · platform MACOS
+                          </p>
+                        </div>
+                        <Input
+                          label="Kurulum bağlantısı"
+                          value={aktueryaOffers.macos.downloadUrl}
+                          onChange={(e) =>
+                            setAktueryaOffers((prev) => ({
+                              ...prev,
+                              macos: { ...prev.macos, downloadUrl: e.target.value },
+                            }))
+                          }
+                          placeholder="https://download.woontegra.com/....dmg"
+                        />
+                      </section>
                     </div>
                   ) : null}
                 </CardBody>

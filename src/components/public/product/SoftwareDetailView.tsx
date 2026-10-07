@@ -1,4 +1,7 @@
 import { useMemo, useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { bilirkisiHesapService } from '@/services/bilirkisiHesapService'
 import { ProductContentSections } from '@/components/public/product/ProductContentSections'
 import { ExternalProductPurchasePanel } from '@/components/public/product/ExternalProductPurchasePanel'
 import { ProductPurchasePanel } from '@/components/public/product/ProductPurchasePanel'
@@ -23,6 +26,12 @@ import {
   type MkSaasLicensePurchaseView,
 } from '@/lib/mkSaasLicensePurchase'
 import { isDesktopLicenseRenewalContext, type DesktopLicenseRenewalView } from '@/lib/desktopLicenseRenewal'
+import {
+  desktopPlatformFacts,
+  findPlatform,
+  getProductPlatformFamily,
+  type SoftwarePlatformId,
+} from '@/components/public/product/softwarePlatforms'
 
 const TYPE_LEAD = {
   DOWNLOAD: 'Woontegra tarafından geliştirilmiş masaüstü yazılım.',
@@ -47,6 +56,39 @@ export function SoftwareDetailView({
 }: Props) {
   const [webUsageYears, setWebUsageYears] = useState(1)
   const [feedback, setFeedback] = useState<'added' | 'in-cart' | null>(null)
+  const platformFamily = getProductPlatformFamily(data.slug)
+  const [searchParams] = useSearchParams()
+  const requestedPlatform = useMemo((): SoftwarePlatformId | null => {
+    const raw = (searchParams.get('platform') || '').trim().toLowerCase()
+    if (raw === 'windows' || raw === 'macos' || raw === 'web') return raw
+    return null
+  }, [searchParams])
+  const [platformId, setPlatformId] = useState<SoftwarePlatformId>(
+    requestedPlatform ?? platformFamily?.defaultPlatform ?? 'web',
+  )
+  const selectedPlatform = findPlatform(platformFamily, platformId)
+  const bhProductQuery = useQuery({
+    queryKey: ['bh-public-product'],
+    queryFn: () => bilirkisiHesapService.getProduct(),
+    enabled: Boolean(platformFamily),
+    staleTime: 60_000,
+    gcTime: 30 * 60_000,
+    retry: false,
+    refetchOnWindowFocus: false,
+  })
+  const desktopDeviceLimit = (() => {
+    const product = bhProductQuery.data
+    if (!product || (platformId !== 'windows' && platformId !== 'macos')) return null
+    const value = platformId === 'windows' ? product.windowsDeviceLimit : product.macosDeviceLimit
+    return value != null && Number.isInteger(Number(value)) && Number(value) >= 1 ? Number(value) : null
+  })()
+  const desktopFacts =
+    selectedPlatform?.checkout === 'not-connected' && selectedPlatform.presentation
+      ? desktopPlatformFacts(selectedPlatform.presentation, 'yearly', desktopDeviceLimit)
+      : null
+  const desktopDeliveryNotes = selectedPlatform?.presentation
+    ? [selectedPlatform.presentation.licenseNote, selectedPlatform.presentation.deliveryLabel]
+    : null
 
   const bullets = useMemo(
     () =>
@@ -73,6 +115,10 @@ export function SoftwareDetailView({
     : licenseDaysPerUnit >= 360
       ? '1 Yıl'
       : `${licenseDaysPerUnit} Gün`
+
+  useEffect(() => {
+    setPlatformId(requestedPlatform ?? getProductPlatformFamily(data.slug)?.defaultPlatform ?? 'web')
+  }, [data.slug, requestedPlatform])
 
   useEffect(() => {
     trackViewContent({
@@ -128,10 +174,16 @@ export function SoftwareDetailView({
         product={data}
         lead={lead}
         isFreeDownload={isFreeDownload}
+        metaItems={desktopFacts ?? undefined}
         afterLead={data.slug === BILIRKISI_HESAP_SLUG ? <BilirkisiOfferHeroNote /> : null}
       >
         {isExternalSales ? (
-          <ExternalProductPurchasePanel product={data} />
+          <ExternalProductPurchasePanel
+            product={data}
+            platformFamily={platformFamily}
+            platformId={platformId}
+            onPlatformChange={platformFamily ? setPlatformId : undefined}
+          />
         ) : (
           <>
             {licensePurchaseLoading || desktopLicenseRenewalLoading ? (
@@ -171,7 +223,13 @@ export function SoftwareDetailView({
         )}
       </ProductShowcaseHero>
 
-      <ProductContentSections product={data} bullets={bullets} isFreeDownload={isFreeDownload} />
+      <ProductContentSections
+        product={data}
+        bullets={bullets}
+        isFreeDownload={isFreeDownload}
+        platformFacts={desktopFacts}
+        platformDeliveryNotes={desktopFacts ? desktopDeliveryNotes : null}
+      />
     </div>
   )
 }

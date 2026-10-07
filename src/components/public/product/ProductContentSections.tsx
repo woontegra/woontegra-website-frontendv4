@@ -34,6 +34,9 @@ type Props = {
     featuresEyebrow?: string
     featuresTitle?: string
   }
+  /** Desktop platform facts. Omitted keeps the current web technical rows. */
+  platformFacts?: { label: string; value: string }[] | null
+  platformDeliveryNotes?: string[] | null
 }
 
 function buildUseCases(product: PublicProductDetail, isFreeDownload: boolean): string[] {
@@ -274,13 +277,20 @@ export function ProductContentSections({
   variant = 'default',
   compareEdition,
   headings,
+  platformFacts = null,
+  platformDeliveryNotes = null,
 }: Props) {
   const galleryCount = (product.galleryImages?.length ?? 0) + (product.coverImage ? 1 : 0)
   const isCompare = variant === 'compare'
   const useCases = buildUseCases(product, isFreeDownload)
   const edition = compareEdition ?? (product.productType === 'SAAS' ? 'saas' : 'desktop')
-  const technicalRows = buildTechnicalRows(product, galleryCount, isFreeDownload, isCompare, edition)
+  const technicalRows = platformFacts?.length
+    ? platformFacts
+    : buildTechnicalRows(product, galleryCount, isFreeDownload, isCompare, edition)
   const promotionalMeta = getPromotionalSoftwareMeta(product.slug)
+  const deliveryNotes = platformDeliveryNotes?.length
+    ? platformDeliveryNotes
+    : promotionalMeta?.deliveryNotes ?? []
   const isExternalSales = isExternalSalesProduct(product)
   const showStructuredCompare = isCompare
   const compareAccessNote =
@@ -408,7 +418,7 @@ export function ProductContentSections({
             </div>
             <ul className="mt-5 space-y-3 text-sm leading-relaxed text-slate-700">
               {isExternalSales &&
-                promotionalMeta?.deliveryNotes.map((note) => (
+                deliveryNotes.map((note) => (
                   <li key={note} className="rounded-2xl border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
                     {note}
                   </li>

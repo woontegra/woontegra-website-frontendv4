@@ -3,7 +3,7 @@ import { AlertCircle, Check, ChevronDown, Search, Sparkles, X } from 'lucide-rea
 import { createPortal } from 'react-dom'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { bilirkisiHesapService } from '@/services/bilirkisiHesapService'
+import { bilirkisiHesapService, type BhDesktopTrialStart } from '@/services/bilirkisiHesapService'
 import { getErrorMessage } from '@/api/client'
 import { BILIRKISI_HESAP_CHECKOUT_PATH, BILIRKISI_HESAP_PANEL_URL } from '@/data/canonicalSoftwareProducts'
 import {
@@ -17,6 +17,8 @@ import { cn } from '@/lib/cn'
 type Props = {
   open: boolean
   onClose: () => void
+  desktopPlatform?: 'WINDOWS' | 'MACOS' | null
+  onDesktopTrialStarted?: (result: BhDesktopTrialStart) => void
 }
 
 type FormState = {
@@ -257,7 +259,12 @@ function ExpertiseMultiSelect({
   )
 }
 
-export function BilirkisiDemoRequestModal({ open, onClose }: Props) {
+export function BilirkisiDemoRequestModal({
+  open,
+  onClose,
+  desktopPlatform = null,
+  onDesktopTrialStarted,
+}: Props) {
   const [form, setForm] = useState<FormState>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -329,6 +336,21 @@ export function BilirkisiDemoRequestModal({ open, onClose }: Props) {
       const expertiseAreas = form.isExpertWitness
         ? normalizeExpertiseSelection(form.expertiseCodes)
         : []
+      if (desktopPlatform) {
+        const result = await bilirkisiHesapService.startDesktopTrial({
+          platform: desktopPlatform,
+          name: form.fullName.trim(),
+          email: form.email.trim().toLowerCase(),
+          phone: form.phone.trim(),
+          company: form.company.trim() || undefined,
+          professionGroup: form.professionGroup,
+          isExpertWitness: form.isExpertWitness,
+          expertiseAreas,
+        })
+        onDesktopTrialStarted?.(result)
+        onClose()
+        return
+      }
       await bilirkisiHesapService.requestDemo({
         name: form.fullName.trim(),
         email: form.email.trim().toLowerCase(),
@@ -341,16 +363,18 @@ export function BilirkisiDemoRequestModal({ open, onClose }: Props) {
       setSuccess(true)
     } catch (err) {
       const code = err && typeof err === 'object' && 'code' in err ? String((err as { code?: string }).code) : ''
-      if (code === 'DEMO_ALREADY_USED') {
+      if (code === 'DEMO_ALREADY_USED' || code === 'TRIAL_ALREADY_USED') {
         setDemoAlreadyUsed(true)
         setError(
           getErrorMessage(
             err,
-            'Bu e-posta adresi veya telefon numarasıyla daha önce 7 günlük demo kullanılmış. Demo hakkı yalnızca bir kez kullanılabilir. Mevcut hesabınıza giriş yapabilir veya abonelik satın alarak kullanmaya devam edebilirsiniz.',
+            desktopPlatform
+              ? 'Bu e-posta adresi veya telefon numarasıyla daha önce Bilirkişi Hesap Desktop demosu kullanılmış. Windows ve macOS için ayrı demo hakkı yoktur.'
+              : 'Bu e-posta adresi veya telefon numarasıyla daha önce 7 günlük demo kullanılmış. Demo hakkı yalnızca bir kez kullanılabilir. Mevcut hesabınıza giriş yapabilir veya abonelik satın alarak kullanmaya devam edebilirsiniz.',
           ),
         )
       } else {
-        setError(getErrorMessage(err, 'Demo talebi gönderilemedi.'))
+        setError(getErrorMessage(err, desktopPlatform ? 'Deneme başlatılamadı.' : 'Demo talebi gönderilemedi.'))
       }
     } finally {
       setSubmitting(false)
@@ -436,6 +460,19 @@ export function BilirkisiDemoRequestModal({ open, onClose }: Props) {
             </p>
             <Button type="button" className="w-full" onClick={onClose}>
               Tamam
+            </Button>
+          </div>
+        ) : demoAlreadyUsed && desktopPlatform ? (
+          <div className="space-y-4 overflow-y-auto px-5 py-6 md:px-6" data-testid="bh-desktop-demo-already-used">
+            <div
+              className="flex gap-3 rounded-xl border border-amber-200/80 bg-amber-50 px-3.5 py-3 text-sm leading-relaxed text-amber-950"
+              role="status"
+            >
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden />
+              <p>{error}</p>
+            </div>
+            <Button type="button" className="w-full" onClick={onClose}>
+              Kapat
             </Button>
           </div>
         ) : demoAlreadyUsed ? (

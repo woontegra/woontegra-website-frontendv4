@@ -20,6 +20,14 @@ function productToForm(p: BhProduct) {
     name: p.name || 'Bilirkişi Hesap',
     priceAnnualTl: formatTlInput(p.price),
     priceMonthlyTl: formatTlInput(p.priceMonthly ?? p.monthlyPrice),
+    windowsYearlyTl: formatTlInput(p.windowsPriceYearly),
+    windowsSalesEnabled: p.windowsSalesEnabled === true,
+    windowsDeviceLimit: String(p.windowsDeviceLimit ?? 1),
+    windowsTrialDays: String(p.windowsTrialDays ?? 7),
+    macosYearlyTl: formatTlInput(p.macosPriceYearly),
+    macosSalesEnabled: p.macosSalesEnabled === true,
+    macosDeviceLimit: String(p.macosDeviceLimit ?? 1),
+    macosTrialDays: String(p.macosTrialDays ?? 7),
     originalPriceTl: p.originalPrice != null ? formatTlInput(p.originalPrice) : '',
     isActive: p.isActive !== false,
   }
@@ -37,6 +45,14 @@ export function AdminBhPricingPage() {
     name: 'Bilirkişi Hesap',
     priceAnnualTl: '',
     priceMonthlyTl: '',
+    windowsYearlyTl: '',
+    windowsSalesEnabled: false,
+    windowsDeviceLimit: '1',
+    windowsTrialDays: '7',
+    macosYearlyTl: '',
+    macosSalesEnabled: false,
+    macosDeviceLimit: '1',
+    macosTrialDays: '7',
     originalPriceTl: '',
     isActive: true,
   })
@@ -53,6 +69,14 @@ export function AdminBhPricingPage() {
         price: form.priceAnnualTl,
         priceMonthly: form.priceMonthlyTl,
         monthlyPrice: form.priceMonthlyTl,
+        windowsPriceYearly: form.windowsYearlyTl,
+        windowsSalesEnabled: form.windowsSalesEnabled,
+        windowsDeviceLimit: form.windowsDeviceLimit.trim(),
+        windowsTrialDays: form.windowsTrialDays.trim(),
+        macosPriceYearly: form.macosYearlyTl,
+        macosSalesEnabled: form.macosSalesEnabled,
+        macosDeviceLimit: form.macosDeviceLimit.trim(),
+        macosTrialDays: form.macosTrialDays.trim(),
         originalPrice: form.originalPriceTl.trim() || undefined,
         price2Year: data.price2Year != null ? (Number(data.price2Year) / 100).toFixed(2) : undefined,
         originalPrice2Year:
@@ -84,6 +108,11 @@ export function AdminBhPricingPage() {
 
   function onSubmit(e: FormEvent) {
     e.preventDefault()
+    const limits = [form.windowsDeviceLimit, form.macosDeviceLimit, form.windowsTrialDays, form.macosTrialDays]
+    if (limits.some((value) => !/^[1-9]\d*$/.test(value.trim()))) {
+      toast('Cihaz limiti ve ücretsiz deneme süresi 1 veya daha büyük bir tam sayı olmalıdır.', 'error')
+      return
+    }
     void saveMut.mutateAsync()
   }
 
@@ -91,7 +120,7 @@ export function AdminBhPricingPage() {
     <div className="w-full min-w-0 space-y-6">
       <PageHeader
         title="Bilirkişi Hesap — Fiyatlandırma"
-        description="Aylık ve yıllık satış fiyatlarını güncelleyin. Değişiklik satın alma ve kampanya tekliflerine yansır."
+        description="Web, Windows ve macOS fiyatlarını TL olarak güncelleyin. Satın alma akışı mevcut Web fiyatlarını kullanır."
         actions={
           <Button variant="secondary" size="sm" onClick={() => void refetch()} disabled={isFetching}>
             <RefreshCw className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
@@ -108,45 +137,132 @@ export function AdminBhPricingPage() {
       {data ? (
         <Card>
           <CardBody>
-            <form className="mx-auto max-w-lg space-y-4" onSubmit={onSubmit}>
+            <form className="mx-auto max-w-2xl space-y-4" onSubmit={onSubmit}>
               <Input
                 label="Ürün adı"
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               />
-              <Input
-                label="Aylık fiyat (TL)"
-                type="number"
-                step="0.01"
-                min="0"
-                value={form.priceMonthlyTl}
-                onChange={(e) => setForm((f) => ({ ...f, priceMonthlyTl: e.target.value }))}
-              />
-              <Input
-                label="Yıllık fiyat (TL)"
-                type="number"
-                step="0.01"
-                min="0"
-                value={form.priceAnnualTl}
-                onChange={(e) => setForm((f) => ({ ...f, priceAnnualTl: e.target.value }))}
-              />
-              <Input
-                label="Üstü çizili yıllık fiyat (TL)"
-                type="number"
-                step="0.01"
-                min="0"
-                value={form.originalPriceTl}
-                onChange={(e) => setForm((f) => ({ ...f, originalPriceTl: e.target.value }))}
-                hint="İsteğe bağlı; boş bırakılabilir"
-              />
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={form.isActive}
-                  onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
+
+              <section className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/80 p-4">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-900">WEB / SaaS</h2>
+                  <p className="text-xs text-slate-500">Web tabanlı sürüm</p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Input
+                    label="Aylık fiyat (TL)"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.priceMonthlyTl}
+                    onChange={(e) => setForm((f) => ({ ...f, priceMonthlyTl: e.target.value }))}
+                  />
+                  <Input
+                    label="Yıllık fiyat (TL)"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.priceAnnualTl}
+                    onChange={(e) => setForm((f) => ({ ...f, priceAnnualTl: e.target.value }))}
+                  />
+                </div>
+                <Input
+                  label="Üstü çizili yıllık fiyat (TL)"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.originalPriceTl}
+                  onChange={(e) => setForm((f) => ({ ...f, originalPriceTl: e.target.value }))}
+                  hint="İsteğe bağlı; boş bırakılabilir"
                 />
-                Ürün aktif
-              </label>
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={form.isActive}
+                    onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
+                  />
+                  Satışa açık
+                </label>
+              </section>
+
+              <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-900">WINDOWS MASAÜSTÜ</h2>
+                  <p className="text-xs text-slate-500">Yalnızca yıllık lisans</p>
+                </div>
+                <Input
+                  label="Yıllık fiyat (TL)"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.windowsYearlyTl}
+                  onChange={(e) => setForm((f) => ({ ...f, windowsYearlyTl: e.target.value }))}
+                />
+                <Input
+                  label="Cihaz limiti"
+                  type="number"
+                  step="1"
+                  min="1"
+                  value={form.windowsDeviceLimit}
+                  onChange={(e) => setForm((f) => ({ ...f, windowsDeviceLimit: e.target.value }))}
+                />
+                <Input
+                  label="Ücretsiz deneme süresi (gün)"
+                  type="number"
+                  step="1"
+                  min="1"
+                  value={form.windowsTrialDays}
+                  onChange={(e) => setForm((f) => ({ ...f, windowsTrialDays: e.target.value }))}
+                />
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={form.windowsSalesEnabled}
+                    onChange={(e) => setForm((f) => ({ ...f, windowsSalesEnabled: e.target.checked }))}
+                  />
+                  Satışa açık
+                </label>
+              </section>
+
+              <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-4">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-900">macOS MASAÜSTÜ</h2>
+                  <p className="text-xs text-slate-500">Yalnızca yıllık lisans</p>
+                </div>
+                <Input
+                  label="Yıllık fiyat (TL)"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.macosYearlyTl}
+                  onChange={(e) => setForm((f) => ({ ...f, macosYearlyTl: e.target.value }))}
+                />
+                <Input
+                  label="Cihaz limiti"
+                  type="number"
+                  step="1"
+                  min="1"
+                  value={form.macosDeviceLimit}
+                  onChange={(e) => setForm((f) => ({ ...f, macosDeviceLimit: e.target.value }))}
+                />
+                <Input
+                  label="Ücretsiz deneme süresi (gün)"
+                  type="number"
+                  step="1"
+                  min="1"
+                  value={form.macosTrialDays}
+                  onChange={(e) => setForm((f) => ({ ...f, macosTrialDays: e.target.value }))}
+                />
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={form.macosSalesEnabled}
+                    onChange={(e) => setForm((f) => ({ ...f, macosSalesEnabled: e.target.checked }))}
+                  />
+                  Satışa açık
+                </label>
+              </section>
               <Button type="submit" disabled={saveMut.isPending}>
                 <Save className="h-4 w-4" />
                 {saveMut.isPending ? 'Kaydediliyor…' : 'Kaydet'}

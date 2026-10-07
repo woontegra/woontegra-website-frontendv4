@@ -1,3 +1,4 @@
+import { readAktueryaOffersFromApi } from '@/data/aktueryaCatalog'
 import {
   hasConfiguredDownloadFiles,
   normalizeDownloadFilesConfig,
@@ -56,6 +57,11 @@ export type PublicProductDetail = PublicProductListItem & {
   hasDownload: boolean
   /** Ücretsiz araçlarda proxy path; MK Desktop’ta admin Kurulum sürümü public R2 URL’si */
   publicDownloadFiles?: PublicProductDownloadFile[]
+  aktueryaOffers?: {
+    web: { monthlyTl: number; yearlyTl: number; downloadUrl: string; deviceLimit: number }
+    windows: { monthlyTl: number; yearlyTl: number; downloadUrl: string; deviceLimit: number }
+    macos: { monthlyTl: number; yearlyTl: number; downloadUrl: string; deviceLimit: number }
+  } | null
 }
 
 export type PublicProductDownloadFile = {
@@ -206,6 +212,7 @@ export function normalizePublicDetail(raw: unknown): PublicProductDetail | null 
     licenseMaxDevices: toNullableNumber(row.licenseMaxDevices),
     hasDownload: toBool(row.hasDownload, false),
     publicDownloadFiles: normalizePublicDownloadFiles(row.publicDownloadFiles),
+    aktueryaOffers: readAktueryaOffersFromApi(row),
   }
 }
 
@@ -298,6 +305,7 @@ export type AdminProduct = {
   } | null
   galleryImages: AdminProductGalleryImage[]
   downloadFiles?: ProductDownloadFilesConfig | null
+  aktueryaOffers?: AdminProductInput['aktueryaOffers']
   createdAt: string
   updatedAt: string
   deliveryLinkMissing?: boolean
@@ -332,6 +340,11 @@ export type AdminProductInput = {
   downloadMediaId?: string | null
   galleryMediaIds?: string[]
   downloadFiles?: ProductDownloadFilesConfig | null
+  aktueryaOffers?: {
+    web: { monthlyTl: number; yearlyTl: number; downloadUrl: string; deviceLimit: number }
+    windows: { monthlyTl: number; yearlyTl: number; downloadUrl: string; deviceLimit: number }
+    macos: { monthlyTl: number; yearlyTl: number; downloadUrl: string; deviceLimit: number }
+  } | null
 }
 
 export type AdminProductListParams = {
@@ -459,6 +472,7 @@ export function normalizeAdminProduct(raw: unknown): AdminProduct | null {
     })(),
     galleryImages,
     downloadFiles: row.downloadFiles == null ? null : normalizeAdminDownloadFiles(row.downloadFiles),
+    aktueryaOffers: readAktueryaOffersFromApi(row),
     createdAt: toString(row.createdAt),
     updatedAt: toString(row.updatedAt),
     deliveryLinkMissing: toBool(row.deliveryLinkMissing, false),

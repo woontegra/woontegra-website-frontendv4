@@ -27,7 +27,6 @@ import {
   parsePurchaseContext,
   resolveBilirkisiCheckoutKind,
 } from '@/pages/public/bilirkisiCheckoutCopy'
-import { DesktopFirstPurchaseCheckout } from '@/pages/public/DesktopFirstPurchaseCheckout'
 import {
   sanitizeTurkishIdentityNumberInput,
   validateTurkishIdentityNumber,
@@ -292,23 +291,35 @@ function extractRenewalOptionPriceTl(
   return Number.isFinite(finalTl) ? finalTl : null
 }
 
-export function BilirkisiCheckoutPage() {
-  const [searchParams] = useSearchParams()
-  const purchaseToken = (searchParams.get('purchaseToken') || '').trim()
-  const platformRaw = (searchParams.get('platform') || '').trim().toUpperCase()
-  const platform = platformRaw === 'WINDOWS' || platformRaw === 'MACOS' ? platformRaw : null
-  const renewalToken = (searchParams.get('renew') || '').trim()
-  if (!renewalToken && (purchaseToken || platform)) {
-    return <DesktopFirstPurchaseCheckout purchaseToken={purchaseToken} platform={platform} />
+function desktopYearlyQuote(
+  priceKurus: number,
+  normalPriceKurus?: number | null,
+  campaign?: BhQuote['campaign'],
+): BhQuote {
+  const finalTl = priceKurus / 100
+  const normalTl = (normalPriceKurus ?? priceKurus) / 100
+  return {
+    valid: true,
+    normalPrice: normalTl,
+    finalPrice: finalTl,
+    currency: 'TRY',
+    campaign: campaign ?? null,
   }
-  return <BilirkisiSaasCheckoutPage />
 }
 
-function BilirkisiSaasCheckoutPage() {
+export function BilirkisiCheckoutPage() {
   const { authed, profile } = useCustomerSession()
   const [searchParams, setSearchParams] = useSearchParams()
   const renewalToken = useMemo(() => (searchParams.get('renew') || '').trim(), [searchParams])
+  const desktopRenewalToken = useMemo(() => (searchParams.get('renewalToken') || '').trim(), [searchParams])
   const isRenewal = Boolean(renewalToken)
+  const isDesktopRenewal = Boolean(desktopRenewalToken)
+  const purchaseToken = useMemo(() => (searchParams.get('purchaseToken') || '').trim(), [searchParams])
+  const platformQuery = useMemo((): 'WINDOWS' | 'MACOS' | null => {
+    const raw = (searchParams.get('platform') || '').trim().toUpperCase()
+    return raw === 'WINDOWS' || raw === 'MACOS' ? raw : null
+  }, [searchParams])
+  const isDesktopCheckout = !isRenewal && Boolean(purchaseToken || platformQuery || isDesktopRenewal)
 
   usePageMeta({
     title: isRenewal
@@ -347,7 +358,12 @@ function BilirkisiSaasCheckoutPage() {
   const [productType, setProductType] = useState<ProductType>(initialPlan)
   const period = 1
   const [quote, setQuote] = useState<BhQuote | null>(null)
-  const [quoteLoading, setQuoteLoading] = useState(() => Boolean(renewalToken))
+  const [desktopOffer, setDesktopOffer] = useState<{
+    platform: 'WINDOWS' | 'MACOS'
+    licenseDays: number
+    maxDevices: number
+  } | null>(null)
+  const [quoteLoading, setQuoteLoading] = useState(() => Boolean(renewalToken) || isDesktopCheckout)
   const [renewalContext, setRenewalContext] = useState<RenewalContext | null>(null)
   const isDemoUpgrade = renewalContext?.purchaseContext === 'DEMO_CONVERSION'
   const isDemoStillActive = isDemoUpgrade && isLicenseStillActive(renewalContext?.subscriptionEndsAt)
@@ -393,6 +409,8 @@ function BilirkisiSaasCheckoutPage() {
         productType,
         customerEmail: input.customerEmail,
         campaignPublicCode: campaignCode || null,
+        desktopPlatform: isDesktopCheckout ? ((platformQuery === 'MACOS' ? 'MACOS' : 'WINDOWS') as 'WINDOWS' | 'MACOS') : null,
+        purpose: isDesktopRenewal ? 'RENEWAL' : 'NEW',
       })
       if (!res.success || !res.data) throw new Error(res.message || 'Kupon doğrulanamadı.')
       return res.data
@@ -431,7 +449,7 @@ function BilirkisiSaasCheckoutPage() {
         if (!cancelled) setProduct(p)
       })
       .catch((err) => {
-        if (!cancelled) setProductError(getErrorMessage(err, 'Ürün fiyatı alınamadı.'))
+        if (!cancelled && !isDesktopCheckout) setProductError(getErrorMessage(err, 'Ürün fiyatı alınamadı.'))
       })
     bilirkisiHesapService.bankTransferAvailability().then((ok) => {
       if (!cancelled) setBankAvailable(ok)
@@ -439,7 +457,7 @@ function BilirkisiSaasCheckoutPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [isDesktopCheckout])
 
   useEffect(() => {
     setProductType(initialPlan)
@@ -529,6 +547,65 @@ function BilirkisiSaasCheckoutPage() {
   }
 
   useEffect(() => {
+    if (!isDesktopCheckout) return
+    let cancelled = false
+    setQuoteLoading(true)
+    setQuote(null)
+    setDesktopOffer(null)
+    setRenewalContext(null)
+    setError(null)
+    const desktopPlatform = platformQuery === 'MACOS' ? 'MACOS' : 'WINDOWS'
+    const commercial = {
+      campaignPublicCode: campaignCode || null,
+      couponCode: coupon.quote?.code || null,
+    }
+    const request = purchaseToken
+      ? bilirkisiHesapService.resolveDesktopPurchase(purchaseToken, commercial)
+      : bilirkisiHesapService.quoteDesktopPlatform(desktopPlatform, {
+          ...commercial,
+          purpose: isDesktopRenewal ? 'RENEWAL' : 'NEW',
+        })
+    request
+      .then((res) => {
+        if (cancelled) return
+        const data = res.data
+        const platform = data?.platform
+        const priceKurus = data?.priceKurus
+        if (
+          !res.success ||
+          !data ||
+          (platform !== 'WINDOWS' && platform !== 'MACOS') ||
+          priceKurus == null ||
+          !Number.isFinite(priceKurus)
+        ) {
+          const message = res.message || 'Masaüstü paketi alınamadı.'
+          setQuote({ valid: false, reason: message })
+          setError(message)
+          return
+        }
+        setDesktopOffer({
+          platform,
+          licenseDays: Number.isFinite(data.licenseDays) ? data.licenseDays : 365,
+          maxDevices: Number.isFinite(data.maxDevices) ? data.maxDevices : 1,
+        })
+        setQuote(desktopYearlyQuote(priceKurus, data.normalPriceKurus, data.campaign ?? null))
+      })
+      .catch((err) => {
+        if (cancelled) return
+        const message = getErrorMessage(err, 'Masaüstü paketi alınamadı.')
+        setQuote({ valid: false, reason: message })
+        setError(message)
+      })
+      .finally(() => {
+        if (!cancelled) setQuoteLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [isDesktopCheckout, purchaseToken, platformQuery, campaignCode, coupon.quote?.code, isDesktopRenewal, authed])
+
+  useEffect(() => {
+    if (isDesktopCheckout) return
     if (!product) return
     if (isRenewal && renewalToken) {
       let cancelled = false
@@ -606,7 +683,7 @@ function BilirkisiSaasCheckoutPage() {
     return () => {
       cancelled = true
     }
-  }, [product, productType, period, campaignCode, isRenewal, renewalToken])
+  }, [product, productType, period, campaignCode, isRenewal, renewalToken, isDesktopCheckout])
 
   const setInvoiceType = (invoiceType: InvoiceType) => {
     setBilling((b) => ({
@@ -719,7 +796,7 @@ function BilirkisiSaasCheckoutPage() {
       setError('Geçerli bir fiyat teklifi yok. Kampanya veya paket seçimini kontrol edin.')
       return
     }
-    if (coupon.blocksCheckout) {
+    if (!isDesktopCheckout && coupon.blocksCheckout) {
       setError(coupon.error || 'Kupon doğrulanıyor. Lütfen kısa bir süre bekleyin.')
       return
     }
@@ -787,6 +864,45 @@ function BilirkisiSaasCheckoutPage() {
         } catch {
           /* ödeme başarılı; adres kaydı başarısız olsa da checkout’u bozma */
         }
+      }
+
+      if (isDesktopCheckout) {
+        if (!desktopOffer) throw new Error('Masaüstü paketi yüklenemedi.')
+        const created = await bilirkisiHesapService.createDesktopPurchaseOrder({
+          ...(purchaseToken ? { purchaseToken } : {}),
+          ...(desktopRenewalToken ? { renewalToken: desktopRenewalToken } : {}),
+          platform: desktopOffer.platform,
+          campaignPublicCode: campaignCode || undefined,
+          couponCode: campaignDiscountActive ? undefined : coupon.quote?.code || undefined,
+          billingInfo,
+          legalConsents,
+          paymentProvider: paymentMethod === 'bank_transfer' ? 'BANK_TRANSFER' : 'PAYTR',
+        })
+        if (!created.success || !created.data?.orderNo) {
+          throw new Error(created.message || 'Sipariş oluşturulamadı.')
+        }
+        if (paymentMethod === 'bank_transfer') {
+          await persistDefaultAddressIfRequested()
+          setSuccess({
+            kind: 'bank',
+            merchantOid: created.data.orderNo,
+            bankTransfer: created.data.bankTransfer || undefined,
+            amountFormatted: created.data.amountFormatted || undefined,
+          })
+        } else {
+          let token: string
+          try {
+            token = await paymentsService.startPaytr(created.data.orderNo)
+          } catch (payErr) {
+            throw new Error(getErrorMessage(payErr, 'Ödeme başlatılamadı.'))
+          }
+          if (token.startsWith('dryrun_')) {
+            throw new Error('Kart ödeme ekranı açılamadı. Lütfen tekrar deneyin.')
+          }
+          await persistDefaultAddressIfRequested()
+          window.location.href = `https://www.paytr.com/odeme/guvenli/${token}`
+        }
+        return
       }
 
       if (paymentMethod === 'bank_transfer') {
@@ -943,7 +1059,7 @@ function BilirkisiSaasCheckoutPage() {
         </div>
       ) : null}
 
-      {productError ? (
+      {productError && !isDesktopCheckout ? (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">{productError}</div>
       ) : (
         <form onSubmit={submit} className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-8 xl:gap-10">
@@ -1143,11 +1259,28 @@ function BilirkisiSaasCheckoutPage() {
           <div className="mt-6 space-y-4 lg:sticky lg:top-24 lg:mt-0">
             <section className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
               <h2 className="text-sm font-semibold text-slate-900">{checkoutCopy.packageTitle}</h2>
-              {checkoutKind === 'loading' ? (
+              {isDesktopCheckout ? (
+                <p className="mt-1 text-xs text-slate-500">
+                  {desktopOffer
+                    ? `${desktopOffer.platform === 'MACOS' ? 'macOS' : 'Windows'} · ${desktopOffer.licenseDays} gün · ${desktopOffer.maxDevices} cihaz`
+                    : 'Yıllık lisans'}
+                </p>
+              ) : checkoutKind === 'loading' ? (
                 <div className="mt-1 h-3 w-64 max-w-full animate-pulse rounded bg-slate-100" />
               ) : checkoutCopy.packageNote ? (
                 <p className="mt-1 text-xs text-slate-500">{checkoutCopy.packageNote}</p>
               ) : null}
+              {isDesktopCheckout ? (
+                <div className="mt-3 rounded-xl border border-sky-500 bg-sky-50 px-3 py-3 ring-1 ring-sky-200">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                    Yıllık Profesyonel Lisans
+                  </p>
+                  <p className="mt-1 text-lg font-bold text-slate-950">
+                    {quote?.valid && quote.finalPrice != null ? formatBhPriceTl(quote.finalPrice) : '—'}
+                    <span className="ml-1 text-xs font-semibold text-slate-500">/ yıl</span>
+                  </p>
+                </div>
+              ) : (
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <button
                   type="button"
@@ -1195,18 +1328,19 @@ function BilirkisiSaasCheckoutPage() {
                   </p>
                 </button>
               </div>
-              {productType === 'annual' ? (
+              )}
+              {!isDesktopCheckout && productType === 'annual' ? (
                 <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-900">
                   Hediye: Müvekkil Kasa Masaüstü Programı — 1 Yıl Ücretsiz
                 </p>
               ) : null}
 
-              {campaignDiscountActive || campaignQuotePending ? null : (
+              {!campaignDiscountActive && !campaignQuotePending ? (
                 <div className="mt-4 space-y-2">
                   <BilirkisiOfferCheckoutHint />
                   <CheckoutCouponBox coupon={coupon} currency="TRY" className="space-y-2" />
                 </div>
-              )}
+              ) : null}
 
               <div className="mt-4 border-t border-slate-100 pt-3">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Ödenecek toplam</p>
@@ -1218,19 +1352,23 @@ function BilirkisiSaasCheckoutPage() {
                   <div className="mt-1">
                     <p className="text-2xl font-bold text-slate-950">
                       {formatBhPriceTl(
-                        campaignDiscountActive ? quote.finalPrice : (coupon.quote?.total ?? quote.finalPrice),
+                        isDesktopCheckout
+                          ? quote.finalPrice
+                          : campaignDiscountActive
+                            ? quote.finalPrice
+                            : (coupon.quote?.total ?? quote.finalPrice),
                       )}
                       <span className="ml-1 text-sm font-semibold text-slate-500">
-                        {productType === 'monthly' ? '/ ay' : '/ yıl'}
+                        {isDesktopCheckout || productType === 'annual' ? '/ yıl' : '/ ay'}
                       </span>
                     </p>
-                    {quote.normalPrice != null && quote.normalPrice > quote.finalPrice ? (
+                    {quote.normalPrice != null && quote.normalPrice > (quote.finalPrice ?? quote.normalPrice) ? (
                       <p className="text-sm text-slate-500 line-through">
                         {formatBhPriceTl(quote.normalPrice)}
                         {productType === 'monthly' ? ' / ay' : ' / yıl'}
                       </p>
                     ) : null}
-                    {quote.campaign?.discountRate != null ? (
+                    {quote.campaign?.discountRate != null && Number(quote.campaign.discountRate) > 0 ? (
                       <p className="mt-0.5 text-sm font-medium text-emerald-700">
                         %{quote.campaign.discountRate} indirim
                         {campaignFacingTitle ? ` · ${campaignFacingTitle}` : ''}
@@ -1336,7 +1474,11 @@ function BilirkisiSaasCheckoutPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={submitting || !quote?.valid || Boolean(productError) || coupon.blocksCheckout}
+                disabled={
+                  submitting ||
+                  !quote?.valid ||
+                  (!isDesktopCheckout && (Boolean(productError) || coupon.blocksCheckout))
+                }
               >
                 {submitting
                   ? 'İşleniyor…'

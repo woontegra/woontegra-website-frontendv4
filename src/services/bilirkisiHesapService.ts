@@ -12,10 +12,18 @@ export type BhProduct = {
   windowsSalesEnabled?: boolean
   windowsDeviceLimit?: number | null
   windowsTrialDays?: number | null
+  windowsDownloadUrl?: string | null
+  windowsVersion?: string | null
+  windowsFileSize?: string | null
+  windowsDownloadButtonLabel?: string | null
   macosPriceYearly?: number | null
   macosSalesEnabled?: boolean
   macosDeviceLimit?: number | null
   macosTrialDays?: number | null
+  macosDownloadUrl?: string | null
+  macosVersion?: string | null
+  macosFileSize?: string | null
+  macosDownloadButtonLabel?: string | null
   priceStarter?: number | null
   price2Year?: number | null
   originalPrice2Year?: number | null
@@ -69,10 +77,69 @@ export function formatBhPriceTl(amountTl: number): string {
   }).format(amountTl)
 }
 
+/** Masaüstü yıllık katalog fiyatı, kuruş. SaaS price / priceMonthly kullanılmaz. */
+export const BH_DESKTOP_YEARLY_PRICE_KURUS = 1_500_000
+
+export function desktopYearlyPriceKurus(
+  product: Pick<BhProduct, 'windowsPriceYearly' | 'macosPriceYearly'> | null | undefined,
+  platform: 'windows' | 'macos',
+): number {
+  const raw = platform === 'windows' ? product?.windowsPriceYearly : product?.macosPriceYearly
+  const amount = typeof raw === 'number' ? raw : Number(raw)
+  if (Number.isFinite(amount) && amount > 0) return amount
+  return BH_DESKTOP_YEARLY_PRICE_KURUS
+}
+
+export type BhDesktopTrialStart = {
+  success: true
+  platform: 'WINDOWS' | 'MACOS'
+  platformLabel: string
+  expiresAt: string
+  trialDays: number
+  resumed: boolean
+  downloadReady: boolean
+  downloadPath: string | null
+  downloadUrl: string
+  message: string
+}
+
 export const bilirkisiHesapService = {
   async getConfig(): Promise<BhConfig> {
     const { data } = await publicApi.get<{ success: boolean; data: BhConfig }>('/bh/config')
     return data.data
+  },
+
+  async startDesktopTrial(input: {
+    platform: 'WINDOWS' | 'MACOS'
+    email: string
+    phone: string
+    name: string
+    company?: string
+    professionGroup: string
+    isExpertWitness: boolean
+    expertiseAreas?: Array<{ code: string; name: string }>
+  }): Promise<BhDesktopTrialStart> {
+    try {
+      const { data } = await publicApi.post<BhDesktopTrialStart & { code?: string; message?: string }>(
+        '/bh/desktop-trial',
+        input,
+        { headers: customerAuthHeaders() },
+      )
+      if (!data.success) {
+        const err = new Error(data.message || 'Deneme başlatılamadı.') as Error & { code?: string }
+        if (data.code) err.code = data.code
+        throw err
+      }
+      return data
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        const payload = e.response?.data as { code?: string; message?: string } | undefined
+        const err = new Error(payload?.message || 'Deneme başlatılamadı.') as Error & { code?: string }
+        if (payload?.code) err.code = payload.code
+        throw err
+      }
+      throw e
+    }
   },
 
   async getProduct(): Promise<BhProduct> {
@@ -252,6 +319,8 @@ export const bilirkisiHesapService = {
     productType: 'monthly' | 'annual'
     customerEmail?: string
     campaignPublicCode?: string | null
+    desktopPlatform?: 'WINDOWS' | 'MACOS' | null
+    purpose?: 'NEW' | 'RENEWAL'
   }) {
     const { data } = await publicApi.post('/bh/checkout/coupon/validate', body, {
       headers: customerAuthHeaders(),
@@ -296,23 +365,52 @@ export const bilirkisiHesapService = {
     }
   },
 
-  async quoteDesktopPlatform(platform: 'WINDOWS' | 'MACOS') {
-    const { data } = await publicApi.post('/bh/desktop-purchase/quote', { platform }, { timeout: 20_000 })
+  async quoteDesktopPlatform(
+    platform: 'WINDOWS' | 'MACOS',
+    extra?: {
+      campaignPublicCode?: string | null
+      couponCode?: string | null
+      purpose?: 'NEW' | 'RENEWAL'
+    },
+  ) {
+    const { data } = await publicApi.post(
+      '/bh/desktop-purchase/quote',
+      {
+        platform,
+        campaignPublicCode: extra?.campaignPublicCode || undefined,
+        couponCode: extra?.couponCode || undefined,
+        purpose: extra?.purpose,
+      },
+      { headers: customerAuthHeaders(), timeout: 20_000 },
+    )
     return data as {
       success: boolean
       data?: {
         platform: 'WINDOWS' | 'MACOS'
         priceKurus: number
+        normalPriceKurus?: number
         licenseDays: number
         maxDevices: number
         fromTrial: boolean
+        campaign?: BhQuote['campaign']
       }
       message?: string
     }
   },
 
-  async resolveDesktopPurchase(purchaseToken: string) {
-    const { data } = await publicApi.post('/bh/desktop-purchase/resolve', { purchaseToken }, { timeout: 20_000 })
+  async resolveDesktopPurchase(
+    purchaseToken: string,
+    extra?: { campaignPublicCode?: string | null; couponCode?: string | null },
+  ) {
+    const { data } = await publicApi.post(
+      '/bh/desktop-purchase/resolve',
+      {
+        purchaseToken,
+        campaignPublicCode: extra?.campaignPublicCode || undefined,
+        couponCode: extra?.couponCode || undefined,
+      },
+      { headers: customerAuthHeaders(), timeout: 20_000 },
+    )
     return data as {
       success: boolean
       data?: {
@@ -322,8 +420,10 @@ export const bilirkisiHesapService = {
         purpose: string
         fromTrial: boolean
         priceKurus: number
+        normalPriceKurus?: number
         licenseDays: number
         maxDevices: number
+        campaign?: BhQuote['campaign']
       }
       message?: string
     }

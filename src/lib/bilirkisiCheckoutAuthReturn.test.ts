@@ -54,6 +54,16 @@ describe('bilirkisi checkout auth return', () => {
     expect(params.get('campaignDiscountRate')).toBeNull()
   })
 
+  it('keeps a desktop purchase token and platform through login', () => {
+    const token = 'a'.repeat(43)
+    const back = roundTrip('giris', `?purchaseToken=${token}&platform=windows&email=a@b.com&deviceHash=secret`)
+    const params = new URL(back, 'https://www.woontegra.com').searchParams
+    expect(params.get('purchaseToken')).toBe(token)
+    expect(params.get('platform')).toBe('WINDOWS')
+    expect(params.get('email')).toBeNull()
+    expect(params.get('deviceHash')).toBeNull()
+  })
+
   it('rejects external return targets', () => {
     expect(safeInternalReturnPath('https://evil.example/phish', '/hesabim')).toBe('/hesabim')
     expect(safeInternalReturnPath('//evil.example', '/hesabim')).toBe('/hesabim')

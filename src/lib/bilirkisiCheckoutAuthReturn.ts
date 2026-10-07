@@ -15,6 +15,10 @@ export function bilirkisiCheckoutAuthReturnPath(search: string): string {
   if (plan) kept.set('plan', plan)
   const renew = (params.get('renew') || '').trim()
   if (renew) kept.set('renew', renew)
+  const purchaseToken = (params.get('purchaseToken') || '').trim()
+  if (/^[A-Za-z0-9_-]{20,128}$/.test(purchaseToken)) kept.set('purchaseToken', purchaseToken)
+  const platform = (params.get('platform') || '').trim().toUpperCase()
+  if (platform === 'WINDOWS' || platform === 'MACOS') kept.set('platform', platform)
   const qs = kept.toString()
   return safeInternalReturnPath(
     `${BILIRKISI_HESAP_CHECKOUT_PATH}${qs ? `?${qs}` : ''}`,

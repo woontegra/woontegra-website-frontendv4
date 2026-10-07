@@ -55,6 +55,9 @@ function DemoRequestDetailModal({
           <DetailRow label="E-posta" value={row.email} />
           <DetailRow label="Telefon" value={row.phone || '—'} />
           <DetailRow label="Kurum / Baro" value={row.company || '—'} />
+          {row.productCode === 'BILIRKISI_DESKTOP' ? (
+            <DetailRow label="Masaüstü platform" value={row.desktopPlatform || '—'} />
+          ) : null}
           <DetailRow label="Meslek Grubu" value={getProfessionGroupLabel(row.professionGroup)} />
           <DetailRow label="Bilirkişi" value={expertWitnessLabel(row.isExpertWitness)} />
           <div>

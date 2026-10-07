@@ -11,6 +11,22 @@ export type BhProduct = {
   originalPrice?: number | null
   priceMonthly?: number | null
   monthlyPrice?: number | null
+  windowsPriceYearly?: number | null
+  windowsSalesEnabled?: boolean
+  windowsDeviceLimit?: number | null
+  windowsTrialDays?: number | null
+  macosPriceYearly?: number | null
+  macosSalesEnabled?: boolean
+  macosDeviceLimit?: number | null
+  macosTrialDays?: number | null
+  windowsDownloadUrl?: string | null
+  windowsVersion?: string | null
+  windowsFileSize?: string | null
+  windowsDownloadButtonLabel?: string | null
+  macosDownloadUrl?: string | null
+  macosVersion?: string | null
+  macosFileSize?: string | null
+  macosDownloadButtonLabel?: string | null
   price2Year?: number | null
   originalPrice2Year?: number | null
   price3Year?: number | null
@@ -74,6 +90,8 @@ export type BhDemoRequest = {
   professionGroup?: string | null
   isExpertWitness?: boolean | null
   expertiseAreas?: BhDemoExpertiseAreaStored[] | null
+  productCode?: string | null
+  desktopPlatform?: string | null
   city?: string | null
   country?: string | null
   createdAt: string

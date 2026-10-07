@@ -7,11 +7,15 @@ import type { PublicProductDetail } from '@/types/product'
 import { productTypeLabel } from '@/types/product'
 import { licenseDisplayLabel } from '@/utils/productPurchase'
 
+type MetaItem = { label: string; value: string }
+
 type Props = {
   product: PublicProductDetail
   lead: string
   isFreeDownload: boolean
   children: ReactNode
+  /** When set, replaces the hero fact cards. Omitted keeps the current product facts. */
+  metaItems?: MetaItem[]
   afterLead?: ReactNode
 }
 
@@ -40,10 +44,10 @@ function productMetaItems(product: PublicProductDetail, isFreeDownload: boolean,
   ]
 }
 
-export function ProductShowcaseHero({ product, lead, isFreeDownload, children, afterLead }: Props) {
+export function ProductShowcaseHero({ product, lead, isFreeDownload, children, metaItems, afterLead }: Props) {
   const isExternalSales = isExternalSalesProduct(product)
   const promotionalMeta = getPromotionalSoftwareMeta(product.slug)
-  const metaItems = productMetaItems(product, isFreeDownload, isExternalSales)
+  const resolvedMetaItems = metaItems ?? productMetaItems(product, isFreeDownload, isExternalSales)
 
   return (
     <section className="relative overflow-hidden border-b border-slate-200/60 bg-slate-950 text-white">
@@ -154,7 +158,7 @@ export function ProductShowcaseHero({ product, lead, isFreeDownload, children, a
               />
 
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-                {metaItems.map((card) => (
+                {resolvedMetaItems.map((card) => (
                   <div
                     key={card.label}
                     className="rounded-[1.6rem] border border-white/10 bg-white/8 px-4 py-4 shadow-lg shadow-slate-950/10 backdrop-blur-md"
