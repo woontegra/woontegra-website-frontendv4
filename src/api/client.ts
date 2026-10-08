@@ -1,6 +1,12 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios'
 import { useAuthStore } from '@/store/authStore'
 import { getApiBaseUrl } from '@/lib/env'
+import { clearCustomerSession } from '@/lib/customerAuth'
+import {
+  customerFacingMessage,
+  invalidCustomerSessionLoginPath,
+  isInvalidCustomerSessionPayload,
+} from '@/lib/customerFacingError'
 
 /** Public GET istekleri — yavaş API'de 30 sn spinner yerine erken timeout + fallback */
 export const PUBLIC_API_TIMEOUT_MS = 8_000
@@ -31,6 +37,11 @@ function createClient(withAdminAuth: boolean, timeoutMs: number): AxiosInstance 
           window.location.assign('/admin/giris')
         }
       }
+      if (!withAdminAuth && typeof window !== 'undefined' && isInvalidCustomerSessionPayload(error.response?.data)) {
+        clearCustomerSession()
+        const next = invalidCustomerSessionLoginPath(`${window.location.pathname}${window.location.search}`)
+        if (next) window.location.assign(next)
+      }
       return Promise.reject(error)
     },
   )
@@ -45,9 +56,9 @@ export function getErrorMessage(error: unknown, fallback = 'İşlem başarısız
   if (axios.isAxiosError(error)) {
     const data = error.response?.data as { message?: unknown; error?: unknown } | undefined
     const apiMessage = data?.message
-    if (typeof apiMessage === 'string' && apiMessage.trim()) return apiMessage.trim()
+    if (typeof apiMessage === 'string' && apiMessage.trim()) return customerFacingMessage(apiMessage.trim(), fallback)
     const apiError = data?.error
-    if (typeof apiError === 'string' && apiError.trim()) return apiError.trim()
+    if (typeof apiError === 'string' && apiError.trim()) return customerFacingMessage(apiError.trim(), fallback)
     const status = error.response?.status
     if (status && status >= 500) return 'Sunucuya şu an ulaşılamıyor. Lütfen biraz sonra tekrar deneyin.'
     if (status === 404) return 'İstenen kayıt bulunamadı.'
@@ -57,9 +68,9 @@ export function getErrorMessage(error: unknown, fallback = 'İşlem başarısız
     }
     // "Request failed with status code 500" gibi ham Axios metinlerini gösterme
     if (/^Request failed with status code \d+$/i.test(error.message)) return fallback
-    return error.message || fallback
+    return customerFacingMessage(error.message, fallback)
   }
-  if (error instanceof Error) return error.message
+  if (error instanceof Error) return customerFacingMessage(error.message, fallback)
   return fallback
 }
 

@@ -7,10 +7,12 @@ import { useCustomerSession } from '@/hooks/useCustomerSession'
 import { customersService, getErrorMessage } from '@/services/customersService'
 import { trackLogin } from '@/integrations/trackingEvents'
 import { safeInternalReturnPath } from '@/lib/safeInternalReturnPath'
+import { INVALID_CUSTOMER_SESSION_MESSAGE } from '@/lib/customerFacingError'
 
 export function CustomerLoginPage() {
   const [params] = useSearchParams()
   const ret = safeInternalReturnPath(params.get('return'), '/hesabim')
+  const sessionNotice = params.get('oturum') === 'gecersiz' ? INVALID_CUSTOMER_SESSION_MESSAGE : null
   const navigate = useNavigate()
   const { authed } = useCustomerSession()
   const [email, setEmail] = useState('')
@@ -50,6 +52,7 @@ export function CustomerLoginPage() {
       }
     >
       <form onSubmit={onSubmit} className="space-y-4">
+        {sessionNotice ? <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">{sessionNotice}</p> : null}
         {error ? <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p> : null}
         <Input label="E-posta" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <Input

@@ -7,6 +7,7 @@ import { PublicHeader } from '@/components/public/PublicHeader'
 import { PublicFooter } from '@/components/public/PublicFooter'
 import { CampaignAnnouncementBar } from '@/components/public/CampaignAnnouncementBar'
 import { CookieConsentBanner } from '@/components/cookie/CookieConsentBanner'
+import { QuickContactDock } from '@/components/public/QuickContactDock'
 import { SiteFaviconEffect } from '@/hooks/usePublicSiteSettings'
 import { TrackingScripts } from '@/integrations/TrackingScripts'
 import { campaignsService } from '@/services/campaignsService'
@@ -41,6 +42,7 @@ export function SiteLayout() {
         <Outlet />
       </main>
       <PublicFooter />
+      <QuickContactDock />
       <CookieConsentBanner />
     </div>
   )
