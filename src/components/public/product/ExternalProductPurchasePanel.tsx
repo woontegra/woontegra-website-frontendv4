@@ -187,13 +187,7 @@ export function ExternalProductPurchasePanel({
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">
                   <p className="font-semibold">{trialResult.message}</p>
                   <p className="mt-1">Platform: {trialResult.platformLabel}</p>
-                  <p>
-                    Bitiş:{' '}
-                    {new Date(trialResult.expiresAt).toLocaleString('tr-TR', {
-                      dateStyle: 'long',
-                      timeStyle: 'short',
-                    })}
-                  </p>
+                  <p className="mt-1">7 günlük süre, program içinde demo hesabını oluşturup etkinleştirdiğinizde başlar. Başvuru bu süreyi başlatmaz.</p>
                   {trialResult.downloadUrl || desktopInstaller?.url ? (
                     <a
                       className="mt-3 flex w-full items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white"

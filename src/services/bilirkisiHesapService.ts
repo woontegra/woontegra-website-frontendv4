@@ -94,7 +94,7 @@ export type BhDesktopTrialStart = {
   success: true
   platform: 'WINDOWS' | 'MACOS'
   platformLabel: string
-  expiresAt: string
+  expiresAt?: string
   trialDays: number
   resumed: boolean
   downloadReady: boolean
