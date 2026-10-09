@@ -22,4 +22,12 @@ describe('Bilirkişi macOS satış erişimi', () => {
     expect(web?.checkout).toBe('live-web')
     expect(web?.billingTerms).toEqual(['monthly', 'yearly'])
   })
+
+  it('Windows ve macOS aynı lisans etkinleştirme açıklamasını gösterir, WEB göstermez', () => {
+    const [web, windows, macos] = BILIRKISI_PLATFORM_FAMILY.platforms
+    expect(windows.presentation?.licenseNote).toBe(macos.presentation?.licenseNote)
+    expect(macos.presentation?.licenseNote).toContain('aktivasyon şifresi')
+    expect(macos.presentation?.licenseNote).not.toContain('hesabınıza tanımlanır')
+    expect(web.presentation).toBeUndefined()
+  })
 })

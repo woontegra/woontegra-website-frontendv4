@@ -36,7 +36,8 @@ export type ProductPlatformFamily = {
   platforms: SoftwarePlatformDefinition[]
 }
 
-const DESKTOP_LICENSE_NOTE = 'Lisansınız Woontegra hesabınıza tanımlanır.'
+const DESKTOP_LICENSE_NOTE =
+  'Ödeme sonrası lisans anahtarı ve aktivasyon şifresi e-postanıza gönderilir; programın lisans aktivasyon ekranından etkinleştirilir.'
 
 export const BILIRKISI_PLATFORM_FAMILY: ProductPlatformFamily = {
   productSlug: BILIRKISI_HESAP_SLUG,

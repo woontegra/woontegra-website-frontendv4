@@ -212,14 +212,6 @@ export function ExternalProductPurchasePanel({
               >
                 {desktopOffer.ctaLabel}
               </Link>
-              {platformId === 'macos' && desktopInstaller?.url ? (
-                <a
-                  className="flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800"
-                  href={desktopInstaller.url}
-                >
-                  {desktopInstaller.buttonLabel}
-                </a>
-              ) : null}
             </div>
           </div>
         ) : (
