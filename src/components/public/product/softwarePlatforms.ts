@@ -114,10 +114,3 @@ export function findPlatform(
 ): SoftwarePlatformDefinition | null {
   return family?.platforms.find((platform) => platform.id === platformId) ?? null
 }
-
-/** macOS sekmesi ürün sayfasında kalır; satış, deneme ve checkout kapalıdır. */
-export const BILIRKISI_MACOS_COMING_SOON_LABEL = 'Çok Yakında'
-
-export function isBilirkisiMacosComingSoon(platformId: string | null | undefined): boolean {
-  return String(platformId || '').trim().toLowerCase() === 'macos'
-}

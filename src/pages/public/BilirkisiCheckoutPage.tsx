@@ -20,7 +20,6 @@ import { customersService } from '@/services/customersService'
 import { paymentsService } from '@/services/paymentsService'
 import { getErrorMessage } from '@/api/client'
 import { BILIRKISI_HESAP_SLUG } from '@/data/canonicalSoftwareProducts'
-import { isBilirkisiMacosComingSoon, BILIRKISI_MACOS_COMING_SOON_LABEL } from '@/components/public/product/softwarePlatforms'
 import { bilirkisiCheckoutAuthReturnPath, customerAuthHref } from '@/lib/bilirkisiCheckoutAuthReturn'
 import {
   bilirkisiCheckoutCopy,
@@ -549,13 +548,6 @@ export function BilirkisiCheckoutPage() {
 
   useEffect(() => {
     if (!isDesktopCheckout) return
-    if (isBilirkisiMacosComingSoon(platformQuery)) {
-      setQuoteLoading(false)
-      setQuote(null)
-      setDesktopOffer(null)
-      setError(null)
-      return
-    }
     let cancelled = false
     setQuoteLoading(true)
     setQuote(null)
@@ -739,7 +731,6 @@ export function BilirkisiCheckoutPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (isBilirkisiMacosComingSoon(platformQuery)) return
     setError(null)
     if (!authed) {
       window.location.assign(loginHref)
@@ -951,27 +942,6 @@ export function BilirkisiCheckoutPage() {
     } finally {
       setSubmitting(false)
     }
-  }
-
-  if (isBilirkisiMacosComingSoon(platformQuery)) {
-    return (
-      <div className="mx-auto max-w-xl px-4 py-16">
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Bilirkişi Hesap</p>
-          <h1 className="mt-3 text-2xl font-bold text-slate-950">macOS sürümü</h1>
-          <p className="mt-3 text-sm text-slate-600">
-            macOS masaüstü sürümü henüz satışa açık değil.
-          </p>
-          <p className="mt-4 text-sm font-semibold text-slate-500">{BILIRKISI_MACOS_COMING_SOON_LABEL}</p>
-          <Link
-            to={`/yazilimlar/${BILIRKISI_HESAP_SLUG}?platform=macos`}
-            className="mt-6 inline-flex rounded-xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white"
-          >
-            Ürün sayfasına dön
-          </Link>
-        </div>
-      </div>
-    )
   }
 
   if (success) {

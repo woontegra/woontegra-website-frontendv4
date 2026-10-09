@@ -31,6 +31,15 @@ describe('bhDesktopInstallerForPlatform', () => {
     })
   })
 
+  it('accepts the published arm64 dmg and leaves the windows installer alone', () => {
+    const macosDownloadUrl =
+      'https://download.woontegra.com/downloads/bilirkisihesap/macos/Bilirkisi-Hesap-3.6.7-mac-arm64.dmg'
+    const live = { ...product, macosDownloadUrl, macosDownloadButtonLabel: '' }
+    expect(bhDesktopInstallerForPlatform(live, 'macos')?.url).toBe(macosDownloadUrl)
+    expect(bhDesktopInstallerForPlatform(live, 'macos')?.buttonLabel).toBe('Kurulumu indir')
+    expect(bhDesktopInstallerForPlatform(live, 'windows')?.url).toBe(product.windowsDownloadUrl)
+  })
+
   it('does not offer an updater feed as the installer', () => {
     expect(
       bhDesktopInstallerForPlatform(

@@ -20,10 +20,8 @@ import { BILIRKISI_HESAP_CHECKOUT_PATH, BILIRKISI_HESAP_SLUG } from '@/data/cano
 import { BilirkisiDemoRequestModal } from '@/components/public/product/BilirkisiDemoRequestModal'
 import { SoftwarePlatformPicker } from '@/components/public/product/SoftwarePlatformPicker'
 import {
-  BILIRKISI_MACOS_COMING_SOON_LABEL,
   desktopLicenseLabel,
   findPlatform,
-  isBilirkisiMacosComingSoon,
   type ProductPlatformFamily,
   type SoftwarePlatformId,
 } from '@/components/public/product/softwarePlatforms'
@@ -66,7 +64,6 @@ export function ExternalProductPurchasePanel({
 
   useEffect(() => {
     setTrialResult(null)
-    if (isBilirkisiMacosComingSoon(platformId)) setDemoOpen(false)
   }, [platformId])
 
   const errorStatus = axios.isAxiosError(priceQuery.error) ? priceQuery.error.response?.status : undefined
@@ -116,7 +113,7 @@ export function ExternalProductPurchasePanel({
     platformId === 'windows' || platformId === 'macos'
       ? bhDesktopInstallerForPlatform(bhProduct, platformId)
       : null
-  const macosComingSoon = isBilirkisiMacosComingSoon(platformId)
+  const desktopCheckoutPlatform = platformId === 'macos' ? 'MACOS' : 'WINDOWS'
 
   return (
     <>
@@ -138,7 +135,6 @@ export function ExternalProductPurchasePanel({
 
         {desktopOffer ? (
           <div className="relative">
-            {macosComingSoon ? null : (
             <div className="mt-5 min-h-[5.5rem]">
               {loadingPrice ? (
                 <p className="flex items-center gap-2 text-lg font-semibold text-slate-600">
@@ -157,7 +153,6 @@ export function ExternalProductPurchasePanel({
                 </div>
               )}
             </div>
-            )}
             <div className="mt-5 grid grid-cols-2 gap-3">
               <div className="rounded-2xl border border-white/70 bg-white/85 px-4 py-3 shadow-sm">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Ürün tipi</p>
@@ -183,7 +178,7 @@ export function ExternalProductPurchasePanel({
               {desktopOffer.licenseNote}
             </p>
             <div className="mt-6 space-y-3">
-              {macosComingSoon ? null : trialResult ? (
+              {platformId !== 'windows' && platformId !== 'macos' ? null : trialResult ? (
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">
                   <p className="font-semibold">{trialResult.message}</p>
                   <p className="mt-1">Platform: {trialResult.platformLabel}</p>
@@ -208,26 +203,23 @@ export function ExternalProductPurchasePanel({
                   {desktopTrialLabel}
                 </button>
               )}
-              {macosComingSoon ? (
-                <button
-                  type="button"
-                  disabled
-                  aria-disabled="true"
-                  className="flex w-full cursor-not-allowed items-center justify-center rounded-2xl bg-slate-300 px-4 py-3.5 text-sm font-semibold text-white"
+              <Link
+                className={`flex w-full items-center justify-center rounded-2xl px-4 py-3.5 text-sm font-semibold text-white ${
+                  desktopPriceTl == null ? 'pointer-events-none bg-slate-300' : 'bg-slate-950'
+                }`}
+                to={`${BILIRKISI_HESAP_CHECKOUT_PATH}?platform=${desktopCheckoutPlatform}`}
+                aria-disabled={desktopPriceTl == null}
+              >
+                {desktopOffer.ctaLabel}
+              </Link>
+              {platformId === 'macos' && desktopInstaller?.url ? (
+                <a
+                  className="flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800"
+                  href={desktopInstaller.url}
                 >
-                  {BILIRKISI_MACOS_COMING_SOON_LABEL}
-                </button>
-              ) : (
-                <Link
-                  className={`flex w-full items-center justify-center rounded-2xl px-4 py-3.5 text-sm font-semibold text-white ${
-                    desktopPriceTl == null ? 'pointer-events-none bg-slate-300' : 'bg-slate-950'
-                  }`}
-                  to={`${BILIRKISI_HESAP_CHECKOUT_PATH}?platform=WINDOWS`}
-                  aria-disabled={desktopPriceTl == null}
-                >
-                  {desktopOffer.ctaLabel}
-                </Link>
-              )}
+                  {desktopInstaller.buttonLabel}
+                </a>
+              ) : null}
             </div>
           </div>
         ) : (
@@ -348,7 +340,7 @@ export function ExternalProductPurchasePanel({
       <BilirkisiDemoRequestModal
         open={demoOpen}
         onClose={() => setDemoOpen(false)}
-        desktopPlatform={platformId === 'windows' ? 'WINDOWS' : null}
+        desktopPlatform={platformId === 'windows' ? 'WINDOWS' : platformId === 'macos' ? 'MACOS' : null}
         onDesktopTrialStarted={(result) => {
           setTrialResult(result)
           setDemoOpen(false)
