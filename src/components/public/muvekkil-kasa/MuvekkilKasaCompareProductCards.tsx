@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { UseQueryResult } from '@tanstack/react-query'
-import { Monitor, Globe, Laptop, Sparkles, type LucideIcon } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { CartAddedFeedback } from '@/components/public/CartAddedFeedback'
 import { ErrorState } from '@/components/public/ErrorState'
 import { useMkSaasProductPageContext } from '@/components/public/product/MkSaasProductPageProvider'
@@ -139,8 +139,7 @@ function RetryAction({ onRetry }: { onRetry: () => void }) {
 
 export type DesktopCardVariant = {
   cardId: string
-  badgeIcon: LucideIcon
-  defaultCopy: Pick<MkComparePurchaseCardCopy, 'badge' | 'title' | 'description' | 'detailsButtonLabel'>
+  defaultCopy: Pick<MkComparePurchaseCardCopy, 'title' | 'description' | 'detailsButtonLabel'>
   errorTitle: string
   errorMessage: string
   /** WINDOWS: public .exe, MACOS: public https .dmg; ürün kaydında yoksa indirme bağlantısı üretilmez. */
@@ -149,9 +148,7 @@ export type DesktopCardVariant = {
 
 export const WINDOWS_CARD_VARIANT: DesktopCardVariant = {
   cardId: MK_COMPARE_CARD_DESKTOP_ID,
-  badgeIcon: Monitor,
   defaultCopy: {
-    badge: 'Bilgisayara Kurulan',
     title: 'Müvekkil Kasa Defteri Masaüstü',
     description:
       'Tek bilgisayarda çalışan, kurulum ile kullanılan masaüstü sürüm. Basit müvekkil kasa takibi için uygundur.',
@@ -164,7 +161,6 @@ export const WINDOWS_CARD_VARIANT: DesktopCardVariant = {
 
 export const MACOS_CARD_VARIANT: DesktopCardVariant = {
   cardId: MK_COMPARE_CARD_MACOS_ID,
-  badgeIcon: Laptop,
   defaultCopy: DEFAULT_MK_COMPARE_MACOS_COPY,
   errorTitle: 'macOS ürünü yüklenemedi',
   errorMessage: 'macOS ürün bilgileri alınamadı.',
@@ -186,7 +182,6 @@ export function DesktopCard({
 }) {
   const [feedback, setFeedback] = useState<'added' | 'in-cart' | null>(null)
   const product = query.data
-  const BadgeIcon = variant.badgeIcon
 
   if (query.isPending) return <CardSkeleton />
   if (query.isError || !product) {
@@ -226,13 +221,7 @@ export function DesktopCard({
   return (
     <article id={variant.cardId} className="flex scroll-mt-24 flex-col">
       {isTarget ? <ReferralProductBadge tone="emerald" /> : null}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
-          <BadgeIcon className="h-3.5 w-3.5" aria-hidden />
-          {copy?.badge?.trim() || variant.defaultCopy.badge}
-        </span>
-      </div>
-      <h2 className="mt-4 text-xl font-bold tracking-tight text-slate-950">
+      <h2 className="text-xl font-bold tracking-tight text-slate-950">
         {copy?.title?.trim() || variant.defaultCopy.title}
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-slate-600">
@@ -356,18 +345,12 @@ export function SaasCard({
   return (
     <article id={MK_COMPARE_CARD_SAAS_ID} className="flex scroll-mt-24 flex-col">
       {isTarget ? <ReferralProductBadge tone="sky" /> : null}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-800">
-          <Globe className="h-3.5 w-3.5" aria-hidden />
-          {copy?.badge?.trim() || 'Tarayıcıdan Erişim'}
+      {copy?.extraBadge?.trim() !== '' ? (
+        <span className="mb-3 inline-flex w-fit items-center rounded-full bg-sky-600 px-2.5 py-1 text-[11px] font-semibold text-white">
+          {copy?.extraBadge?.trim() || 'En kapsamlı'}
         </span>
-        {copy?.extraBadge?.trim() !== '' ? (
-          <span className="inline-flex items-center rounded-full bg-sky-600 px-2.5 py-1 text-[11px] font-semibold text-white">
-            {copy?.extraBadge?.trim() || 'En kapsamlı'}
-          </span>
-        ) : null}
-      </div>
-      <h2 className="mt-4 text-xl font-bold tracking-tight text-slate-950">
+      ) : null}
+      <h2 className="text-xl font-bold tracking-tight text-slate-950">
         {copy?.title?.trim() || 'Müvekkil Kasa Defteri Web Tabanlı'}
       </h2>
       <p className="mt-2 text-sm leading-relaxed text-slate-600">

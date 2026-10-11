@@ -21,6 +21,14 @@ describe('Müvekkil Kasa compare product cards', () => {
     expect(cardsSrc).toContain('MK_COMPARE_TRIAL_CTA_LABEL')
   })
 
+  it('satış kartlarında platform etiketi (Bilgisayara/Mac’e Kurulan, Tarayıcıdan Erişim) yok', () => {
+    expect(cardsSrc).not.toContain('Bilgisayara Kurulan')
+    expect(cardsSrc).not.toContain('Tarayıcıdan Erişim')
+    expect(cardsSrc).not.toContain('copy?.badge')
+    expect(cardsSrc).not.toContain('defaultCopy.badge')
+    expect(cardsSrc).not.toContain('badgeIcon')
+  })
+
   it('F: SaaS demo CTA still uses onOpenDemo, independent of desktop installer CTA', () => {
     expect(DEFAULT_MK_COMPARE_SAAS_COPY.demoButtonLabel).toBe('7 Gün Ücretsiz Dene')
     expect(cardsSrc).toContain('onClick={ctx.onOpenDemo}')
