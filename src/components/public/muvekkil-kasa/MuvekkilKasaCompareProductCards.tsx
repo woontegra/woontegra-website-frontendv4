@@ -29,7 +29,7 @@ import { MK_COMPARE_CARD_MACOS_ID, MK_LAUNCH_PRICE_LABEL } from '@/components/pu
 
 type Query = UseQueryResult<PublicProductDetail, Error>
 
-/** Affiliate / ?surum= vurgusu: bağlantının hedef ürünü mü. */
+/** İş ortağı (/r/:code) vurgusu: bağlantının hedef ürünü mü. ?surum= tek başına vurgu üretmez. */
 export type ReferralCardFocus = 'target' | 'none'
 
 function LaunchPriceLabel() {

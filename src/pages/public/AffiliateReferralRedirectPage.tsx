@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { markAffiliateLanding } from '@/lib/affiliateLandingMarker'
 
 /**
  * Kısa tanıtım yolu: /r/:code → aynı kökteki /api/r/:code (Vite proxy / canlı rewrite).
@@ -14,6 +15,7 @@ export function AffiliateReferralRedirectPage() {
       window.location.replace('/')
       return
     }
+    markAffiliateLanding()
     window.location.replace(`/api/r/${encodeURIComponent(safe)}`)
   }, [code])
 

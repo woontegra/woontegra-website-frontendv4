@@ -27,7 +27,7 @@ export function MuvekkilKasaPlatformPurchasePanel({ copy }: Props) {
   const texts = copy ?? ctx.panelCopy
 
   const focusFor = (target: MkComparePlatform): ReferralCardFocus =>
-    ctx.highlightedPlatform === target ? 'target' : 'none'
+    ctx.referralPlatform === target ? 'target' : 'none'
 
   return (
     <div

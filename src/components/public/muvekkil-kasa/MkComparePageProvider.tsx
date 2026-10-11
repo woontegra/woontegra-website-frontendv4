@@ -14,6 +14,7 @@ import {
   scrollToComparePlatformCard,
   type MkComparePlatform,
 } from '@/components/public/muvekkil-kasa/mkComparePlatform'
+import { clearAffiliateLanding, readRecentAffiliateLanding } from '@/lib/affiliateLandingMarker'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { MK_MACOS_PRODUCT_SLUG } from '@/lib/muvekkilKasaDesktopPlatform'
 import { MK_SAAS_CANONICAL_SLUG } from '@/lib/muvekkilKasaSaasProduct'
@@ -66,10 +67,12 @@ type MkComparePageContextValue = {
   platformTab: MkComparePlatform
   setPlatformTab: (platform: MkComparePlatform) => void
   /**
-   * `?surum=` varken kalıcı ürün vurgusu (affiliate / sürüm linki).
-   * Parametre yoksa veya tanınmıyorsa null.
+   * `?surum=` ile seçilen platform (sekme + kaydırma).
+   * Parametre yoksa null.
    */
   highlightedPlatform: MkComparePlatform | null
+  /** Yalnızca /r/:code iş ortağı yönlendirmesiyle gelindiyse hedef platform; aksi halde null. */
+  referralPlatform: MkComparePlatform | null
   /** Builder satın alma bloğundaki kart metinleri (admin). */
   panelCopy: MkComparePanelCopy
   /** true: panel hero'da; satın alma bloğu paneli ikinci kez çizmez. */
@@ -105,6 +108,11 @@ export function MkComparePageProvider({ previewSafe = false, blocks = null, chil
   const highlightedPlatform: MkComparePlatform | null = hasSurumParam
     ? (parseMkComparePlatformParam(surumParam) ?? 'windows')
     : null
+  const [fromAffiliateLanding] = useState(readRecentAffiliateLanding)
+  useEffect(() => {
+    if (fromAffiliateLanding) clearAffiliateLanding()
+  }, [fromAffiliateLanding])
+  const referralPlatform = fromAffiliateLanding ? highlightedPlatform : null
   const [detailTab, setDetailTab] = useState<MkCompareEdition>(() => parseMkCompareSurumParam(surumParam))
   const [platformTab, setPlatformTab] = useState<MkComparePlatform>(
     () => highlightedPlatform ?? MK_COMPARE_DEFAULT_PLATFORM,
@@ -164,6 +172,7 @@ export function MkComparePageProvider({ previewSafe = false, blocks = null, chil
     platformTab,
     setPlatformTab,
     highlightedPlatform,
+    referralPlatform,
     panelCopy: comparePanelCopy(blocks),
     panelInHero: blocksHostPanelInHero(blocks),
   }
