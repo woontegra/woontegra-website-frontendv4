@@ -1,20 +1,19 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { UseQueryResult } from '@tanstack/react-query'
-import { Monitor, Globe, Sparkles } from 'lucide-react'
+import { Monitor, Globe, Laptop, Sparkles, type LucideIcon } from 'lucide-react'
 import { CartAddedFeedback } from '@/components/public/CartAddedFeedback'
 import { ErrorState } from '@/components/public/ErrorState'
-import { MediaImage } from '@/media/components/MediaImage'
 import { useMkSaasProductPageContext } from '@/components/public/product/MkSaasProductPageProvider'
 import { formatMkSaasTryMoney } from '@/components/public/product/ProductPurchasePanel'
 import { addToCart } from '@/lib/cartStorage'
-import { pickProductCoverUrl } from '@/lib/publicContentImages'
 import { trackAddToCart } from '@/integrations/trackingEvents'
 import { getErrorMessage } from '@/api/client'
 import { canPurchaseProduct, buildCartSnapshot } from '@/utils/productPurchase'
 import { formatCampaignDate } from '@/types/campaign'
 import type { PublicProductDetail } from '@/types/product'
 import type { MkComparePurchaseCardCopy } from '@/builder/types/mkSaasPurchase'
+import { DEFAULT_MK_COMPARE_MACOS_COPY } from '@/builder/types/mkSaasPurchase'
 import {
   desktopDeliveryNotes,
   MK_COMPARE_CARD_DESKTOP_ID,
@@ -25,20 +24,23 @@ import {
   webDeliveryNotes,
 } from '@/components/public/muvekkil-kasa/comparePageUtils'
 import { getMuvekkilKasaDesktopTrialDownload } from '@/lib/muvekkilKasaDesktopProduct'
-import { useMkComparePageContextOptional } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
+import { getMuvekkilKasaMacosTrialDownload } from '@/lib/muvekkilKasaDesktopPlatform'
+import { MK_COMPARE_CARD_MACOS_ID, MK_LAUNCH_PRICE_LABEL } from '@/components/public/muvekkil-kasa/mkComparePlatform'
 
 type Query = UseQueryResult<PublicProductDetail, Error>
 
-/** Affiliate / ?surum= vurgusu: hedef, diğer (soluk) veya yok. */
-type ReferralCardFocus = 'target' | 'other' | 'none'
+/** Affiliate / ?surum= vurgusu: bağlantının hedef ürünü mü. */
+export type ReferralCardFocus = 'target' | 'none'
 
-function referralFocusClass(focus: ReferralCardFocus, tone: 'emerald' | 'sky'): string {
-  if (focus === 'none') return ''
-  if (focus === 'other') return ' opacity-45 grayscale-[0.25] saturate-75'
-  if (tone === 'emerald') {
-    return ' border-[3px] border-emerald-500 shadow-[0_22px_55px_-18px_rgba(5,150,105,0.55)] ring-4 ring-emerald-200/90'
-  }
-  return ' border-[3px] border-sky-500 shadow-[0_22px_55px_-18px_rgba(2,132,199,0.55)] ring-4 ring-sky-200/90'
+function LaunchPriceLabel() {
+  return (
+    <span
+      className="mb-2 inline-flex w-fit items-center rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-800"
+      data-launch-price-label
+    >
+      {MK_LAUNCH_PRICE_LABEL}
+    </span>
+  )
 }
 
 function ReferralProductBadge({ tone }: { tone: 'emerald' | 'sky' }) {
@@ -110,12 +112,12 @@ function DesktopTrialCta({
 
 function CardSkeleton() {
   return (
-    <div className="flex h-full animate-pulse flex-col rounded-3xl border border-slate-200 bg-white p-6 sm:p-7">
-      <div className="aspect-video rounded-2xl bg-slate-100" />
-      <div className="mt-6 h-7 w-3/4 rounded bg-slate-100" />
+    <div className="flex animate-pulse flex-col" aria-busy="true">
+      <div className="h-6 w-40 rounded-full bg-slate-100" />
+      <div className="mt-4 h-7 w-3/4 rounded bg-slate-100" />
       <div className="mt-3 h-4 w-full rounded bg-slate-100" />
-      <div className="mt-8 h-10 w-40 rounded bg-slate-100" />
-      <div className="mt-auto space-y-3 pt-8">
+      <div className="mt-6 h-10 w-40 rounded bg-slate-100" />
+      <div className="mt-6 space-y-3">
         <div className="h-12 rounded-xl bg-slate-100" />
         <div className="h-12 rounded-xl bg-slate-100" />
       </div>
@@ -135,53 +137,63 @@ function RetryAction({ onRetry }: { onRetry: () => void }) {
   )
 }
 
-function ProductCover({
-  product,
-  name,
-  overrideUrl,
-}: {
-  product: PublicProductDetail
-  name: string
-  overrideUrl?: string
-}) {
-  const coverUrl = overrideUrl?.trim() || pickProductCoverUrl(product)
-  return (
-    <div className="aspect-video w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50">
-      {coverUrl ? (
-        <MediaImage
-          src={overrideUrl?.trim() || undefined}
-          input={overrideUrl?.trim() ? undefined : product}
-          alt={name}
-          className="h-full w-full object-contain p-3 sm:p-4"
-          optimizeWidth={960}
-        />
-      ) : (
-        <div className="flex h-full items-center justify-center text-sm text-slate-400">{name}</div>
-      )}
-    </div>
-  )
+export type DesktopCardVariant = {
+  cardId: string
+  badgeIcon: LucideIcon
+  defaultCopy: Pick<MkComparePurchaseCardCopy, 'badge' | 'title' | 'description' | 'detailsButtonLabel'>
+  errorTitle: string
+  errorMessage: string
+  /** WINDOWS: public .exe, MACOS: public https .dmg; ürün kaydında yoksa indirme bağlantısı üretilmez. */
+  installer: 'exe' | 'dmg'
 }
 
-function DesktopCard({
+export const WINDOWS_CARD_VARIANT: DesktopCardVariant = {
+  cardId: MK_COMPARE_CARD_DESKTOP_ID,
+  badgeIcon: Monitor,
+  defaultCopy: {
+    badge: 'Bilgisayara Kurulan',
+    title: 'Müvekkil Kasa Defteri Masaüstü',
+    description:
+      'Tek bilgisayarda çalışan, kurulum ile kullanılan masaüstü sürüm. Basit müvekkil kasa takibi için uygundur.',
+    detailsButtonLabel: 'Masaüstü Detaylarını Gör',
+  },
+  errorTitle: 'Masaüstü ürünü yüklenemedi',
+  errorMessage: 'Masaüstü ürün bilgileri alınamadı.',
+  installer: 'exe',
+}
+
+export const MACOS_CARD_VARIANT: DesktopCardVariant = {
+  cardId: MK_COMPARE_CARD_MACOS_ID,
+  badgeIcon: Laptop,
+  defaultCopy: DEFAULT_MK_COMPARE_MACOS_COPY,
+  errorTitle: 'macOS ürünü yüklenemedi',
+  errorMessage: 'macOS ürün bilgileri alınamadı.',
+  installer: 'dmg',
+}
+
+export function DesktopCard({
   query,
   onShowDetails,
   copy,
   focus,
+  variant = WINDOWS_CARD_VARIANT,
 }: {
   query: Query
   onShowDetails: () => void
   copy?: MkComparePurchaseCardCopy
   focus: ReferralCardFocus
+  variant?: DesktopCardVariant
 }) {
   const [feedback, setFeedback] = useState<'added' | 'in-cart' | null>(null)
   const product = query.data
+  const BadgeIcon = variant.badgeIcon
 
   if (query.isPending) return <CardSkeleton />
   if (query.isError || !product) {
     return (
       <ErrorState
-        title="Masaüstü ürünü yüklenemedi"
-        message={getErrorMessage(query.error, 'Masaüstü ürün bilgileri alınamadı.')}
+        title={variant.errorTitle}
+        message={getErrorMessage(query.error, variant.errorMessage)}
         action={<RetryAction onRetry={() => query.refetch()} />}
       />
     )
@@ -212,31 +224,25 @@ function DesktopCard({
   }
 
   return (
-    <article
-      id={MK_COMPARE_CARD_DESKTOP_ID}
-      className={`flex h-full flex-col rounded-3xl border border-emerald-100 bg-white p-5 shadow-[0_18px_50px_-28px_rgba(15,118,110,0.35)] ring-1 ring-emerald-900/5 transition sm:p-7${referralFocusClass(focus, 'emerald')}`}
-    >
+    <article id={variant.cardId} className="flex scroll-mt-24 flex-col">
       {isTarget ? <ReferralProductBadge tone="emerald" /> : null}
       <div className="flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
-          <Monitor className="h-3.5 w-3.5" aria-hidden />
-          {copy?.badge?.trim() || 'Bilgisayara Kurulan'}
+          <BadgeIcon className="h-3.5 w-3.5" aria-hidden />
+          {copy?.badge?.trim() || variant.defaultCopy.badge}
         </span>
       </div>
-      <div className="mt-4">
-        <ProductCover product={product} name={product.name} overrideUrl={copy?.imageUrl} />
-      </div>
-      <h2 className="mt-5 min-h-[3.25rem] text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
-        {copy?.title?.trim() || 'Müvekkil Kasa Defteri Masaüstü'}
+      <h2 className="mt-4 text-xl font-bold tracking-tight text-slate-950">
+        {copy?.title?.trim() || variant.defaultCopy.title}
       </h2>
-      <p className="mt-2 min-h-[3.25rem] text-sm leading-relaxed text-slate-600 sm:text-base">
-        {copy?.description?.trim() ||
-          'Tek bilgisayarda çalışan, kurulum ile kullanılan masaüstü sürüm. Basit müvekkil kasa takibi için uygundur.'}
+      <p className="mt-2 text-sm leading-relaxed text-slate-600">
+        {copy?.description?.trim() || variant.defaultCopy.description}
       </p>
 
-      <div className="mt-6 min-h-[5.75rem]">
+      <div className="mt-5">
         {hasPrice ? (
           <div>
+            <LaunchPriceLabel />
             {campaignBadge ? (
               <span className="mb-2 inline-flex rounded-full border border-rose-200 bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
                 {campaignBadge}
@@ -264,7 +270,7 @@ function DesktopCard({
         )}
       </div>
 
-      <div className="mt-4 text-sm text-slate-600 sm:text-[15px]">
+      <div className="mt-4 rounded-2xl border border-emerald-100/80 bg-emerald-50/60 px-4 py-3 text-sm leading-relaxed text-slate-700">
         <ul className="space-y-1">
           {desktopDeliveryNotes(product).map((note) => (
             <li key={note}>{note}</li>
@@ -272,7 +278,7 @@ function DesktopCard({
         </ul>
       </div>
 
-      <div className="mt-auto space-y-2.5 pt-6">
+      <div className="mt-5 space-y-2.5">
         {feedback ? (
           <CartAddedFeedback
             message={feedback === 'in-cart' ? 'Bu ürün zaten sepetinizde.' : 'Ürün sepete eklendi.'}
@@ -281,14 +287,18 @@ function DesktopCard({
         ) : null}
         <DesktopTrialCta
           label={copy?.demoButtonLabel?.trim() || MK_COMPARE_TRIAL_CTA_LABEL}
-          download={getMuvekkilKasaDesktopTrialDownload(product)}
+          download={
+            variant.installer === 'dmg'
+              ? getMuvekkilKasaMacosTrialDownload(product)
+              : getMuvekkilKasaDesktopTrialDownload(product)
+          }
         />
         <button
           type="button"
           onClick={onShowDetails}
           className="flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50"
         >
-          {copy?.detailsButtonLabel?.trim() || 'Masaüstü Detaylarını Gör'}
+          {copy?.detailsButtonLabel?.trim() || variant.defaultCopy.detailsButtonLabel}
         </button>
         {canPurchase && !feedback && isTarget ? <ReferralCartHint tone="emerald" /> : null}
         {canPurchase && !feedback ? (
@@ -310,7 +320,7 @@ function DesktopCard({
   )
 }
 
-function SaasCard({
+export function SaasCard({
   query,
   onShowDetails,
   copy,
@@ -337,20 +347,14 @@ function SaasCard({
 
   const canPurchase = canPurchaseProduct(product)
   const unitPrice = product.price
-  const years = ctx.webUsageYears
-  const totalPrice = unitPrice * years
-  const hasPrice = Number.isFinite(totalPrice) && totalPrice > 0
+  const hasPrice = Number.isFinite(unitPrice) && unitPrice > 0
   const strikeUnit =
     product.originalPrice != null && product.originalPrice > unitPrice ? product.originalPrice : null
   const campaignBadge = product.campaign?.badge?.trim() || (product.campaign ? 'Kampanyalı' : null)
-  const yearsId = 'mk-compare-saas-years'
   const isTarget = focus === 'target'
 
   return (
-    <article
-      id={MK_COMPARE_CARD_SAAS_ID}
-      className={`flex h-full flex-col rounded-3xl border border-sky-100 bg-white p-5 shadow-[0_18px_50px_-28px_rgba(2,132,199,0.35)] ring-1 ring-sky-900/5 transition sm:p-7${referralFocusClass(focus, 'sky')}`}
-    >
+    <article id={MK_COMPARE_CARD_SAAS_ID} className="flex scroll-mt-24 flex-col">
       {isTarget ? <ReferralProductBadge tone="sky" /> : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-800">
@@ -363,20 +367,18 @@ function SaasCard({
           </span>
         ) : null}
       </div>
-      <div className="mt-4">
-        <ProductCover product={product} name={product.name} overrideUrl={copy?.imageUrl} />
-      </div>
-      <h2 className="mt-5 min-h-[3.25rem] text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
+      <h2 className="mt-4 text-xl font-bold tracking-tight text-slate-950">
         {copy?.title?.trim() || 'Müvekkil Kasa Defteri Web Tabanlı'}
       </h2>
-      <p className="mt-2 min-h-[3.25rem] text-sm leading-relaxed text-slate-600 sm:text-base">
+      <p className="mt-2 text-sm leading-relaxed text-slate-600">
         {copy?.description?.trim() ||
           'Kurulum gerektirmeden tarayıcı üzerinden erişilen, büro içi ekip kullanımı ve kapsamlı takip sunan web tabanlı sürüm.'}
       </p>
 
-      <div className="mt-6 min-h-[5.75rem]">
+      <div className="mt-5">
         {hasPrice ? (
           <div>
+            <LaunchPriceLabel />
             {campaignBadge ? (
               <span className="mb-2 inline-flex rounded-full border border-rose-200 bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
                 {campaignBadge}
@@ -384,28 +386,22 @@ function SaasCard({
             ) : null}
             <div className="flex flex-wrap items-baseline gap-2">
               <p className="text-3xl font-black tabular-nums tracking-tight text-slate-950 sm:text-4xl">
-                {formatMkSaasTryMoney(totalPrice, product.currency)}
+                {formatMkSaasTryMoney(unitPrice, product.currency)}
               </p>
-              {strikeUnit != null && years === 1 ? (
+              {strikeUnit != null ? (
                 <p className="text-base text-slate-400 line-through tabular-nums">
                   {formatMkSaasTryMoney(strikeUnit, product.currency)}
                 </p>
               ) : null}
             </div>
-            {years > 1 ? (
-              <p className="mt-1 text-sm text-slate-500">
-                {formatMkSaasTryMoney(unitPrice, product.currency)} / yıl × {years} yıl
-              </p>
-            ) : (
-              <p className="mt-1 text-sm text-slate-500">{MK_COMPARE_SAAS_LICENSE_CAPTION}</p>
-            )}
+            <p className="mt-1 text-sm text-slate-500">{MK_COMPARE_SAAS_LICENSE_CAPTION}</p>
           </div>
         ) : (
           <p className="text-sm text-slate-500">Fiyat ürün detayında belirtilir.</p>
         )}
       </div>
 
-      <div className="mt-4 text-sm text-slate-600 sm:text-[15px]">
+      <div className="mt-4 rounded-2xl border border-sky-100/80 bg-sky-50/70 px-4 py-3 text-sm leading-relaxed text-slate-700">
         <ul className="space-y-1">
           {webDeliveryNotes().map((note) => (
             <li key={note}>{note}</li>
@@ -413,29 +409,7 @@ function SaasCard({
         </ul>
       </div>
 
-      <div className="mt-4 min-h-[5.5rem]">
-        {canPurchase ? (
-          <div>
-            <label htmlFor={yearsId} className="text-sm font-semibold text-slate-800">
-              Kullanım süresi
-            </label>
-            <select
-              id={yearsId}
-              value={years}
-              onChange={(e) => ctx.onWebUsageYearsChange(Number(e.target.value))}
-              className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100"
-            >
-              {Array.from({ length: 10 }, (_, i) => i + 1).map((y) => (
-                <option key={y} value={y}>
-                  {y} yıl
-                </option>
-              ))}
-            </select>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="mt-auto space-y-2.5 pt-4">
+      <div className="mt-5 space-y-2.5">
         {ctx.feedback ? (
           <CartAddedFeedback
             message={ctx.feedback === 'in-cart' ? 'Bu ürün zaten sepetinizde.' : 'Ürün sepete eklendi.'}
@@ -477,46 +451,5 @@ function SaasCard({
         ) : null}
       </div>
     </article>
-  )
-}
-
-type Props = {
-  desktopQuery: Query
-  saasQuery: Query
-  onShowProductDetails: (edition: 'desktop' | 'saas') => void
-  desktopCopy?: MkComparePurchaseCardCopy
-  saasCopy?: MkComparePurchaseCardCopy
-}
-
-export function MuvekkilKasaCompareProductCards({
-  desktopQuery,
-  saasQuery,
-  onShowProductDetails,
-  desktopCopy,
-  saasCopy,
-}: Props) {
-  const compareCtx = useMkComparePageContextOptional()
-  const highlightedEdition = compareCtx?.highlightedEdition ?? null
-
-  const focusFor = (edition: 'desktop' | 'saas'): ReferralCardFocus => {
-    if (!highlightedEdition) return 'none'
-    return highlightedEdition === edition ? 'target' : 'other'
-  }
-
-  return (
-    <div className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
-      <DesktopCard
-        query={desktopQuery}
-        onShowDetails={() => onShowProductDetails('desktop')}
-        copy={desktopCopy}
-        focus={focusFor('desktop')}
-      />
-      <SaasCard
-        query={saasQuery}
-        onShowDetails={() => onShowProductDetails('saas')}
-        copy={saasCopy}
-        focus={focusFor('saas')}
-      />
-    </div>
   )
 }

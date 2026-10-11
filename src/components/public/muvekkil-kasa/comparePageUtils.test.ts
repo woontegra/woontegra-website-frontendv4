@@ -20,7 +20,7 @@ describe('mk compare affiliate landing helpers', () => {
 
   it('keeps desktop license duration copy annual, not lifetime', () => {
     expect(MK_COMPARE_DESKTOP_LICENSE_CAPTION).toBe('KDV dahil · 1 yıl lisans')
-    expect(MK_COMPARE_SAAS_LICENSE_CAPTION).toBe('KDV dahil · 1 yıl birim fiyat')
+    expect(MK_COMPARE_SAAS_LICENSE_CAPTION).toBe('KDV dahil')
     expect(MK_COMPARE_TRIAL_CTA_LABEL).toBe('7 Gün Ücretsiz Dene')
     expect(MK_COMPARE_DESKTOP_LICENSE_CAPTION).not.toContain('tek lisans')
   })

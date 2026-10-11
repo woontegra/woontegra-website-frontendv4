@@ -1,6 +1,5 @@
 import {
   AddItemButton,
-  ImageUrlField,
   SelectField,
   TextAreaField,
   TextField,
@@ -11,6 +10,7 @@ import { useSelectedBlock } from '@/builder/admin/settings/useSelectedBlock'
 import type { MkComparePurchaseCardCopy, MkSaasPurchaseBlock } from '@/builder/types'
 import {
   DEFAULT_MK_COMPARE_DESKTOP_COPY,
+  DEFAULT_MK_COMPARE_MACOS_COPY,
   DEFAULT_MK_COMPARE_SAAS_COPY,
 } from '@/builder/types/mkSaasPurchase'
 
@@ -28,6 +28,10 @@ export function MkSaasPurchaseSettingsPanel() {
   const patchSaas = (patch: Partial<MkComparePurchaseCardCopy>) =>
     setSettings({
       compareSaas: { ...(settings.compareSaas ?? DEFAULT_MK_COMPARE_SAAS_COPY), ...patch },
+    })
+  const patchMacos = (patch: Partial<MkComparePurchaseCardCopy>) =>
+    setSettings({
+      compareMacos: { ...(settings.compareMacos ?? DEFAULT_MK_COMPARE_MACOS_COPY), ...patch },
     })
 
   const items = wrapSections([
@@ -48,6 +52,7 @@ export function MkSaasPurchaseSettingsPanel() {
                   layout,
                   compareDesktop: settings.compareDesktop ?? DEFAULT_MK_COMPARE_DESKTOP_COPY,
                   compareSaas: settings.compareSaas ?? DEFAULT_MK_COMPARE_SAAS_COPY,
+                  compareMacos: settings.compareMacos ?? DEFAULT_MK_COMPARE_MACOS_COPY,
                 })
                 return
               }
@@ -55,7 +60,7 @@ export function MkSaasPurchaseSettingsPanel() {
             }}
             options={[
               { value: 'saas', label: 'Tek ürün (SaaS)' },
-              { value: 'compare', label: 'Müvekkil Kasa karşılaştırma kartları' },
+              { value: 'compare', label: 'Müvekkil Kasa satış paneli (WEB / WINDOWS / macOS)' },
             ]}
           />
           <TextField
@@ -81,11 +86,11 @@ export function MkSaasPurchaseSettingsPanel() {
     },
     {
       id: 'benefits',
-      title: settings.layout === 'compare' ? 'Kart metinleri' : 'Sol fayda maddeleri',
+      title: settings.layout === 'compare' ? 'Satış paneli metinleri (hero sağ sütun)' : 'Sol fayda maddeleri',
       content:
         settings.layout === 'compare' ? (
           <div className="space-y-4">
-            <p className="text-xs font-semibold text-slate-500">Masaüstü kartı</p>
+            <p className="text-xs font-semibold text-slate-500">Masaüstü kartı (WINDOWS sekmesi)</p>
             <TextField
               label="Rozet"
               value={settings.compareDesktop?.badge ?? ''}
@@ -102,11 +107,6 @@ export function MkSaasPurchaseSettingsPanel() {
               onChange={(description) => patchDesktop({ description })}
               rows={3}
             />
-            <ImageUrlField
-              label="Kart görseli (boşsa API kapak)"
-              value={settings.compareDesktop?.imageUrl ?? ''}
-              onChange={(imageUrl) => patchDesktop({ imageUrl })}
-            />
             <TextField
               label="Detay butonu"
               value={settings.compareDesktop?.detailsButtonLabel ?? ''}
@@ -117,7 +117,34 @@ export function MkSaasPurchaseSettingsPanel() {
               value={settings.compareDesktop?.addToCartLabel ?? ''}
               onChange={(addToCartLabel) => patchDesktop({ addToCartLabel })}
             />
-            <p className="text-xs font-semibold text-slate-500">SaaS kartı</p>
+            <p className="text-xs font-semibold text-slate-500">macOS kartı (macOS sekmesi)</p>
+            <TextField
+              label="Rozet"
+              value={settings.compareMacos?.badge ?? DEFAULT_MK_COMPARE_MACOS_COPY.badge}
+              onChange={(badge) => patchMacos({ badge })}
+            />
+            <TextField
+              label="Başlık"
+              value={settings.compareMacos?.title ?? DEFAULT_MK_COMPARE_MACOS_COPY.title}
+              onChange={(title) => patchMacos({ title })}
+            />
+            <TextAreaField
+              label="Açıklama"
+              value={settings.compareMacos?.description ?? DEFAULT_MK_COMPARE_MACOS_COPY.description}
+              onChange={(description) => patchMacos({ description })}
+              rows={3}
+            />
+            <TextField
+              label="Detay butonu"
+              value={settings.compareMacos?.detailsButtonLabel ?? DEFAULT_MK_COMPARE_MACOS_COPY.detailsButtonLabel}
+              onChange={(detailsButtonLabel) => patchMacos({ detailsButtonLabel })}
+            />
+            <TextField
+              label="Sepet butonu"
+              value={settings.compareMacos?.addToCartLabel ?? DEFAULT_MK_COMPARE_MACOS_COPY.addToCartLabel}
+              onChange={(addToCartLabel) => patchMacos({ addToCartLabel })}
+            />
+            <p className="text-xs font-semibold text-slate-500">SaaS kartı (WEB sekmesi)</p>
             <TextField
               label="Rozet"
               value={settings.compareSaas?.badge ?? ''}
@@ -138,11 +165,6 @@ export function MkSaasPurchaseSettingsPanel() {
               value={settings.compareSaas?.description ?? ''}
               onChange={(description) => patchSaas({ description })}
               rows={3}
-            />
-            <ImageUrlField
-              label="Kart görseli (boşsa API kapak)"
-              value={settings.compareSaas?.imageUrl ?? ''}
-              onChange={(imageUrl) => patchSaas({ imageUrl })}
             />
             <TextField
               label="Demo butonu"

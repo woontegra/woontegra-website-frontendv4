@@ -101,7 +101,9 @@ export function BuilderEditableBlocksCanvas() {
   )
 
   return isMkCompareBuilderPage ? (
-    <MkComparePageProvider previewSafe>{canvas}</MkComparePageProvider>
+    <MkComparePageProvider previewSafe blocks={sorted}>
+      {canvas}
+    </MkComparePageProvider>
   ) : isMkSaasBuilderPage ? (
     <MkSaasBuilderPreviewProvider>{canvas}</MkSaasBuilderPreviewProvider>
   ) : (

@@ -8,7 +8,12 @@ import {
   createDefaultFaqBlock,
   createDefaultImageTextBlock,
 } from '@/builder/types/blockModels'
-import { createDefaultMkSaasPurchaseBlock, DEFAULT_MK_COMPARE_DESKTOP_COPY, DEFAULT_MK_COMPARE_SAAS_COPY } from '@/builder/types/mkSaasPurchase'
+import {
+  createDefaultMkSaasPurchaseBlock,
+  DEFAULT_MK_COMPARE_DESKTOP_COPY,
+  DEFAULT_MK_COMPARE_MACOS_COPY,
+  DEFAULT_MK_COMPARE_SAAS_COPY,
+} from '@/builder/types/mkSaasPurchase'
 import { createDefaultWhatsAppGuideBlock } from '@/builder/types/whatsappGuide'
 import { createDefaultMkCompareTableBlock } from '@/builder/types/mkCompareTable'
 import { createDefaultMkCompareDetailsBlock } from '@/builder/types/mkCompareDetails'
@@ -110,6 +115,7 @@ export function createMuvekkilKasaCompareBuilderTemplate(): BuilderBlock[] {
     layout: 'compare',
     compareDesktop: { ...DEFAULT_MK_COMPARE_DESKTOP_COPY },
     compareSaas: { ...DEFAULT_MK_COMPARE_SAAS_COPY },
+    compareMacos: { ...DEFAULT_MK_COMPARE_MACOS_COPY },
   }
 
   const table = createDefaultMkCompareTableBlock(2)

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowDown, ArrowLeft, ArrowUp, ImageIcon, Images, Save, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card, CardBody } from '@/components/ui/Card'
@@ -299,6 +299,7 @@ function HelpBox({ children }: { children: React.ReactNode }) {
 export function AdminProductFormPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const toast = useToastStore((s) => s.show)
   const isNew = !id
   const [form, setForm] = useState<AdminProductInput>(emptyForm)
@@ -600,7 +601,9 @@ export function AdminProductFormPage() {
       if (isNew) return adminProductsService.create(payload)
       return adminProductsService.update(id!, payload)
     },
-    onSuccess: () => {
+    onSuccess: (saved) => {
+      queryClient.setQueryData(['admin', 'products', saved.id], saved)
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'products'] })
       toast(isNew ? 'Ürün oluşturuldu' : 'Ürün güncellendi', 'success')
       navigate('/admin/products')
     },
@@ -1044,6 +1047,7 @@ export function AdminProductFormPage() {
                       value={form.downloadFiles ?? emptyDownloadFilesConfig()}
                       onChange={(downloadFiles) => setForm((p) => ({ ...p, downloadFiles }))}
                       showFreeFlags={presetId === 'FREE_TOOL' || presetId === 'DOWNLOADABLE' || presetId === 'LICENSED'}
+                      productSlug={form.slug}
                     />
                   ) : null}
 

@@ -2,6 +2,7 @@ import type { CartPreviewRow } from '@/types/checkout'
 import type { CartLine, CartSnapshot } from '@/lib/cartStorage'
 import { saasTotalForYears } from '@/utils/formatProductPrice'
 import { isSaasSubscriptionProduct, isSingleQuantityProduct } from '@/utils/productPurchase'
+import { isMkSaasSingleYearPurchase } from '@/lib/mkSaasPurchaseYears'
 
 export type MergedCartRow = CartPreviewRow & { quantity: number; lineTotal: number }
 
@@ -57,9 +58,11 @@ export function mergeCartWithPreview(lines: CartLine[], preview: CartPreviewRow[
             coverImage: null,
             hasDownload: true,
           }
-    const qty = mergedRowIsSingleQuantity({ ...base, quantity: line.quantity, lineTotal: 0 })
-      ? 1
-      : line.quantity
+    const qty =
+      mergedRowIsSingleQuantity({ ...base, quantity: line.quantity, lineTotal: 0 }) ||
+      isMkSaasSingleYearPurchase(base)
+        ? 1
+        : line.quantity
     return {
       ...base,
       quantity: qty,

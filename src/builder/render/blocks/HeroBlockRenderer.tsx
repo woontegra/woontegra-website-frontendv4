@@ -19,9 +19,7 @@ import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
 import { HeroProductPrice } from '@/builder/render/HeroProductPrice'
 import { HeroCarouselSection } from '@/builder/render/blocks/HeroCarouselSection'
 import { isRemovedServicePublicLink } from '@/lib/serviceSlugs'
-import { MuvekkilKasaCompareHeroVisual } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareHeroVisual'
-import { useMkComparePageContextOptional } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
-import { MK_COMPARE_SHELL } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { MuvekkilKasaProductHero } from '@/components/public/muvekkil-kasa/MuvekkilKasaProductHero'
 import { BhModuleHeroBreadcrumb } from '@/components/public/product/BhModuleHeroBreadcrumb'
 
 function heroButtonClass(variant: BlockButton['variant'], outlineClass: string, primaryClass: string) {
@@ -746,126 +744,79 @@ function MkCompareHeroLayout({
 }) {
   const { settings, style, visibility } = hero
   const breadcrumbs = settings.showBreadcrumbs !== false ? (settings.breadcrumbs ?? []) : []
+  const coverImageUrl =
+    settings.mode === 'single-image' && settings.desktopImage?.url?.trim()
+      ? resolveMediaUrl(settings.desktopImage.url.trim())
+      : undefined
+
+  const intro = (
+    <>
+      {visibility.showBadge !== false && settings.badge?.trim() ? (
+        <BuilderField path="badge" label="Rozet" type="text" className="inline-block">
+          <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-100 backdrop-blur">
+            {settings.badge}
+          </span>
+        </BuilderField>
+      ) : null}
+      {showTitle ? (
+        <BuilderField path="title" label="Başlık" type="text" className="mt-5 block w-fit max-w-full">
+          <h1 className="max-w-4xl text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl lg:leading-[1.04]">
+            {hero.title}
+          </h1>
+        </BuilderField>
+      ) : null}
+      {showDescription ? (
+        <BuilderField path="description" label="Açıklama" type="text" className="mt-4 block w-fit max-w-3xl">
+          <p className="text-base leading-relaxed text-slate-300 sm:text-lg">{hero.description}</p>
+        </BuilderField>
+      ) : null}
+      {showButtons ? (
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          {visibleButtons.map((btn, btnIndex) => (
+            <BuilderField
+              key={btn.id}
+              path={`button.${btn.id}`}
+              label={btnIndex === 0 ? 'Buton 1' : 'Buton 2'}
+              type="button"
+              className="inline-block w-full sm:w-auto"
+            >
+              <BlockButtonLink
+                btn={btn}
+                className={heroButtonClass(
+                  btn.variant,
+                  'inline-flex w-full items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15 sm:w-auto',
+                  'inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-emerald-500 to-sky-400 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:brightness-105 sm:w-auto',
+                )}
+              />
+            </BuilderField>
+          ))}
+        </div>
+      ) : null}
+    </>
+  )
 
   return (
-    <section
-      className="relative overflow-x-hidden bg-gradient-to-br from-slate-950 via-[#0f2744] to-slate-900 text-white"
-      style={{
+    <MuvekkilKasaProductHero
+      breadcrumbs={breadcrumbs}
+      intro={intro}
+      coverImageUrl={coverImageUrl}
+      wrapVisual={(visual) => (
+        <BuilderField path="image" label="Hero görseli" type="media" className="block min-w-0">
+          {visual}
+        </BuilderField>
+      )}
+      sectionStyle={{
         background: style.backgroundGradient ?? bgStyle.background ?? undefined,
         backgroundColor: style.backgroundColor,
       }}
-    >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(16,185,129,0.16),transparent_42%),radial-gradient(circle_at_82%_55%,rgba(56,189,248,0.12),transparent_40%)]" />
-      {style.overlay?.enabled ? (
-        <div
-          className="pointer-events-none absolute inset-0 z-[1]"
-          style={{ backgroundColor: style.overlay.color ?? '#000', opacity: style.overlay.opacity ?? 0.35 }}
-        />
-      ) : null}
-      <div className={`relative z-[2] ${MK_COMPARE_SHELL} py-8 lg:py-10`}>
-        {breadcrumbs.length > 0 ? (
-          <nav className="flex flex-wrap items-center gap-1 text-sm text-slate-400">
-            {breadcrumbs.map((crumb, i) => (
-              <span key={`${crumb.label}-${i}`} className="inline-flex items-center gap-1">
-                {i > 0 ? <span className="text-slate-600">/</span> : null}
-                {crumb.href ? (
-                  <a href={crumb.href} className="hover:text-emerald-300">
-                    {crumb.label}
-                  </a>
-                ) : (
-                  <span className="text-slate-200">{crumb.label}</span>
-                )}
-              </span>
-            ))}
-          </nav>
-        ) : null}
-        <div className="mt-6 grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
-          <div className="min-w-0">
-            {visibility.showBadge !== false && settings.badge?.trim() ? (
-              <BuilderField path="badge" label="Rozet" type="text" className="inline-block">
-                <p className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-200">
-                  {settings.badge}
-                </p>
-              </BuilderField>
-            ) : null}
-            {showTitle ? (
-              <BuilderField path="title" label="Başlık" type="text" className="mt-4 block w-fit max-w-full">
-                <h1 className="text-3xl font-black leading-tight tracking-tight sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]">
-                  {hero.title}
-                </h1>
-              </BuilderField>
-            ) : null}
-            {showDescription ? (
-              <BuilderField path="description" label="Açıklama" type="text" className="mt-4 block w-fit max-w-xl">
-                <p className="text-base leading-relaxed text-slate-300">{hero.description}</p>
-              </BuilderField>
-            ) : null}
-            {showButtons ? (
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                {visibleButtons.map((btn, btnIndex) => (
-                  <BuilderField
-                    key={btn.id}
-                    path={`button.${btn.id}`}
-                    label={btnIndex === 0 ? 'Buton 1' : 'Buton 2'}
-                    type="button"
-                    className="inline-block w-full sm:w-auto"
-                  >
-                    <BlockButtonLink
-                      btn={btn}
-                      className={heroButtonClass(
-                        btn.variant,
-                        'inline-flex w-full items-center justify-center rounded-xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15 sm:w-auto',
-                        'inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-sky-400 px-6 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:brightness-105 sm:w-auto',
-                      )}
-                    />
-                  </BuilderField>
-                ))}
-              </div>
-            ) : null}
-          </div>
-          <BuilderField path="image" label="Hero görseli" type="media" className="w-full">
-            <MkCompareHeroVisualSlot hero={hero} />
-          </BuilderField>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function MkCompareHeroVisualSlot({ hero }: { hero: HeroBlock }) {
-  const { settings } = hero
-  const compare = useMkComparePageContextOptional()
-  const userSources = settings.mode === 'single-image' ? getHeroSettingsImageSources(settings) : null
-
-  if (userSources) {
-    const desktopFit = settings.imageFit?.desktop ?? 'contain'
-    const mobileFit = settings.imageFit?.mobile ?? desktopFit
-    const objectFitClass = desktopFit === 'cover' ? 'object-cover' : 'object-contain'
-    const mobileFitClass = mobileFit === 'cover' ? 'max-[640px]:object-cover' : 'max-[640px]:object-contain'
-
-    return (
-      <div className="relative mx-auto h-[280px] w-full max-w-[500px] lg:h-[320px]">
-        <div className="absolute inset-0 overflow-hidden rounded-[1.75rem] border border-white/12 bg-white/5 shadow-2xl shadow-slate-950/30 backdrop-blur-sm">
-          <div className="absolute inset-2 bg-slate-950/35 sm:inset-3">
-            <HeroResponsiveImage
-              sources={userSources}
-              alt={hero.title?.trim() || 'Müvekkil Kasa Defteri'}
-              fill
-              className={cn('h-full w-full object-center', objectFitClass, mobileFitClass)}
-              loading="eager"
-            />
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <MuvekkilKasaCompareHeroVisual
-      desktop={compare?.desktopQuery.data}
-      saas={compare?.saasQuery.data}
-      desktopImageUrl={settings.compareDesktopImage?.url}
-      saasImageUrl={settings.compareSaasImage?.url}
+      overlay={
+        style.overlay?.enabled ? (
+          <div
+            className="pointer-events-none absolute inset-0 z-[1]"
+            style={{ backgroundColor: style.overlay.color ?? '#000', opacity: style.overlay.opacity ?? 0.35 }}
+          />
+        ) : null
+      }
     />
   )
 }

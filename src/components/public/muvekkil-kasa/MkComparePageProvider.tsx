@@ -6,27 +6,74 @@ import {
   MK_DESKTOP_CANONICAL_SLUG,
   parseMkCompareSurumParam,
   scrollToCompareDetails,
-  scrollToCompareEditionCard,
   type MkCompareEdition,
 } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import {
+  MK_COMPARE_DEFAULT_PLATFORM,
+  parseMkComparePlatformParam,
+  scrollToComparePlatformCard,
+  type MkComparePlatform,
+} from '@/components/public/muvekkil-kasa/mkComparePlatform'
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
+import { MK_MACOS_PRODUCT_SLUG } from '@/lib/muvekkilKasaDesktopPlatform'
 import { MK_SAAS_CANONICAL_SLUG } from '@/lib/muvekkilKasaSaasProduct'
 import { productsService } from '@/services/productsService'
 import type { PublicProductDetail } from '@/types/product'
+import type { BuilderBlock, HeroBlock, MkSaasPurchaseBlock } from '@/builder/types'
+import type { MkComparePurchaseCardCopy } from '@/builder/types/mkSaasPurchase'
 
 type ProductQuery = UseQueryResult<PublicProductDetail, Error>
+
+export type MkComparePanelCopy = {
+  desktop?: MkComparePurchaseCardCopy
+  saas?: MkComparePurchaseCardCopy
+  macos?: MkComparePurchaseCardCopy
+}
+
+function findComparePurchaseBlock(blocks: readonly BuilderBlock[] | null | undefined): MkSaasPurchaseBlock | null {
+  const match = blocks?.find(
+    (b) => b.type === 'mk-saas-purchase' && (b as MkSaasPurchaseBlock).settings?.layout === 'compare',
+  )
+  return (match as MkSaasPurchaseBlock | undefined) ?? null
+}
+
+function comparePanelCopy(blocks: readonly BuilderBlock[] | null | undefined): MkComparePanelCopy {
+  const settings = findComparePurchaseBlock(blocks)?.settings
+  return {
+    desktop: settings?.compareDesktop,
+    saas: settings?.compareSaas,
+    macos: settings?.compareMacos,
+  }
+}
+
+/** Görünür compare hero varsa satış paneli hero'nun sağ sütununda çizilir. */
+export function blocksHostPanelInHero(blocks: readonly BuilderBlock[] | null | undefined): boolean {
+  return Boolean(
+    blocks?.some(
+      (b) => b.type === 'hero' && b.visibility.enabled && (b as HeroBlock).settings?.layout === 'compare',
+    ),
+  )
+}
 
 type MkComparePageContextValue = {
   desktopQuery: ProductQuery
   saasQuery: ProductQuery
+  macosQuery: ProductQuery
   detailTab: MkCompareEdition
   setDetailTab: (tab: MkCompareEdition) => void
   showProductDetails: (edition: MkCompareEdition) => void
+  /** Satış panelinde açık sekme (WEB / WINDOWS / macOS). */
+  platformTab: MkComparePlatform
+  setPlatformTab: (platform: MkComparePlatform) => void
   /**
    * `?surum=` varken kalıcı ürün vurgusu (affiliate / sürüm linki).
-   * Parametre yoksa null — kartlar normal görünür.
+   * Parametre yoksa veya tanınmıyorsa null.
    */
-  highlightedEdition: MkCompareEdition | null
+  highlightedPlatform: MkComparePlatform | null
+  /** Builder satın alma bloğundaki kart metinleri (admin). */
+  panelCopy: MkComparePanelCopy
+  /** true: panel hero'da; satın alma bloğu paneli ikinci kez çizmez. */
+  panelInHero: boolean
 }
 
 const MkComparePageContext = createContext<MkComparePageContextValue | null>(null)
@@ -45,21 +92,28 @@ export function useMkComparePageContextOptional(): MkComparePageContextValue | n
 
 type Props = {
   previewSafe?: boolean
+  /** Yayınlanan / düzenlenen builder blokları; yedek görünümde yoktur. */
+  blocks?: readonly BuilderBlock[] | null
   children: ReactNode
 }
 
-export function MkComparePageProvider({ previewSafe = false, children }: Props) {
+export function MkComparePageProvider({ previewSafe = false, blocks = null, children }: Props) {
   const [searchParams] = useSearchParams()
   const surumParam = searchParams.get('surum')
   const hasSurumParam = surumParam != null && surumParam.trim() !== ''
-  const highlightedEdition: MkCompareEdition | null = hasSurumParam
-    ? parseMkCompareSurumParam(surumParam)
+  // Önceden saas dışındaki her ?surum= değeri masaüstünü vurguluyordu; bu korunur.
+  const highlightedPlatform: MkComparePlatform | null = hasSurumParam
+    ? (parseMkComparePlatformParam(surumParam) ?? 'windows')
     : null
   const [detailTab, setDetailTab] = useState<MkCompareEdition>(() => parseMkCompareSurumParam(surumParam))
+  const [platformTab, setPlatformTab] = useState<MkComparePlatform>(
+    () => highlightedPlatform ?? MK_COMPARE_DEFAULT_PLATFORM,
+  )
 
   useEffect(() => {
     setDetailTab(parseMkCompareSurumParam(surumParam))
-  }, [surumParam])
+    if (highlightedPlatform) setPlatformTab(highlightedPlatform)
+  }, [surumParam, highlightedPlatform])
 
   const showProductDetails = (edition: MkCompareEdition) => {
     setDetailTab(edition)
@@ -80,32 +134,38 @@ export function MkComparePageProvider({ previewSafe = false, children }: Props) 
     ...publicQueryOptions,
   })
 
-  // ?surum= ile gelince hedef karta kaydır (vurgu sayfa açık kaldığı sürece kalır).
+  const macosQuery = useQuery({
+    queryKey: ['products', MK_MACOS_PRODUCT_SLUG],
+    queryFn: () => productsService.getBySlug(MK_MACOS_PRODUCT_SLUG),
+    ...publicQueryOptions,
+  })
+
+  // ?surum= ile gelince ilgili sekmeye kaydır (vurgu sayfa açık kaldığı sürece kalır).
+  const highlightedQuery =
+    highlightedPlatform === 'web' ? saasQuery : highlightedPlatform === 'macos' ? macosQuery : desktopQuery
   useEffect(() => {
-    if (!highlightedEdition) return
-    const query = highlightedEdition === 'saas' ? saasQuery : desktopQuery
-    if (query.isPending) return
+    if (!highlightedPlatform) return
+    if (highlightedQuery.isPending) return
 
     const scrollTimer = window.setTimeout(() => {
-      scrollToCompareEditionCard(highlightedEdition)
+      scrollToComparePlatformCard(highlightedPlatform)
     }, 80)
 
     return () => window.clearTimeout(scrollTimer)
-  }, [
-    highlightedEdition,
-    desktopQuery.isPending,
-    saasQuery.isPending,
-    desktopQuery.dataUpdatedAt,
-    saasQuery.dataUpdatedAt,
-  ])
+  }, [highlightedPlatform, highlightedQuery.isPending, highlightedQuery.dataUpdatedAt])
 
   const value: MkComparePageContextValue = {
     desktopQuery,
     saasQuery,
+    macosQuery,
     detailTab,
     setDetailTab,
     showProductDetails,
-    highlightedEdition,
+    platformTab,
+    setPlatformTab,
+    highlightedPlatform,
+    panelCopy: comparePanelCopy(blocks),
+    panelInHero: blocksHostPanelInHero(blocks),
   }
 
   return (

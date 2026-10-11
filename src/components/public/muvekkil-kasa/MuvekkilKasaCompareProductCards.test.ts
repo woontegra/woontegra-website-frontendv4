@@ -30,11 +30,17 @@ describe('Müvekkil Kasa compare product cards', () => {
     expect(saasCard).toContain('onClick={ctx.onOpenDemo}')
   })
 
-  it('uses the same compare cards in public fallback and builder render', () => {
-    expect(rendererSrc).toContain("import { MuvekkilKasaCompareProductCards }")
-    expect(rendererSrc).toContain('purchase.settings.layout === \'compare\'')
-    expect(rendererSrc).toContain('<MuvekkilKasaCompareProductCards')
-    expect(rendererSrc).toContain('desktopCopy={purchase.settings.compareDesktop}')
-    expect(rendererSrc).toContain('saasCopy={purchase.settings.compareSaas}')
+  it('builder hero and public fallback share one hero sales panel; purchase block does not draw it twice', () => {
+    const heroRendererSrc = readFileSync(join(root, '../../../builder/render/blocks/HeroBlockRenderer.tsx'), 'utf8')
+    const viewSrc = readFileSync(join(root, 'MuvekkilKasaCompareView.tsx'), 'utf8')
+    const heroSrc = readFileSync(join(root, 'MuvekkilKasaProductHero.tsx'), 'utf8')
+    expect(heroRendererSrc).toContain('<MuvekkilKasaProductHero')
+    expect(viewSrc).toContain('<MuvekkilKasaProductHero')
+    expect(heroSrc).toContain('<MuvekkilKasaPlatformPurchasePanel />')
+    expect(viewSrc).not.toContain('Hangi sürüm size uygun?')
+    expect(rendererSrc).toContain("purchase.settings.layout === 'compare'")
+    expect(rendererSrc).toMatch(/if \(compare\?\.panelInHero\) \{\s*if \(!annotateFields\) return null/)
+    expect(rendererSrc).toContain('desktop: purchase.settings.compareDesktop')
+    expect(rendererSrc).toContain('saas: purchase.settings.compareSaas')
   })
 })

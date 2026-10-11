@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/Input'
 import type { ProductDownloadFilesConfig, ProductDownloadFileEntry } from '@/lib/productDownloadFiles'
 import { ensureDownloadFileSlots } from '@/lib/productDownloadFiles'
+import { isMuvekkilKasaMacosSalesSlug, isPublicMacosSetupInstallerUrl } from '@/lib/muvekkilKasaDesktopPlatform'
 
 function HelpBox({ children }: { children: React.ReactNode }) {
   return (
@@ -41,10 +42,14 @@ function FileBlock({
   title,
   file,
   onChange,
+  urlPlaceholder = 'https://…r2.dev/…exe veya …dmg',
+  urlWarning,
 }: {
   title: string
   file: ProductDownloadFileEntry
   onChange: (next: ProductDownloadFileEntry) => void
+  urlPlaceholder?: string
+  urlWarning?: string | null
 }) {
   return (
     <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
@@ -53,8 +58,13 @@ function FileBlock({
         label="R2 URL"
         value={file.url}
         onChange={(e) => onChange({ ...file, url: e.target.value })}
-        placeholder="https://…r2.dev/…exe"
+        placeholder={urlPlaceholder}
       />
+      {urlWarning ? (
+        <p className="text-xs text-amber-700" data-r2-url-warning>
+          {urlWarning}
+        </p>
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-2">
         <Input
           label="Sürüm"
@@ -89,12 +99,18 @@ type Props = {
   value: ProductDownloadFilesConfig
   onChange: (next: ProductDownloadFilesConfig) => void
   showFreeFlags?: boolean
+  productSlug?: string | null
 }
 
-export function ProductR2DownloadFilesSection({ value, onChange, showFreeFlags = true }: Props) {
+export function ProductR2DownloadFilesSection({ value, onChange, showFreeFlags = true, productSlug }: Props) {
   const slots = ensureDownloadFileSlots(value.files)
   const setup = slots[0]
   const portable = slots[1]
+  const macos = isMuvekkilKasaMacosSalesSlug(productSlug)
+  const macosSetupWarning =
+    macos && setup && setup.url.trim() && !isPublicMacosSetupInstallerUrl(setup.url)
+      ? 'macOS kurulum adresi public https:// ile başlayan bir .dmg dosyası olmalıdır (latest-mac.yml veya /updates/ değil).'
+      : null
 
   const updateFile = (type: 'setup' | 'portable', next: ProductDownloadFileEntry) => {
     const typedNext = { ...next, type }
@@ -113,8 +129,12 @@ export function ProductR2DownloadFilesSection({ value, onChange, showFreeFlags =
       </div>
 
       <HelpBox>
-        Kurulum ve portable sürümler için tam https:// R2 adresi kullanın. Ücretli ürünlerde URL&apos;ler yalnızca
-        ödeme sonrası e-posta / hesabım üzerinden paylaşılır.
+        {macos ? 'Kurulum sürümü' : 'Kurulum ve portable sürümler'} için tam https:// R2 adresi kullanın. Ücretli
+        ürünlerde URL&apos;ler yalnızca ödeme sonrası e-posta / hesabım üzerinden paylaşılır.
+      </HelpBox>
+      <HelpBox>
+        Müvekkil Kasa macOS ürününde (muvekkil-kasa-defteri-macos) Kurulum sürümü public https:// .dmg olmalıdır;
+        Windows ürününde .exe. Güncelleme beslemesi (latest-mac.yml, /updates/) kurulum olarak kullanılmaz.
       </HelpBox>
 
       <Input
@@ -125,9 +145,15 @@ export function ProductR2DownloadFilesSection({ value, onChange, showFreeFlags =
       />
 
       {setup ? (
-        <FileBlock title="Kurulum sürümü" file={setup} onChange={(f) => updateFile('setup', f)} />
+        <FileBlock
+          title="Kurulum sürümü"
+          file={setup}
+          onChange={(f) => updateFile('setup', f)}
+          urlPlaceholder={macos ? 'https://…r2.dev/…dmg' : undefined}
+          urlWarning={macosSetupWarning}
+        />
       ) : null}
-      {portable ? (
+      {portable && !macos ? (
         <FileBlock title="Portable sürüm" file={portable} onChange={(f) => updateFile('portable', f)} />
       ) : null}
 

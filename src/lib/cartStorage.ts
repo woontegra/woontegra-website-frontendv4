@@ -1,5 +1,6 @@
 import type { ProductType } from '@/types/product'
 import { isSaasSubscriptionProduct, isSingleQuantityProduct } from '@/utils/productPurchase'
+import { isMkSaasSingleYearPurchase } from '@/lib/mkSaasPurchaseYears'
 
 const CART_KEY_V1 = 'woontegra_cart_v1'
 const CART_KEY = 'woontegra_cart_v2'
@@ -80,6 +81,7 @@ function lineIsSingleQuantity(line: Pick<CartLine, 'snapshot'>): boolean {
 
 export function maxQuantityForLine(line: Pick<CartLine, 'snapshot'>): number {
   if (lineIsSingleQuantity(line)) return 1
+  if (isMkSaasSingleYearPurchase(line.snapshot)) return 1
   if (isSaasSubscriptionProduct(line.snapshot?.productType ?? 'DOWNLOAD')) return 10
   return 99
 }

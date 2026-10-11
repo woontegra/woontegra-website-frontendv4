@@ -20,6 +20,7 @@ import { getErrorMessage } from '@/api/client'
 import { isMuvekkilKasaSaasProduct, resolveMkSaasBlocksSlug } from '@/lib/muvekkilKasaSaasProduct'
 import { isCentralDesktopLicenseProduct } from '@/lib/centralDesktopLicenseProduct'
 import { isMuvekkilKasaDesktopSalesSlug } from '@/lib/muvekkilKasaDesktopProduct'
+import { isMuvekkilKasaMacosSalesSlug } from '@/lib/muvekkilKasaDesktopPlatform'
 import { saveMkSaasRenewalToken } from '@/lib/mkSaasLicensePurchase'
 import { saveDesktopRenewalToken } from '@/lib/desktopLicenseRenewal'
 import { desktopLicenseRenewalService } from '@/services/desktopLicenseRenewalService'
@@ -90,7 +91,7 @@ export function SoftwareDetailPage() {
   const redirectMkSalesToCompare =
     !isBuilderPreview &&
     !renewalToken &&
-    (isMuvekkilKasaDesktopSalesSlug(slug) || isMkSaasProduct)
+    (isMuvekkilKasaDesktopSalesSlug(slug) || isMuvekkilKasaMacosSalesSlug(slug) || isMkSaasProduct)
 
   const productCanonicalPath = redirectMkSalesToCompare
     ? MK_COMPARE_PATH
@@ -166,6 +167,10 @@ export function SoftwareDetailPage() {
 
   if (!isBuilderPreview && !renewalToken && isMuvekkilKasaDesktopSalesSlug(slug)) {
     return <Navigate to={`${MK_COMPARE_PATH}?surum=masaustu`} replace />
+  }
+
+  if (!isBuilderPreview && !renewalToken && isMuvekkilKasaMacosSalesSlug(slug)) {
+    return <Navigate to={`${MK_COMPARE_PATH}?surum=macos`} replace />
   }
 
   if (!isBuilderPreview && !renewalToken && isMkSaasProduct) {

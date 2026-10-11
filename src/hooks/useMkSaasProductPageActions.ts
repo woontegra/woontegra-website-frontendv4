@@ -8,8 +8,11 @@ import {
 } from '@/utils/productPurchase'
 import { trackAddToCart, trackViewContent } from '@/integrations/trackingEvents'
 
+/** Müvekkil Kasa SaaS yeni satın alması her zaman ürün kaydındaki 1 yıllık fiyattan, 1 yıllık abonelik olarak yapılır. */
+const MK_SAAS_PURCHASE_YEARS = 1
+
 export function useMkSaasProductPageActions(product: PublicProductDetail | null | undefined) {
-  const [webUsageYears, setWebUsageYears] = useState(1)
+  const webUsageYears = MK_SAAS_PURCHASE_YEARS
   const [feedback, setFeedback] = useState<'added' | 'in-cart' | null>(null)
   const [demoOpen, setDemoOpen] = useState(false)
 
@@ -57,7 +60,7 @@ export function useMkSaasProductPageActions(product: PublicProductDetail | null 
   return {
     product,
     webUsageYears,
-    onWebUsageYearsChange: setWebUsageYears,
+    onWebUsageYearsChange: (_years: number) => {},
     feedback,
     onFeedbackDismiss: () => setFeedback(null),
     onAddToCart: handleAddToCart,

@@ -24,7 +24,7 @@ export function MuvekkilKasaComparePage() {
   const publishedBlocks = resolveMkComparePublicBlocks(blocks)
 
   return (
-    <MkComparePageProvider>
+    <MkComparePageProvider blocks={publishedBlocks}>
       <SoftwareProductJsonLd
         name="Müvekkil Kasa Defteri"
         description={MK_DESCRIPTION}

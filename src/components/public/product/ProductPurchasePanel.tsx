@@ -181,7 +181,7 @@ export function ProductPurchasePanel({
         )}
       </div>
 
-      {isSaas && canPurchase ? (
+      {isSaas && canPurchase && !isMkSaasSales ? (
         <div className="relative mt-5 rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-sm">
           <label htmlFor={saasYearsId} className="text-sm font-semibold text-slate-800">
             Kullanım süresi

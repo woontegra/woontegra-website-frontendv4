@@ -167,32 +167,12 @@ export function HeroSettingsPanel() {
               }
             />
           ) : null}
-          {settings.layout === 'compare' && settings.mode === 'single-image' ? (
+          {settings.layout === 'compare' ? (
             <p className="rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-xs leading-relaxed text-sky-900">
-              Sağdaki hero görseli “Desktop görsel” alanından gelir. Tablet ve mobil alanları kendi
-              breakpoint’lerinde kullanılır. Görsel temizlenirse ürün kapaklarından birleşik fallback
-              geri gelir.
+              Sol sütunda başlık, açıklama ve ürün galerisi; sağ sütunda WEB / WINDOWS / macOS satış
+              paneli gösterilir. “Tek görsel” modunda “Desktop görsel” galerinin ilk görseli olur; boşsa
+              seçili platformun ürün görselleri kullanılır.
             </p>
-          ) : null}
-          {settings.layout === 'compare' && settings.mode !== 'single-image' ? (
-            <>
-              <ImageUrlField
-                label="Masaüstü hero görseli"
-                hint="Birleşik fallback — boşsa API ürün kapağı kullanılır"
-                value={settings.compareDesktopImage?.url ?? ''}
-                onChange={(url) =>
-                  setSettings({ compareDesktopImage: { ...settings.compareDesktopImage, url } })
-                }
-              />
-              <ImageUrlField
-                label="SaaS hero görseli"
-                hint="Birleşik fallback — boşsa API ürün kapağı kullanılır"
-                value={settings.compareSaasImage?.url ?? ''}
-                onChange={(url) =>
-                  setSettings({ compareSaasImage: { ...settings.compareSaasImage, url } })
-                }
-              />
-            </>
           ) : null}
         </>
       ),

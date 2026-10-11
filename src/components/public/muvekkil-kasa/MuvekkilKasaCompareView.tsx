@@ -1,7 +1,6 @@
-import { MuvekkilKasaCompareProductCards } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareProductCards'
 import { MuvekkilKasaCompareTable } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareTable'
 import { MuvekkilKasaCompareDetailTabs } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareDetailTabs'
-import { MuvekkilKasaCompareHeroVisual } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareHeroVisual'
+import { MuvekkilKasaProductHero } from '@/components/public/muvekkil-kasa/MuvekkilKasaProductHero'
 import {
   MkComparePageProvider,
   useMkComparePageContext,
@@ -9,7 +8,6 @@ import {
 } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
 import {
   MK_COMPARE_DETAILS_ID,
-  MK_COMPARE_PURCHASE_ID,
   MK_COMPARE_SHELL,
   MK_COMPARE_TABLE_ID,
   scrollToComparePurchase,
@@ -19,70 +17,53 @@ import {
   MK_COMPARE_HERO_BADGE,
   MK_COMPARE_HERO_DESCRIPTION,
 } from '@/components/public/muvekkil-kasa/mkCompareContent'
-import { Breadcrumbs } from '@/components/public/Breadcrumbs'
+import type { MkComparePlatform } from '@/components/public/muvekkil-kasa/mkComparePlatform'
 
 function ComparePageBody() {
-  const { desktopQuery, saasQuery, detailTab, setDetailTab, showProductDetails } = useMkComparePageContext()
+  const { desktopQuery, saasQuery, detailTab, setDetailTab, setPlatformTab } = useMkComparePageContext()
+  const choosePlatform = (platform: MkComparePlatform) => {
+    setPlatformTab(platform)
+    scrollToComparePurchase()
+  }
 
   return (
     <div className="overflow-x-hidden bg-white">
-      <section className="relative bg-gradient-to-br from-slate-950 via-[#0f2744] to-slate-900 text-white">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(16,185,129,0.16),transparent_42%),radial-gradient(circle_at_82%_55%,rgba(56,189,248,0.12),transparent_40%)]" />
-        <div className={`relative ${MK_COMPARE_SHELL} py-8 lg:py-10`}>
-          <Breadcrumbs
-            dark
-            items={[
-              { label: 'Ana Sayfa', href: '/' },
-              { label: 'Yazılımlar', href: '/yazilimlar' },
-              { label: 'Müvekkil Kasa Defteri' },
-            ]}
-          />
-          <div className="mt-6 grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
-            <div className="min-w-0">
-              <p className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-200">
-                {MK_COMPARE_HERO_BADGE}
-              </p>
-              <h1 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]">
-                Müvekkil Kasa Defteri: Size Uygun Sürümü Seçin
-              </h1>
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-300">{MK_COMPARE_HERO_DESCRIPTION}</p>
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <button
-                  type="button"
-                  onClick={scrollToCompareTable}
-                  className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-sky-400 px-6 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:brightness-105 sm:w-auto"
-                >
-                  Sürümleri Karşılaştır
-                </button>
-                <button
-                  type="button"
-                  onClick={scrollToComparePurchase}
-                  className="inline-flex w-full items-center justify-center rounded-xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15 sm:w-auto"
-                >
-                  Sürümünü Seç
-                </button>
-              </div>
+      <MuvekkilKasaProductHero
+        breadcrumbs={[
+          { label: 'Ana Sayfa', href: '/' },
+          { label: 'Yazılımlar', href: '/yazilimlar' },
+          { label: 'Müvekkil Kasa Defteri' },
+        ]}
+        intro={
+          <>
+            <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-100 backdrop-blur">
+              {MK_COMPARE_HERO_BADGE}
+            </span>
+            <h1 className="mt-5 max-w-4xl text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl lg:leading-[1.04]">
+              Müvekkil Kasa Defteri: Size Uygun Sürümü Seçin
+            </h1>
+            <p className="mt-4 max-w-3xl text-base leading-relaxed text-slate-300 sm:text-lg">
+              {MK_COMPARE_HERO_DESCRIPTION}
+            </p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <button
+                type="button"
+                onClick={scrollToCompareTable}
+                className="inline-flex w-full items-center justify-center rounded-2xl bg-gradient-to-r from-emerald-500 to-sky-400 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:brightness-105 sm:w-auto"
+              >
+                Sürümleri Karşılaştır
+              </button>
+              <button
+                type="button"
+                onClick={scrollToComparePurchase}
+                className="inline-flex w-full items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/15 sm:w-auto"
+              >
+                Sürümünü Seç
+              </button>
             </div>
-            <MuvekkilKasaCompareHeroVisual desktop={desktopQuery.data} saas={saasQuery.data} />
-          </div>
-        </div>
-      </section>
-
-      <section id={MK_COMPARE_PURCHASE_ID} className="scroll-mt-24 bg-white py-16 sm:py-20 lg:py-24">
-        <div className={MK_COMPARE_SHELL}>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Hangi sürüm size uygun?</h2>
-          <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
-            İki ürün ayrı lisans ve ayrı sepet satırıdır. Fiyatlar güncel ürün kaydından gelir.
-          </p>
-          <div className="mt-10">
-            <MuvekkilKasaCompareProductCards
-              desktopQuery={desktopQuery}
-              saasQuery={saasQuery}
-              onShowProductDetails={showProductDetails}
-            />
-          </div>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       <section
         id={MK_COMPARE_TABLE_ID}
@@ -100,7 +81,7 @@ function ComparePageBody() {
         <div className={MK_COMPARE_SHELL}>
           <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Ürün detayları</h2>
           <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
-            Mevcut satış içerikleri burada korunur. Satın alma üstteki kartlardan yapılır.
+            Mevcut satış içerikleri burada korunur. Satın alma üstteki satış panelinden yapılır.
           </p>
         </div>
         <div className="mt-10">
@@ -118,22 +99,30 @@ function ComparePageBody() {
           <h2 className="text-center text-3xl font-bold tracking-tight sm:text-4xl">
             Büronuza uygun Müvekkil Kasa sürümünü seçin
           </h2>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
             <button
               type="button"
-              onClick={scrollToComparePurchase}
-              className="rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-6 py-6 text-left transition hover:bg-emerald-500/15"
-            >
-              <p className="text-lg font-bold text-white">Masaüstü Sürümünü Seç</p>
-              <p className="mt-2 text-sm text-emerald-100/80">Bilgisayara kurulum · Tek bilgisayarda kullanım</p>
-            </button>
-            <button
-              type="button"
-              onClick={scrollToComparePurchase}
+              onClick={() => choosePlatform('web')}
               className="rounded-2xl border border-sky-400/25 bg-sky-500/10 px-6 py-6 text-left transition hover:bg-sky-500/15"
             >
               <p className="text-lg font-bold text-white">Web Tabanlı Sürümü Seç</p>
               <p className="mt-2 text-sm text-sky-100/80">Her yerden erişim · 7 gün ücretsiz demo</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => choosePlatform('windows')}
+              className="rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-6 py-6 text-left transition hover:bg-emerald-500/15"
+            >
+              <p className="text-lg font-bold text-white">Windows Sürümünü Seç</p>
+              <p className="mt-2 text-sm text-emerald-100/80">Bilgisayara kurulum · Tek bilgisayarda kullanım</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => choosePlatform('macos')}
+              className="rounded-2xl border border-emerald-400/25 bg-emerald-500/10 px-6 py-6 text-left transition hover:bg-emerald-500/15"
+            >
+              <p className="text-lg font-bold text-white">macOS Sürümünü Seç</p>
+              <p className="mt-2 text-sm text-emerald-100/80">Mac’e kurulum · Tek bilgisayarda kullanım</p>
             </button>
           </div>
           <p className="mt-8 text-center">

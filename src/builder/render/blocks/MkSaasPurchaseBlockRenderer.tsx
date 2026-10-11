@@ -5,8 +5,9 @@ import { renderIfText } from '@/builder/render/renderRules'
 import { ProductPurchasePanel } from '@/components/public/product/ProductPurchasePanel'
 import { useMkSaasProductPageContextOptional } from '@/components/public/product/MkSaasProductPageProvider'
 import { useMkComparePageContextOptional } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
-import { MuvekkilKasaCompareProductCards } from '@/components/public/muvekkil-kasa/MuvekkilKasaCompareProductCards'
-import { MK_COMPARE_SHELL } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { MuvekkilKasaPlatformPurchasePanel } from '@/components/public/muvekkil-kasa/MuvekkilKasaPlatformPurchasePanel'
+import { MK_COMPARE_PURCHASE_ID, MK_COMPARE_SHELL } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { useBuilderEditContext } from '@/builder/edit/BuilderEditContext'
 import type { MkSaasPurchaseBlock } from '@/builder/types'
 import { cn } from '@/lib/cn'
 
@@ -29,12 +30,13 @@ function BenefitIcon({ icon }: { icon?: string }) {
 export function MkSaasPurchaseBlockRenderer({ block }: BlockRendererProps) {
   const ctx = useMkSaasProductPageContextOptional()
   const compare = useMkComparePageContextOptional()
+  const { annotateFields } = useBuilderEditContext()
   if (block.type !== 'mk-saas-purchase') return null
   const purchase = block as MkSaasPurchaseBlock
   if (!purchase.visibility.enabled) return null
 
   if (purchase.settings.layout === 'compare') {
-    return <MkComparePurchaseLayout purchase={purchase} compare={compare} />
+    return <MkComparePurchaseLayout purchase={purchase} compare={compare} annotateFields={annotateFields} />
   }
 
   const product = ctx?.product
@@ -97,43 +99,44 @@ export function MkSaasPurchaseBlockRenderer({ block }: BlockRendererProps) {
 function MkComparePurchaseLayout({
   purchase,
   compare,
+  annotateFields,
 }: {
   purchase: MkSaasPurchaseBlock
   compare: ReturnType<typeof useMkComparePageContextOptional>
+  annotateFields: boolean
 }) {
-  const anchorId = purchase.settings.anchorId?.trim() || 'urun-secimi'
-  const bgClass = purchase.settings.backgroundStyle === 'gradient' ? 'bg-gradient-to-b from-slate-100 to-white' : 'bg-white'
+  const anchorId = purchase.settings.anchorId?.trim() || MK_COMPARE_PURCHASE_ID
+
+  if (compare?.panelInHero) {
+    if (!annotateFields) return null
+    return (
+      <section className="border-y border-dashed border-sky-200 bg-sky-50/70 py-4">
+        <p className={`${MK_COMPARE_SHELL} text-center text-xs font-medium text-sky-900`}>
+          WEB / WINDOWS / macOS satış paneli hero bölümünün sağ sütununda gösterilir. Kart metinlerini bu bloğun
+          ayarlarından düzenleyebilirsiniz.
+        </p>
+      </section>
+    )
+  }
 
   if (!compare) {
     return (
-      <section id={anchorId} className={cn('scroll-mt-24 py-16 sm:py-20 lg:py-24', bgClass)}>
+      <section id={anchorId} className="scroll-mt-24 bg-white py-16 sm:py-20">
         <div className={`${MK_COMPARE_SHELL} text-center text-sm text-slate-500`}>Ürünler yükleniyor…</div>
       </section>
     )
   }
 
   return (
-    <section id={anchorId} className={cn('scroll-mt-24 py-16 sm:py-20 lg:py-24', bgClass)}>
-      <div className={MK_COMPARE_SHELL}>
-        {purchase.visibility.showTitle !== false && renderIfText(purchase.title) ? (
-          <BuilderField path="title" label="Başlık" type="text" className="block w-fit">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{purchase.title}</h2>
-          </BuilderField>
-        ) : null}
-        {purchase.visibility.showDescription !== false && renderIfText(purchase.description) ? (
-          <BuilderField path="description" label="Açıklama" type="text" className="mt-3 block w-fit max-w-3xl">
-            <p className="text-base leading-relaxed text-slate-600 sm:text-lg">{purchase.description}</p>
-          </BuilderField>
-        ) : null}
-        <div className="mt-10">
-          <MuvekkilKasaCompareProductCards
-            desktopQuery={compare.desktopQuery}
-            saasQuery={compare.saasQuery}
-            onShowProductDetails={compare.showProductDetails}
-            desktopCopy={purchase.settings.compareDesktop}
-            saasCopy={purchase.settings.compareSaas}
-          />
-        </div>
+    <section id={anchorId} className="scroll-mt-24 bg-slate-950 py-12 sm:py-16">
+      <div className="mx-auto w-full max-w-[420px] px-4">
+        <MuvekkilKasaPlatformPurchasePanel
+          copy={{
+            desktop: purchase.settings.compareDesktop,
+            saas: purchase.settings.compareSaas,
+            macos: purchase.settings.compareMacos,
+          }}
+        />
       </div>
     </section>
   )

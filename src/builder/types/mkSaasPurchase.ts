@@ -38,6 +38,16 @@ export const DEFAULT_MK_COMPARE_SAAS_COPY: MkComparePurchaseCardCopy = {
   demoButtonLabel: '7 Gün Ücretsiz Dene',
 }
 
+export const DEFAULT_MK_COMPARE_MACOS_COPY: MkComparePurchaseCardCopy = {
+  badge: 'Mac’e Kurulan',
+  title: 'Müvekkil Kasa Defteri macOS',
+  description:
+    'Mac bilgisayara kurulan, tek cihazda çalışan masaüstü sürüm. Windows lisansından ayrı, macOS için yıllık lisanslanır.',
+  detailsButtonLabel: 'Masaüstü Detaylarını Gör',
+  addToCartLabel: 'Sepete Ekle',
+  demoButtonLabel: '7 Gün Ücretsiz Dene',
+}
+
 export type MkSaasPurchaseBlock = BlockBase & {
   type: 'mk-saas-purchase'
   settings: {
@@ -48,6 +58,8 @@ export type MkSaasPurchaseBlock = BlockBase & {
     layout?: 'saas' | 'compare'
     compareDesktop?: MkComparePurchaseCardCopy
     compareSaas?: MkComparePurchaseCardCopy
+    /** Boşsa DEFAULT_MK_COMPARE_MACOS_COPY kullanılır. */
+    compareMacos?: MkComparePurchaseCardCopy
   }
 }
 
