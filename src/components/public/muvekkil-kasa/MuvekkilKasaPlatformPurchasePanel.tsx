@@ -1,4 +1,7 @@
+import type { UseQueryResult } from '@tanstack/react-query'
+import { DesktopLicenseRenewalPanel } from '@/components/public/product/DesktopLicenseRenewalPanel'
 import { SoftwarePlatformPicker } from '@/components/public/product/SoftwarePlatformPicker'
+import type { DesktopLicenseRenewalView } from '@/lib/desktopLicenseRenewal'
 import {
   DesktopCard,
   MACOS_CARD_VARIANT,
@@ -14,6 +17,42 @@ import {
   MUVEKKIL_KASA_PLATFORM_FAMILY,
   type MkComparePlatform,
 } from '@/components/public/muvekkil-kasa/mkComparePlatform'
+
+function DesktopRenewalNotice({
+  query,
+  platform,
+  licenseDays,
+}: {
+  query: UseQueryResult<DesktopLicenseRenewalView, Error>
+  platform: Exclude<MkComparePlatform, 'web'>
+  licenseDays?: number
+}) {
+  if (query.isPending) {
+    return <p className="mb-4 text-sm text-slate-500">Lisans bilgileri doğrulanıyor…</p>
+  }
+  if (query.isError) {
+    return (
+      <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900" data-mk-renewal="invalid">
+        Yenileme bağlantısı geçersiz veya süresi dolmuş. Masaüstü uygulamasından &quot;Lisansı Yenile&quot; ile yeni
+        bağlantı oluşturun.
+      </div>
+    )
+  }
+  const licensePlatform = query.data.platform === 'MACOS' ? 'macos' : query.data.platform === 'WINDOWS' ? 'windows' : null
+  if (licensePlatform && licensePlatform !== platform) {
+    return (
+      <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" data-mk-renewal="other-platform">
+        Yenilediğiniz lisans {licensePlatform === 'macos' ? 'macOS' : 'WINDOWS'} sürümüne aittir. Yenileme için{' '}
+        {licensePlatform === 'macos' ? 'macOS' : 'WINDOWS'} sekmesindeki ürünü sepete ekleyin.
+      </div>
+    )
+  }
+  return (
+    <div data-mk-renewal="active">
+      <DesktopLicenseRenewalPanel data={query.data} renewalDays={licenseDays} renewalLabel={licenseDays ? `${licenseDays} gün` : null} />
+    </div>
+  )
+}
 
 type Props = {
   /** Verilmezse builder satın alma bloğundaki admin metinleri kullanılır. */
@@ -45,6 +84,13 @@ export function MuvekkilKasaPlatformPurchasePanel({ copy }: Props) {
         />
       </div>
       <div className="relative mt-5" role="tabpanel" data-mk-platform={platform}>
+        {ctx.desktopRenewalQuery && platform !== 'web' ? (
+          <DesktopRenewalNotice
+            query={ctx.desktopRenewalQuery}
+            platform={platform}
+            licenseDays={(platform === 'macos' ? ctx.macosQuery : ctx.desktopQuery).data?.licenseDays ?? undefined}
+          />
+        ) : null}
         {platform === 'web' ? (
           <SaasCard
             query={ctx.saasQuery}

@@ -165,6 +165,11 @@ export function SoftwareDetailPage() {
     return legacyView
   }
 
+  if (!isBuilderPreview && renewalToken && (isMuvekkilKasaDesktopSalesSlug(slug) || isMuvekkilKasaMacosSalesSlug(slug))) {
+    const surum = isMuvekkilKasaMacosSalesSlug(slug) ? 'macos' : 'masaustu'
+    return <Navigate to={`${MK_COMPARE_PATH}?surum=${surum}&renewalToken=${encodeURIComponent(renewalToken)}`} replace />
+  }
+
   if (!isBuilderPreview && !renewalToken && isMuvekkilKasaDesktopSalesSlug(slug)) {
     return <Navigate to={`${MK_COMPARE_PATH}?surum=masaustu`} replace />
   }

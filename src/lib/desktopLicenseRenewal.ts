@@ -14,6 +14,8 @@ export type DesktopLicenseRenewalView = {
   expiresAt: string
   status: string
   boundExternalOrderId: string | null
+  /** MK Desktop lisans platformu; eski oturumlarda yok. */
+  platform?: 'WINDOWS' | 'MACOS' | null
 }
 
 export type DesktopLicenseRenewalPreview = {

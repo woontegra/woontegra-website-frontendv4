@@ -18,6 +18,8 @@ import { clearAffiliateLanding, readRecentAffiliateLanding } from '@/lib/affilia
 import { publicQueryOptions } from '@/lib/publicQueryOptions'
 import { MK_MACOS_PRODUCT_SLUG } from '@/lib/muvekkilKasaDesktopPlatform'
 import { MK_SAAS_CANONICAL_SLUG } from '@/lib/muvekkilKasaSaasProduct'
+import { saveDesktopRenewalToken, type DesktopLicenseRenewalView } from '@/lib/desktopLicenseRenewal'
+import { desktopLicenseRenewalService } from '@/services/desktopLicenseRenewalService'
 import { productsService } from '@/services/productsService'
 import type { PublicProductDetail } from '@/types/product'
 import type { BuilderBlock, HeroBlock, MkSaasPurchaseBlock } from '@/builder/types'
@@ -77,6 +79,8 @@ type MkComparePageContextValue = {
   panelCopy: MkComparePanelCopy
   /** true: panel hero'da; satın alma bloğu paneli ikinci kez çizmez. */
   panelInHero: boolean
+  /** Masaüstü uygulamasındaki "Lisansı Yenile" bağlantısı (?renewalToken=); yoksa null. */
+  desktopRenewalQuery: UseQueryResult<DesktopLicenseRenewalView, Error> | null
 }
 
 const MkComparePageContext = createContext<MkComparePageContextValue | null>(null)
@@ -148,6 +152,18 @@ export function MkComparePageProvider({ previewSafe = false, blocks = null, chil
     ...publicQueryOptions,
   })
 
+  const renewalToken = searchParams.get('renewalToken')?.trim() || ''
+  const desktopRenewalQuery = useQuery({
+    ...publicQueryOptions,
+    queryKey: ['desktop-license-renewal', renewalToken],
+    queryFn: async () => {
+      saveDesktopRenewalToken(renewalToken)
+      return desktopLicenseRenewalService.resolve(renewalToken)
+    },
+    enabled: Boolean(renewalToken) && !previewSafe,
+    retry: false,
+  })
+
   // ?surum= ile gelince ilgili sekmeye kaydır (vurgu sayfa açık kaldığı sürece kalır).
   const highlightedQuery =
     highlightedPlatform === 'web' ? saasQuery : highlightedPlatform === 'macos' ? macosQuery : desktopQuery
@@ -175,6 +191,7 @@ export function MkComparePageProvider({ previewSafe = false, blocks = null, chil
     referralPlatform,
     panelCopy: comparePanelCopy(blocks),
     panelInHero: blocksHostPanelInHero(blocks),
+    desktopRenewalQuery: renewalToken && !previewSafe ? desktopRenewalQuery : null,
   }
 
   return (
