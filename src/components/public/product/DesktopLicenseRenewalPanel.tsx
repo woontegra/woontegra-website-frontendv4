@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   formatLicenseDateTr,
@@ -28,12 +28,6 @@ export function DesktopLicenseRenewalPanel({ data, renewalDays, renewalLabel }: 
     enabled: Boolean(isRenewal && token && renewalDays && renewalDays > 0),
     staleTime: 30_000,
   })
-
-  useEffect(() => {
-    if (isRenewal && renewalDays && renewalDays > 0) {
-      void previewQuery.refetch()
-    }
-  }, [isRenewal, renewalDays, previewQuery])
 
   return (
     <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/90 px-4 py-4 text-sm text-emerald-950">
