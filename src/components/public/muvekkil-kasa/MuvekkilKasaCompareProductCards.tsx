@@ -29,6 +29,14 @@ import { MK_COMPARE_CARD_MACOS_ID, MK_LAUNCH_PRICE_LABEL } from '@/components/pu
 
 type Query = UseQueryResult<PublicProductDetail, Error>
 
+/** Admin "Eski fiyat" (compareAtPrice) veya kampanya öncesi fiyat; yalnızca satış fiyatından büyükse. */
+function strikePriceFor(product: PublicProductDetail): number | null {
+  const candidates = [product.compareAtPrice, product.originalPrice].filter(
+    (v): v is number => typeof v === 'number' && Number.isFinite(v) && v > product.price,
+  )
+  return candidates.length > 0 ? Math.max(...candidates) : null
+}
+
 /** İş ortağı (/r/:code) vurgusu: bağlantının hedef ürünü mü. ?surum= tek başına vurgu üretmez. */
 export type ReferralCardFocus = 'target' | 'none'
 
@@ -197,8 +205,7 @@ export function DesktopCard({
   const canPurchase = canPurchaseProduct(product)
   const unitPrice = product.price
   const hasPrice = Number.isFinite(unitPrice) && unitPrice > 0
-  const strikePrice =
-    product.originalPrice != null && product.originalPrice > unitPrice ? product.originalPrice : null
+  const strikePrice = strikePriceFor(product)
   const campaignBadge = product.campaign?.badge?.trim() || (product.campaign ? 'Kampanyalı' : null)
   const isTarget = focus === 'target'
 
@@ -237,16 +244,14 @@ export function DesktopCard({
                 {campaignBadge}
               </span>
             ) : null}
-            <div className="flex flex-wrap items-baseline gap-2">
-              <p className="text-3xl font-black tabular-nums tracking-tight text-slate-950 sm:text-4xl">
-                {formatMkSaasTryMoney(unitPrice, product.currency)}
+            {strikePrice != null ? (
+              <p className="text-base font-semibold text-slate-500 line-through tabular-nums sm:text-lg" data-strike-price>
+                {formatMkSaasTryMoney(strikePrice, product.currency)}
               </p>
-              {strikePrice != null ? (
-                <p className="text-base text-slate-400 line-through tabular-nums">
-                  {formatMkSaasTryMoney(strikePrice, product.currency)}
-                </p>
-              ) : null}
-            </div>
+            ) : null}
+            <p className="text-3xl font-black tabular-nums tracking-tight text-slate-950 sm:text-4xl">
+              {formatMkSaasTryMoney(unitPrice, product.currency)}
+            </p>
             {product.campaign?.endsAt ? (
               <p className="mt-1 text-xs font-medium text-rose-600">
                 Kampanya bitiş: {formatCampaignDate(product.campaign.endsAt)}
@@ -337,8 +342,7 @@ export function SaasCard({
   const canPurchase = canPurchaseProduct(product)
   const unitPrice = product.price
   const hasPrice = Number.isFinite(unitPrice) && unitPrice > 0
-  const strikeUnit =
-    product.originalPrice != null && product.originalPrice > unitPrice ? product.originalPrice : null
+  const strikeUnit = strikePriceFor(product)
   const campaignBadge = product.campaign?.badge?.trim() || (product.campaign ? 'Kampanyalı' : null)
   const isTarget = focus === 'target'
 
@@ -367,16 +371,14 @@ export function SaasCard({
                 {campaignBadge}
               </span>
             ) : null}
-            <div className="flex flex-wrap items-baseline gap-2">
-              <p className="text-3xl font-black tabular-nums tracking-tight text-slate-950 sm:text-4xl">
-                {formatMkSaasTryMoney(unitPrice, product.currency)}
+            {strikeUnit != null ? (
+              <p className="text-base font-semibold text-slate-500 line-through tabular-nums sm:text-lg" data-strike-price>
+                {formatMkSaasTryMoney(strikeUnit, product.currency)}
               </p>
-              {strikeUnit != null ? (
-                <p className="text-base text-slate-400 line-through tabular-nums">
-                  {formatMkSaasTryMoney(strikeUnit, product.currency)}
-                </p>
-              ) : null}
-            </div>
+            ) : null}
+            <p className="text-3xl font-black tabular-nums tracking-tight text-slate-950 sm:text-4xl">
+              {formatMkSaasTryMoney(unitPrice, product.currency)}
+            </p>
             <p className="mt-1 text-sm text-slate-500">{MK_COMPARE_SAAS_LICENSE_CAPTION}</p>
           </div>
         ) : (
