@@ -6,8 +6,6 @@ import { ProductContentSections } from '@/components/public/product/ProductConte
 import { ExternalProductPurchasePanel } from '@/components/public/product/ExternalProductPurchasePanel'
 import { ProductPurchasePanel } from '@/components/public/product/ProductPurchasePanel'
 import { ProductShowcaseHero } from '@/components/public/product/ProductShowcaseHero'
-import { BilirkisiOfferHeroNote } from '@/components/public/bilirkisi/BilirkisiOfferNote'
-import { BILIRKISI_HESAP_SLUG } from '@/data/canonicalSoftwareProducts'
 import { addToCart } from '@/lib/cartStorage'
 import {
   buildCartSnapshot,
@@ -175,7 +173,6 @@ export function SoftwareDetailView({
         lead={lead}
         isFreeDownload={isFreeDownload}
         metaItems={desktopFacts ?? undefined}
-        afterLead={data.slug === BILIRKISI_HESAP_SLUG ? <BilirkisiOfferHeroNote /> : null}
       >
         {isExternalSales ? (
           <ExternalProductPurchasePanel

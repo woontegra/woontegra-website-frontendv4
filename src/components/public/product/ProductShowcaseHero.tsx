@@ -16,7 +16,6 @@ type Props = {
   children: ReactNode
   /** When set, replaces the hero fact cards. Omitted keeps the current product facts. */
   metaItems?: MetaItem[]
-  afterLead?: ReactNode
 }
 
 function productMetaItems(product: PublicProductDetail, isFreeDownload: boolean, isExternalSales: boolean) {
@@ -44,7 +43,7 @@ function productMetaItems(product: PublicProductDetail, isFreeDownload: boolean,
   ]
 }
 
-export function ProductShowcaseHero({ product, lead, isFreeDownload, children, metaItems, afterLead }: Props) {
+export function ProductShowcaseHero({ product, lead, isFreeDownload, children, metaItems }: Props) {
   const isExternalSales = isExternalSalesProduct(product)
   const promotionalMeta = getPromotionalSoftwareMeta(product.slug)
   const resolvedMetaItems = metaItems ?? productMetaItems(product, isFreeDownload, isExternalSales)
@@ -116,7 +115,6 @@ export function ProductShowcaseHero({ product, lead, isFreeDownload, children, m
                 {product.name}
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-relaxed text-slate-300 sm:text-lg">{lead}</p>
-              {afterLead}
 
               <div className="mt-5 flex flex-wrap gap-3">
                 {isExternalSales ? (
