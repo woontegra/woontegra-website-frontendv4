@@ -11,89 +11,46 @@ export const AVUKAT_SITELERI_SEO = {
 export const AVUKAT_PHONE_DISPLAY = '0252 606 06 50'
 export const AVUKAT_PHONE_HREF = 'tel:+902526060650'
 export const AVUKAT_WHATSAPP_HREF = 'https://wa.me/905323171755'
-export const AVUKAT_DEMO_URL = 'https://tasgibisin.com'
 export const AVUKAT_QUOTE_HREF = '/teklif-al'
 
 export type AvukatTema = {
   kisaAd: string
   panelAdi: string
   tarz: string
+  /** Kart / hero için üst kısım (viewport) görseli */
   masaustu: string
   telefon: string
+  /** Lightbox’ta kullanılan tam sayfa görseller (yalnızca pencere açılınca yüklenir) */
+  masaustuTam: string
+  telefonTam: string
 }
+
+const tema = (
+  kisaAd: string,
+  panelAdi: string,
+  tarz: string,
+): AvukatTema => ({
+  kisaAd,
+  panelAdi,
+  tarz,
+  masaustu: `/avukat-siteleri/${kisaAd}-masaustu.webp`,
+  telefon: `/avukat-siteleri/${kisaAd}-telefon.webp`,
+  masaustuTam: `/avukat-siteleri/${kisaAd}-masaustu-tam.webp`,
+  telefonTam: `/avukat-siteleri/${kisaAd}-telefon-tam.webp`,
+})
 
 /** public/avukat-siteleri/temalar.json ile aynı liste. */
 export const AVUKAT_TEMALAR: AvukatTema[] = [
-  {
-    kisaAd: 'prestige',
-    panelAdi: 'Prestige',
-    tarz: 'Lacivert ve altın tonlarında klasik kurumsal görünüm',
-    masaustu: '/avukat-siteleri/prestige-masaustu.webp',
-    telefon: '/avukat-siteleri/prestige-telefon.webp',
-  },
-  {
-    kisaAd: 'minimal',
-    panelAdi: 'Minimal',
-    tarz: 'Beyaz, sade ve modern ofis görünümü',
-    masaustu: '/avukat-siteleri/minimal-masaustu.webp',
-    telefon: '/avukat-siteleri/minimal-telefon.webp',
-  },
-  {
-    kisaAd: 'executive',
-    panelAdi: 'Executive',
-    tarz: 'Siyah ve antrasit tonlarında güçlü tipografi',
-    masaustu: '/avukat-siteleri/executive-masaustu.webp',
-    telefon: '/avukat-siteleri/executive-telefon.webp',
-  },
-  {
-    kisaAd: 'modern',
-    panelAdi: 'Modern',
-    tarz: 'Canlı renkler ve kartlı, telefona uygun modern görünüm',
-    masaustu: '/avukat-siteleri/modern-masaustu.webp',
-    telefon: '/avukat-siteleri/modern-telefon.webp',
-  },
-  {
-    kisaAd: 'sidebar',
-    panelAdi: 'Sol Menülü',
-    tarz: 'Solda dikey menülü, ferah editoryal görünüm',
-    masaustu: '/avukat-siteleri/sidebar-masaustu.webp',
-    telefon: '/avukat-siteleri/sidebar-telefon.webp',
-  },
-  {
-    kisaAd: 'videohero',
-    panelAdi: 'Videolu Kapak',
-    tarz: 'Beyaz menü ve geniş videolu kapaklı kurumsal görünüm',
-    masaustu: '/avukat-siteleri/videohero-masaustu.webp',
-    telefon: '/avukat-siteleri/videohero-telefon.webp',
-  },
-  {
-    kisaAd: 'curvedhero',
-    panelAdi: 'Kavisli Kapak',
-    tarz: 'Kavisli kapak ve lacivert yüzeylerle zarif görünüm',
-    masaustu: '/avukat-siteleri/curvedhero-masaustu.webp',
-    telefon: '/avukat-siteleri/curvedhero-telefon.webp',
-  },
-  {
-    kisaAd: 'globalcorporate',
-    panelAdi: 'Uluslararası Kurumsal',
-    tarz: 'Gece Boğaz manzaralı, uluslararası kurumsal görünüm',
-    masaustu: '/avukat-siteleri/globalcorporate-masaustu.webp',
-    telefon: '/avukat-siteleri/globalcorporate-telefon.webp',
-  },
-  {
-    kisaAd: 'prestigegold',
-    panelAdi: 'Prestige Gold',
-    tarz: 'Koyu ve altın tonlarında klasik görünüm',
-    masaustu: '/avukat-siteleri/prestigegold-masaustu.webp',
-    telefon: '/avukat-siteleri/prestigegold-telefon.webp',
-  },
-  {
-    kisaAd: 'themis',
-    panelAdi: 'Oblique',
-    tarz: 'Lacivert dokulu, bakır vurgulu gece görünümü',
-    masaustu: '/avukat-siteleri/themis-masaustu.webp',
-    telefon: '/avukat-siteleri/themis-telefon.webp',
-  },
+  tema('prestige', 'Prestige', 'Lacivert ve altın tonlarında klasik kurumsal görünüm'),
+  tema('minimal', 'Minimal', 'Beyaz, sade ve modern ofis görünümü'),
+  tema('executive', 'Executive', 'Siyah ve antrasit tonlarında güçlü tipografi'),
+  tema('modern', 'Modern', 'Canlı renkler ve kartlı, telefona uygun modern görünüm'),
+  tema('sidebar', 'Sol Menülü', 'Solda dikey menülü, ferah editoryal görünüm'),
+  tema('videohero', 'Videolu Kapak', 'Beyaz menü ve geniş videolu kapaklı kurumsal görünüm'),
+  tema('curvedhero', 'Kavisli Kapak', 'Kavisli kapak ve lacivert yüzeylerle zarif görünüm'),
+  tema('globalcorporate', 'Uluslararası Kurumsal', 'Gece Boğaz manzaralı, uluslararası kurumsal görünüm'),
+  tema('prestigegold', 'Prestige Gold', 'Koyu ve altın tonlarında klasik görünüm'),
+  tema('themis', 'Oblique', 'Lacivert dokulu, bakır vurgulu gece görünümü'),
 ]
 
 export const AVUKAT_HERO_IMAGE = AVUKAT_TEMALAR[0]?.masaustu ?? '/avukat-siteleri/prestige-masaustu.webp'

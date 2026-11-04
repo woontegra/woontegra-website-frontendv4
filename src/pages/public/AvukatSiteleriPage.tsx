@@ -1,11 +1,13 @@
-import { Fragment, useId, useState } from 'react'
+import { Fragment, useEffect, useId, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   BookOpen,
   Check,
-  Globe2,
+  ChevronLeft,
+  ChevronRight,
   Languages,
   LayoutDashboard,
+  Loader2,
   Mail,
   MessageCircle,
   Phone,
@@ -15,7 +17,6 @@ import {
 } from 'lucide-react'
 import { Breadcrumbs } from '@/components/public/Breadcrumbs'
 import {
-  AVUKAT_DEMO_URL,
   AVUKAT_HERO_IMAGE,
   AVUKAT_PHONE_DISPLAY,
   AVUKAT_PHONE_HREF,
@@ -25,7 +26,6 @@ import {
   AVUKAT_SITELERI_SEO,
   AVUKAT_TEMALAR,
   AVUKAT_WHATSAPP_HREF,
-  type AvukatTema,
 } from '@/data/avukatSiteleriProduct'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { cn } from '@/lib/cn'
@@ -204,67 +204,160 @@ function BrowserFrame({ src, alt }: { src: string; alt: string }) {
 }
 
 function ThemeLightbox({
-  tema,
+  index,
+  onIndexChange,
   onClose,
 }: {
-  tema: AvukatTema
+  index: number
+  onIndexChange: (next: number) => void
   onClose: () => void
 }) {
   const titleId = useId()
+  const tema = AVUKAT_TEMALAR[index]!
+  const count = AVUKAT_TEMALAR.length
   const [tab, setTab] = useState<'masaustu' | 'telefon'>('masaustu')
+  const [loading, setLoading] = useState(true)
+  const src = tab === 'masaustu' ? tema.masaustuTam : tema.telefonTam
+
+  useEffect(() => {
+    setLoading(true)
+  }, [src])
+
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onClose()
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        onIndexChange((index - 1 + count) % count)
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        onIndexChange((index + 1) % count)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [count, index, onClose, onIndexChange])
+
+  const go = (delta: number) => onIndexChange((index + delta + count) % count)
+
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/70 p-4"
+      className="fixed inset-0 z-[80] flex bg-slate-950/75 sm:items-center sm:justify-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       onClick={onClose}
     >
       <div
-        className="max-h-[92vh] w-full max-w-4xl overflow-auto rounded-2xl bg-white p-4 shadow-2xl sm:p-6"
+        className="relative flex h-dvh w-full max-w-5xl flex-col bg-white shadow-2xl sm:h-[min(92dvh,920px)] sm:max-h-[92dvh] sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 id={titleId} className="text-lg font-semibold text-slate-950">
+        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-5">
+          <div className="min-w-0">
+            <h3 id={titleId} className="truncate text-base font-semibold text-slate-950 sm:text-lg">
               {tema.panelAdi}
             </h3>
-            <p className="mt-1 text-sm text-slate-600">{tema.tarz}</p>
+            <p className="mt-0.5 line-clamp-2 text-xs text-slate-600 sm:text-sm">{tema.tarz}</p>
           </div>
-          <button type="button" aria-label="Kapat" onClick={onClose} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100">
+          <button
+            type="button"
+            aria-label="Kapat"
+            onClick={onClose}
+            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="mt-4 inline-flex rounded-xl bg-slate-100 p-1">
-          <button
-            type="button"
-            onClick={() => setTab('masaustu')}
-            className={cn('rounded-lg px-3 py-1.5 text-sm font-semibold', tab === 'masaustu' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600')}
-          >
-            Masaüstü
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab('telefon')}
-            className={cn('rounded-lg px-3 py-1.5 text-sm font-semibold', tab === 'telefon' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600')}
-          >
-            Telefon
-          </button>
+
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-100 px-4 py-2.5 sm:px-5">
+          <div className="inline-flex rounded-xl bg-slate-100 p-1">
+            <button
+              type="button"
+              onClick={() => setTab('masaustu')}
+              className={cn(
+                'rounded-lg px-3 py-1.5 text-sm font-semibold',
+                tab === 'masaustu' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600',
+              )}
+            >
+              Masaüstü
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab('telefon')}
+              className={cn(
+                'rounded-lg px-3 py-1.5 text-sm font-semibold',
+                tab === 'telefon' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600',
+              )}
+            >
+              Telefon
+            </button>
+          </div>
+          <p className="hidden text-xs text-slate-500 sm:block">
+            {index + 1} / {count}
+          </p>
         </div>
-        <div className="mt-4 flex justify-center">
-          <img
-            src={tab === 'masaustu' ? tema.masaustu : tema.telefon}
-            alt={`${tema.panelAdi} ${tab === 'masaustu' ? 'masaüstü' : 'telefon'} görünümü`}
-            className={cn('rounded-xl border border-slate-200 object-contain', tab === 'masaustu' ? 'w-full' : 'max-h-[70vh] w-auto')}
-          />
+
+        <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain bg-slate-100">
+          {loading ? (
+            <div
+              className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-slate-100/80"
+              aria-live="polite"
+              aria-busy="true"
+            >
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-700" aria-hidden />
+              <span className="sr-only">Görsel yükleniyor</span>
+            </div>
+          ) : null}
+          <div
+            className={cn(
+              'mx-auto px-3 py-4 sm:px-6 sm:py-5',
+              tab === 'telefon' ? 'flex justify-center' : 'w-full max-w-4xl',
+            )}
+          >
+            <img
+              key={src}
+              src={src}
+              alt={`${tema.panelAdi} ${tab === 'masaustu' ? 'masaüstü' : 'telefon'} tam sayfa görünümü`}
+              onLoad={() => setLoading(false)}
+              onError={() => setLoading(false)}
+              className={cn(
+                'block border border-slate-200 bg-white shadow-sm',
+                tab === 'masaustu' ? 'w-full rounded-lg' : 'w-full max-w-[390px] rounded-[1.25rem]',
+              )}
+            />
+          </div>
         </div>
+
+        <button
+          type="button"
+          aria-label="Önceki tema"
+          onClick={() => go(-1)}
+          className="absolute left-1 top-1/2 z-20 -translate-y-1/2 rounded-full border border-slate-200 bg-white/95 p-2 text-slate-700 shadow-md hover:bg-white sm:left-2"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <button
+          type="button"
+          aria-label="Sonraki tema"
+          onClick={() => go(1)}
+          className="absolute right-1 top-1/2 z-20 -translate-y-1/2 rounded-full border border-slate-200 bg-white/95 p-2 text-slate-700 shadow-md hover:bg-white sm:right-2"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
       </div>
     </div>
   )
 }
 
 export function AvukatSiteleriPage() {
-  const [openTema, setOpenTema] = useState<AvukatTema | null>(null)
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
   const [openFaq, setOpenFaq] = useState<string | null>(FAQ[0]?.q ?? null)
 
   usePageMeta({
@@ -378,34 +471,18 @@ export function AvukatSiteleriPage() {
 
       <section className="border-b border-slate-200 bg-slate-50 py-14" aria-labelledby="avukat-temalar">
         <div className={SHELL}>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h2 id="avukat-temalar" className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
-                10 tema, her biri büronuza uyarlanır
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm text-slate-600">
-                Temaya tıklayarak masaüstü ve telefon görünümlerini inceleyin.
-              </p>
-            </div>
-            <a
-              href={AVUKAT_DEMO_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800"
-            >
-              <Globe2 className="h-4 w-4" aria-hidden />
-              Canlı demoyu inceleyin
-            </a>
-          </div>
+          <h2 id="avukat-temalar" className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+            10 tema, her biri büronuza uyarlanır
+          </h2>
           <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {AVUKAT_TEMALAR.map((tema) => (
+            {AVUKAT_TEMALAR.map((tema, i) => (
               <li key={tema.kisaAd}>
                 <button
                   type="button"
-                  onClick={() => setOpenTema(tema)}
+                  onClick={() => setOpenIndex(i)}
                   className="group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md"
                 >
-                  <img src={tema.masaustu} alt="" className="aspect-[16/10] w-full object-cover object-top" />
+                  <img src={tema.masaustu} alt="" className="aspect-[16/10] w-full object-cover object-top" loading="lazy" />
                   <span className="border-t border-slate-100 p-3">
                     <span className="block text-sm font-semibold text-slate-950 group-hover:text-emerald-800">{tema.panelAdi}</span>
                     <span className="mt-1 block text-xs leading-relaxed text-slate-600">{tema.tarz}</span>
@@ -414,6 +491,9 @@ export function AvukatSiteleriPage() {
               </li>
             ))}
           </ul>
+          <p className="mt-6 text-center text-sm text-slate-600">
+            Temaya tıklayarak sayfanın tamamını masaüstü ve telefon görünümünde inceleyin.
+          </p>
         </div>
       </section>
 
@@ -669,7 +749,9 @@ export function AvukatSiteleriPage() {
         </div>
       </section>
 
-      {openTema ? <ThemeLightbox tema={openTema} onClose={() => setOpenTema(null)} /> : null}
+      {openIndex != null ? (
+        <ThemeLightbox index={openIndex} onIndexChange={setOpenIndex} onClose={() => setOpenIndex(null)} />
+      ) : null}
     </div>
   )
 }

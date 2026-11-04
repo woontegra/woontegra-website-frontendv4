@@ -1,76 +1,96 @@
 {
   "buroAdi": "Örnek Hukuk Bürosu",
-  "olusturma": "2026-11-04T20:31:13.444Z",
+  "olusturma": "2026-11-04T21:19:22.159Z",
   "temalar": [
     {
       "kisaAd": "prestige",
       "panelAdi": "Prestige",
       "tarz": "Lacivert ve altın tonlarında klasik kurumsal görünüm",
       "masaustu": "prestige-masaustu.webp",
-      "telefon": "prestige-telefon.webp"
+      "telefon": "prestige-telefon.webp",
+      "masaustuTam": "prestige-masaustu-tam.webp",
+      "telefonTam": "prestige-telefon-tam.webp"
     },
     {
       "kisaAd": "minimal",
       "panelAdi": "Minimal",
       "tarz": "Beyaz, sade ve modern ofis görünümü",
       "masaustu": "minimal-masaustu.webp",
-      "telefon": "minimal-telefon.webp"
+      "telefon": "minimal-telefon.webp",
+      "masaustuTam": "minimal-masaustu-tam.webp",
+      "telefonTam": "minimal-telefon-tam.webp"
     },
     {
       "kisaAd": "executive",
       "panelAdi": "Executive",
       "tarz": "Siyah ve antrasit tonlarında güçlü tipografi",
       "masaustu": "executive-masaustu.webp",
-      "telefon": "executive-telefon.webp"
+      "telefon": "executive-telefon.webp",
+      "masaustuTam": "executive-masaustu-tam.webp",
+      "telefonTam": "executive-telefon-tam.webp"
     },
     {
       "kisaAd": "modern",
       "panelAdi": "Modern",
       "tarz": "Canlı renkler ve kartlı, telefona uygun modern görünüm",
       "masaustu": "modern-masaustu.webp",
-      "telefon": "modern-telefon.webp"
+      "telefon": "modern-telefon.webp",
+      "masaustuTam": "modern-masaustu-tam.webp",
+      "telefonTam": "modern-telefon-tam.webp"
     },
     {
       "kisaAd": "sidebar",
       "panelAdi": "Sol Menülü",
       "tarz": "Solda dikey menülü, ferah editoryal görünüm",
       "masaustu": "sidebar-masaustu.webp",
-      "telefon": "sidebar-telefon.webp"
+      "telefon": "sidebar-telefon.webp",
+      "masaustuTam": "sidebar-masaustu-tam.webp",
+      "telefonTam": "sidebar-telefon-tam.webp"
     },
     {
       "kisaAd": "videohero",
       "panelAdi": "Videolu Kapak",
       "tarz": "Beyaz menü ve geniş videolu kapaklı kurumsal görünüm",
       "masaustu": "videohero-masaustu.webp",
-      "telefon": "videohero-telefon.webp"
+      "telefon": "videohero-telefon.webp",
+      "masaustuTam": "videohero-masaustu-tam.webp",
+      "telefonTam": "videohero-telefon-tam.webp"
     },
     {
       "kisaAd": "curvedhero",
       "panelAdi": "Kavisli Kapak",
       "tarz": "Kavisli kapak ve lacivert yüzeylerle zarif görünüm",
       "masaustu": "curvedhero-masaustu.webp",
-      "telefon": "curvedhero-telefon.webp"
+      "telefon": "curvedhero-telefon.webp",
+      "masaustuTam": "curvedhero-masaustu-tam.webp",
+      "telefonTam": "curvedhero-telefon-tam.webp"
     },
     {
       "kisaAd": "globalcorporate",
       "panelAdi": "Uluslararası Kurumsal",
       "tarz": "Gece Boğaz manzaralı, uluslararası kurumsal görünüm",
       "masaustu": "globalcorporate-masaustu.webp",
-      "telefon": "globalcorporate-telefon.webp"
+      "telefon": "globalcorporate-telefon.webp",
+      "masaustuTam": "globalcorporate-masaustu-tam.webp",
+      "telefonTam": "globalcorporate-telefon-tam.webp"
     },
     {
       "kisaAd": "prestigegold",
       "panelAdi": "Prestige Gold",
       "tarz": "Koyu ve altın tonlarında klasik görünüm",
       "masaustu": "prestigegold-masaustu.webp",
-      "telefon": "prestigegold-telefon.webp"
+      "telefon": "prestigegold-telefon.webp",
+      "masaustuTam": "prestigegold-masaustu-tam.webp",
+      "telefonTam": "prestigegold-telefon-tam.webp"
     },
     {
       "kisaAd": "themis",
       "panelAdi": "Oblique",
       "tarz": "Lacivert dokulu, bakır vurgulu gece görünümü",
       "masaustu": "themis-masaustu.webp",
-      "telefon": "themis-telefon.webp"
+      "telefon": "themis-telefon.webp",
+      "masaustuTam": "themis-masaustu-tam.webp",
+      "telefonTam": "themis-telefon-tam.webp"
     }
   ]
 }
