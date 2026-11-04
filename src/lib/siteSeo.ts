@@ -45,6 +45,16 @@ export const SOFTWARE_ENTITY_HUB = [
     description: 'İş hukuku ve bilirkişilik hesaplamaları için Woontegra web yazılımı.',
   },
   {
+    name: 'Aktüerya Hesaplama',
+    path: '/yazilimlar/aktuerya-hesaplama',
+    description: 'Trafik ve iş kazası tazminat hesapları için Woontegra web yazılımı.',
+  },
+  {
+    name: 'Avukat Siteleri',
+    path: '/yazilimlar/avukat-siteleri',
+    description: 'Avukatlar ve hukuk büroları için KVKK uyumlu web sitesi ve yönetim paneli.',
+  },
+  {
     name: 'Müvekkil Kasa Defteri',
     path: '/yazilimlar/muvekkil-kasa-defteri',
     description: 'Avukat büroları için Woontegra masaüstü ve web tabanlı kasa defteri.',
@@ -86,7 +96,17 @@ export const PAGE_SEO_BY_PATH: Record<string, PageSeo> = {
   '/yazilimlar': {
     title: 'Woontegra Yazılımları | İşletmelere Özel Yazılım Çözümleri',
     description:
-      'Woontegra yazılımları: Bilirkişi Hesap, Müvekkil Kasa Defteri, KoopPlus ve Şifre Kasası — masaüstü, web ve lisanslı dijital ürünler.',
+      'Woontegra yazılımları: Bilirkişi Hesap, Aktüerya Hesaplama, Avukat Siteleri, Müvekkil Kasa Defteri, KoopPlus ve Şifre Kasası — masaüstü, web ve lisanslı dijital ürünler.',
+  },
+  '/yazilimlar/aktuerya-hesaplama': {
+    title: 'Aktüerya Hesaplama | Trafik ve İş Kazası Tazminat Hesabı | Woontegra',
+    description:
+      'Aktüerya Hesaplama; trafik ve iş kazalarında yaralanma ile ölüm tazminatı hesaplarını web, masaüstü ve mobil üzerinden yönetmenizi sağlar.',
+  },
+  '/yazilimlar/avukat-siteleri': {
+    title: 'Avukat Siteleri | KVKK Uyumlu Hukuk Bürosu Web Sitesi | Woontegra',
+    description:
+      'Avukatlara ve hukuk bürolarına özel: 10 hazır tema, KVKK uyumlu formlar, makale sistemi, kurumsal e-posta ve kolay yönetim paneli. Online satış yoktur; bizi arayın.',
   },
   '/yazilimlar/kooperatif-yonetim-yazilimi': {
     title: 'Kooperatif Yönetim Yazılımı | KoopPlus | Woontegra',

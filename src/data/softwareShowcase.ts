@@ -1,5 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
-import { Building2, Calculator, Shield, Wallet } from 'lucide-react'
+import { Building2, Calculator, LineChart, Scale, Shield, Wallet } from 'lucide-react'
+import { AKTUERYA_LOGO_MARK, AKTUERYA_PATH } from '@/data/aktueryaProduct'
+import { AVUKAT_SITELERI_PATH } from '@/data/avukatSiteleriProduct'
 import { KOOPPLUS_BRAND_ICON, KOOPPLUS_PATH } from '@/data/koopplusProduct'
 import type { PublicNavigationMenuItem } from '@/types/navigationMenu'
 
@@ -28,6 +30,24 @@ export const SOFTWARE_SHOWCASE_ITEMS: SoftwareShowcaseItem[] = [
     icon: Calculator,
     logoSrc: '/images/products/bilirkisi-hesap-icon.optavif-w512.webp',
     logoFlush: true,
+  },
+  {
+    id: 'aktuerya-hesaplama',
+    title: 'Aktüerya Hesaplama',
+    description: 'Trafik ve iş kazası tazminat hesaplarını web üzerinden hazırlayın.',
+    href: AKTUERYA_PATH,
+    ctaLabel: 'Ürünü İncele',
+    icon: LineChart,
+    logoSrc: AKTUERYA_LOGO_MARK,
+  },
+  {
+    id: 'avukat-siteleri',
+    title: 'Avukat Siteleri',
+    description: 'Hukuk büroları için KVKK uyumlu, reklam yasağına uygun web sitesi.',
+    href: AVUKAT_SITELERI_PATH,
+    ctaLabel: 'Ürünü İncele',
+    icon: Scale,
+    logoSrc: '/images/products/avukat-siteleri-icon.svg',
   },
   {
     id: 'muvekkil-kasa-defteri',

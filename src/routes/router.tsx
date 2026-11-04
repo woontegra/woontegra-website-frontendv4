@@ -48,6 +48,12 @@ const MuvekkilKasaComparePage = lazy(() =>
 const KoopPlusProductPage = lazy(() =>
   import('@/pages/public/KoopPlusProductPage').then((m) => ({ default: m.KoopPlusProductPage })),
 )
+const AktueryaProductPage = lazy(() =>
+  import('@/pages/public/AktueryaProductPage').then((m) => ({ default: m.AktueryaProductPage })),
+)
+const AvukatSiteleriPage = lazy(() =>
+  import('@/pages/public/AvukatSiteleriPage').then((m) => ({ default: m.AvukatSiteleriPage })),
+)
 const KoopPlusLegacyPathRedirect = lazy(() =>
   import('@/pages/public/KoopPlusProductPage').then((m) => ({ default: m.KoopPlusLegacyPathRedirect })),
 )
@@ -371,6 +377,8 @@ export const router = createBrowserRouter([
       { path: 'yazilimlar/muvekkil-kasa-defteri', element: <LazyPage><MuvekkilKasaComparePage /></LazyPage> },
       { path: 'yazilimlar/kooperatif-yonetim-yazilimi', element: <LazyPage><KoopPlusProductPage /></LazyPage> },
       { path: 'yazilimlar/koopplus', element: <LazyPage><KoopPlusLegacyPathRedirect /></LazyPage> },
+      { path: 'yazilimlar/aktuerya-hesaplama', element: <LazyPage><AktueryaProductPage /></LazyPage> },
+      { path: 'yazilimlar/avukat-siteleri', element: <LazyPage><AvukatSiteleriPage /></LazyPage> },
       {
         path: 'yazilimlar/bilirkisi-hesap/satin-al',
         element: <LazyPage><BilirkisiCheckoutPage /></LazyPage>,

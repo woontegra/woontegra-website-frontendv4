@@ -59,6 +59,8 @@ const STATIC_ENTRIES = [
   { path: '/yazilimlar/kooperatif-yonetim-yazilimi', priority: '0.8', changefreq: 'monthly' },
   { path: '/yazilimlar/sifre-kasasi', priority: '0.8', changefreq: 'monthly' },
   { path: '/yazilimlar/bilirkisi-hesap', priority: '0.8', changefreq: 'monthly' },
+  { path: '/yazilimlar/aktuerya-hesaplama', priority: '0.8', changefreq: 'monthly' },
+  { path: '/yazilimlar/avukat-siteleri', priority: '0.8', changefreq: 'monthly' },
   { path: '/blog', priority: '0.9', changefreq: 'weekly' },
   { path: '/iletisim', priority: '0.8', changefreq: 'monthly' },
   { path: '/veri-silme-talebi', priority: '0.6', changefreq: 'yearly' },

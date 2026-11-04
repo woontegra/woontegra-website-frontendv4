@@ -1,0 +1,76 @@
+{
+  "buroAdi": "Örnek Hukuk Bürosu",
+  "olusturma": "2026-11-04T20:31:13.444Z",
+  "temalar": [
+    {
+      "kisaAd": "prestige",
+      "panelAdi": "Prestige",
+      "tarz": "Lacivert ve altın tonlarında klasik kurumsal görünüm",
+      "masaustu": "prestige-masaustu.webp",
+      "telefon": "prestige-telefon.webp"
+    },
+    {
+      "kisaAd": "minimal",
+      "panelAdi": "Minimal",
+      "tarz": "Beyaz, sade ve modern ofis görünümü",
+      "masaustu": "minimal-masaustu.webp",
+      "telefon": "minimal-telefon.webp"
+    },
+    {
+      "kisaAd": "executive",
+      "panelAdi": "Executive",
+      "tarz": "Siyah ve antrasit tonlarında güçlü tipografi",
+      "masaustu": "executive-masaustu.webp",
+      "telefon": "executive-telefon.webp"
+    },
+    {
+      "kisaAd": "modern",
+      "panelAdi": "Modern",
+      "tarz": "Canlı renkler ve kartlı, telefona uygun modern görünüm",
+      "masaustu": "modern-masaustu.webp",
+      "telefon": "modern-telefon.webp"
+    },
+    {
+      "kisaAd": "sidebar",
+      "panelAdi": "Sol Menülü",
+      "tarz": "Solda dikey menülü, ferah editoryal görünüm",
+      "masaustu": "sidebar-masaustu.webp",
+      "telefon": "sidebar-telefon.webp"
+    },
+    {
+      "kisaAd": "videohero",
+      "panelAdi": "Videolu Kapak",
+      "tarz": "Beyaz menü ve geniş videolu kapaklı kurumsal görünüm",
+      "masaustu": "videohero-masaustu.webp",
+      "telefon": "videohero-telefon.webp"
+    },
+    {
+      "kisaAd": "curvedhero",
+      "panelAdi": "Kavisli Kapak",
+      "tarz": "Kavisli kapak ve lacivert yüzeylerle zarif görünüm",
+      "masaustu": "curvedhero-masaustu.webp",
+      "telefon": "curvedhero-telefon.webp"
+    },
+    {
+      "kisaAd": "globalcorporate",
+      "panelAdi": "Uluslararası Kurumsal",
+      "tarz": "Gece Boğaz manzaralı, uluslararası kurumsal görünüm",
+      "masaustu": "globalcorporate-masaustu.webp",
+      "telefon": "globalcorporate-telefon.webp"
+    },
+    {
+      "kisaAd": "prestigegold",
+      "panelAdi": "Prestige Gold",
+      "tarz": "Koyu ve altın tonlarında klasik görünüm",
+      "masaustu": "prestigegold-masaustu.webp",
+      "telefon": "prestigegold-telefon.webp"
+    },
+    {
+      "kisaAd": "themis",
+      "panelAdi": "Oblique",
+      "tarz": "Lacivert dokulu, bakır vurgulu gece görünümü",
+      "masaustu": "themis-masaustu.webp",
+      "telefon": "themis-telefon.webp"
+    }
+  ]
+}

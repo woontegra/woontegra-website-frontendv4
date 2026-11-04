@@ -49,6 +49,16 @@ const SOFTWARE_ENTITY_HUB = [
     description: 'İş hukuku ve bilirkişilik hesaplamaları için Woontegra web yazılımı.',
   },
   {
+    name: 'Aktüerya Hesaplama',
+    path: '/yazilimlar/aktuerya-hesaplama',
+    description: 'Trafik ve iş kazası tazminat hesapları için Woontegra web yazılımı.',
+  },
+  {
+    name: 'Avukat Siteleri',
+    path: '/yazilimlar/avukat-siteleri',
+    description: 'Avukatlar ve hukuk büroları için KVKK uyumlu web sitesi ve yönetim paneli.',
+  },
+  {
     name: 'Müvekkil Kasa Defteri',
     path: '/yazilimlar/muvekkil-kasa-defteri',
     description: 'Avukat büroları için Woontegra masaüstü ve web tabanlı kasa defteri.',
@@ -83,6 +93,8 @@ const PRIORITY_ROUTES = [
   '/yazilimlar/kooperatif-yonetim-yazilimi',
   '/yazilimlar/sifre-kasasi',
   '/yazilimlar/bilirkisi-hesap',
+  '/yazilimlar/aktuerya-hesaplama',
+  '/yazilimlar/avukat-siteleri',
   '/hizmetler',
   '/cozumler',
   '/blog',
@@ -141,6 +153,18 @@ const PAGE_SEO = {
     description:
       'Woontegra yazılımları; işletmeler için masaüstü programlar, SaaS ürünleri ve lisanslı dijital çözümler sunar.',
     h1: 'Dijital Ürünler ve Yazılımlar',
+  },
+  '/yazilimlar/aktuerya-hesaplama': {
+    title: 'Aktüerya Hesaplama | Trafik ve İş Kazası Tazminat Hesabı | Woontegra',
+    description:
+      'Aktüerya Hesaplama; trafik ve iş kazalarında yaralanma ile ölüm tazminatı hesaplarını web, masaüstü ve mobil üzerinden yönetmenizi sağlar.',
+    h1: 'Aktüeryal Tazminat Hesaplamaları Tek Platformda',
+  },
+  '/yazilimlar/avukat-siteleri': {
+    title: 'Avukat Siteleri | KVKK Uyumlu Hukuk Bürosu Web Sitesi | Woontegra',
+    description:
+      'Avukatlara ve hukuk bürolarına özel: 10 hazır tema, KVKK uyumlu formlar, makale sistemi, kurumsal e-posta ve kolay yönetim paneli. Online satış yoktur; bizi arayın.',
+    h1: 'Hukuk büronuz için KVKK uyumlu, reklam yasağına uygun web sitesi',
   },
   '/yazilimlar/kooperatif-yonetim-yazilimi': {
     title: 'Kooperatif Yönetim Yazılımı | KoopPlus | Woontegra',
@@ -241,6 +265,26 @@ const PRODUCT_FALLBACKS = {
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Windows',
     h1: 'Kooperatif yönetimini tek merkezde toplayın.',
+  },
+  'aktuerya-hesaplama': {
+    name: 'Aktüerya Hesaplama',
+    title: 'Aktüerya Hesaplama | Trafik ve İş Kazası Tazminat Hesabı | Woontegra',
+    description:
+      'Aktüerya Hesaplama; trafik ve iş kazalarında yaralanma ile ölüm tazminatı hesaplarını web, masaüstü ve mobil üzerinden yönetmenizi sağlar.',
+    body: 'Aktüerya Hesaplama, trafik ve iş kazalarında yaralanma ile ölüm tazminatı hesapları için geliştirilen Woontegra platformudur. Web, Windows, macOS ve mobil sürümleri vardır. Hesap çıktısı üretir; dava sonucu garantisi vermez.',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web, Windows, macOS',
+    h1: 'Aktüeryal Tazminat Hesaplamaları Tek Platformda',
+  },
+  'avukat-siteleri': {
+    name: 'Avukat Siteleri',
+    title: 'Avukat Siteleri | KVKK Uyumlu Hukuk Bürosu Web Sitesi | Woontegra',
+    description:
+      'Avukatlara ve hukuk bürolarına özel: 10 hazır tema, KVKK uyumlu formlar, makale sistemi, kurumsal e-posta ve kolay yönetim paneli. Online satış yoktur; bizi arayın.',
+    body: 'Avukat Siteleri; hukuk büroları için KVKK uyumlu, reklam yasağına uygun web sitesi ve yönetim panelidir. Online satış yoktur; kurulum ve yıllık hizmet için Woontegra ile iletişime geçilir.',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    h1: 'Hukuk büronuz için KVKK uyumlu, reklam yasağına uygun web sitesi',
   },
   'sifre-kasasi': {
     name: 'Woontegra Şifre Kasası',
@@ -504,7 +548,7 @@ async function resolvePageModel(route, cache) {
   if (route === '/yazilimlar') {
     crumbs.push({ name: 'Yazılımlar', path: route })
     jsonLd.push(breadcrumbSchema(crumbs))
-    bodyText = `${h1}. Woontegra yazılımları: Bilirkişi Hesap, Müvekkil Kasa Defteri, KoopPlus ve Şifre Kasası.`
+    bodyText = `${h1}. Woontegra yazılımları: Bilirkişi Hesap, Aktüerya Hesaplama, Avukat Siteleri, Müvekkil Kasa Defteri, KoopPlus ve Şifre Kasası.`
     return { title, description, h1, bodyText, jsonLd, crumbs, hubProducts: true }
   }
 
@@ -570,6 +614,46 @@ async function resolvePageModel(route, cache) {
         operatingSystem: fb.operatingSystem,
         price: typeof product?.price === 'number' ? product.price : null,
         priceCurrency: product?.currency || 'TRY',
+      }),
+      breadcrumbSchema(crumbs),
+    )
+    return { title, description, h1, bodyText, jsonLd, crumbs }
+  }
+
+  if (route === '/yazilimlar/aktuerya-hesaplama') {
+    const fb = PRODUCT_FALLBACKS['aktuerya-hesaplama']
+    title = fb.title
+    description = fb.description
+    h1 = fb.h1
+    bodyText = `${h1}. ${fb.body}`
+    crumbs.push({ name: 'Yazılımlar', path: '/yazilimlar' }, { name: fb.name, path: route })
+    jsonLd.push(
+      softwareApplicationSchema({
+        name: fb.name,
+        description,
+        url: siteUrl(route),
+        applicationCategory: fb.applicationCategory,
+        operatingSystem: fb.operatingSystem,
+      }),
+      breadcrumbSchema(crumbs),
+    )
+    return { title, description, h1, bodyText, jsonLd, crumbs }
+  }
+
+  if (route === '/yazilimlar/avukat-siteleri') {
+    const fb = PRODUCT_FALLBACKS['avukat-siteleri']
+    title = fb.title
+    description = fb.description
+    h1 = fb.h1
+    bodyText = `${h1}. ${fb.body}`
+    crumbs.push({ name: 'Yazılımlar', path: '/yazilimlar' }, { name: fb.name, path: route })
+    jsonLd.push(
+      softwareApplicationSchema({
+        name: fb.name,
+        description,
+        url: siteUrl(route),
+        applicationCategory: fb.applicationCategory,
+        operatingSystem: fb.operatingSystem,
       }),
       breadcrumbSchema(crumbs),
     )
@@ -1136,6 +1220,8 @@ async function main() {
     '/yazilimlar/muvekkil-kasa-defteri',
     '/yazilimlar/kooperatif-yonetim-yazilimi',
     '/yazilimlar/sifre-kasasi',
+    '/yazilimlar/aktuerya-hesaplama',
+    '/yazilimlar/avukat-siteleri',
   ])
 
   for (const route of ordered) {

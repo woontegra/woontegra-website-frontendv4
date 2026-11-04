@@ -31,7 +31,7 @@ export function SoftwareListPage() {
       <PageHero
         eyebrow="Yazılımlar"
         title="Dijital Ürünler ve Yazılımlar"
-        description="Woontegra’nın geliştirdiği Bilirkişi Hesap, Müvekkil Kasa Defteri, KoopPlus ve Şifre Kasası yazılımlarına buradan ulaşın."
+        description="Woontegra’nın geliştirdiği Bilirkişi Hesap, Aktüerya Hesaplama, Avukat Siteleri, Müvekkil Kasa Defteri, KoopPlus ve Şifre Kasası yazılımlarına buradan ulaşın."
         breadcrumbs={[{ label: 'Ana Sayfa', href: '/' }, { label: 'Yazılımlar' }]}
       />
       <section className="border-b border-slate-200 bg-slate-50 py-10">

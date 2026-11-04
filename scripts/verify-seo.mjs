@@ -26,6 +26,8 @@ const PRODUCT_HUB_PATHS = [
   '/yazilimlar/muvekkil-kasa-defteri',
   '/yazilimlar/kooperatif-yonetim-yazilimi',
   '/yazilimlar/sifre-kasasi',
+  '/yazilimlar/aktuerya-hesaplama',
+  '/yazilimlar/avukat-siteleri',
 ]
 
 const checks = []
@@ -364,6 +366,16 @@ function main() {
     mustInclude: ['Şifre'],
     requireSoftware: true,
   })
+  verifyPage('/yazilimlar/aktuerya-hesaplama', {
+    titleIncludes: 'Aktüerya Hesaplama',
+    mustInclude: ['Aktüerya', 'Woontegra'],
+    requireSoftware: true,
+  })
+  verifyPage('/yazilimlar/avukat-siteleri', {
+    titleIncludes: 'Avukat Siteleri',
+    mustInclude: ['Avukat', 'Woontegra', 'KVKK'],
+    requireSoftware: true,
+  })
   verifySitemap()
   verifyRobots()
   verifyIndexNowArtifacts()
@@ -375,6 +387,8 @@ function main() {
   verifySoftwareWoontegraRelation('/yazilimlar/muvekkil-kasa-defteri', 'Müvekkil')
   verifySoftwareWoontegraRelation('/yazilimlar/kooperatif-yonetim-yazilimi', 'KoopPlus')
   verifySoftwareWoontegraRelation('/yazilimlar/sifre-kasasi', 'Şifre')
+  verifySoftwareWoontegraRelation('/yazilimlar/aktuerya-hesaplama', 'Aktüerya')
+  verifySoftwareWoontegraRelation('/yazilimlar/avukat-siteleri', 'Avukat')
 
   assert(
     'prerender',

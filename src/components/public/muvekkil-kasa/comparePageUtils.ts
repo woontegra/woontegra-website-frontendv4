@@ -4,6 +4,9 @@ import {
   MK_COMPARE_DESKTOP_DELIVERY_NOTE,
   MK_COMPARE_WEB_DELIVERY_NOTE,
 } from '@/components/public/muvekkil-kasa/mkCompareContent'
+import { AKTUERYA_PATH } from '@/data/aktueryaProduct'
+import { isAktueryaCatalogSlug } from '@/data/aktueryaCatalog'
+import { AVUKAT_SITELERI_PATH, AVUKAT_SITELERI_SLUG } from '@/data/avukatSiteleriProduct'
 import { isMuvekkilKasaDesktopSalesSlug } from '@/lib/muvekkilKasaDesktopProduct'
 import { isMuvekkilKasaSaasProduct } from '@/lib/muvekkilKasaSaasProduct'
 
@@ -50,6 +53,12 @@ export function publicSoftwareDetailHref(slug: string): string {
   }
   if (isKoopPlusPublicSlug(normalized)) {
     return KOOPPLUS_PATH
+  }
+  if (isAktueryaCatalogSlug(normalized)) {
+    return AKTUERYA_PATH
+  }
+  if (normalized === AVUKAT_SITELERI_SLUG || normalized.startsWith(`${AVUKAT_SITELERI_SLUG}-`)) {
+    return AVUKAT_SITELERI_PATH
   }
   return `/yazilimlar/${slug}`
 }
