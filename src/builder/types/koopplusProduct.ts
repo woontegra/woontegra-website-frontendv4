@@ -222,6 +222,74 @@ function nullableUrl(value: unknown, fallback: string | null): string | null {
   return trimmed ? trimmed : null
 }
 
+/**
+ * Eski masaüstü (Windows/Mac/indirme) kopyası — yayınlanmış builder JSON’unda kalabiliyor.
+ * SaaS sayfasında bu ifadeler gösterilmez; alan varsayılana düşer.
+ */
+const LEGACY_DESKTOP_COPY_RE =
+  /windows|macos|mac\s*os|\bmac\b|masaüstü|masaustu|\bindir|\bdownload\b|tek uygulama|tek merkezde|yakında sunulacak|kurulum dosyas|setup\.exe|bilgisayarınıza/i
+
+export function isLegacyKoopPlusDesktopCopy(value: string | null | undefined): boolean {
+  return typeof value === 'string' && LEGACY_DESKTOP_COPY_RE.test(value)
+}
+
+function saasSafeText(value: string, fallback: string): string {
+  return isLegacyKoopPlusDesktopCopy(value) ? fallback : value
+}
+
+/** Yayınlanmış içerikteki masaüstü kalıntılarını SaaS varsayılanlarıyla değiştirir. */
+export function sanitizeKoopPlusProductContentForSaas(content: KoopPlusProductContent): KoopPlusProductContent {
+  const d = getDefaultKoopPlusProductContent()
+  return {
+    ...content,
+    hero: {
+      ...content.hero,
+      title: saasSafeText(content.hero.title, d.hero.title),
+      description: saasSafeText(content.hero.description, d.hero.description),
+      primaryCtaLabel: saasSafeText(content.hero.primaryCtaLabel, d.hero.primaryCtaLabel),
+      secondaryCtaLabel: saasSafeText(content.hero.secondaryCtaLabel, d.hero.secondaryCtaLabel),
+      imageAlt: saasSafeText(content.hero.imageAlt, d.hero.imageAlt),
+    },
+    platforms: {
+      heading: saasSafeText(content.platforms.heading, d.platforms.heading),
+      trialSuffix: saasSafeText(content.platforms.trialSuffix, d.platforms.trialSuffix),
+      windows: {
+        ...content.platforms.windows,
+        title: saasSafeText(content.platforms.windows.title, d.platforms.windows.title),
+        status: saasSafeText(content.platforms.windows.status, d.platforms.windows.status),
+        badge: saasSafeText(content.platforms.windows.badge, d.platforms.windows.badge),
+        purchaseCtaLabel: saasSafeText(
+          content.platforms.windows.purchaseCtaLabel,
+          d.platforms.windows.purchaseCtaLabel,
+        ),
+        trialCtaLabel: saasSafeText(content.platforms.windows.trialCtaLabel, d.platforms.windows.trialCtaLabel),
+      },
+    },
+    trial: {
+      ...content.trial,
+      title: saasSafeText(content.trial.title, d.trial.title),
+      intro: saasSafeText(content.trial.intro, d.trial.intro),
+      downloadCtaLabel: saasSafeText(content.trial.downloadCtaLabel, d.trial.downloadCtaLabel),
+      downloadHint: saasSafeText(content.trial.downloadHint, d.trial.downloadHint),
+      trustLine: saasSafeText(content.trial.trustLine, d.trial.trustLine),
+      highlights: content.trial.highlights.map((item, index) => {
+        const base = d.trial.highlights[index] ?? item
+        return {
+          title: saasSafeText(item.title, base.title),
+          description: saasSafeText(item.description, base.description),
+        }
+      }),
+    },
+    closing: {
+      ...content.closing,
+      heading: saasSafeText(content.closing.heading, d.closing.heading),
+      description: saasSafeText(content.closing.description, d.closing.description),
+      primaryCtaLabel: saasSafeText(content.closing.primaryCtaLabel, d.closing.primaryCtaLabel),
+      secondaryCtaLabel: saasSafeText(content.closing.secondaryCtaLabel, d.closing.secondaryCtaLabel),
+    },
+  }
+}
+
 export function isKoopPlusCtaAction(value: unknown): value is KoopPlusCtaAction {
   return typeof value === 'string' && (KOOPPLUS_CTA_ACTIONS as readonly string[]).includes(value)
 }
@@ -430,7 +498,7 @@ function mergeContent(raw: unknown): KoopPlusProductContent | null {
       ? (input.sectionVisibility as Record<string, unknown>)
       : {}
 
-  return {
+  const merged: KoopPlusProductContent = {
     hero: {
       kicker: str(hero.kicker, defaults.hero.kicker),
       identity: str(hero.identity, defaults.hero.identity),
@@ -516,6 +584,8 @@ function mergeContent(raw: unknown): KoopPlusProductContent | null {
       closing: bool(visibility.closing, defaults.sectionVisibility.closing),
     },
   }
+
+  return sanitizeKoopPlusProductContentForSaas(merged)
 }
 
 export function createDefaultKoopPlusProductBlock(sortOrder = 0): KoopPlusProductBlock {

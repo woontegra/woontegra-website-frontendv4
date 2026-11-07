@@ -110,6 +110,7 @@ export function KoopPlusProductSettingsPanel() {
           />
           <TextField
             label="Kart başlığı"
+            hint="Örn. KoopPlus Yıllık — masaüstü platform adı yazmayın"
             value={content.platforms.windows.title}
             onChange={(title) =>
               setContent((current) => ({
@@ -120,6 +121,7 @@ export function KoopPlusProductSettingsPanel() {
           />
           <TextField
             label="Durum"
+            hint="Örn. Web tabanlı · kurulum yok"
             value={content.platforms.windows.status}
             onChange={(status) =>
               setContent((current) => ({
@@ -130,6 +132,7 @@ export function KoopPlusProductSettingsPanel() {
           />
           <TextField
             label="Rozet"
+            hint="SaaS — işletim sistemi etiketi kullanmayın (sitede otomatik temizlenir)"
             value={content.platforms.windows.badge}
             onChange={(badge) =>
               setContent((current) => ({
@@ -140,7 +143,7 @@ export function KoopPlusProductSettingsPanel() {
           />
           <TextField
             label="Satın al CTA"
-            hint="Etiket değişir; purchase aksiyonu sabit kalır"
+            hint="Hemen Satın Al — Windows için Satın Al yazmayın"
             value={content.platforms.windows.purchaseCtaLabel}
             onChange={(purchaseCtaLabel) =>
               setContent((current) => ({
@@ -154,6 +157,7 @@ export function KoopPlusProductSettingsPanel() {
           />
           <TextField
             label="Deneme CTA"
+            hint="7 Gün Ücretsiz Dene — indirme ifadesi kullanmayın"
             value={content.platforms.windows.trialCtaLabel}
             onChange={(trialCtaLabel) =>
               setContent((current) => ({

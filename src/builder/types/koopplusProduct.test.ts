@@ -107,6 +107,29 @@ describe('koopplus-product schema and conversion', () => {
     })
   })
 
+  it('strips legacy Windows/Mac/download copy from published content', () => {
+    const published = createDefaultKoopPlusProductBlock(0)
+    published.settings.content.hero.title = 'Kooperatif yönetimini tek merkezde toplayın.'
+    published.settings.content.hero.description =
+      'KoopPlus, kooperatif yönetim yazılımıdır. Üye, aidat, tahsilat, faiz, kasa ve banka süreçlerini tek masaüstü uygulamada yönetmek için geliştirilen Woontegra yazılımıdır.'
+    published.settings.content.hero.primaryCtaLabel = 'Windows için Satın Al'
+    published.settings.content.platforms.windows.title = 'KoopPlus for Windows'
+    published.settings.content.platforms.windows.badge = 'Windows'
+    published.settings.content.platforms.windows.purchaseCtaLabel = 'Windows için Satın Al'
+    published.settings.content.platforms.windows.status = 'Windows bilgisayarınıza kurulum'
+    published.settings.content.trial.intro =
+      'KoopPlus’ı Windows bilgisayarınıza indirip 7 gün boyunca ücretsiz deneyin.'
+    const parsed = parseKoopPlusProductBlock(published)
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) return
+    expect(parsed.content.hero.title).toBe(getDefaultKoopPlusProductContent().hero.title)
+    expect(parsed.content.hero.primaryCtaLabel).toBe('Hemen Satın Al')
+    expect(parsed.content.platforms.windows.badge).toBe('SaaS')
+    expect(parsed.content.platforms.windows.title).toBe('KoopPlus Yıllık')
+    expect(parsed.content.platforms.windows.purchaseCtaLabel).toBe('Hemen Satın Al')
+    expect(parsed.content.trial.intro).not.toMatch(/Windows|indir/i)
+  })
+
   it('uses published content, ignores draft-only and invalid documents', () => {
     const empty = resolvePublishedKoopPlusProductContent(null)
     expect(empty.content).toBeNull()

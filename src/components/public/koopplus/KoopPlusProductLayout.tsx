@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Cloud, FolderSync, ShieldCheck } from 'lucide-react'
 import { Breadcrumbs } from '@/components/public/Breadcrumbs'
@@ -7,6 +7,7 @@ import { KoopPlusDemoModal } from '@/components/public/koopplus/KoopPlusDemoModa
 import {
   getDefaultKoopPlusProductContent,
   resolveKoopPlusFeatureIcon,
+  sanitizeKoopPlusProductContentForSaas,
   type KoopPlusProductContent,
 } from '@/builder/types/koopplusProduct'
 import { KOOPPLUS_BRAND_ICON, KOOPPLUS_NAME, KOOPPLUS_TAGLINE } from '@/data/koopplusProduct'
@@ -106,11 +107,17 @@ export function KoopPlusProductLayout({
   desktopLicenseRenewal = null,
   desktopLicenseRenewalLoading = false,
 }: KoopPlusProductLayoutProps) {
-  const content = contentProp ?? getDefaultKoopPlusProductContent()
+  const content = useMemo(
+    () => sanitizeKoopPlusProductContentForSaas(contentProp ?? getDefaultKoopPlusProductContent()),
+    [contentProp],
+  )
   const navigate = useNavigate()
   const [buyNotice, setBuyNotice] = useState<string | null>(null)
   const [demoOpen, setDemoOpen] = useState(false)
-  const [openFaq, setOpenFaq] = useState<string | null>(content.faq.items[0]?.question ?? null)
+  const [openFaq, setOpenFaq] = useState<string | null>(null)
+  useEffect(() => {
+    setOpenFaq((prev) => prev ?? content.faq.items[0]?.question ?? null)
+  }, [content])
   const offer = useMemo(() => mapKoopPlusCatalogOffer(product), [product])
   const buyAction = useMemo(() => resolveKoopPlusBuyAction(product), [product])
   const buyReady = buyAction.type === 'addToCart'
@@ -118,10 +125,11 @@ export function KoopPlusProductLayout({
   const salesNotReadyLabel = content.hero.salesNotReadyLabel
   const visibility = content.sectionVisibility
   const modalScreenshot = useMemo(() => resolveScreenshots(product, content)[0] ?? null, [product, content])
-  // Eski kayıtlı builder JSON’unda “for Windows/Mac” başlığı kalmış olabilir; SaaS kart başlığına düş.
-  const planTitle = /windows|mac/i.test(content.platforms.windows.title)
-    ? offer.packageLabel
-    : content.platforms.windows.title
+  // SaaS: tek plan — Windows/Mac rozeti veya “Windows için Satın Al” asla gösterilmez.
+  const planTitle = content.platforms.windows.title
+  const planBadge = content.platforms.windows.badge
+  const planPurchaseCta = content.platforms.windows.purchaseCtaLabel
+  const planTrialCta = content.platforms.windows.trialCtaLabel
 
   const startCheckout = () => {
     trackKoopplusEvent('koopplus_buy_click')
@@ -239,7 +247,7 @@ export function KoopPlusProductLayout({
                   </div>
                 </div>
                 <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                  {content.platforms.windows.badge}
+                  {planBadge}
                 </span>
               </div>
               <div className="mt-5">
@@ -276,7 +284,7 @@ export function KoopPlusProductLayout({
                       : 'cursor-not-allowed bg-slate-100 text-slate-400',
                   )}
                 >
-                  {buyReady ? content.platforms.windows.purchaseCtaLabel : salesNotReadyLabel}
+                  {buyReady ? planPurchaseCta : salesNotReadyLabel}
                   {buyReady ? <ArrowRight className="ml-2 h-4 w-4" aria-hidden /> : null}
                 </button>
                 <button
@@ -284,7 +292,7 @@ export function KoopPlusProductLayout({
                   onClick={openDemo}
                   className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
-                  {content.platforms.windows.trialCtaLabel}
+                  {planTrialCta}
                 </button>
               </div>
               {buyNotice ? (
