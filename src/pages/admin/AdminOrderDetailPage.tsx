@@ -401,6 +401,29 @@ export function AdminOrderDetailPage() {
               <Mail className={`mr-1.5 h-3.5 w-3.5 ${resendEmailMutation.isPending ? 'animate-pulse' : ''}`} />
               E-postayı Tekrar Gönder
             </Button>
+            {data.koopplusSyncStatus ? (
+              <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">KoopPlus senkron</p>
+                <InfoRow
+                  label="Durum"
+                  value={data.koopplusSyncStatus.label}
+                  valueClassName={
+                    data.koopplusSyncStatus.status === 'sent'
+                      ? 'text-emerald-800'
+                      : data.koopplusSyncStatus.status === 'error'
+                        ? 'text-red-700'
+                        : 'text-amber-800'
+                  }
+                />
+                {data.koopplusSyncStatus.lastError ? (
+                  <p className="text-sm text-red-700">{data.koopplusSyncStatus.lastError}</p>
+                ) : null}
+                {data.koopplusSyncStatus.lastNotifiedAt ? (
+                  <InfoRow label="Son bildirim" value={formatDateTime(data.koopplusSyncStatus.lastNotifiedAt)} />
+                ) : null}
+                {data.hasKoopplusLicenseKey ? <InfoRow label="Yenileme anahtarı" value="Checkout’ta girildi" /> : null}
+              </div>
+            ) : null}
             {saas ? (
               <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Müvekkil Kasa SaaS teslimat</p>

@@ -152,6 +152,14 @@ export type AdminOrderDetail = {
     activationEmailSent: boolean
     pendingInfoEmailSent: boolean
   } | null
+  /** KoopPlus SaaS: Gönderildi / Hata / Bekliyor (ürün yoksa null) */
+  koopplusSyncStatus?: {
+    status: 'sent' | 'error' | 'pending'
+    label: 'Gönderildi' | 'Hata' | 'Bekliyor'
+    lastError: string | null
+    lastNotifiedAt: string | null
+  } | null
+  hasKoopplusLicenseKey?: boolean
   canRetryDigitalDelivery?: boolean
   digitalDeliveryEmailAlert?: string | null
   preInfoAcceptedAt: string | null
@@ -386,6 +394,29 @@ export function normalizeAdminOrderDetail(raw: unknown): AdminOrderDetail | null
         pendingInfoEmailSent: s.pendingInfoEmailSent === true,
       }
     })(),
+    koopplusSyncStatus: (() => {
+      const raw = row.koopplusSyncStatus
+      if (!raw || typeof raw !== 'object') return null
+      const s = raw as Record<string, unknown>
+      const status =
+        s.status === 'sent' || s.status === 'error' || s.status === 'pending' ? s.status : null
+      if (!status) return null
+      const label =
+        s.label === 'Gönderildi' || s.label === 'Hata' || s.label === 'Bekliyor'
+          ? s.label
+          : status === 'sent'
+            ? 'Gönderildi'
+            : status === 'error'
+              ? 'Hata'
+              : 'Bekliyor'
+      return {
+        status,
+        label,
+        lastError: toNullableString(s.lastError),
+        lastNotifiedAt: toNullableString(s.lastNotifiedAt),
+      }
+    })(),
+    hasKoopplusLicenseKey: row.hasKoopplusLicenseKey === true,
     canRetryDigitalDelivery:
       row.canRetryDigitalDelivery === true ? true : row.canRetryDigitalDelivery === false ? false : undefined,
     digitalDeliveryEmailAlert: toNullableString(row.digitalDeliveryEmailAlert),
