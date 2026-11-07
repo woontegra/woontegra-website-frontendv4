@@ -3,6 +3,7 @@ import {
   ArrowLeftRight,
   Building2,
   Calculator,
+  Cloud,
   Database,
   FileSpreadsheet,
   Landmark,
@@ -10,6 +11,7 @@ import {
   Percent,
   Receipt,
   ShieldCheck,
+  Smartphone,
   Users,
   Wallet,
 } from 'lucide-react'
@@ -23,6 +25,7 @@ import {
   KOOPPLUS_LOCAL_DATA,
   KOOPPLUS_MULTI_COOP,
   KOOPPLUS_NAME,
+  KOOPPLUS_PRICE_LABEL,
   KOOPPLUS_TRIAL,
   KOOPPLUS_WHY,
 } from '@/data/koopplusProduct'
@@ -30,14 +33,18 @@ import {
 export const KOOPPLUS_PRODUCT_BLOCK_TYPE = 'koopplus-product' as const
 export const KOOPPLUS_PRODUCT_SCHEMA_VERSION = 1 as const
 
-export const KOOPPLUS_CTA_ACTIONS = [
-  'purchaseWindows',
-  'startTrial',
-  'downloadTrial',
-  'purchaseMac',
-] as const
+export const KOOPPLUS_CTA_ACTIONS = ['purchase', 'startDemo'] as const
 
 export type KoopPlusCtaAction = (typeof KOOPPLUS_CTA_ACTIONS)[number]
+
+/** Eski (masaüstü) builder JSON eylemleri → SaaS eylemleri. */
+export const KOOPPLUS_LEGACY_CTA_ACTION_ALIASES: Record<string, KoopPlusCtaAction> = {
+  purchaseWindows: 'purchase',
+  startTrial: 'startDemo',
+}
+
+/** Eski JSON’da bulunabilen, SaaS’ta karşılığı olmayan eylemler (yok sayılır). */
+export const KOOPPLUS_IGNORED_LEGACY_CTA_ACTIONS = ['purchaseMac', 'downloadTrial'] as const
 
 export type KoopPlusGalleryImage = {
   url: string
@@ -75,13 +82,17 @@ export type KoopPlusProductContent = {
     title: string
     description: string
     primaryCtaLabel: string
-    primaryCtaAction: 'purchaseWindows'
+    primaryCtaAction: 'purchase'
     secondaryCtaLabel: string
-    secondaryCtaAction: 'startTrial'
+    secondaryCtaAction: 'startDemo'
     salesNotReadyLabel: string
     imageUrl: string | null
     imageAlt: string
   }
+  /**
+   * SaaS: tek plan kartı. `windows` anahtarı eski kayıtlı JSON ile uyum için korunur;
+   * kart etiketleri olarak kullanılır (Windows/Mac ayrımı yoktur).
+   */
   platforms: {
     heading: string
     trialSuffix: string
@@ -90,16 +101,8 @@ export type KoopPlusProductContent = {
       status: string
       badge: string
       purchaseCtaLabel: string
-      purchaseCtaAction: 'purchaseWindows'
+      purchaseCtaAction: 'purchase'
       trialCtaLabel: string
-    }
-    mac: {
-      title: string
-      status: string
-      badge: string
-      purchaseCtaLabel: string
-      purchaseCtaAction: 'purchaseMac'
-      closedNote: string
     }
   }
   trial: {
@@ -107,8 +110,9 @@ export type KoopPlusProductContent = {
     title: string
     intro: string
     highlights: KoopPlusTextItem[]
+    /** Demo başlat CTA etiketi (eski adıyla downloadCtaLabel). */
     downloadCtaLabel: string
-    downloadCtaAction: 'downloadTrial'
+    downloadCtaAction: 'startDemo'
     trustLine: string
     downloadHint: string
   }
@@ -137,9 +141,9 @@ export type KoopPlusProductContent = {
     heading: string
     description: string
     primaryCtaLabel: string
-    primaryCtaAction: 'purchaseWindows'
+    primaryCtaAction: 'purchase'
     secondaryCtaLabel: string
-    secondaryCtaAction: 'startTrial'
+    secondaryCtaAction: 'startDemo'
   }
   gallery: {
     images: KoopPlusGalleryImage[]
@@ -174,6 +178,8 @@ const FEATURE_ICONS: Record<string, LucideIcon> = {
   Database,
   Building2,
   ShieldCheck,
+  Smartphone,
+  Cloud,
 }
 
 const FEATURE_ICON_BY_COMPONENT = new Map<LucideIcon, string>(
@@ -220,14 +226,22 @@ export function isKoopPlusCtaAction(value: unknown): value is KoopPlusCtaAction 
   return typeof value === 'string' && (KOOPPLUS_CTA_ACTIONS as readonly string[]).includes(value)
 }
 
+/** Yeni eylem veya bilinen eski takma ad (purchaseWindows / startTrial) → SaaS eylemi; aksi halde null. */
+export function normalizeKoopPlusCtaAction(value: unknown): KoopPlusCtaAction | null {
+  if (typeof value !== 'string') return null
+  if (isKoopPlusCtaAction(value)) return value
+  return KOOPPLUS_LEGACY_CTA_ACTION_ALIASES[value] ?? null
+}
+
 export function sanitizeKoopPlusCtaAction(value: unknown, fallback: KoopPlusCtaAction): KoopPlusCtaAction {
-  return isKoopPlusCtaAction(value) ? value : fallback
+  return normalizeKoopPlusCtaAction(value) ?? fallback
 }
 
 export function isUnsafeKoopPlusActionInput(value: unknown): boolean {
   if (typeof value !== 'string') return true
   if (/javascript:|data:text|on\w+\s*=|<\s*script/i.test(value)) return true
-  return !isKoopPlusCtaAction(value)
+  if ((KOOPPLUS_IGNORED_LEGACY_CTA_ACTIONS as readonly string[]).includes(value)) return false
+  return normalizeKoopPlusCtaAction(value) == null
 }
 
 export function resolveKoopPlusFeatureIcon(name?: string | null): LucideIcon {
@@ -243,31 +257,23 @@ export function getDefaultKoopPlusProductContent(): KoopPlusProductContent {
       title: KOOPPLUS_HERO.title,
       description: KOOPPLUS_HERO.description,
       primaryCtaLabel: KOOPPLUS_HERO.primaryCta,
-      primaryCtaAction: 'purchaseWindows',
+      primaryCtaAction: 'purchase',
       secondaryCtaLabel: KOOPPLUS_HERO.secondaryCta,
-      secondaryCtaAction: 'startTrial',
+      secondaryCtaAction: 'startDemo',
       salesNotReadyLabel: 'Satışa hazırlanıyor',
       imageUrl: KOOPPLUS_HERO_IMAGE,
-      imageAlt: 'KoopPlus masaüstü uygulaması',
+      imageAlt: 'KoopPlus web tabanlı kooperatif yönetim paneli',
     },
     platforms: {
       heading: 'KoopPlus’ı kullanmaya başlayın',
-      trialSuffix: '7 gün ücretsiz deneme',
+      trialSuffix: '7 gün ücretsiz demo',
       windows: {
-        title: 'KoopPlus for Windows',
-        status: 'Kullanıma hazır',
-        badge: 'Windows',
-        purchaseCtaLabel: 'Windows için Satın Al',
-        purchaseCtaAction: 'purchaseWindows',
+        title: KOOPPLUS_PRICE_LABEL,
+        status: 'Web tabanlı · kurulum yok',
+        badge: 'SaaS',
+        purchaseCtaLabel: 'Hemen Satın Al',
+        purchaseCtaAction: 'purchase',
         trialCtaLabel: '7 Gün Ücretsiz Dene',
-      },
-      mac: {
-        title: 'KoopPlus for Mac',
-        status: 'macOS sürümü yakında kullanıma sunulacak.',
-        badge: 'Yakında',
-        purchaseCtaLabel: 'Mac için Satın Al',
-        purchaseCtaAction: 'purchaseMac',
-        closedNote: 'macOS satın alma şu anda kapalıdır.',
       },
     },
     trial: {
@@ -279,13 +285,13 @@ export function getDefaultKoopPlusProductContent(): KoopPlusProductContent {
         description: item.description,
       })),
       downloadCtaLabel: KOOPPLUS_TRIAL.downloadCta,
-      downloadCtaAction: 'downloadTrial',
+      downloadCtaAction: 'startDemo',
       trustLine: KOOPPLUS_TRIAL.trustLine,
       downloadHint: KOOPPLUS_TRIAL.downloadHint,
     },
     features: {
       heading: 'KoopPlus ile neler yönetirsiniz?',
-      description: 'Masaüstü uygulamada bugün kullanılan temel kooperatif süreçleri.',
+      description: 'Tarayıcıdan kullandığınız temel kooperatif süreçleri.',
       items: KOOPPLUS_FEATURES.map((feature) => ({
         title: feature.title,
         description: feature.description,
@@ -316,11 +322,11 @@ export function getDefaultKoopPlusProductContent(): KoopPlusProductContent {
     },
     closing: {
       heading: 'Kooperatif yönetimini KoopPlus ile sadeleştirin',
-      description: 'Windows sürümünü inceleyin veya 7 günlük denemeyi masaüstü uygulamada başlatın.',
-      primaryCtaLabel: 'Windows için Satın Al',
-      primaryCtaAction: 'purchaseWindows',
+      description: 'KoopPlus’ı hemen satın alın veya 7 günlük ücretsiz demoyu tarayıcıdan başlatın.',
+      primaryCtaLabel: 'Hemen Satın Al',
+      primaryCtaAction: 'purchase',
       secondaryCtaLabel: '7 Gün Ücretsiz Dene',
-      secondaryCtaAction: 'startTrial',
+      secondaryCtaAction: 'startDemo',
     },
     gallery: {
       images: [],
@@ -403,8 +409,6 @@ function mergeContent(raw: unknown): KoopPlusProductContent | null {
     platforms.windows && typeof platforms.windows === 'object'
       ? (platforms.windows as Record<string, unknown>)
       : {}
-  const mac =
-    platforms.mac && typeof platforms.mac === 'object' ? (platforms.mac as Record<string, unknown>) : {}
   const trial = input.trial && typeof input.trial === 'object' ? (input.trial as Record<string, unknown>) : {}
   const features =
     input.features && typeof input.features === 'object' ? (input.features as Record<string, unknown>) : {}
@@ -433,9 +437,9 @@ function mergeContent(raw: unknown): KoopPlusProductContent | null {
       title: str(hero.title, defaults.hero.title),
       description: str(hero.description, defaults.hero.description),
       primaryCtaLabel: str(hero.primaryCtaLabel, defaults.hero.primaryCtaLabel),
-      primaryCtaAction: 'purchaseWindows',
+      primaryCtaAction: 'purchase',
       secondaryCtaLabel: str(hero.secondaryCtaLabel, defaults.hero.secondaryCtaLabel),
-      secondaryCtaAction: 'startTrial',
+      secondaryCtaAction: 'startDemo',
       salesNotReadyLabel: str(hero.salesNotReadyLabel, defaults.hero.salesNotReadyLabel),
       imageUrl: nullableUrl(hero.imageUrl, defaults.hero.imageUrl),
       imageAlt: str(hero.imageAlt, defaults.hero.imageAlt),
@@ -448,16 +452,8 @@ function mergeContent(raw: unknown): KoopPlusProductContent | null {
         status: str(windows.status, defaults.platforms.windows.status),
         badge: str(windows.badge, defaults.platforms.windows.badge),
         purchaseCtaLabel: str(windows.purchaseCtaLabel, defaults.platforms.windows.purchaseCtaLabel),
-        purchaseCtaAction: 'purchaseWindows',
+        purchaseCtaAction: 'purchase',
         trialCtaLabel: str(windows.trialCtaLabel, defaults.platforms.windows.trialCtaLabel),
-      },
-      mac: {
-        title: str(mac.title, defaults.platforms.mac.title),
-        status: str(mac.status, defaults.platforms.mac.status),
-        badge: str(mac.badge, defaults.platforms.mac.badge),
-        purchaseCtaLabel: str(mac.purchaseCtaLabel, defaults.platforms.mac.purchaseCtaLabel),
-        purchaseCtaAction: 'purchaseMac',
-        closedNote: str(mac.closedNote, defaults.platforms.mac.closedNote),
       },
     },
     trial: {
@@ -466,7 +462,7 @@ function mergeContent(raw: unknown): KoopPlusProductContent | null {
       intro: str(trial.intro, defaults.trial.intro),
       highlights: mergeTextItems(trial.highlights, defaults.trial.highlights),
       downloadCtaLabel: str(trial.downloadCtaLabel, defaults.trial.downloadCtaLabel),
-      downloadCtaAction: 'downloadTrial',
+      downloadCtaAction: 'startDemo',
       trustLine: str(trial.trustLine, defaults.trial.trustLine),
       downloadHint: str(trial.downloadHint, defaults.trial.downloadHint),
     },
@@ -503,9 +499,9 @@ function mergeContent(raw: unknown): KoopPlusProductContent | null {
       heading: str(closing.heading, defaults.closing.heading),
       description: str(closing.description, defaults.closing.description),
       primaryCtaLabel: str(closing.primaryCtaLabel, defaults.closing.primaryCtaLabel),
-      primaryCtaAction: 'purchaseWindows',
+      primaryCtaAction: 'purchase',
       secondaryCtaLabel: str(closing.secondaryCtaLabel, defaults.closing.secondaryCtaLabel),
-      secondaryCtaAction: 'startTrial',
+      secondaryCtaAction: 'startDemo',
     },
     gallery: {
       images: mergeGallery(gallery.images),

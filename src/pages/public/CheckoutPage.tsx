@@ -25,6 +25,7 @@ import {
   type CartLine,
 } from '@/lib/cartStorage'
 import { matchDistrictName, matchProvinceName } from '@/data/turkeyLocation'
+import { isKoopPlusPublicSlug } from '@/data/koopplusProduct'
 import { isMuvekkilKasaSaasProduct, SAAS_LOGIN_REQUIRED_MESSAGE } from '@/lib/muvekkilKasaSaasProduct'
 import { isCentralDesktopLicenseProduct } from '@/lib/centralDesktopLicenseProduct'
 import { MkSaasLicensePurchasePanel } from '@/components/public/product/MkSaasLicensePurchasePanel'
@@ -212,6 +213,10 @@ export function CheckoutPage() {
     () => merged.some((m) => isMuvekkilKasaSaasProduct({ slug: m.slug, productType: m.productType })),
     [merged],
   )
+  const cartHasKoopPlus = useMemo(() => merged.some((m) => isKoopPlusPublicSlug(m.slug)), [merged])
+  const [koopplusCooperativeName, setKoopplusCooperativeName] = useState('')
+  const [koopplusRenew, setKoopplusRenew] = useState(false)
+  const [koopplusLicenseKey, setKoopplusLicenseKey] = useState('')
   const cartHasDesktopLicense = useMemo(
     () =>
       merged.some((m) =>
@@ -506,6 +511,22 @@ export function CheckoutPage() {
       setFormError(billingErr)
       return
     }
+    const koopplusCoopName = cartHasKoopPlus ? koopplusCooperativeName.trim() : ''
+    const koopplusKey = cartHasKoopPlus && koopplusRenew ? koopplusLicenseKey.trim() : ''
+    if (cartHasKoopPlus) {
+      if (!koopplusCoopName) {
+        setFormError('Kooperatif adı zorunludur.')
+        return
+      }
+      if (!matchProvinceName(form.deliveryCity) || !form.deliveryDistrict.trim()) {
+        setFormError('KoopPlus için il ve ilçe seçimi zorunludur.')
+        return
+      }
+      if (koopplusRenew && !koopplusKey) {
+        setFormError('Lisansınızı yenilemek için mevcut lisans anahtarınızı girin.')
+        return
+      }
+    }
     if (!legalOk) {
       setFormError('Devam etmek için zorunlu sözleşme onaylarını işaretleyin.')
       return
@@ -541,7 +562,7 @@ export function CheckoutPage() {
           customerEmail,
           customerPhone,
           billingType: form.billingType || undefined,
-          companyName: form.companyName.trim() || undefined,
+          companyName: koopplusCoopName || form.companyName.trim() || undefined,
           taxOffice: form.taxOffice.trim() || undefined,
           taxNumber: resolveCheckoutTaxNumber(form),
           identityNumber: form.billingType === 'Bireysel' ? form.identityNumber.trim() || undefined : undefined,
@@ -564,6 +585,7 @@ export function CheckoutPage() {
           saveToAddressBook: authed && offerSaveToBook && saveToAddressBook,
           selectedAddressId: selectedAddressId || undefined,
           renewalToken: checkoutRenewalToken || undefined,
+          koopplusLicenseKey: koopplusKey || undefined,
           checkoutIdempotencyKey,
           couponCode,
         })
@@ -621,7 +643,7 @@ export function CheckoutPage() {
           customerEmail,
           customerPhone,
           billingType: form.billingType || undefined,
-          companyName: form.companyName.trim() || undefined,
+          companyName: koopplusCoopName || form.companyName.trim() || undefined,
           taxOffice: form.taxOffice.trim() || undefined,
           taxNumber: resolveCheckoutTaxNumber(form),
           identityNumber: form.billingType === 'Bireysel' ? form.identityNumber.trim() || undefined : undefined,
@@ -644,6 +666,7 @@ export function CheckoutPage() {
           saveToAddressBook: authed && offerSaveToBook && saveToAddressBook,
           selectedAddressId: selectedAddressId || undefined,
           renewalToken: checkoutRenewalToken || undefined,
+          koopplusLicenseKey: koopplusKey || undefined,
           checkoutIdempotencyKey,
           couponCode,
         })
@@ -1027,6 +1050,55 @@ export function CheckoutPage() {
               </p>
             ) : null}
           </section>
+
+          {cartHasKoopPlus ? (
+            <section
+              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7"
+              data-testid="koopplus-checkout-section"
+            >
+              <h2 className="text-lg font-semibold text-slate-900">KoopPlus bilgileri</h2>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                Lisans kooperatif başınadır. Yukarıda il ve ilçeyi seçin; giriş bilgileriniz ve lisans anahtarınız
+                ödeme sonrası e-postanıza gönderilir.
+              </p>
+              <Input
+                className="mt-4"
+                label="Kooperatif adı *"
+                value={koopplusCooperativeName}
+                onChange={(e) => setKoopplusCooperativeName(e.target.value)}
+                autoComplete="organization"
+                required
+              />
+              <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3.5">
+                <input
+                  type="checkbox"
+                  checked={koopplusRenew}
+                  onChange={(e) => {
+                    setKoopplusRenew(e.target.checked)
+                    if (!e.target.checked) setKoopplusLicenseKey('')
+                  }}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-slate-900">Lisansımı yenile</span>
+                  <span className="mt-0.5 block text-xs leading-relaxed text-slate-600">
+                    Mevcut KoopPlus lisansınızı bir yıl uzatmak için işaretleyin.
+                  </span>
+                </span>
+              </label>
+              {koopplusRenew ? (
+                <Input
+                  className="mt-4"
+                  label="Lisans anahtarı *"
+                  value={koopplusLicenseKey}
+                  onChange={(e) => setKoopplusLicenseKey(e.target.value)}
+                  placeholder="XXXX-XXXX-XXXX-XXXX"
+                  autoComplete="off"
+                  required
+                />
+              ) : null}
+            </section>
+          ) : null}
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-7">
             <h2 className="text-lg font-semibold text-slate-900">Ödeme yöntemi</h2>

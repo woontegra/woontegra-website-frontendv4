@@ -31,7 +31,10 @@ describe('Müvekkil Kasa Desktop trial download', () => {
   })
 
   it('does not reuse the KoopPlus installer, SaaS demo host, or updater feed', () => {
-    expect(MUVEKKIL_KASA_DESKTOP_WINDOWS_DOWNLOAD_URL).not.toBe(KOOPPLUS_WINDOWS_DOWNLOAD_URL)
+    // KoopPlus artık SaaS (installer yok → ''); yalnızca gerçek bir KoopPlus URL varsa karşılaştır.
+    if (KOOPPLUS_WINDOWS_DOWNLOAD_URL) {
+      expect(MUVEKKIL_KASA_DESKTOP_WINDOWS_DOWNLOAD_URL).not.toBe(KOOPPLUS_WINDOWS_DOWNLOAD_URL)
+    }
     expect(MUVEKKIL_KASA_DESKTOP_WINDOWS_DOWNLOAD_URL).not.toContain('muvekkil.woontegra.com')
     expect(MUVEKKIL_KASA_DESKTOP_WINDOWS_DOWNLOAD_URL).not.toContain('/updates/')
     expect(MUVEKKIL_KASA_DESKTOP_WINDOWS_DOWNLOAD_URL).not.toContain('updates.woontegra.com')

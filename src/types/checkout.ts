@@ -32,6 +32,8 @@ export type CreateOrderBody = {
   saveToAddressBook?: boolean
   selectedAddressId?: string | null
   renewalToken?: string
+  /** KoopPlus: "Lisansımı yenile" ile girilen mevcut lisans anahtarı. Backend CreateOrder bu alanı kabul etmelidir. */
+  koopplusLicenseKey?: string
   /** Aynı satın alma denemesinin yeniden denemelerinde sabit kalır */
   checkoutIdempotencyKey?: string
   couponCode?: string

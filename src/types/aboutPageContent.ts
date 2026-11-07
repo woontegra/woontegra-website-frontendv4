@@ -168,7 +168,7 @@ function createCanonicalAboutSoftwareCards(): AboutBrandCard[] {
       id: uid(),
       name: 'KoopPlus',
       image: '',
-      text: 'Kooperatif üye, aidat, tahsilat, faiz, kasa ve banka süreçlerini tek masaüstü uygulamada yönetin.',
+      text: 'Kooperatif üye, aidat, tahsilat, faiz, kasa ve banka süreçlerini tarayıcıdan, her cihazdan yönetin.',
       url: '/yazilimlar/kooperatif-yonetim-yazilimi',
       order: 3,
       enabled: true,

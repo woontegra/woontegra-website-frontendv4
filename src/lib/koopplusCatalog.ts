@@ -1,31 +1,41 @@
 import type { PublicProductDetail } from '@/types/product'
+import type { OrderSuccessData } from '@/types/orderSuccess'
 import { canPurchaseProduct } from '@/utils/productPurchase'
 import { KOOPPLUS_PRICE_LABEL, KOOPPLUS_SLUG } from '@/data/koopplusProduct'
 
 export const KOOPPLUS_CART_PATH = '/sepet'
 
+export const KOOPPLUS_ORDER_SUCCESS_MESSAGE =
+  'Ödemeniz alındı. KoopPlus giriş bilgileriniz ve lisans anahtarınız e-postanıza gönderildi.'
+
 export type KoopPlusCatalogOffer = {
   priceAmount: number | null
+  /** Örn. "3.000 ₺" — "KDV dahil" ifadesi arayüzde ayrıca gösterilir. */
   priceLabel: string | null
   packageLabel: string
   licenseDays: number | null
   licenseDaysLabel: string | null
+  /** SaaS: cihaz sınırı yok; her zaman null. */
   licenseMaxDevices: number | null
-  devicesLabel: string | null
+  /** SaaS: cihaz etiketi gösterilmez; her zaman null. */
+  devicesLabel: null
   purchaseEnabled: boolean
   productId: string | null
 }
 
-export type KoopPlusWindowsBuyAction =
+export type KoopPlusBuyAction =
   | { type: 'disabled'; reason: 'missing_product' | 'purchase_disabled' }
   | { type: 'addToCart'; productId: string; nextPath: typeof KOOPPLUS_CART_PATH }
+
+/** @deprecated Use KoopPlusBuyAction */
+export type KoopPlusWindowsBuyAction = KoopPlusBuyAction
 
 export function formatKoopPlusPriceLabel(amount: number | null | undefined): string | null {
   if (amount == null || !Number.isFinite(amount) || amount <= 0) return null
   const formatted = new Intl.NumberFormat('tr-TR', {
     maximumFractionDigits: 0,
   }).format(amount)
-  return `${formatted} TL`
+  return `${formatted} ₺`
 }
 
 export function mapKoopPlusCatalogOffer(product: PublicProductDetail | null | undefined): KoopPlusCatalogOffer {
@@ -48,10 +58,6 @@ export function mapKoopPlusCatalogOffer(product: PublicProductDetail | null | un
     product.licenseRequired && typeof product.licenseDays === 'number' && product.licenseDays > 0
       ? product.licenseDays
       : null
-  const licenseMaxDevices =
-    product.licenseRequired && typeof product.licenseMaxDevices === 'number' && product.licenseMaxDevices > 0
-      ? product.licenseMaxDevices
-      : null
 
   return {
     priceAmount,
@@ -59,21 +65,14 @@ export function mapKoopPlusCatalogOffer(product: PublicProductDetail | null | un
     packageLabel: KOOPPLUS_PRICE_LABEL,
     licenseDays,
     licenseDaysLabel: licenseDays != null ? `${licenseDays} gün` : null,
-    licenseMaxDevices,
-    devicesLabel:
-      licenseMaxDevices != null
-        ? licenseMaxDevices === 1
-          ? '1 bilgisayar'
-          : `${licenseMaxDevices} bilgisayar`
-        : null,
+    licenseMaxDevices: null,
+    devicesLabel: null,
     purchaseEnabled: product.purchaseEnabled === true,
     productId: product.id,
   }
 }
 
-export function resolveKoopPlusWindowsBuyAction(
-  product: PublicProductDetail | null | undefined,
-): KoopPlusWindowsBuyAction {
+export function resolveKoopPlusBuyAction(product: PublicProductDetail | null | undefined): KoopPlusBuyAction {
   if (!product || product.slug !== KOOPPLUS_SLUG || !product.id) {
     return { type: 'disabled', reason: 'missing_product' }
   }
@@ -81,4 +80,16 @@ export function resolveKoopPlusWindowsBuyAction(
     return { type: 'disabled', reason: 'purchase_disabled' }
   }
   return { type: 'addToCart', productId: product.id, nextPath: KOOPPLUS_CART_PATH }
+}
+
+/** @deprecated Use resolveKoopPlusBuyAction */
+export const resolveKoopPlusWindowsBuyAction = resolveKoopPlusBuyAction
+
+/** Sipariş başarı verisinde (slug yok) ürün adından KoopPlus tespiti. */
+export function isKoopPlusOrderSuccess(
+  order: Pick<OrderSuccessData, 'lines'> & { productName?: string } | null | undefined,
+): boolean {
+  if (!order) return false
+  const match = (name?: string) => /koopplus/i.test(name ?? '')
+  return match(order.productName) || (order.lines ?? []).some((line) => match(line.productName))
 }

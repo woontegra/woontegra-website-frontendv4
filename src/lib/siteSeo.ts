@@ -62,7 +62,7 @@ export const SOFTWARE_ENTITY_HUB = [
   {
     name: 'KoopPlus',
     path: '/yazilimlar/kooperatif-yonetim-yazilimi',
-    description: 'Kooperatif üye, aidat, tahsilat, kasa ve banka süreçleri için masaüstü yazılım.',
+    description: 'Kooperatif üye, aidat, tahsilat, kasa ve banka süreçleri için web tabanlı (SaaS) yönetim yazılımı.',
   },
   {
     name: 'Şifre Kasası',
@@ -111,7 +111,7 @@ export const PAGE_SEO_BY_PATH: Record<string, PageSeo> = {
   '/yazilimlar/kooperatif-yonetim-yazilimi': {
     title: 'Kooperatif Yönetim Yazılımı | KoopPlus | Woontegra',
     description:
-      'Kooperatif yönetim yazılımı KoopPlus ile üye, aidat, tahsilat, faiz, kasa ve banka yönetimini tek masaüstü uygulamada toplayın. 7 gün ücretsiz deneyin.',
+      'Kooperatif yönetim yazılımı KoopPlus ile üye, aidat, tahsilat, faiz, kasa ve banka yönetimini tarayıcıdan yönetin. Kurulum yok; bilgisayar, tablet ve telefondan erişim. 7 gün ücretsiz demo.',
   },
   '/blog': {
     title: 'Woontegra Blog | Yazılım ve Dijital Dönüşüm',

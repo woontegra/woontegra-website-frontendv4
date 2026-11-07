@@ -167,6 +167,8 @@ export function trackSearch(query: string) {
 export type KoopplusTrackingEvent =
   | 'koopplus_view'
   | 'koopplus_trial_click'
+  | 'koopplus_buy_click'
+  | 'koopplus_demo_submit'
   | 'koopplus_windows_buy_click'
   | 'koopplus_mac_coming_soon_click'
 

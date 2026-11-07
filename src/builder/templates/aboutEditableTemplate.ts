@@ -49,7 +49,7 @@ const ABOUT_SOFTWARE_CARDS = [
   },
   {
     title: 'KoopPlus',
-    description: 'Kooperatif üye, aidat, tahsilat, faiz, kasa ve banka süreçlerini tek masaüstü uygulamada yönetin.',
+    description: 'Kooperatif üye, aidat, tahsilat, faiz, kasa ve banka süreçlerini tarayıcıdan, her cihazdan yönetin.',
     href: '/yazilimlar/kooperatif-yonetim-yazilimi',
   },
   {

@@ -3,13 +3,14 @@ import {
   ArrowLeftRight,
   Building2,
   Calculator,
-  Database,
+  Cloud,
   FileSpreadsheet,
   Landmark,
   Layers,
   Percent,
   Receipt,
   ShieldCheck,
+  Smartphone,
   Users,
   Wallet,
 } from 'lucide-react'
@@ -23,57 +24,35 @@ export const KOOPPLUS_LEGACY_PATH = `/yazilimlar/${KOOPPLUS_SLUG}`
 export const KOOPPLUS_NAME = 'KoopPlus'
 export const KOOPPLUS_SEO_TOPIC = 'Kooperatif Yönetim Yazılımı'
 export const KOOPPLUS_TAGLINE = KOOPPLUS_SEO_TOPIC
+export const KOOPPLUS_APP_URL = 'https://koopplus.woontegra.com'
+export const KOOPPLUS_KVKK_PATH = '/kvkk-aydinlatma-metni'
+/** KVKK onay metni sürümü — KoopPlus’a gönderilir; metin değişince güncellenir. */
+export const KOOPPLUS_KVKK_CONSENT_VERSION = 'kvkk-demo-2026-11'
 
 export function isKoopPlusPublicSlug(slug?: string | null): boolean {
   const normalized = slug?.trim().toLowerCase()
   return normalized === KOOPPLUS_SLUG || normalized === KOOPPLUS_SEO_SLUG
 }
 
-/** Özel checkout route yok. Satış açılınca generic addToCart(productId) → /sepet. */
+/** @deprecated Masaüstü indirme kaldırıldı — SaaS. */
 export const KOOPPLUS_WINDOWS_CHECKOUT_PATH: string | null = null
-
-/** Satış teslimatı ve 7 günlük deneme aynı Setup EXE’yi kullanır. */
-export const KOOPPLUS_WINDOWS_SETUP_FILENAME = 'KoopPlus-Setup-1.0.3.exe'
-
-/**
- * KoopPlus trial CTA için public installer URL.
- * Production custom domain (download.woontegra.com) — auto-update feed değildir.
- */
-export const KOOPPLUS_WINDOWS_DOWNLOAD_URL =
-  'https://download.woontegra.com/downloads/koopplus/windows/KoopPlus-Setup-1.0.3.exe'
-
-/**
- * macOS satış anahtarı. D-U-N-S/onay tamamlanmadan true yapılmamalı.
- * Tarih bazlı otomatik açılış yok.
- */
+/** @deprecated */
+export const KOOPPLUS_WINDOWS_SETUP_FILENAME = ''
+/** @deprecated */
+export const KOOPPLUS_WINDOWS_DOWNLOAD_URL = ''
+/** @deprecated */
 export const KOOPPLUS_MACOS_AVAILABLE = false
-
+/** @deprecated */
 export const KOOPPLUS_MACOS_CHECKOUT_PATH: string | null = null
 
-/**
- * Dağıtım ayrımı (bu dosya yalnızca website satış config’idir; R2’ye bağlanmaz).
- * Website = satış sayfası · Payment = satın alma · License server = demo/aktivasyon
- * R2 = Windows installer + uygulama güncelleme artifact’ları · Desktop = lisans API + R2 updater
- */
 export const KOOPPLUS_DISTRIBUTION = {
-  windows: {
-    artifacts: 'r2' as const,
-    checkoutPath: KOOPPLUS_WINDOWS_CHECKOUT_PATH,
-    downloadUrl: KOOPPLUS_WINDOWS_DOWNLOAD_URL,
-  },
-  macos: {
-    available: KOOPPLUS_MACOS_AVAILABLE,
-    checkoutPath: KOOPPLUS_MACOS_CHECKOUT_PATH,
-  },
+  saas: { appUrl: KOOPPLUS_APP_URL },
 } as const
 
-/** Resmi ürün ekran görüntüsü eklenince public path yazılır. Uydurma görsel yok. */
 export const KOOPPLUS_HERO_IMAGE: string | null = null
-
-/** Resmi kare KoopPlus uygulama ikonu (Desktop favicon kopyası). Screenshot değil. */
 export const KOOPPLUS_BRAND_ICON = '/images/products/koopplus-icon.optavif-w512.webp'
 
-export const KOOPPLUS_PRICE_LABEL = 'Yıllık Lisans'
+export const KOOPPLUS_PRICE_LABEL = 'KoopPlus Yıllık'
 /** Satış fiyatı Product API’den gelir; burada ikinci bir tutar tutulmaz. */
 export const KOOPPLUS_PRICE_AMOUNT: number | null = null
 export const KOOPPLUS_PRICE_CURRENCY = 'TRY'
@@ -81,40 +60,41 @@ export const KOOPPLUS_PRICE_CURRENCY = 'TRY'
 export const KOOPPLUS_SEO = {
   title: 'Kooperatif Yönetim Yazılımı | KoopPlus | Woontegra',
   description:
-    'Kooperatif yönetim yazılımı KoopPlus ile üye, aidat, tahsilat, faiz, kasa ve banka yönetimini tek masaüstü uygulamada toplayın. 7 gün ücretsiz deneyin.',
+    'KoopPlus ile üye, aidat, tahsilat, faiz, kasa ve banka yönetimini tarayıcıdan yönetin. Kurulum yok; bilgisayar, tablet ve telefondan erişim. 7 gün ücretsiz demo.',
 } as const
 
 export const KOOPPLUS_HERO = {
   kicker: KOOPPLUS_NAME,
   identity: KOOPPLUS_TAGLINE,
-  title: 'Kooperatif yönetimini tek merkezde toplayın.',
+  title: 'Kooperatif yönetimini tarayıcıdan, her yerden.',
   description:
-    'Üyelerden aidat ve tahsilata, faiz işlemlerinden kasa ve banka hareketlerine kadar kooperatifinizin günlük yönetimini tek uygulamada takip edin.',
-  primaryCta: 'Windows için Satın Al',
+    'Kurulum yok. KoopPlus web tabanlıdır; bilgisayar, tablet veya telefondan güvenli giriş yapın. Üye, aidat, tahsilat, faiz, kasa ve banka tek panelde.',
+  primaryCta: 'Hemen Satın Al',
   secondaryCta: '7 Gün Ücretsiz Dene',
 } as const
 
 export const KOOPPLUS_TRIAL = {
-  eyebrow: 'Ücretsiz Deneyin',
+  eyebrow: 'Ücretsiz Demo',
   title: '7 Gün Ücretsiz Deneyin',
-  intro: 'KoopPlus’ı Windows bilgisayarınıza indirip 7 gün boyunca tüm özellikleriyle deneyin.',
+  intro:
+    'Kredi kartı gerekmez. Kısa formu doldurun; e-postanızdaki onay bağlantısıyla 7 günlük demo hesabınız açılsın.',
   highlights: [
     {
-      title: '7 Gün Ücretsiz',
-      description: 'Deneme süreniz uygulamayı etkinleştirdiğinizde başlar.',
+      title: 'Kredi kartı gerekmez',
+      description: 'Demo için ödeme bilgisi istemiyoruz.',
     },
     {
-      title: 'Verileriniz Güvende',
-      description: 'Deneme süresi sona erdiğinde kayıtlarınız silinmez.',
+      title: 'Hemen başlayın',
+      description: 'Onay bağlantısına tıkladığınızda hesap hazırlanır.',
     },
     {
-      title: 'Kaldığınız Yerden Devam Edin',
-      description: 'Lisansınızı etkinleştirdiğinizde aynı verilerle çalışmaya devam edersiniz.',
+      title: '7 gün tam erişim',
+      description: 'Tüm özellikleri demo süresince kullanabilirsiniz.',
     },
   ],
-  downloadCta: 'Windows için Ücretsiz İndir',
-  trustLine: 'Kredi kartı gerekmez · Web kaydı gerekmez',
-  downloadHint: 'Denemeniz uygulama içinde başlar.',
+  downloadCta: '7 Gün Ücretsiz Demoyu Başlat',
+  trustLine: 'Kredi kartı gerekmez · Onay e-posta ile',
+  downloadHint: 'Demo formu birkaç dakika sürer.',
 } as const
 
 export type KoopPlusFeature = {
@@ -141,7 +121,7 @@ export const KOOPPLUS_FEATURES: KoopPlusFeature[] = [
   },
   {
     title: 'Faiz İşletme',
-    description: 'Geciken alacaklar için faiz işlemlerini uygulamadan yürütün.',
+    description: 'Geciken alacaklar için faiz işlemlerini panelden yürütün.',
     icon: Percent,
   },
   {
@@ -165,18 +145,28 @@ export const KOOPPLUS_FEATURES: KoopPlusFeature[] = [
     icon: ArrowLeftRight,
   },
   {
-    title: 'Raporlar',
-    description: 'Üye, tahsilat, kasa ve banka özetlerini raporlayın.',
+    title: 'PDF ve Excel Raporlar',
+    description: 'Üye, tahsilat, kasa ve banka özetlerini PDF veya Excel olarak alın.',
     icon: Layers,
   },
   {
-    title: 'Yedekleme',
-    description: 'Kooperatif kayıtlarınız için yedek alma imkânı vardır.',
-    icon: Database,
+    title: 'Çoklu kullanıcı ve yetkiler',
+    description: 'Yönetici, Personel ve İzleyici rolleriyle ekibinizi güvenle yetkilendirin.',
+    icon: Users,
+  },
+  {
+    title: 'Her cihazdan erişim',
+    description: 'Bilgisayar, tablet ve telefondan aynı kooperatif hesabına giriş yapın.',
+    icon: Smartphone,
+  },
+  {
+    title: 'Masaüstü yedeğini içe aktarma',
+    description: 'Eski masaüstü KoopPlus yedeğinizi tek adımda SaaS hesabına taşıyın.',
+    icon: Cloud,
   },
   {
     title: 'Çoklu Kooperatif Yönetimi',
-    description: 'Bir uygulama içinde birden fazla kooperatif hesabını ayrı tutarak yönetin.',
+    description: 'Bir hesap içinde birden fazla kooperatifi ayrı tutarak yönetin.',
     icon: Building2,
   },
 ]
@@ -192,7 +182,7 @@ export const KOOPPLUS_WHY = [
   },
   {
     title: 'Üye borç/alacak durumunu netleştirin',
-    description: 'Üye bazında bakiyeyi uygulamadan kontrol edin.',
+    description: 'Üye bazında bakiyeyi panelden kontrol edin.',
   },
   {
     title: 'Kasa ve bankayı daha kontrollü takip edin',
@@ -204,93 +194,88 @@ export const KOOPPLUS_WHY = [
   },
   {
     title: 'Birden fazla kooperatifi ayrı yönetin',
-    description: 'Aynı uygulamada kooperatifler arasında geçiş yapın; veriler birbirine karışmaz.',
+    description: 'Kooperatifler arasında geçiş yapın; veriler birbirine karışmaz.',
   },
 ] as const
 
 export const KOOPPLUS_MULTI_COOP = {
   title: 'Birden fazla kooperatif, tek KoopPlus.',
   description:
-    'Bir uygulama içinden birden fazla kooperatif hesabı oluşturabilir ve kooperatifler arasında geçiş yapabilirsiniz. Her kooperatifin verileri birbirinden ayrı tutulur.',
+    'Bir hesap içinden birden fazla kooperatif oluşturabilir ve aralarında geçiş yapabilirsiniz. Her kooperatifin verileri birbirinden ayrı tutulur.',
 } as const
 
 export const KOOPPLUS_LOCAL_DATA = {
-  title: 'Verileriniz sizin bilgisayarınızda.',
+  title: 'Verileriniz güvende.',
   description:
-    'KoopPlus bir masaüstü uygulamadır. Kooperatif kayıtları cihazınızdaki yerel veritabanında tutulur. Yedekleme özelliği ile kopya alabilirsiniz.',
+    'Bağlantı şifrelidir (HTTPS). Her kooperatifin verisi diğerlerinden tamamen ayrı tutulur. Düzenli yedekleme yapılır; istediğiniz zaman kendi bilgisayarınıza şifreli yedek alabilirsiniz.',
 } as const
 
 export const KOOPPLUS_LICENSE_POINTS = [
-  'Yıllık lisans modeli',
-  '1 lisans = 1 bilgisayar',
-  '7 günlük ücretsiz deneme',
-  'Lisans yenilendiğinde aynı lisans anahtarı devam eder',
-  'Yenilemede lisans süresi uzatılır',
+  'Yıllık abonelik (KDV dahil fiyat ürün kaydından)',
+  'Lisans kooperatif başınadır',
+  'Kurulum yok — tarayıcıdan kullanın',
+  'Cihaz sınırı yok',
+  'Yenilemede verileriniz aynen devam eder',
+  'Demo sonunda satın alırsanız demoda girdiğiniz veriler korunur',
 ] as const
 
 export const KOOPPLUS_FAQ = [
   {
-    question: 'Ücretsiz deneme kaç gün?',
-    answer: '7 gün.',
+    question: 'Deneme kaç gün?',
+    answer: '7 gün. Kredi kartı gerekmez.',
   },
   {
-    question: 'Bir lisansı kaç bilgisayarda kullanabilirim?',
-    answer: '1 bilgisayarda.',
+    question: 'Kredi kartı gerekir mi?',
+    answer: 'Hayır. Demo için ödeme bilgisi istemiyoruz.',
   },
   {
-    question: 'Demo sonunda verilerim silinir mi?',
-    answer: 'Hayır; lisans etkinleştirildiğinde aynı verilerle devam edilebilir.',
+    question: 'Demo bitince verilerime ne olur?',
+    answer:
+      'Demo süresi dolunca giriş kapanabilir; satın aldığınızda demoda girdiğiniz veriler korunur ve yıllık aboneliğe geçilir.',
   },
   {
-    question: 'Birden fazla kooperatif yönetebilir miyim?',
-    answer: 'Evet, uygulama içinde birden fazla kooperatif hesabı yönetilebilir.',
+    question: 'Hangi cihazlardan kullanabilirim?',
+    answer: 'Bilgisayar, tablet ve telefondan modern bir tarayıcıyla.',
   },
   {
-    question: 'Lisansımı yenilediğimde yeni anahtar mı alırım?',
-    answer: 'Hayır, mevcut lisans anahtarının süresi uzatılır.',
+    question: 'Kaç kullanıcı ekleyebilirim?',
+    answer: 'Yönetici, Personel ve İzleyici rollerinde ekip üyeleri ekleyebilirsiniz.',
   },
   {
-    question: 'Mac sürümü var mı?',
-    answer: 'macOS sürümü henüz satışa açık değildir; yakında sunulacaktır.',
+    question: 'Masaüstü KoopPlus kullanıyorum, ne olacak?',
+    answer: 'Yedeğinizi SaaS hesabına tek tıkla içe aktarabilirsiniz.',
+  },
+  {
+    question: 'Lisansımı nasıl yenilerim?',
+    answer:
+      'Satın alma sırasında “Lisansımı yenile”yi seçip mevcut lisans anahtarınızı girin; süre bir yıl uzatılır.',
+  },
+  {
+    question: 'Fatura kesiliyor mu?',
+    answer: 'Evet. Ödeme sonrası fatura bilgilerinize göre işlem yapılır.',
   },
 ] as const
 
 export function isKoopPlusWindowsCheckoutReady(): boolean {
-  return Boolean(KOOPPLUS_WINDOWS_CHECKOUT_PATH?.trim())
+  return false
 }
 
 export type KoopPlusWindowsTrialDownload = {
   href: string
-  filename: typeof KOOPPLUS_WINDOWS_SETUP_FILENAME
+  filename: string
 }
 
-function isSalesSetupInstallerUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url)
-    if (parsed.protocol !== 'https:') return false
-    const name = decodeURIComponent(parsed.pathname.split('/').pop() || '')
-    if (name !== KOOPPLUS_WINDOWS_SETUP_FILENAME) return false
-    if (parsed.hostname === 'updates.woontegra.com') return false
-    if (/latest\.yml|\.blockmap|\/updates\//i.test(url)) return false
-    return true
-  } catch {
-    return false
-  }
-}
-
-/** Trial CTA yalnız kayıtlardaki Setup EXE’yi kullanır; update feed teslimat sayılmaz. */
+/** @deprecated İndirme kaldırıldı. */
 export function getKoopPlusWindowsTrialDownload(): KoopPlusWindowsTrialDownload | null {
-  const href = KOOPPLUS_WINDOWS_DOWNLOAD_URL.trim()
-  if (!href || !isSalesSetupInstallerUrl(href)) return null
-  return { href, filename: KOOPPLUS_WINDOWS_SETUP_FILENAME }
+  return null
 }
 
 export function isKoopPlusWindowsDownloadReady(): boolean {
-  return getKoopPlusWindowsTrialDownload() != null
+  return false
 }
 
 export function isKoopPlusMacCheckoutReady(): boolean {
-  return KOOPPLUS_MACOS_AVAILABLE && Boolean(KOOPPLUS_MACOS_CHECKOUT_PATH?.trim())
+  return false
 }
 
 export const KOOPPLUS_TRUST_ICON = ShieldCheck

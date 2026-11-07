@@ -28,6 +28,8 @@ import { clearPaytrPendingOrder } from '@/lib/paytrCheckoutStorage'
 import { resolveSaasSuccessKind, saasSuccessNotice, paidDeliveryNotice } from '@/lib/orderSuccessSaas'
 import { SAAS_RENEW_ORDER_KEY } from '@/types/orderSuccess'
 import { MUVEKKIL_KASA_APP_LOGIN_URL } from '@/lib/mkSaasLicensePurchase'
+import { KOOPPLUS_APP_URL } from '@/data/koopplusProduct'
+import { isKoopPlusOrderSuccess, KOOPPLUS_ORDER_SUCCESS_MESSAGE } from '@/lib/koopplusCatalog'
 import type { OrderSuccessData } from '@/types/orderSuccess'
 
 function buildSuccessActions(
@@ -280,6 +282,23 @@ export function PaymentSuccessPage() {
       <PaymentResultPanel title="Sonraki adımlar" className="mt-4">
         <PaymentResultSteps items={buildNextSteps(Boolean(isBankTransfer), saasKind, orderData, isPaidLike)} />
       </PaymentResultPanel>
+
+      {isPaidLike && isKoopPlusOrderSuccess(orderData) ? (
+        <div
+          className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-900"
+          data-testid="koopplus-order-success"
+        >
+          <p>{KOOPPLUS_ORDER_SUCCESS_MESSAGE}</p>
+          <a
+            href={KOOPPLUS_APP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-block font-semibold text-emerald-700 underline"
+          >
+            {KOOPPLUS_APP_URL}
+          </a>
+        </div>
+      ) : null}
 
       {saasKind && isPaidLike && orderData?.deliveryState !== 'blocked' ? (
         <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-900">

@@ -1,68 +1,54 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, CalendarDays, Download, FolderSync, Monitor, MonitorSmartphone, ShieldCheck } from 'lucide-react'
+import { ArrowRight, CalendarDays, Cloud, FolderSync, ShieldCheck } from 'lucide-react'
 import { Breadcrumbs } from '@/components/public/Breadcrumbs'
 import { DesktopLicenseRenewalPanel } from '@/components/public/product/DesktopLicenseRenewalPanel'
+import { KoopPlusDemoModal } from '@/components/public/koopplus/KoopPlusDemoModal'
 import {
   getDefaultKoopPlusProductContent,
   resolveKoopPlusFeatureIcon,
   type KoopPlusProductContent,
 } from '@/builder/types/koopplusProduct'
-import {
-  getKoopPlusWindowsTrialDownload,
-  isKoopPlusMacCheckoutReady,
-  KOOPPLUS_BRAND_ICON,
-  KOOPPLUS_MACOS_AVAILABLE,
-  KOOPPLUS_MACOS_CHECKOUT_PATH,
-  KOOPPLUS_NAME,
-  KOOPPLUS_TAGLINE,
-} from '@/data/koopplusProduct'
+import { KOOPPLUS_BRAND_ICON, KOOPPLUS_NAME, KOOPPLUS_TAGLINE } from '@/data/koopplusProduct'
 import { trackKoopplusEvent } from '@/integrations/trackingEvents'
 import { addToCart } from '@/lib/cartStorage'
 import { ProductScreenshotCarousel } from '@/components/public/product/ProductScreenshotCarousel'
 import { koopPlusScreenshotEntries, productScreenshotAlt } from '@/lib/productScreenshots'
 import { cn } from '@/lib/cn'
-import { mapKoopPlusCatalogOffer, resolveKoopPlusWindowsBuyAction } from '@/lib/koopplusCatalog'
+import { mapKoopPlusCatalogOffer, resolveKoopPlusBuyAction } from '@/lib/koopplusCatalog'
 import { isDesktopLicenseRenewalContext, type DesktopLicenseRenewalView } from '@/lib/desktopLicenseRenewal'
 import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 import type { PublicProductDetail } from '@/types/product'
 import { buildCartSnapshot } from '@/utils/productPurchase'
 
 const SHELL = 'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'
-const SALES_PREP_NOTICE = 'Satışa hazırlanıyor. Windows satın alma henüz açılmamıştır.'
-const PLATFORM_SECTION_ID = 'koopplus-satin-al'
+const SALES_PREP_NOTICE = 'Satışa hazırlanıyor. Satın alma henüz açılmamıştır.'
+const PLAN_SECTION_ID = 'koopplus-satin-al'
 const TRIAL_SECTION_ID = 'koopplus-deneme'
-const trialDownload = getKoopPlusWindowsTrialDownload()
 
 const TRIAL_HIGHLIGHT_ICONS = [CalendarDays, ShieldCheck, FolderSync] as const
 
-function KoopPlusWindowsTrialDownloadLink({
-  label,
-  className,
-  wrapClassName,
-  iconClassName = 'mr-2 h-4 w-4',
-}: {
-  label: string
-  className: string
-  wrapClassName?: string
-  iconClassName?: string
-}) {
-  if (!trialDownload) return null
-  return (
-    <div className={wrapClassName}>
-      <a
-        href={trialDownload.href}
-        download={trialDownload.filename}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={() => trackKoopplusEvent('koopplus_trial_click')}
-        className={className}
-      >
-        <Download className={iconClassName} aria-hidden />
-        {label}
-      </a>
-    </div>
-  )
+type ScreenshotEntry = { url: string; alt?: string }
+
+function resolveScreenshots(product: PublicProductDetail | null, content: KoopPlusProductContent): ScreenshotEntry[] {
+  const builderGallery = content.gallery.images
+    .map((image, index, list) => {
+      const url = resolveMediaUrl(image.url) || image.url.trim()
+      if (!url) return null
+      return {
+        url,
+        alt:
+          image.alt.trim() ||
+          productScreenshotAlt({
+            productName: KOOPPLUS_NAME,
+            topic: KOOPPLUS_TAGLINE,
+            index,
+            total: list.length,
+          }),
+      }
+    })
+    .filter((image): image is { url: string; alt: string } => Boolean(image))
+  return builderGallery.length > 0 ? builderGallery : koopPlusScreenshotEntries(product?.galleryImages)
 }
 
 export type KoopPlusProductLayoutProps = {
@@ -84,25 +70,7 @@ function KoopPlusHeroVisual({
   product: PublicProductDetail | null
   content: KoopPlusProductContent
 }) {
-  const builderGallery = content.gallery.images
-    .map((image, index, list) => {
-      const url = resolveMediaUrl(image.url) || image.url.trim()
-      if (!url) return null
-      return {
-        url,
-        alt:
-          image.alt.trim() ||
-          productScreenshotAlt({
-            productName: KOOPPLUS_NAME,
-            topic: KOOPPLUS_TAGLINE,
-            index,
-            total: list.length,
-          }),
-      }
-    })
-    .filter((image): image is { url: string; alt: string } => Boolean(image))
-
-  const screenshots = builderGallery.length > 0 ? builderGallery : koopPlusScreenshotEntries(product?.galleryImages)
+  const screenshots = resolveScreenshots(product, content)
   if (screenshots.length > 0) {
     return <ProductScreenshotCarousel images={screenshots} productName={KOOPPLUS_NAME} />
   }
@@ -113,7 +81,7 @@ function KoopPlusHeroVisual({
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-2xl shadow-emerald-950/40">
         <img
           src={heroImage}
-          alt={content.hero.imageAlt || 'KoopPlus masaüstü uygulaması'}
+          alt={content.hero.imageAlt || 'KoopPlus web tabanlı kooperatif yönetim paneli'}
           className="aspect-[16/10] w-full object-cover object-top"
         />
       </div>
@@ -140,53 +108,52 @@ export function KoopPlusProductLayout({
 }: KoopPlusProductLayoutProps) {
   const content = contentProp ?? getDefaultKoopPlusProductContent()
   const navigate = useNavigate()
-  const [windowsNotice, setWindowsNotice] = useState<string | null>(null)
+  const [buyNotice, setBuyNotice] = useState<string | null>(null)
+  const [demoOpen, setDemoOpen] = useState(false)
   const [openFaq, setOpenFaq] = useState<string | null>(content.faq.items[0]?.question ?? null)
   const offer = useMemo(() => mapKoopPlusCatalogOffer(product), [product])
-  const buyAction = useMemo(() => resolveKoopPlusWindowsBuyAction(product), [product])
-  const windowsReady = buyAction.type === 'addToCart'
-  const macReady = isKoopPlusMacCheckoutReady()
+  const buyAction = useMemo(() => resolveKoopPlusBuyAction(product), [product])
+  const buyReady = buyAction.type === 'addToCart'
   const renewalDays = product?.licenseDays && product.licenseDays > 0 ? product.licenseDays : undefined
   const salesNotReadyLabel = content.hero.salesNotReadyLabel
   const visibility = content.sectionVisibility
+  const modalScreenshot = useMemo(() => resolveScreenshots(product, content)[0] ?? null, [product, content])
+  // Eski kayıtlı builder JSON’unda “for Windows/Mac” başlığı kalmış olabilir; SaaS kart başlığına düş.
+  const planTitle = /windows|mac/i.test(content.platforms.windows.title)
+    ? offer.packageLabel
+    : content.platforms.windows.title
 
-  const startWindowsCheckout = () => {
-    trackKoopplusEvent('koopplus_windows_buy_click')
-    const action = resolveKoopPlusWindowsBuyAction(product)
+  const startCheckout = () => {
+    trackKoopplusEvent('koopplus_buy_click')
+    const action = resolveKoopPlusBuyAction(product)
     if (action.type !== 'addToCart' || !product) {
-      setWindowsNotice(SALES_PREP_NOTICE)
+      setBuyNotice(SALES_PREP_NOTICE)
       return
     }
     addToCart(action.productId, 1, { snapshot: buildCartSnapshot(product), replaceLine: true })
-    setWindowsNotice(null)
+    setBuyNotice(null)
     navigate(action.nextPath)
   }
 
-  const handleHeroWindowsBuy = () => {
-    if (windowsReady) {
-      startWindowsCheckout()
+  const handleHeroBuy = () => {
+    if (buyReady) {
+      startCheckout()
       return
     }
-    scrollToId(PLATFORM_SECTION_ID)
+    scrollToId(PLAN_SECTION_ID)
   }
 
-  const handleWindowsBuy = () => {
-    if (!windowsReady) {
-      setWindowsNotice(SALES_PREP_NOTICE)
+  const handleBuy = () => {
+    if (!buyReady) {
+      setBuyNotice(SALES_PREP_NOTICE)
       return
     }
-    startWindowsCheckout()
+    startCheckout()
   }
 
-  const handleTrial = () => {
+  const openDemo = () => {
     trackKoopplusEvent('koopplus_trial_click')
-    scrollToId(TRIAL_SECTION_ID)
-  }
-
-  const handleMacBuy = () => {
-    trackKoopplusEvent('koopplus_mac_coming_soon_click')
-    if (!macReady || !KOOPPLUS_MACOS_CHECKOUT_PATH) return
-    navigate(KOOPPLUS_MACOS_CHECKOUT_PATH)
+    setDemoOpen(true)
   }
 
   const trialTitleRest = content.trial.title.startsWith('7 Gün')
@@ -219,28 +186,28 @@ export function KoopPlusProductLayout({
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <button
                   type="button"
-                  onClick={handleHeroWindowsBuy}
-                  aria-disabled={!windowsReady}
+                  onClick={handleHeroBuy}
+                  aria-disabled={!buyReady}
                   className={cn(
                     'inline-flex min-h-12 w-full items-center justify-center rounded-xl px-6 py-3.5 text-sm font-semibold shadow-lg sm:w-auto',
-                    windowsReady
+                    buyReady
                       ? 'bg-gradient-to-r from-emerald-500 to-sky-400 text-slate-950 shadow-emerald-500/20 transition hover:brightness-105'
                       : 'cursor-not-allowed bg-slate-200 text-slate-500 shadow-none',
                   )}
                 >
-                  {windowsReady ? content.hero.primaryCtaLabel : salesNotReadyLabel}
+                  {buyReady ? content.hero.primaryCtaLabel : salesNotReadyLabel}
                 </button>
                 <button
                   type="button"
-                  onClick={handleTrial}
+                  onClick={openDemo}
                   className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15 sm:w-auto"
                 >
                   {content.hero.secondaryCtaLabel}
                 </button>
               </div>
-              {windowsNotice ? (
+              {buyNotice ? (
                 <p className="mt-3 text-sm text-amber-200" role="status">
-                  {windowsNotice}
+                  {buyNotice}
                 </p>
               ) : null}
             </div>
@@ -249,25 +216,25 @@ export function KoopPlusProductLayout({
         </div>
       </section>
 
-      <section id={PLATFORM_SECTION_ID} className="scroll-mt-24 border-b border-slate-200 bg-slate-50 py-12 sm:py-16">
+      <section id={PLAN_SECTION_ID} className="scroll-mt-24 border-b border-slate-200 bg-slate-50 py-12 sm:py-16">
         <div className={SHELL}>
           <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{content.platforms.heading}</h2>
           <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600">
-            {offer.packageLabel}
-            {offer.priceLabel ? ` · ${offer.priceLabel}` : productLoading ? ' · Fiyat yükleniyor…' : ''}
-            {offer.licenseDaysLabel ? ` · ${offer.licenseDaysLabel}` : ''}
-            {offer.devicesLabel ? ` · ${offer.devicesLabel}` : ''}
-            {` · ${content.platforms.trialSuffix}`}
+            {content.platforms.trialSuffix}
+            {offer.licenseDaysLabel ? ` · Lisans süresi ${offer.licenseDaysLabel}` : ''}
           </p>
-          <div className="mt-10 grid gap-5 lg:grid-cols-2">
-            <article className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm">
+          <div className="mt-10 max-w-xl">
+            <article
+              className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm"
+              data-testid="koopplus-plan-card"
+            >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                    <Monitor className="h-5 w-5" aria-hidden />
+                    <Cloud className="h-5 w-5" aria-hidden />
                   </span>
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900">{content.platforms.windows.title}</h3>
+                    <h3 className="text-lg font-semibold text-slate-900">{planTitle}</h3>
                     <p className="text-sm text-slate-500">{content.platforms.windows.status}</p>
                   </div>
                 </div>
@@ -275,10 +242,16 @@ export function KoopPlusProductLayout({
                   {content.platforms.windows.badge}
                 </span>
               </div>
-              <p className="mt-4 text-sm text-slate-600">
-                {offer.packageLabel}
-                {offer.priceLabel ? ` · ${offer.priceLabel} / yıl` : productLoading ? ' · Fiyat yükleniyor…' : ''}
-              </p>
+              <div className="mt-5">
+                {offer.priceLabel ? (
+                  <p className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="text-3xl font-black tracking-tight text-slate-950">{offer.priceLabel}</span>
+                    <span className="text-sm text-slate-500">/ yıl · KDV dahil</span>
+                  </p>
+                ) : (
+                  <p className="text-sm text-slate-500">{productLoading ? 'Fiyat yükleniyor…' : 'Fiyat bilgisi yakında'}</p>
+                )}
+              </div>
               {desktopLicenseRenewalLoading ? (
                 <p className="mt-4 text-sm text-slate-500">Lisans bilgileri doğrulanıyor…</p>
               ) : desktopLicenseRenewal && isDesktopLicenseRenewalContext(desktopLicenseRenewal) ? (
@@ -293,82 +266,31 @@ export function KoopPlusProductLayout({
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
-                  onClick={handleWindowsBuy}
-                  disabled={!windowsReady}
-                  aria-disabled={!windowsReady}
+                  onClick={handleBuy}
+                  disabled={!buyReady}
+                  aria-disabled={!buyReady}
                   className={cn(
                     'inline-flex min-h-12 flex-1 items-center justify-center rounded-xl px-5 text-sm font-semibold',
-                    windowsReady
+                    buyReady
                       ? 'bg-emerald-600 text-white transition hover:bg-emerald-700'
                       : 'cursor-not-allowed bg-slate-100 text-slate-400',
                   )}
                 >
-                  {windowsReady ? content.platforms.windows.purchaseCtaLabel : salesNotReadyLabel}
-                  {windowsReady ? <ArrowRight className="ml-2 h-4 w-4" aria-hidden /> : null}
+                  {buyReady ? content.platforms.windows.purchaseCtaLabel : salesNotReadyLabel}
+                  {buyReady ? <ArrowRight className="ml-2 h-4 w-4" aria-hidden /> : null}
                 </button>
-                {trialDownload ? (
-                  <KoopPlusWindowsTrialDownloadLink
-                    label={content.trial.downloadCtaLabel}
-                    wrapClassName="flex-1"
-                    className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleTrial}
-                    className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                  >
-                    {content.platforms.windows.trialCtaLabel}
-                  </button>
-                )}
-              </div>
-              {windowsNotice ? (
-                <p className="mt-3 text-sm text-amber-800" role="status">
-                  {windowsNotice}
-                </p>
-              ) : null}
-            </article>
-
-            <article className="rounded-2xl border border-slate-200 bg-white p-6">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
-                    <MonitorSmartphone className="h-5 w-5" aria-hidden />
-                  </span>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">{content.platforms.mac.title}</h3>
-                    <p className="text-sm text-slate-500">{content.platforms.mac.status}</p>
-                  </div>
-                </div>
-                <span className="rounded-full bg-slate-900 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-                  {content.platforms.mac.badge}
-                </span>
-              </div>
-              <p className="mt-4 text-sm text-slate-600">
-                {offer.packageLabel}
-                {offer.priceLabel ? ` · ${offer.priceLabel} / yıl` : ''}
-              </p>
-              <div className="mt-6">
                 <button
                   type="button"
-                  disabled={!macReady}
-                  aria-disabled={!macReady}
-                  onClick={handleMacBuy}
-                  className={cn(
-                    'inline-flex min-h-12 w-full items-center justify-center rounded-xl px-5 text-sm font-semibold',
-                    macReady
-                      ? 'bg-slate-900 text-white hover:bg-slate-800'
-                      : 'cursor-not-allowed bg-slate-100 text-slate-400',
-                  )}
+                  onClick={openDemo}
+                  className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
-                  {content.platforms.mac.purchaseCtaLabel}
-                  <span className="ml-2 rounded-full bg-white/80 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                    {content.platforms.mac.badge}
-                  </span>
+                  {content.platforms.windows.trialCtaLabel}
                 </button>
               </div>
-              {!KOOPPLUS_MACOS_AVAILABLE ? (
-                <p className="mt-3 text-sm text-slate-500">{content.platforms.mac.closedNote}</p>
+              {buyNotice ? (
+                <p className="mt-3 text-sm text-amber-800" role="status">
+                  {buyNotice}
+                </p>
               ) : null}
             </article>
           </div>
@@ -419,18 +341,17 @@ export function KoopPlusProductLayout({
                 })}
               </ul>
 
-              {trialDownload ? (
-                <div className="relative mt-8 flex flex-col items-center text-center">
-                  <KoopPlusWindowsTrialDownloadLink
-                    label={content.trial.downloadCtaLabel}
-                    iconClassName="mr-2.5 h-5 w-5"
-                    wrapClassName="w-full sm:w-auto"
-                    className="inline-flex min-h-14 w-full items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-sky-400 px-8 text-base font-bold text-slate-950 shadow-lg shadow-emerald-500/25 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:brightness-95 sm:min-w-[20rem]"
-                  />
-                  <p className="mt-4 text-sm font-medium text-slate-200">{content.trial.trustLine}</p>
-                  <p className="mt-1.5 text-sm text-slate-400">{content.trial.downloadHint}</p>
-                </div>
-              ) : null}
+              <div className="relative mt-8 flex flex-col items-center text-center">
+                <button
+                  type="button"
+                  onClick={openDemo}
+                  className="inline-flex min-h-14 w-full items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-sky-400 px-8 text-base font-bold text-slate-950 shadow-lg shadow-emerald-500/25 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:brightness-95 sm:w-auto sm:min-w-[20rem]"
+                >
+                  {content.trial.downloadCtaLabel}
+                </button>
+                <p className="mt-4 text-sm font-medium text-slate-200">{content.trial.trustLine}</p>
+                <p className="mt-1.5 text-sm text-slate-400">{content.trial.downloadHint}</p>
+              </div>
             </div>
           </div>
         </section>
@@ -547,19 +468,19 @@ export function KoopPlusProductLayout({
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <button
                 type="button"
-                onClick={handleWindowsBuy}
-                disabled={!windowsReady}
-                aria-disabled={!windowsReady}
+                onClick={handleBuy}
+                disabled={!buyReady}
+                aria-disabled={!buyReady}
                 className={cn(
                   'inline-flex min-h-12 w-full items-center justify-center rounded-xl px-6 text-sm font-semibold sm:w-auto',
-                  windowsReady ? 'bg-emerald-500 text-slate-950' : 'cursor-not-allowed bg-slate-200 text-slate-500',
+                  buyReady ? 'bg-emerald-500 text-slate-950' : 'cursor-not-allowed bg-slate-200 text-slate-500',
                 )}
               >
-                {windowsReady ? content.closing.primaryCtaLabel : salesNotReadyLabel}
+                {buyReady ? content.closing.primaryCtaLabel : salesNotReadyLabel}
               </button>
               <button
                 type="button"
-                onClick={handleTrial}
+                onClick={openDemo}
                 className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-white/20 px-6 text-sm font-semibold text-white sm:w-auto"
               >
                 {content.closing.secondaryCtaLabel}
@@ -568,6 +489,13 @@ export function KoopPlusProductLayout({
           </div>
         </section>
       ) : null}
+
+      <KoopPlusDemoModal
+        open={demoOpen}
+        onClose={() => setDemoOpen(false)}
+        screenshotUrl={modalScreenshot?.url ?? null}
+        screenshotAlt={modalScreenshot?.alt ?? ''}
+      />
     </div>
   )
 }

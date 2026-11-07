@@ -49,7 +49,7 @@ export function KoopPlusProductSettingsPanel() {
           />
           <TextField
             label="Birincil CTA"
-            hint="Etiket değişir; Windows satın alma aksiyonu sabit kalır"
+            hint="Etiket değişir; satın alma aksiyonu sabit kalır"
             value={content.hero.primaryCtaLabel}
             onChange={(primaryCtaLabel) =>
               setContent((current) => ({ ...current, hero: { ...current.hero, primaryCtaLabel } }))
@@ -57,7 +57,7 @@ export function KoopPlusProductSettingsPanel() {
           />
           <TextField
             label="İkincil CTA"
-            hint="Etiket değişir; deneme aksiyonu sabit kalır"
+            hint="Etiket değişir; demo formunu açma aksiyonu sabit kalır"
             value={content.hero.secondaryCtaLabel}
             onChange={(secondaryCtaLabel) =>
               setContent((current) => ({ ...current, hero: { ...current.hero, secondaryCtaLabel } }))
@@ -90,8 +90,8 @@ export function KoopPlusProductSettingsPanel() {
       ),
     },
     {
-      id: 'windows',
-      title: 'Windows',
+      id: 'plan',
+      title: 'Plan kartı',
       content: (
         <>
           <TextField
@@ -140,7 +140,7 @@ export function KoopPlusProductSettingsPanel() {
           />
           <TextField
             label="Satın al CTA"
-            hint="Etiket değişir; purchaseWindows aksiyonu sabit kalır"
+            hint="Etiket değişir; purchase aksiyonu sabit kalır"
             value={content.platforms.windows.purchaseCtaLabel}
             onChange={(purchaseCtaLabel) =>
               setContent((current) => ({
@@ -159,65 +159,6 @@ export function KoopPlusProductSettingsPanel() {
               setContent((current) => ({
                 ...current,
                 platforms: { ...current.platforms, windows: { ...current.platforms.windows, trialCtaLabel } },
-              }))
-            }
-          />
-        </>
-      ),
-    },
-    {
-      id: 'mac',
-      title: 'Mac',
-      content: (
-        <>
-          <TextField
-            label="Kart başlığı"
-            value={content.platforms.mac.title}
-            onChange={(title) =>
-              setContent((current) => ({
-                ...current,
-                platforms: { ...current.platforms, mac: { ...current.platforms.mac, title } },
-              }))
-            }
-          />
-          <TextAreaField
-            label="Açıklama"
-            value={content.platforms.mac.status}
-            onChange={(status) =>
-              setContent((current) => ({
-                ...current,
-                platforms: { ...current.platforms, mac: { ...current.platforms.mac, status } },
-              }))
-            }
-          />
-          <TextField
-            label="Rozet / YAKINDA metni"
-            value={content.platforms.mac.badge}
-            onChange={(badge) =>
-              setContent((current) => ({
-                ...current,
-                platforms: { ...current.platforms, mac: { ...current.platforms.mac, badge } },
-              }))
-            }
-          />
-          <TextField
-            label="Satın al CTA"
-            hint="Etiket değişir; macOS feature flag satın almayı açamaz"
-            value={content.platforms.mac.purchaseCtaLabel}
-            onChange={(purchaseCtaLabel) =>
-              setContent((current) => ({
-                ...current,
-                platforms: { ...current.platforms, mac: { ...current.platforms.mac, purchaseCtaLabel } },
-              }))
-            }
-          />
-          <TextField
-            label="Kapalı notu"
-            value={content.platforms.mac.closedNote}
-            onChange={(closedNote) =>
-              setContent((current) => ({
-                ...current,
-                platforms: { ...current.platforms, mac: { ...current.platforms.mac, closedNote } },
               }))
             }
           />
@@ -255,8 +196,8 @@ export function KoopPlusProductSettingsPanel() {
             onChange={(intro) => setContent((current) => ({ ...current, trial: { ...current.trial, intro } }))}
           />
           <TextField
-            label="İndir CTA"
-            hint="Etiket değişir; indirme URL’si sistem kaynağından gelir"
+            label="Demo CTA"
+            hint="Etiket değişir; demo formunu açma aksiyonu sabit kalır"
             value={content.trial.downloadCtaLabel}
             onChange={(downloadCtaLabel) =>
               setContent((current) => ({ ...current, trial: { ...current.trial, downloadCtaLabel } }))
@@ -270,7 +211,7 @@ export function KoopPlusProductSettingsPanel() {
             }
           />
           <TextField
-            label="İndirme notu"
+            label="Demo notu"
             value={content.trial.downloadHint}
             onChange={(downloadHint) =>
               setContent((current) => ({ ...current, trial: { ...current.trial, downloadHint } }))
