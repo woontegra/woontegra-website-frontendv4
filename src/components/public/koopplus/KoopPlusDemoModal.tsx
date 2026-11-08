@@ -1,8 +1,19 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { Check, Cloud, Info, Mail, X } from 'lucide-react'
-import { TurkeyCityDistrictFields } from '@/components/checkout/TurkeyCityDistrictFields'
-import { Input } from '@/components/ui/Input'
+import {
+  Building2,
+  Check,
+  Cloud,
+  CreditCard,
+  Info,
+  Mail,
+  MapPin,
+  Phone,
+  Rocket,
+  User,
+  X,
+  Zap,
+} from 'lucide-react'
 import {
   KOOPPLUS_BRAND_ICON,
   KOOPPLUS_KVKK_CONSENT_VERSION,
@@ -11,7 +22,12 @@ import {
 } from '@/data/koopplusProduct'
 import { trackKoopplusEvent } from '@/integrations/trackingEvents'
 import { cn } from '@/lib/cn'
-import { matchDistrictName, matchProvinceName } from '@/data/turkeyLocation'
+import {
+  districtsForProvince,
+  matchDistrictName,
+  matchProvinceName,
+  TURKEY_PROVINCES,
+} from '@/data/turkeyLocation'
 import { requestKoopPlusDemo, mapKoopPlusDemoError } from '@/services/koopplusDemoService'
 
 export const TURNSTILE_SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
@@ -22,6 +38,12 @@ export const KOOPPLUS_DEMO_BULLETS = [
   'Faiz hesaplama ve işletme',
   'Banka hareketleri ve eşleştirme',
   'PDF / Excel raporlar',
+] as const
+
+export const KOOPPLUS_DEMO_FOOTER_POINTS = [
+  { icon: CreditCard, label: 'Kredi kartı gerekmez' },
+  { icon: Zap, label: 'Hemen başlayın' },
+  { icon: Check, label: '7 gün tam erişim' },
 ] as const
 
 type TurnstileApi = {
@@ -122,6 +144,32 @@ type Props = {
   screenshotAlt?: string
 }
 
+function FieldShell({
+  label,
+  icon,
+  className,
+  children,
+}: {
+  label: string
+  icon: ReactNode
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <div className={cn('space-y-1.5', className)}>
+      <label className="block text-sm font-medium text-slate-700">{label}</label>
+      <div className="relative">
+        <span className="pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 text-slate-400">
+          {icon}
+        </span>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+const iconStroke = { className: 'h-4 w-4', strokeWidth: 1.5 as const }
+
 export function KoopPlusDemoModal({ open, onClose, screenshotUrl = null, screenshotAlt = '' }: Props) {
   const [form, setForm] = useState<FormState>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
@@ -160,7 +208,6 @@ export function KoopPlusDemoModal({ open, onClose, screenshotUrl = null, screens
 
   const showForm = open && !successEmail
 
-  // Turnstile: form görünürken widget'ı yükle/render et.
   useEffect(() => {
     if (!showForm) return
     if (!siteKey) {
@@ -236,7 +283,8 @@ export function KoopPlusDemoModal({ open, onClose, screenshotUrl = null, screens
       return setError('Geçerli bir cep telefonu girin: (5XX) XXX XX XX')
     }
     if (!cooperativeName) return setError('Kooperatif adı zorunludur.')
-    if (!city || !district) return setError('İl ve ilçe seçimi zorunludur.')
+    if (!city) return setError('İl seçimi zorunludur.')
+    if (!district) return setError('İlçe seçimi zorunludur.')
     if (!form.kvkk) return setError('Devam etmek için KVKK Aydınlatma Metni’ni onaylayın.')
     if (!turnstileToken) return setError('Lütfen güvenlik doğrulamasını tamamlayın.')
 
@@ -259,7 +307,6 @@ export function KoopPlusDemoModal({ open, onClose, screenshotUrl = null, screens
     } catch (err) {
       const mapped = mapKoopPlusDemoError(err)
       setError(mapped.message)
-      // Turnstile token tek kullanımlıktır.
       resetTurnstile()
     } finally {
       setSubmitting(false)
@@ -267,7 +314,7 @@ export function KoopPlusDemoModal({ open, onClose, screenshotUrl = null, screens
   }
 
   const fieldCls =
-    'h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100'
+    'h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100'
   const selectCls = fieldCls
 
   return createPortal(
@@ -300,7 +347,6 @@ export function KoopPlusDemoModal({ open, onClose, screenshotUrl = null, screens
           <X className="h-4 w-4" aria-hidden />
         </button>
 
-        {/* Sol: tanıtım paneli */}
         <aside className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-[#0f2744] to-[#12335c] px-6 py-8 text-white sm:px-8 md:py-10">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(16,185,129,0.18),transparent_45%),radial-gradient(circle_at_90%_85%,rgba(56,189,248,0.14),transparent_40%)]" />
           <div className="relative">
@@ -358,7 +404,6 @@ export function KoopPlusDemoModal({ open, onClose, screenshotUrl = null, screens
           </div>
         </aside>
 
-        {/* Sağ: form / başarı */}
         <div className="min-w-0 bg-white px-5 py-7 sm:px-8 md:max-h-[94vh] md:overflow-y-auto md:py-9">
           {successEmail ? (
             <div className="flex min-h-[18rem] flex-col items-center justify-center text-center" data-testid="koopplus-demo-success">
@@ -383,47 +428,92 @@ export function KoopPlusDemoModal({ open, onClose, screenshotUrl = null, screens
               <h3 className="text-2xl font-bold text-slate-900">Ücretsiz Demo Başlat</h3>
               <p className="mt-1 text-sm text-slate-500">Bilgilerinizi girin, demo bağlantınız e-postanıza gelsin.</p>
 
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <Input
-                  label="Ad Soyad *"
-                  value={form.fullName}
-                  onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
-                  autoComplete="name"
-                  className="h-11 rounded-xl"
-                />
-                <Input
-                  label="Kooperatif Adı *"
-                  value={form.cooperativeName}
-                  onChange={(e) => setForm((f) => ({ ...f, cooperativeName: e.target.value }))}
-                  autoComplete="organization"
-                  className="h-11 rounded-xl"
-                />
-                <Input
-                  label="E-posta *"
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                  autoComplete="email"
-                  className="h-11 rounded-xl"
-                />
-                <Input
-                  label="Cep Telefonu *"
-                  type="tel"
-                  inputMode="tel"
-                  value={form.phone}
-                  onChange={(e) => setForm((f) => ({ ...f, phone: formatPhoneMask(e.target.value) }))}
-                  placeholder="(5XX) XXX XX XX"
-                  autoComplete="tel-national"
-                  className="h-11 rounded-xl"
-                />
-                <TurkeyCityDistrictFields
-                  idPrefix="koopplus-demo"
-                  city={form.city}
-                  district={form.district}
-                  onCityChange={(city) => setForm((f) => ({ ...f, city }))}
-                  onDistrictChange={(district) => setForm((f) => ({ ...f, district }))}
-                  selectClassName={selectCls}
-                />
+              <div className="mt-6 space-y-4">
+                <FieldShell label="Ad Soyad *" icon={<User {...iconStroke} aria-hidden />}>
+                  <input
+                    value={form.fullName}
+                    onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
+                    autoComplete="name"
+                    className={fieldCls}
+                    required
+                  />
+                </FieldShell>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FieldShell label="E-posta *" icon={<Mail {...iconStroke} aria-hidden />}>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                      autoComplete="email"
+                      className={fieldCls}
+                      required
+                    />
+                  </FieldShell>
+                  <FieldShell label="Cep Telefonu *" icon={<Phone {...iconStroke} aria-hidden />}>
+                    <input
+                      type="tel"
+                      inputMode="tel"
+                      value={form.phone}
+                      onChange={(e) => setForm((f) => ({ ...f, phone: formatPhoneMask(e.target.value) }))}
+                      placeholder="(5XX) XXX XX XX"
+                      autoComplete="tel-national"
+                      className={fieldCls}
+                      required
+                    />
+                  </FieldShell>
+                </div>
+
+                <FieldShell label="Kooperatif Adı *" icon={<Building2 {...iconStroke} aria-hidden />}>
+                  <input
+                    value={form.cooperativeName}
+                    onChange={(e) => setForm((f) => ({ ...f, cooperativeName: e.target.value }))}
+                    autoComplete="organization"
+                    placeholder="Kooperatifinizin resmi adı"
+                    className={fieldCls}
+                    required
+                  />
+                </FieldShell>
+
+                <div className="grid gap-4 sm:grid-cols-2" data-testid="koopplus-demo-city-district">
+                  <FieldShell label="İl *" icon={<MapPin {...iconStroke} aria-hidden />}>
+                    <select
+                      id="koopplus-demo-city"
+                      value={matchProvinceName(form.city)}
+                      onChange={(e) => setForm((f) => ({ ...f, city: e.target.value, district: '' }))}
+                      className={selectCls}
+                      required
+                    >
+                      <option value="">Seçiniz</option>
+                      {TURKEY_PROVINCES.map((province) => (
+                        <option key={province} value={province}>
+                          {province}
+                        </option>
+                      ))}
+                    </select>
+                  </FieldShell>
+                  <FieldShell label="İlçe *" icon={<MapPin {...iconStroke} aria-hidden />}>
+                    <select
+                      id="koopplus-demo-district"
+                      value={
+                        matchDistrictName(matchProvinceName(form.city), form.district) ||
+                        form.district.trim()
+                      }
+                      onChange={(e) => setForm((f) => ({ ...f, district: e.target.value }))}
+                      className={selectCls}
+                      disabled={!matchProvinceName(form.city)}
+                    >
+                      <option value="">
+                        {matchProvinceName(form.city) ? 'Seçiniz' : 'Önce il seçin'}
+                      </option>
+                      {districtsForProvince(matchProvinceName(form.city)).map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </select>
+                  </FieldShell>
+                </div>
               </div>
 
               <label className="mt-5 flex cursor-pointer items-start gap-3 text-sm text-slate-700">
@@ -472,11 +562,23 @@ export function KoopPlusDemoModal({ open, onClose, screenshotUrl = null, screens
               <button
                 type="submit"
                 disabled={submitting}
-                className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-emerald-600 px-6 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
+                <Rocket className="h-4 w-4" aria-hidden />
                 {submitting ? 'Gönderiliyor…' : '7 Gün Ücretsiz Demoyu Başlat'}
               </button>
-              <p className="mt-3 text-center text-xs text-slate-500">Kredi kartı gerekmez · Onay e-posta ile</p>
+
+              <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {KOOPPLUS_DEMO_FOOTER_POINTS.map(({ icon: Icon, label }) => (
+                  <li
+                    key={label}
+                    className="flex items-center justify-center gap-1.5 rounded-lg bg-slate-50 px-2 py-2 text-center text-xs font-medium text-slate-600"
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-emerald-600" strokeWidth={1.75} aria-hidden />
+                    {label}
+                  </li>
+                ))}
+              </ul>
             </form>
           )}
         </div>

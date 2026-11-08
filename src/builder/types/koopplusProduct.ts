@@ -215,13 +215,6 @@ function bool(value: unknown, fallback: boolean): boolean {
   return typeof value === 'boolean' ? value : fallback
 }
 
-function nullableUrl(value: unknown, fallback: string | null): string | null {
-  if (value === null) return null
-  if (typeof value !== 'string') return fallback
-  const trimmed = value.trim()
-  return trimmed ? trimmed : null
-}
-
 /**
  * Eski masaüstü (Windows/Mac/indirme) kopyası — yayınlanmış builder JSON’unda kalabiliyor.
  * SaaS sayfasında bu ifadeler gösterilmez; alan varsayılana düşer.
@@ -248,6 +241,7 @@ export function sanitizeKoopPlusProductContentForSaas(content: KoopPlusProductCo
       description: saasSafeText(content.hero.description, d.hero.description),
       primaryCtaLabel: saasSafeText(content.hero.primaryCtaLabel, d.hero.primaryCtaLabel),
       secondaryCtaLabel: saasSafeText(content.hero.secondaryCtaLabel, d.hero.secondaryCtaLabel),
+      imageUrl: d.hero.imageUrl,
       imageAlt: saasSafeText(content.hero.imageAlt, d.hero.imageAlt),
     },
     platforms: {
@@ -509,7 +503,7 @@ function mergeContent(raw: unknown): KoopPlusProductContent | null {
       secondaryCtaLabel: str(hero.secondaryCtaLabel, defaults.hero.secondaryCtaLabel),
       secondaryCtaAction: 'startDemo',
       salesNotReadyLabel: str(hero.salesNotReadyLabel, defaults.hero.salesNotReadyLabel),
-      imageUrl: nullableUrl(hero.imageUrl, defaults.hero.imageUrl),
+      imageUrl: defaults.hero.imageUrl,
       imageAlt: str(hero.imageAlt, defaults.hero.imageAlt),
     },
     platforms: {
@@ -572,7 +566,12 @@ function mergeContent(raw: unknown): KoopPlusProductContent | null {
       secondaryCtaAction: 'startDemo',
     },
     gallery: {
-      images: mergeGallery(gallery.images),
+      images:
+        mergeGallery(gallery.images).length > 0
+          ? mergeGallery(gallery.images)
+          : defaults.hero.imageUrl
+            ? [{ url: defaults.hero.imageUrl, alt: defaults.hero.imageAlt }]
+            : [],
     },
     sectionVisibility: {
       trial: bool(visibility.trial, defaults.sectionVisibility.trial),

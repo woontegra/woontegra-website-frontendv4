@@ -624,6 +624,7 @@ export function CheckoutPage() {
           if (existing.status === 'PAID' || existing.status === 'PROCESSING') {
             clearPaytrPendingOrder()
             setPaytrRetryOrderNo(null)
+            clearCart()
             navigate(`/odeme/basarili/${encodeURIComponent(orderNoToPay)}`)
             return
           }

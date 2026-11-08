@@ -49,7 +49,8 @@ export const KOOPPLUS_DISTRIBUTION = {
   saas: { appUrl: KOOPPLUS_APP_URL },
 } as const
 
-export const KOOPPLUS_HERO_IMAGE: string | null = null
+/** SaaS giriş ekranı (Playwright: koopplus.woontegra.com, 1440×900). */
+export const KOOPPLUS_HERO_IMAGE = '/images/products/koopplus-login-saas.png'
 export const KOOPPLUS_BRAND_ICON = '/images/products/koopplus-icon.optavif-w512.webp'
 
 export const KOOPPLUS_PRICE_LABEL = 'KoopPlus Yıllık'

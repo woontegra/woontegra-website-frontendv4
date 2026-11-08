@@ -10,7 +10,7 @@ import {
   sanitizeKoopPlusProductContentForSaas,
   type KoopPlusProductContent,
 } from '@/builder/types/koopplusProduct'
-import { KOOPPLUS_BRAND_ICON, KOOPPLUS_NAME, KOOPPLUS_TAGLINE } from '@/data/koopplusProduct'
+import { KOOPPLUS_BRAND_ICON, KOOPPLUS_HERO_IMAGE, KOOPPLUS_NAME, KOOPPLUS_TAGLINE } from '@/data/koopplusProduct'
 import { trackKoopplusEvent } from '@/integrations/trackingEvents'
 import { addToCart } from '@/lib/cartStorage'
 import { ProductScreenshotCarousel } from '@/components/public/product/ProductScreenshotCarousel'
@@ -32,10 +32,16 @@ const TRIAL_HIGHLIGHT_ICONS = [CalendarDays, ShieldCheck, FolderSync] as const
 type ScreenshotEntry = { url: string; alt?: string }
 
 function resolveScreenshots(product: PublicProductDetail | null, content: KoopPlusProductContent): ScreenshotEntry[] {
+  // SaaS giriş ekranı — eski masaüstü/login galeri görsellerinin üstüne yazılır.
+  const saasLogin: ScreenshotEntry = {
+    url: resolveMediaUrl(KOOPPLUS_HERO_IMAGE) || KOOPPLUS_HERO_IMAGE,
+    alt: content.hero.imageAlt || 'KoopPlus web tabanlı kooperatif yönetim paneli giriş ekranı',
+  }
   const builderGallery = content.gallery.images
     .map((image, index, list) => {
       const url = resolveMediaUrl(image.url) || image.url.trim()
       if (!url) return null
+      if (url.includes('koopplus-login-saas')) return null
       return {
         url,
         alt:
@@ -49,7 +55,11 @@ function resolveScreenshots(product: PublicProductDetail | null, content: KoopPl
       }
     })
     .filter((image): image is { url: string; alt: string } => Boolean(image))
-  return builderGallery.length > 0 ? builderGallery : koopPlusScreenshotEntries(product?.galleryImages)
+  const productGallery = koopPlusScreenshotEntries(product?.galleryImages).filter(
+    (img) => !img.url.includes('koopplus-login-saas'),
+  )
+  const rest = builderGallery.length > 0 ? builderGallery : productGallery
+  return [saasLogin, ...rest.filter((img) => img.url !== saasLogin.url)]
 }
 
 export type KoopPlusProductLayoutProps = {

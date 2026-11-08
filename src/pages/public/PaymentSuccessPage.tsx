@@ -192,6 +192,17 @@ export function PaymentSuccessPage() {
     clearPaytrPendingOrder()
   }, [orderNo, isPaidLike])
 
+  // PayTR: başarı sayfasına erken düşülürse PENDING iken poll; PAID olunca sepet temizlenir.
+  useEffect(() => {
+    if (!orderNo || !orderData) return
+    if (orderData.status !== 'PENDING') return
+    if (orderData.paymentProvider && orderData.paymentProvider !== 'PAYTR') return
+    const timer = window.setInterval(() => {
+      refetchOrder()
+    }, 2500)
+    return () => window.clearInterval(timer)
+  }, [orderNo, orderData, refetchOrder])
+
   useEffect(() => {
     if (!authed || !orderNo || !isPaidLike) return
     if (ordersInvalidated.current === orderNo) return
