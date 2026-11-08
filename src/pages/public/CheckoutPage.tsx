@@ -12,7 +12,10 @@ import type { LegalDocType } from '@/types/legalDocuments'
 import { TurkeyCityDistrictFields, checkoutSelectCls } from '@/components/checkout/TurkeyCityDistrictFields'
 import { LoadingState } from '@/components/public/LoadingState'
 import { Input } from '@/components/ui/Input'
-import { CENTRAL_LICENSE_PUBLIC_MESSAGE } from '@/constants/centralLicenseServer'
+import {
+  CENTRAL_LICENSE_PUBLIC_MESSAGE,
+  KOOPPLUS_CHECKOUT_LICENSE_MESSAGE,
+} from '@/constants/centralLicenseServer'
 import { useCustomerSession } from '@/hooks/useCustomerSession'
 import { usePageMeta } from '@/hooks/usePageMeta'
 import { trackInitiateCheckout } from '@/integrations/trackingEvents'
@@ -1255,7 +1258,7 @@ export function CheckoutPage() {
             {hasLicenseProduct ? (
               <p className="mt-3 flex items-start gap-2 border-t border-slate-200 pt-3 text-xs leading-relaxed">
                 <KeyRound className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
-                {CENTRAL_LICENSE_PUBLIC_MESSAGE}
+                {cartHasKoopPlus ? KOOPPLUS_CHECKOUT_LICENSE_MESSAGE : CENTRAL_LICENSE_PUBLIC_MESSAGE}
               </p>
             ) : (
               <p className="mt-3 border-t border-slate-200 pt-3 text-xs leading-relaxed">

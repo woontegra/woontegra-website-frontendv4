@@ -3,6 +3,10 @@
 export const CENTRAL_LICENSE_PUBLIC_MESSAGE =
   'Lisanslar website içinde üretilmez. Merkezi Woontegra Lisans Server üzerinden yönetilir; ödeme onayı sonrası lisans bilgileri e-posta ile iletilir.'
 
+/** Sepette KoopPlus varken ödeme özeti — merkezi lisans server metni yerine. */
+export const KOOPPLUS_CHECKOUT_LICENSE_MESSAGE =
+  'Ödemeniz onaylandığında KoopPlus hesabınız otomatik oluşturulur; giriş bilgileriniz ve lisans anahtarınız e-postanıza gönderilir.'
+
 export const CENTRAL_LICENSE_EMAIL_MESSAGE =
   'Ödeme onaylandıktan sonra lisans bilgileriniz merkezi Woontegra Lisans Server üzerinden hazırlanıp e-posta adresinize iletilecektir.'
 
