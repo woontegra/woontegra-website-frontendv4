@@ -92,8 +92,15 @@ describe('KoopPlus website catalog (SaaS)', () => {
     expect(KOOPPLUS_TRIAL.downloadCta).toBe('7 Gün Ücretsiz Demoyu Başlat')
     expect(KOOPPLUS_TRIAL.trustLine).toContain('Kredi kartı gerekmez')
     expect(JSON.stringify(KOOPPLUS_TRIAL).toLowerCase()).not.toContain('indir')
-    expect(KOOPPLUS_LOCAL_DATA.title).toBe('Verileriniz güvende.')
+    expect(KOOPPLUS_LOCAL_DATA.title).toBe('Verileriniz güvende')
+    expect(KOOPPLUS_TRIAL.trustLine).toContain('Kurulum gerekmez')
+    expect(KOOPPLUS_TRIAL.highlights.map((h) => h.title)).toEqual([
+      '7 Gün Ücretsiz',
+      'Verileriniz Korunur',
+      'Kaldığınız Yerden Devam Edin',
+    ])
   })
+
 
   it('exposes KVKK consent metadata for the demo form', () => {
     expect(KOOPPLUS_KVKK_PATH).toBe('/kvkk-aydinlatma-metni')

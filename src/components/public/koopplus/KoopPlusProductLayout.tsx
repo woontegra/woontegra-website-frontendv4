@@ -4,6 +4,7 @@ import { ArrowRight, CalendarDays, Cloud, FolderSync, ShieldCheck } from 'lucide
 import { Breadcrumbs } from '@/components/public/Breadcrumbs'
 import { DesktopLicenseRenewalPanel } from '@/components/public/product/DesktopLicenseRenewalPanel'
 import { KoopPlusDemoModal } from '@/components/public/koopplus/KoopPlusDemoModal'
+import { KoopPlusShowcaseGallery } from '@/components/public/koopplus/KoopPlusShowcaseGallery'
 import {
   getDefaultKoopPlusProductContent,
   resolveKoopPlusFeatureIcon,
@@ -314,6 +315,8 @@ export function KoopPlusProductLayout({
           </div>
         </div>
       </section>
+
+      <KoopPlusShowcaseGallery />
 
       {visibility.trial ? (
         <section

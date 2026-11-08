@@ -78,23 +78,23 @@ export const KOOPPLUS_TRIAL = {
   eyebrow: 'Ücretsiz Demo',
   title: '7 Gün Ücretsiz Deneyin',
   intro:
-    'Kredi kartı gerekmez. Kısa formu doldurun; e-postanızdaki onay bağlantısıyla 7 günlük demo hesabınız açılsın.',
+    'Kredi kartı gerekmez. Formu doldurun; demonuz hemen açılsın.',
   highlights: [
     {
-      title: 'Kredi kartı gerekmez',
-      description: 'Demo için ödeme bilgisi istemiyoruz.',
+      title: '7 Gün Ücretsiz',
+      description: 'Kredi kartı gerekmez. Formu doldurun; demonuz hemen açılsın.',
     },
     {
-      title: 'Hemen başlayın',
-      description: 'Onay bağlantısına tıkladığınızda hesap hazırlanır.',
+      title: 'Verileriniz Korunur',
+      description: 'Demoda girdiğiniz kayıtlar satın aldığınızda silinmez.',
     },
     {
-      title: '7 gün tam erişim',
-      description: 'Tüm özellikleri demo süresince kullanabilirsiniz.',
+      title: 'Kaldığınız Yerden Devam Edin',
+      description: 'Satın aldığınızda aynı hesapla, aynı verilerle devam edersiniz.',
     },
   ],
   downloadCta: '7 Gün Ücretsiz Demoyu Başlat',
-  trustLine: 'Kredi kartı gerekmez · Onay e-posta ile',
+  trustLine: 'Kredi kartı gerekmez · Kurulum gerekmez',
   downloadHint: 'Demo formu birkaç dakika sürer.',
 } as const
 
@@ -152,22 +152,22 @@ export const KOOPPLUS_FEATURES: KoopPlusFeature[] = [
   },
   {
     title: 'Çoklu kullanıcı ve yetkiler',
-    description: 'Yönetici, Personel ve İzleyici rolleriyle ekibinizi güvenle yetkilendirin.',
+    description: 'Yönetici, Personel ve İzleyici rolleriyle ekibinizi yönetin.',
     icon: Users,
   },
   {
     title: 'Her cihazdan erişim',
-    description: 'Bilgisayar, tablet ve telefondan aynı kooperatif hesabına giriş yapın.',
+    description: 'Bilgisayar, tablet ve telefondan erişin.',
     icon: Smartphone,
   },
   {
     title: 'Masaüstü yedeğini içe aktarma',
-    description: 'Eski masaüstü KoopPlus yedeğinizi tek adımda SaaS hesabına taşıyın.',
+    description: 'Masaüstü KoopPlus verilerinizi tek tıkla taşıyın.',
     icon: Cloud,
   },
   {
     title: 'Çoklu Kooperatif Yönetimi',
-    description: 'Bir hesap içinde birden fazla kooperatifi ayrı tutarak yönetin.',
+    description: 'Tek hesapla birden fazla kooperatifi ayrı tutarak yönetin.',
     icon: Building2,
   },
 ]
@@ -180,6 +180,10 @@ export const KOOPPLUS_WHY = [
   {
     title: 'Aidat ve tahsilatı tek ekrandan izleyin',
     description: 'Kimin ödediğini, kimin borcu kaldığını daha hızlı görün.',
+  },
+  {
+    title: 'Şeffaf faiz ve ödeme takibi',
+    description: 'Her ödemenin faize mi ana paraya mı gittiği görünür.',
   },
   {
     title: 'Üye borç/alacak durumunu netleştirin',
@@ -202,58 +206,140 @@ export const KOOPPLUS_WHY = [
 export const KOOPPLUS_MULTI_COOP = {
   title: 'Birden fazla kooperatif, tek KoopPlus.',
   description:
-    'Bir hesap içinden birden fazla kooperatif oluşturabilir ve aralarında geçiş yapabilirsiniz. Her kooperatifin verileri birbirinden ayrı tutulur.',
+    'Tek hesapla birden fazla kooperatif oluşturabilir ve aralarında geçiş yapabilirsiniz. Her kooperatifin verileri birbirinden ayrı tutulur.',
 } as const
 
 export const KOOPPLUS_LOCAL_DATA = {
-  title: 'Verileriniz güvende.',
+  title: 'Verileriniz güvende',
   description:
-    'Bağlantı şifrelidir (HTTPS). Her kooperatifin verisi diğerlerinden tamamen ayrı tutulur. Düzenli yedekleme yapılır; istediğiniz zaman kendi bilgisayarınıza şifreli yedek alabilirsiniz.',
+    'Şifreli bağlantı (HTTPS). Her kooperatifin verisi birbirinden tamamen ayrı tutulur. Düzenli yedekleme yapılır; istediğiniz zaman kendi bilgisayarınıza şifreli yedek alabilirsiniz.',
 } as const
 
 export const KOOPPLUS_LICENSE_POINTS = [
-  'Yıllık abonelik (KDV dahil fiyat ürün kaydından)',
-  'Lisans kooperatif başınadır',
-  'Kurulum yok — tarayıcıdan kullanın',
-  'Cihaz sınırı yok',
+  'Yıllık abonelik · 9.000 ₺ (KDV dahil)',
+  'Kooperatif başına lisans',
+  'Kurulum yok, cihaz sınırı yok',
+  '7 gün ücretsiz demo',
   'Yenilemede verileriniz aynen devam eder',
-  'Demo sonunda satın alırsanız demoda girdiğiniz veriler korunur',
+  'Demodan satın almaya geçişte verileriniz korunur',
 ] as const
 
 export const KOOPPLUS_FAQ = [
   {
-    question: 'Deneme kaç gün?',
-    answer: '7 gün. Kredi kartı gerekmez.',
+    question: 'Ücretsiz deneme kaç gün?',
+    answer: '7 gün.',
   },
   {
     question: 'Kredi kartı gerekir mi?',
-    answer: 'Hayır. Demo için ödeme bilgisi istemiyoruz.',
+    answer: 'Hayır.',
   },
   {
     question: 'Demo bitince verilerime ne olur?',
-    answer:
-      'Demo süresi dolunca giriş kapanabilir; satın aldığınızda demoda girdiğiniz veriler korunur ve yıllık aboneliğe geçilir.',
+    answer: 'Satın alırsanız aynen devam eder.',
   },
   {
     question: 'Hangi cihazlardan kullanabilirim?',
-    answer: 'Bilgisayar, tablet ve telefondan modern bir tarayıcıyla.',
+    answer: 'Tarayıcısı olan her bilgisayar, tablet ve telefon.',
   },
   {
     question: 'Kaç kullanıcı ekleyebilirim?',
-    answer: 'Yönetici, Personel ve İzleyici rollerinde ekip üyeleri ekleyebilirsiniz.',
+    answer: 'İhtiyacınız kadar; Yönetici, Personel, İzleyici yetkileriyle.',
   },
   {
     question: 'Masaüstü KoopPlus kullanıyorum, ne olacak?',
-    answer: 'Yedeğinizi SaaS hesabına tek tıkla içe aktarabilirsiniz.',
+    answer: 'Yedeğinizi tek tıkla SaaS’a aktarabilirsiniz.',
   },
   {
     question: 'Lisansımı nasıl yenilerim?',
-    answer:
-      'Satın alma sırasında “Lisansımı yenile”yi seçip mevcut lisans anahtarınızı girin; süre bir yıl uzatılır.',
+    answer: 'Sitemizden “Lisansımı yenile” ile, lisans anahtarınızla.',
   },
   {
     question: 'Fatura kesiliyor mu?',
     answer: 'Evet. Ödeme sonrası fatura bilgilerinize göre işlem yapılır.',
+  },
+] as const
+
+/** Sekmeli ürün galerisi — “KoopPlus’ı yakından tanıyın” */
+export const KOOPPLUS_SHOWCASE_GALLERY = [
+  {
+    id: 'yonetim',
+    tab: 'Yönetim Paneli',
+    title: 'Yönetim Paneli',
+    description: 'Kooperatifinizin özetini tek bakışta görün; üye, tahsilat ve kasa durumuna hızlı geçin.',
+    bullets: [
+      'Güncel borç ve tahsilat özeti',
+      'Hızlı erişim menüleri',
+      'Her cihazdan aynı panel',
+    ],
+    desktopSrc: '/images/products/koopplus-gallery/desktop-yonetim-paneli.webp',
+    desktopAlt: 'KoopPlus yönetim paneli masaüstü görünümü',
+  },
+  {
+    id: 'borc',
+    tab: 'Üye Borç Tablosu',
+    title: 'Üye Borç Tablosu',
+    description:
+      'Her ödemenin faize mi ana paraya mı gittiğini tek bakışta görün. Üyelerinize borcunu net şekilde gösterin.',
+    bullets: [
+      'Faize giden / Ana paraya giden kolonları',
+      'Tahsilat dağılım çubukları',
+      'Üye bazında şeffaf borç özeti',
+    ],
+    desktopSrc: '/images/products/koopplus-gallery/desktop-uye-borc-tablosu.webp',
+    desktopAlt: 'KoopPlus üye borç tablosu — faiz ve ana para dağılımı',
+  },
+  {
+    id: 'faiz',
+    tab: 'Faiz Kararı',
+    title: 'Faiz Kararı',
+    description: 'Faiz işletme kararlarını panelden yürütün; geciken alacakları düzenli takip edin.',
+    bullets: ['Faiz oranlarını yönetin', 'Dönem bazlı işletme', 'Kayıtlı karar geçmişi'],
+    desktopSrc: '/images/products/koopplus-gallery/desktop-faiz-karari.webp',
+    desktopAlt: 'KoopPlus faiz kararı ekranı',
+  },
+  {
+    id: 'kasa',
+    tab: 'Kasa',
+    title: 'Kooperatif Kasası',
+    description: 'Nakit giriş-çıkışlarını kooperatif kayıtlarıyla birlikte izleyin.',
+    bullets: ['Kasa hareketleri', 'Günlük bakiye', 'Tahsilatlarla uyum'],
+    desktopSrc: '/images/products/koopplus-gallery/desktop-kooperatif-kasasi.webp',
+    desktopAlt: 'KoopPlus kooperatif kasası ekranı',
+  },
+  {
+    id: 'banka',
+    tab: 'Banka',
+    title: 'Banka Hareketleri',
+    description: 'Banka hareketlerini kaydedin; üyeler ve kasa ile eşleştirin.',
+    bullets: ['Hareket listesi', 'Üye eşleştirme', 'Kasa ile kontrol'],
+    desktopSrc: '/images/products/koopplus-gallery/desktop-banka-hareketleri.webp',
+    desktopAlt: 'KoopPlus banka hareketleri ekranı',
+  },
+  {
+    id: 'raporlar',
+    tab: 'Raporlar',
+    title: 'Raporlar',
+    description: 'Üye, tahsilat, kasa ve banka özetlerini PDF veya Excel olarak alın.',
+    bullets: ['Hazır rapor şablonları', 'Dönem filtreleri', 'Dışa aktarma'],
+    desktopSrc: '/images/products/koopplus-gallery/desktop-raporlar.webp',
+    desktopAlt: 'KoopPlus raporlar ekranı',
+  },
+  {
+    id: 'mobil',
+    tab: 'Mobil',
+    title: 'Mobil erişim',
+    description: 'Telefon ve tablette aynı KoopPlus deneyimi — kurulum yok, tarayıcıdan giriş.',
+    bullets: ['Yönetim paneli mobilde', 'Üye borç tablosu mobilde', 'Dokunmatik uyumlu arayüz'],
+    mobileSrcs: [
+      {
+        src: '/images/products/koopplus-gallery/mobile-yonetim-paneli.webp',
+        alt: 'KoopPlus yönetim paneli mobil görünümü',
+      },
+      {
+        src: '/images/products/koopplus-gallery/mobile-uye-borc-tablosu.webp',
+        alt: 'KoopPlus üye borç tablosu mobil görünümü',
+      },
+    ],
   },
 ] as const
 

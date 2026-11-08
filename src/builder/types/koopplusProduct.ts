@@ -353,7 +353,7 @@ export function getDefaultKoopPlusProductContent(): KoopPlusProductContent {
     },
     features: {
       heading: 'KoopPlus ile neler yönetirsiniz?',
-      description: 'Tarayıcıdan kullandığınız temel kooperatif süreçleri.',
+      description: 'Kooperatifinizin tüm süreçleri, tarayıcıdan tek panelde.',
       items: KOOPPLUS_FEATURES.map((feature) => ({
         title: feature.title,
         description: feature.description,
