@@ -251,9 +251,34 @@ export const defaultLegalPrivacyPage: LegalPageContent = {
       body: 'Kişisel verilerinize erişme, düzeltme, silme ve işlemeye itiraz etme haklarınız KVKK kapsamında korunmaktadır. Ayrıntılı bilgi ve başvuru yöntemi [KVKK Aydınlatma Metni](/kvkk-aydinlatma-metni) sayfasında yer almaktadır.',
     },
     {
+      id: 'muvekkil-kasasi',
+      title: 'Müvekkil Kasası Mobil Uygulaması ve SaaS Hizmeti',
+      order: 9,
+      active: true,
+      body:
+        'Müvekkil Kasası, hukuk bürolarının avans, masraf, vekalet ücreti ve tahsilat kayıtlarını yönetmesi için Woontegra tarafından sunulan bir yazılımdır. Mobil uygulama (Android ve iOS), web sürümüyle aynı hesabı ve aynı sunucuyu kullanır. Bu hizmet kapsamında işlenen veriler şunlardır:',
+      listItems: [
+        'Kullanıcı hesabı: ad soyad, e-posta adresi, kullanıcı rolü ve oturum bilgileri',
+        'Büronun uygulamaya girdiği kayıtlar: müvekkil adı, telefon ve e-posta bilgileri, dosya bilgileri, avans, masraf, vekalet ücreti, taksit, tahsilat ve randevu kayıtları',
+        'WhatsApp hatırlatmaları büro tarafından etkinleştirilirse: müvekkil telefon numarası ve hatırlatma mesajının içeriği',
+        'Büroların uygulamaya girdiği müvekkil verileri bakımından veri sorumlusu ilgili hukuk bürosudur; Woontegra bu verileri yalnızca hizmeti sunmak amacıyla, büro adına veri işleyen olarak işler',
+        'Mobil uygulamada reklam, reklam takip aracı veya analitik aracı bulunmaz; veriler üçüncü kişilere satılmaz ve pazarlama amacıyla kullanılmaz',
+        'Veriler hizmetin barındırıldığı bulut sunucularında saklanır; WhatsApp hatırlatmaları etkinleştirilirse mesajlar Meta Platforms’un WhatsApp Business altyapısı üzerinden gönderilir; döviz kurları için Türkiye Cumhuriyet Merkez Bankası’nın herkese açık verileri kullanılır ve bu işlemde kişisel veri paylaşılmaz',
+        'Uygulama ile sunucu arasındaki tüm iletişim şifreli (HTTPS) bağlantı üzerinden yapılır; oturum bilgileri cihazın güvenli depolama alanında saklanır',
+      ],
+    },
+    {
+      id: 'hesap-silme',
+      title: 'Müvekkil Kasası: Hesap ve Veri Silme',
+      order: 10,
+      active: true,
+      body:
+        'Müvekkil Kasası hesabınızın ve ilgili verilerinizin silinmesini talep etmek için [info@woontegra.com](mailto:info@woontegra.com) adresine, hesabınıza kayıtlı e-posta adresinden "Hesap silme talebi" konulu bir e-posta gönderebilirsiniz. Talepler en geç 30 gün içinde sonuçlandırılır.\n\nYasal saklama yükümlülüğü bulunan kayıtlar ilgili süre boyunca saklanır ve sürenin sonunda silinir. Büro yöneticileri, müvekkil ve kayıt verilerini uygulama içinden de silebilir.',
+    },
+    {
       id: 'iletisim',
       title: 'İletişim',
-      order: 9,
+      order: 11,
       active: true,
       kind: 'company-details',
       body: 'Gizlilik ile ilgili sorularınız için bizimle iletişime geçebilirsiniz:',
