@@ -229,7 +229,7 @@ export const KOOPPLUS_FAQ = [
   {
     question: 'Birden fazla kooperatifim var, nasıl satın alırım?',
     answer:
-      'Satın alırken “Kaç kooperatif?” alanından sayıyı seçin. İlk kooperatif {ilkFiyat}, her ek kooperatif {ekFiyat} (yıllık, KDV dahil). Ödeme sonrası ilk kooperatifiniz otomatik açılır; kalan haklarınızı KoopPlus içinde Kooperatifler → “+ Yeni Kooperatif” ile kendiniz kullanırsınız. Zaten KoopPlus müşterisiyseniz yeni kooperatifleriniz ek kooperatif fiyatından hesaplanır.',
+      'Satın alırken “Kaç kooperatif?” alanından sayıyı seçin. İlk kooperatif {ilkFiyat}, her ek kooperatif {ekFiyat} (yıllık, KDV dahil). Ödeme sonrası ilk kooperatifiniz otomatik açılır; kalan haklarınızı KoopPlus içinde Kooperatifler → “+ Yeni Kooperatif” ile kendiniz kullanırsınız. Zaten KoopPlus müşterisiyseniz ek kooperatif için bizimle iletişime geçin; ödemenizi alıp kooperatif hakkınızı hesabınıza tanımlarız.',
   },
   {
     question: 'Ücretsiz deneme kaç gün?',

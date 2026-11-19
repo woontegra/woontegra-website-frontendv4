@@ -1145,8 +1145,8 @@ export function CheckoutPage() {
                   ) : null}
                   {!koopplusRenew ? (
                     <p className="mt-2 text-xs leading-relaxed text-slate-500">
-                      Zaten KoopPlus müşterisiyseniz yeni kooperatifleriniz ek kooperatif fiyatından hesaplanır; kesin
-                      tutar ödeme adımında gösterilir.
+                      Zaten KoopPlus müşterisiyseniz ek kooperatif için buradan satın almayın; bizimle iletişime
+                      geçin, ödemenizi alıp kooperatif hakkınızı hesabınıza tanımlayalım.
                     </p>
                   ) : null}
                 </div>
