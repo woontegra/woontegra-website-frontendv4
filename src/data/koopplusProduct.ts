@@ -167,7 +167,7 @@ export const KOOPPLUS_FEATURES: KoopPlusFeature[] = [
   },
   {
     title: 'Çoklu Kooperatif Yönetimi',
-    description: 'Tek hesapla birden fazla kooperatifi ayrı tutarak yönetin.',
+    description: 'Her kooperatif için ayrı lisans; hepsini tek hesaptan, birbirinden ayrı tutarak yönetin.',
     icon: Building2,
   },
 ]
@@ -199,14 +199,14 @@ export const KOOPPLUS_WHY = [
   },
   {
     title: 'Birden fazla kooperatifi ayrı yönetin',
-    description: 'Kooperatifler arasında geçiş yapın; veriler birbirine karışmaz.',
+    description: 'Her kooperatif ayrı lisanslıdır; tek hesaptan aralarında geçiş yapın, veriler birbirine karışmaz.',
   },
 ] as const
 
 export const KOOPPLUS_MULTI_COOP = {
-  title: 'Birden fazla kooperatif, tek KoopPlus.',
+  title: 'Birden fazla kooperatifiniz mi var?',
   description:
-    'Tek hesapla birden fazla kooperatif oluşturabilir ve aralarında geçiş yapabilirsiniz. Her kooperatifin verileri birbirinden ayrı tutulur.',
+    'Her kooperatif için ayrı lisans alın, hepsini tek hesaptan yönetin. Ek kooperatifler daha uygun fiyatlıdır ({ekFiyat}/yıl). Satın alırken kooperatif sayısını seçmeniz yeterli; ilk kooperatifiniz otomatik açılır, diğerlerini KoopPlus içinden kendiniz açarsınız. Her kooperatifin verileri birbirinden ayrı tutulur.',
 } as const
 
 export const KOOPPLUS_LOCAL_DATA = {
@@ -217,7 +217,8 @@ export const KOOPPLUS_LOCAL_DATA = {
 
 export const KOOPPLUS_LICENSE_POINTS = [
   'Yıllık abonelik · 9.000 ₺ (KDV dahil)',
-  'Kooperatif başına lisans',
+  'Her kooperatif için ayrı lisans: ilk kooperatif {ilkFiyat}/yıl, her ek kooperatif {ekFiyat}/yıl (KDV dahil)',
+  'Tek kullanıcı hesabıyla bütün kooperatiflerinize geçiş yapın',
   'Kurulum yok, cihaz sınırı yok',
   '7 gün ücretsiz demo',
   'Yenilemede verileriniz aynen devam eder',
@@ -225,6 +226,11 @@ export const KOOPPLUS_LICENSE_POINTS = [
 ] as const
 
 export const KOOPPLUS_FAQ = [
+  {
+    question: 'Birden fazla kooperatifim var, nasıl satın alırım?',
+    answer:
+      'Satın alırken “Kaç kooperatif?” alanından sayıyı seçin. İlk kooperatif {ilkFiyat}, her ek kooperatif {ekFiyat} (yıllık, KDV dahil). Ödeme sonrası ilk kooperatifiniz otomatik açılır; kalan haklarınızı KoopPlus içinde Kooperatifler → “+ Yeni Kooperatif” ile kendiniz kullanırsınız. Zaten KoopPlus müşterisiyseniz yeni kooperatifleriniz ek kooperatif fiyatından hesaplanır.',
+  },
   {
     question: 'Ücretsiz deneme kaç gün?',
     answer: '7 gün.',

@@ -2,6 +2,7 @@ import { AddItemButton, ImageUrlField, TextAreaField, TextField, ToggleField } f
 import { SettingsAccordion } from '@/builder/admin/ui/SettingsAccordion'
 import { SharedAdvancedSection, wrapSections } from '@/builder/admin/settings/SharedSections'
 import { useSelectedBlock } from '@/builder/admin/settings/useSelectedBlock'
+import { KoopPlusPricingEditor } from '@/builder/admin/settings/KoopPlusPricingEditor'
 import {
   patchKoopPlusProductContent,
   type KoopPlusProductBlock,
@@ -18,6 +19,12 @@ export function KoopPlusProductSettingsPanel() {
   }
 
   const items = wrapSections([
+    {
+      id: 'pricing',
+      title: 'Fiyat (adetli satış)',
+      defaultOpen: false,
+      content: <KoopPlusPricingEditor />,
+    },
     {
       id: 'hero',
       title: 'Hero',

@@ -19,6 +19,8 @@ import { publicSoftwareDetailHref } from '@/components/public/muvekkil-kasa/comp
 import { CheckoutCouponBox, useCheckoutCoupon } from '@/components/checkout/CheckoutCouponBox'
 import { checkoutService } from '@/services/checkoutService'
 import { usePageMeta } from '@/hooks/usePageMeta'
+import { isKoopPlusPublicSlug } from '@/data/koopplusProduct'
+import { koopplusPricingService, type KoopPlusPriceQuote } from '@/services/koopplusPricingService'
 
 function QuantityControl({
   line,
@@ -41,7 +43,11 @@ function QuantityControl({
     if (next !== value) onChange(next)
   }
 
-  const label = isSaasSubscriptionProduct(line.snapshot?.productType ?? 'DOWNLOAD') ? 'Yıl' : 'Adet'
+  const label = isKoopPlusPublicSlug(line.snapshot?.slug)
+    ? 'Kooperatif'
+    : isSaasSubscriptionProduct(line.snapshot?.productType ?? 'DOWNLOAD')
+      ? 'Yıl'
+      : 'Adet'
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -97,9 +103,41 @@ export function CartPage() {
     enabled: productIds.length > 0,
   })
 
-  const mergedRows = useMemo(
+  const baseRows = useMemo(
     () => mergeCartWithPreview(lines, previewQuery.data ?? []),
     [lines, previewQuery.data],
+  )
+  // KoopPlus kademeli fiyat (ilk + ek kooperatif): satır toplamı sunucu dökümünden.
+  const koopplusQty = baseRows.find((r) => isKoopPlusPublicSlug(r.slug))?.quantity ?? 0
+  const [koopplusQuote, setKoopplusQuote] = useState<KoopPlusPriceQuote | null>(null)
+  useEffect(() => {
+    if (!koopplusQty) {
+      setKoopplusQuote(null)
+      return
+    }
+    let alive = true
+    koopplusPricingService
+      .quote({ quantity: koopplusQty })
+      .then((q) => {
+        if (alive) setKoopplusQuote(q)
+      })
+      .catch(() => {
+        if (alive) setKoopplusQuote(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [koopplusQty])
+  const mergedRows = useMemo(
+    () =>
+      koopplusQuote
+        ? baseRows.map((r) =>
+            isKoopPlusPublicSlug(r.slug) && r.quantity === koopplusQuote.quantity
+              ? { ...r, lineTotal: koopplusQuote.total }
+              : r,
+          )
+        : baseRows,
+    [baseRows, koopplusQuote],
   )
 
   const total = useMemo(() => mergedRows.reduce((sum, row) => sum + row.lineTotal, 0), [mergedRows])

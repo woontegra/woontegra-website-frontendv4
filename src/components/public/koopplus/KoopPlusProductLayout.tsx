@@ -22,6 +22,15 @@ import { isDesktopLicenseRenewalContext, type DesktopLicenseRenewalView } from '
 import { resolveMediaUrl } from '@/media/resolveMediaUrl'
 import type { PublicProductDetail } from '@/types/product'
 import { buildCartSnapshot } from '@/utils/productPurchase'
+import { formatMoney } from '@/utils/formatMoney'
+import {
+  KOOPPLUS_DEFAULT_MAX_QUANTITY,
+  estimateKoopPlusTotal,
+  fillKoopPlusPriceTokens,
+  koopplusPricingService,
+  type KoopPlusPricing,
+} from '@/services/koopplusPricingService'
+
 
 const SHELL = 'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'
 const SALES_PREP_NOTICE = 'Satışa hazırlanıyor. Satın alma henüz açılmamıştır.'
@@ -126,6 +135,20 @@ export function KoopPlusProductLayout({
   const [buyNotice, setBuyNotice] = useState<string | null>(null)
   const [demoOpen, setDemoOpen] = useState(false)
   const [openFaq, setOpenFaq] = useState<string | null>(null)
+  const [coopQuantity, setCoopQuantity] = useState(1)
+  const [pricing, setPricing] = useState<KoopPlusPricing | null>(null)
+  useEffect(() => {
+    let alive = true
+    koopplusPricingService
+      .getPricing()
+      .then((p) => {
+        if (alive) setPricing(p)
+      })
+      .catch(() => undefined)
+    return () => {
+      alive = false
+    }
+  }, [])
   useEffect(() => {
     setOpenFaq((prev) => prev ?? content.faq.items[0]?.question ?? null)
   }, [content])
@@ -149,7 +172,7 @@ export function KoopPlusProductLayout({
       setBuyNotice(SALES_PREP_NOTICE)
       return
     }
-    addToCart(action.productId, 1, { snapshot: buildCartSnapshot(product), replaceLine: true })
+    addToCart(action.productId, coopQuantity, { snapshot: buildCartSnapshot(product), replaceLine: true })
     setBuyNotice(null)
     navigate(action.nextPath)
   }
@@ -270,7 +293,50 @@ export function KoopPlusProductLayout({
                 ) : (
                   <p className="text-sm text-slate-500">{productLoading ? 'Fiyat yükleniyor…' : 'Fiyat bilgisi yakında'}</p>
                 )}
+                {pricing ? (
+                  <p className="mt-1 text-sm text-slate-600" data-testid="koopplus-additional-price">
+                    Her ek kooperatif: <strong>{formatMoney(pricing.additionalPrice, pricing.currency)}</strong> / yıl
+                  </p>
+                ) : null}
               </div>
+              {buyReady ? (
+                <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50/70 p-4" data-testid="koopplus-quantity">
+                  <label htmlFor="koopplus-coop-qty" className="block text-sm font-medium text-slate-900">
+                    Kaç kooperatif?
+                  </label>
+                  <select
+                    id="koopplus-coop-qty"
+                    value={coopQuantity}
+                    onChange={(e) => setCoopQuantity(Math.max(1, Number(e.target.value) || 1))}
+                    className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                  >
+                    {Array.from({ length: pricing?.maxQuantity ?? KOOPPLUS_DEFAULT_MAX_QUANTITY }, (_, i) => i + 1).map(
+                      (n) => (
+                        <option key={n} value={n}>
+                          {n} kooperatif
+                        </option>
+                      ),
+                    )}
+                  </select>
+                  {pricing && pricing.firstPrice != null ? (
+                    <p className="mt-3 text-sm text-slate-700">
+                      {coopQuantity > 1
+                        ? `1 × ${formatMoney(pricing.firstPrice, pricing.currency)} + ${coopQuantity - 1} × ${formatMoney(pricing.additionalPrice, pricing.currency)} = `
+                        : 'Toplam: '}
+                      <strong className="text-slate-950">
+                        {formatMoney(estimateKoopPlusTotal(pricing, coopQuantity) ?? 0, pricing.currency)}
+                      </strong>
+                      <span className="text-slate-500"> / yıl</span>
+                    </p>
+                  ) : null}
+                  {coopQuantity > 1 ? (
+                    <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                      İlk kooperatifiniz ödeme sonrası otomatik açılır; diğerlerini KoopPlus içinden (Kooperatifler →
+                      + Yeni Kooperatif) kendiniz açarsınız.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
               {desktopLicenseRenewalLoading ? (
                 <p className="mt-4 text-sm text-slate-500">Lisans bilgileri doğrulanıyor…</p>
               ) : desktopLicenseRenewal && isDesktopLicenseRenewalContext(desktopLicenseRenewal) ? (
@@ -426,7 +492,7 @@ export function KoopPlusProductLayout({
             <div className="grid gap-8 rounded-3xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-6 sm:p-10 lg:grid-cols-2">
               <div>
                 <h2 className="text-3xl font-bold tracking-tight text-slate-950">{content.info.multiCoop.title}</h2>
-                <p className="mt-4 text-base leading-relaxed text-slate-600">{content.info.multiCoop.description}</p>
+                <p className="mt-4 text-base leading-relaxed text-slate-600">{fillKoopPlusPriceTokens(content.info.multiCoop.description, pricing)}</p>
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-slate-900">{content.info.localData.title}</h3>
@@ -444,7 +510,7 @@ export function KoopPlusProductLayout({
             <ul className="mt-8 grid gap-3 sm:grid-cols-2">
               {content.license.points.map((point) => (
                 <li key={point} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
-                  {point}
+                  {fillKoopPlusPriceTokens(point, pricing)}
                 </li>
               ))}
             </ul>
@@ -472,7 +538,7 @@ export function KoopPlusProductLayout({
                         {open ? '−' : '+'}
                       </span>
                     </button>
-                    {open ? <p className="mt-2 text-sm text-slate-600">{item.answer}</p> : null}
+                    {open ? <p className="mt-2 text-sm text-slate-600">{fillKoopPlusPriceTokens(item.answer, pricing)}</p> : null}
                   </div>
                 )
               })}

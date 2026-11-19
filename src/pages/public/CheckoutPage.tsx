@@ -11,6 +11,8 @@ import { buildCheckoutLegalPreviewVariables } from '@/lib/buildCheckoutLegalPrev
 import type { LegalDocType } from '@/types/legalDocuments'
 import { TurkeyCityDistrictFields, checkoutSelectCls } from '@/components/checkout/TurkeyCityDistrictFields'
 import { LoadingState } from '@/components/public/LoadingState'
+import { koopplusPricingService, type KoopPlusPriceQuote } from '@/services/koopplusPricingService'
+import { setLineQuantity } from '@/lib/cartStorage'
 import { Input } from '@/components/ui/Input'
 import {
   CENTRAL_LICENSE_PUBLIC_MESSAGE,
@@ -194,9 +196,22 @@ export function CheckoutPage() {
     })
   }, [previewQuery.data])
 
-  const merged = useMemo(
+  const baseMerged = useMemo(
     () => mergeCartWithPreview(lines, previewQuery.data ?? []),
     [lines, previewQuery.data],
+  )
+  /** KoopPlus kademeli fiyat: satır toplamı sunucudan gelen dökümle gösterilir (ilk + ek kooperatif). */
+  const [koopplusQuote, setKoopplusQuote] = useState<KoopPlusPriceQuote | null>(null)
+  const merged = useMemo(
+    () =>
+      koopplusQuote
+        ? baseMerged.map((m) =>
+            isKoopPlusPublicSlug(m.slug) && m.quantity === koopplusQuote.quantity
+              ? { ...m, lineTotal: koopplusQuote.total }
+              : m,
+          )
+        : baseMerged,
+    [baseMerged, koopplusQuote],
   )
 
   const grand = merged.reduce((s, m) => s + m.lineTotal, 0)
@@ -401,6 +416,31 @@ export function CheckoutPage() {
   const [orderNo, setOrderNo] = useState<string | null>(null)
   const [checkoutSuccessOrderNo, setCheckoutSuccessOrderNo] = useState<string | null>(null)
   const [paytrRetryOrderNo, setPaytrRetryOrderNo] = useState<string | null>(null)
+
+  const koopplusRow = merged.find((m) => isKoopPlusPublicSlug(m.slug)) ?? null
+  const koopplusQty = koopplusRow?.quantity ?? 0
+  const koopplusKeyForQuote = koopplusRenew ? koopplusLicenseKey.trim() : ''
+  useEffect(() => {
+    if (!koopplusQty) {
+      setKoopplusQuote(null)
+      return
+    }
+    let alive = true
+    const t = setTimeout(() => {
+      koopplusPricingService
+        .quote({ quantity: koopplusQty, licenseKey: koopplusKeyForQuote || undefined })
+        .then((q) => {
+          if (alive) setKoopplusQuote(q)
+        })
+        .catch(() => {
+          if (alive) setKoopplusQuote(null)
+        })
+    }, 300)
+    return () => {
+      alive = false
+      clearTimeout(t)
+    }
+  }, [koopplusQty, koopplusKeyForQuote])
   const submitLockRef = useRef(false)
 
   const couponItems = useMemo(
@@ -1062,9 +1102,55 @@ export function CheckoutPage() {
             >
               <h2 className="text-lg font-semibold text-slate-900">KoopPlus bilgileri</h2>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                Lisans kooperatif başınadır. Yukarıda il ve ilçeyi seçin; giriş bilgileriniz ve lisans anahtarınız
-                ödeme sonrası e-postanıza gönderilir.
+                Her kooperatif için ayrı lisans alınır. Yukarıda il ve ilçeyi seçin; giriş bilgileriniz ve lisans
+                anahtarınız ödeme sonrası e-postanıza gönderilir.
               </p>
+              {koopplusRow ? (
+                <div className="mt-4" data-testid="koopplus-checkout-quantity">
+                  <label htmlFor="koopplus-checkout-qty" className="block text-sm font-medium text-slate-900">
+                    Kaç kooperatif?
+                  </label>
+                  <select
+                    id="koopplus-checkout-qty"
+                    value={koopplusRow.quantity}
+                    onChange={(e) => setLineQuantity(koopplusRow.id, Math.max(1, Number(e.target.value) || 1))}
+                    className={checkoutSelectCls}
+                  >
+                    {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        {n} kooperatif
+                      </option>
+                    ))}
+                  </select>
+                  {koopplusQuote && koopplusQuote.quantity === koopplusRow.quantity ? (
+                    <p className="mt-2 text-sm text-slate-700">
+                      {[
+                        koopplusQuote.firstUnits > 0
+                          ? `${koopplusQuote.firstUnits} × ${formatMoney(koopplusQuote.firstPrice, koopplusQuote.currency)}`
+                          : null,
+                        koopplusQuote.additionalUnits > 0
+                          ? `${koopplusQuote.additionalUnits} × ${formatMoney(koopplusQuote.additionalPrice, koopplusQuote.currency)}`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' + ')}{' '}
+                      = <strong>{formatMoney(koopplusQuote.total, koopplusQuote.currency)}</strong> / yıl
+                    </p>
+                  ) : null}
+                  {koopplusRow.quantity > 1 ? (
+                    <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                      Aşağıya ilk kooperatifinizin adını yazın; o kooperatif ödeme sonrası otomatik açılır. Diğer
+                      kooperatiflerinizi KoopPlus içinden (Kooperatifler → + Yeni Kooperatif) kendiniz açabilirsiniz.
+                    </p>
+                  ) : null}
+                  {!koopplusRenew ? (
+                    <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                      Zaten KoopPlus müşterisiyseniz yeni kooperatifleriniz ek kooperatif fiyatından hesaplanır; kesin
+                      tutar ödeme adımında gösterilir.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
               <Input
                 className="mt-4"
                 label="Kooperatif adı *"
@@ -1232,7 +1318,9 @@ export function CheckoutPage() {
                     {m.name}
                     {mergedRowIsSingleQuantity(m)
                       ? ' — 1 lisans'
-                      : isSaasSubscriptionProduct(m.productType)
+                      : isKoopPlusPublicSlug(m.slug)
+                        ? ` × ${m.quantity} kooperatif`
+                        : isSaasSubscriptionProduct(m.productType)
                         ? ` × ${m.quantity} yıl`
                         : ` × ${m.quantity}`}
                   </span>
