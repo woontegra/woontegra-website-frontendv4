@@ -48,6 +48,12 @@ import {
   Eye,
   Rocket,
   Wrench,
+  Receipt,
+  FileText,
+  Wallet,
+  CalendarDays,
+  MessageCircle,
+  User,
 } from 'lucide-react'
 
 export const ICON_OPTIONS = [
@@ -156,6 +162,13 @@ const iconMap: Record<string, LucideIcon> = {
   code: Code2,
   'code-2': Code2,
   lightbulb: Lightbulb,
+  // Müvekkil Kasa sayfası kartları (Page Builder'da kebab isimle kayıtlı)
+  receipt: Receipt,
+  'file-text': FileText,
+  wallet: Wallet,
+  'calendar-days': CalendarDays,
+  'message-circle': MessageCircle,
+  user: User,
   // Ana sayfa intro kartları (Planlarız / Geliştiririz / Yönetiriz) CMS'de '01'..'03' saklıyor
   '01': Target,
   '02': Code2,

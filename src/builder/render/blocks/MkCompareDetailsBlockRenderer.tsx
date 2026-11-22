@@ -16,6 +16,7 @@ import {
   scrollToCompareTable,
   type MkCompareEdition,
 } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { isMkComparePlatformHidden } from '@/components/public/muvekkil-kasa/mkComparePlatform'
 import { isFreeDownloadProduct } from '@/utils/productPurchase'
 import { getErrorMessage } from '@/api/client'
 import type { MkCompareDetailsBlock, MkCompareDetailsPanel } from '@/builder/types/mkCompareDetails'
@@ -37,7 +38,9 @@ export function MkCompareDetailsBlockRenderer({ block }: BlockRendererProps) {
   const compare = useMkComparePageContextOptional()
   const saasCtx = useMkSaasProductPageContextOptional()
   const tablistId = useId()
-  const tab = compare?.detailTab ?? 'desktop'
+  // Masaüstü müşteriden gizliyse (mkComparePlatform.ts → hiddenFromPublic) sekmeler gizlenir, yalnız Web detayları görünür.
+  const desktopHidden = isMkComparePlatformHidden('windows')
+  const tab: MkCompareEdition = desktopHidden ? 'saas' : (compare?.detailTab ?? 'desktop')
   const onTabChange = compare?.setDetailTab ?? (() => undefined)
   const anchorId = details.settings.anchorId?.trim() || 'urun-detaylari'
   const tabs: { id: MkCompareEdition; label: string }[] = [
@@ -74,6 +77,7 @@ export function MkCompareDetailsBlockRenderer({ block }: BlockRendererProps) {
           </BuilderField>
         ) : null}
 
+        {desktopHidden ? null : (
         <div
           id={tablistId}
           role="tablist"
@@ -104,6 +108,7 @@ export function MkCompareDetailsBlockRenderer({ block }: BlockRendererProps) {
             )
           })}
         </div>
+        )}
       </div>
 
       <Panel
@@ -128,7 +133,7 @@ export function MkCompareDetailsBlockRenderer({ block }: BlockRendererProps) {
         retryClass="text-sky-700"
         primaryClass="bg-sky-600 hover:bg-sky-700"
         onPrimary={scrollToComparePurchase}
-        onSecondary={scrollToCompareTable}
+        onSecondary={desktopHidden ? undefined : scrollToCompareTable}
         onDemo={saasCtx?.onOpenDemo}
       />
     </section>
@@ -157,7 +162,8 @@ function Panel({
   retryClass: string
   primaryClass: string
   onPrimary: () => void
-  onSecondary: () => void
+  /** Verilmezse ikinci (karşılaştır) butonu gösterilmez. */
+  onSecondary?: () => void
   onDemo?: () => void
 }) {
   if (!visible) return null
@@ -217,7 +223,7 @@ function Panel({
             {panel.primaryCtaLabel}
           </button>
         ) : null}
-        {panel.secondaryCtaLabel.trim() ? (
+        {panel.secondaryCtaLabel.trim() && onSecondary ? (
           <button
             type="button"
             onClick={onSecondary}

@@ -28,6 +28,11 @@ export type SoftwarePlatformDefinition = {
   billingTerms: PlatformBillingTerm[]
   checkout: PlatformCheckoutMode
   presentation?: DesktopPlatformPresentation
+  /**
+   * true: sekme müşteriye gösterilmez (ürün, fiyat ve satın alma kodu yerinde kalır).
+   * Tekrar göstermek için bu satırı silmek veya false yapmak yeterlidir.
+   */
+  hiddenFromPublic?: boolean
 }
 
 export type ProductPlatformFamily = {
@@ -56,6 +61,7 @@ export const BILIRKISI_PLATFORM_FAMILY: ProductPlatformFamily = {
       summary: 'Windows masaüstü uygulaması',
       billingTerms: ['yearly'],
       checkout: 'not-connected',
+      hiddenFromPublic: true,
       presentation: {
         salesTitle: 'Bilirkişi Hesap — Windows',
         productTypeLabel: 'Masaüstü Uygulaması',
@@ -72,6 +78,7 @@ export const BILIRKISI_PLATFORM_FAMILY: ProductPlatformFamily = {
       summary: 'Mac masaüstü uygulaması',
       billingTerms: ['yearly'],
       checkout: 'not-connected',
+      hiddenFromPublic: true,
       presentation: {
         salesTitle: 'Bilirkişi Hesap — macOS',
         productTypeLabel: 'Masaüstü Uygulaması',
@@ -88,6 +95,26 @@ export const BILIRKISI_PLATFORM_FAMILY: ProductPlatformFamily = {
 export function getProductPlatformFamily(slug: string): ProductPlatformFamily | null {
   if (slug === BILIRKISI_HESAP_SLUG) return BILIRKISI_PLATFORM_FAMILY
   return null
+}
+
+/** Müşteriye gösterilecek sekmeler. `keepId` gizli olsa bile listede kalır (ör. lisans yenileme ile gelinen sekme). */
+export function publicPlatforms(
+  family: ProductPlatformFamily,
+  keepId?: SoftwarePlatformId | null,
+): SoftwarePlatformDefinition[] {
+  return family.platforms.filter((platform) => !platform.hiddenFromPublic || platform.id === keepId)
+}
+
+/** İstenen sekme gizliyse ailenin varsayılan sekmesine döner. */
+export function visiblePlatformOrDefault(
+  family: ProductPlatformFamily | null | undefined,
+  requested: SoftwarePlatformId | null | undefined,
+): SoftwarePlatformId {
+  const fallback = family?.defaultPlatform ?? 'web'
+  if (!requested) return fallback
+  const platform = findPlatform(family, requested)
+  if (!platform || platform.hiddenFromPublic) return fallback
+  return requested
 }
 
 export function desktopLicenseLabel(term: 'monthly' | 'yearly', deviceLimit: number | null): string {

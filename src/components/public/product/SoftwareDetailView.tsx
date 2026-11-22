@@ -28,6 +28,7 @@ import {
   desktopPlatformFacts,
   findPlatform,
   getProductPlatformFamily,
+  visiblePlatformOrDefault,
   type SoftwarePlatformId,
 } from '@/components/public/product/softwarePlatforms'
 
@@ -61,8 +62,8 @@ export function SoftwareDetailView({
     if (raw === 'windows' || raw === 'macos' || raw === 'web') return raw
     return null
   }, [searchParams])
-  const [platformId, setPlatformId] = useState<SoftwarePlatformId>(
-    requestedPlatform ?? platformFamily?.defaultPlatform ?? 'web',
+  const [platformId, setPlatformId] = useState<SoftwarePlatformId>(() =>
+    visiblePlatformOrDefault(platformFamily, requestedPlatform),
   )
   const selectedPlatform = findPlatform(platformFamily, platformId)
   const bhProductQuery = useQuery({
@@ -115,7 +116,7 @@ export function SoftwareDetailView({
       : `${licenseDaysPerUnit} Gün`
 
   useEffect(() => {
-    setPlatformId(requestedPlatform ?? getProductPlatformFamily(data.slug)?.defaultPlatform ?? 'web')
+    setPlatformId(visiblePlatformOrDefault(getProductPlatformFamily(data.slug), requestedPlatform))
   }, [data.slug, requestedPlatform])
 
   useEffect(() => {

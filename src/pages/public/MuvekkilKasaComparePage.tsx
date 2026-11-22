@@ -8,9 +8,9 @@ import { usePublicPageBlocks } from '@/hooks/usePublicPageBlocks'
 import { PRODUCT_PAGES_CONTENT_KEY } from '@/lib/builderPageContentKeys'
 import { resolveMkComparePublicBlocks } from '@/builder/templates/mkCompareBuilderTemplate'
 
-const MK_TITLE = 'Müvekkil Kasa Defteri Masaüstü ve Web Tabanlı Karşılaştırması | Woontegra'
+const MK_TITLE = 'Müvekkil Kasa Defteri — Web Tabanlı Müvekkil Kasa Takibi | Woontegra'
 const MK_DESCRIPTION =
-  'Woontegra Müvekkil Kasa Defteri masaüstü ve web tabanlı sürümlerini karşılaştırın; büronuza uygun kullanım ve özellik seçeneğini belirleyin.'
+  'Woontegra Müvekkil Kasa Defteri: kurulum gerektirmeden tarayıcıdan erişilen, çok kullanıcılı ve WhatsApp destekli müvekkil kasa takibi. 7 gün ücretsiz deneyin.'
 
 export function MuvekkilKasaComparePage() {
   usePageMeta({
@@ -30,7 +30,7 @@ export function MuvekkilKasaComparePage() {
         description={MK_DESCRIPTION}
         path={MK_COMPARE_PATH}
         applicationCategory="BusinessApplication"
-        operatingSystem="Windows, Web"
+        operatingSystem="Web"
         breadcrumbs={[
           { name: 'Ana Sayfa', path: '/' },
           { name: 'Yazılımlar', path: '/yazilimlar' },

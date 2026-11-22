@@ -18,6 +18,7 @@ import {
   MK_COMPARE_HERO_DESCRIPTION,
 } from '@/components/public/muvekkil-kasa/mkCompareContent'
 import type { MkComparePlatform } from '@/components/public/muvekkil-kasa/mkComparePlatform'
+import { MuvekkilKasaMobileAppBadges } from '@/components/public/muvekkil-kasa/MuvekkilKasaMobileAppBadges'
 
 function ComparePageBody() {
   const { desktopQuery, saasQuery, detailTab, setDetailTab, setPlatformTab } = useMkComparePageContext()
@@ -61,6 +62,7 @@ function ComparePageBody() {
                 Sürümünü Seç
               </button>
             </div>
+            <MuvekkilKasaMobileAppBadges />
           </>
         }
       />

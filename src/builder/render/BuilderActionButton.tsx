@@ -4,6 +4,7 @@ import type { BlockButton } from '@/builder/types'
 import { useMkSaasProductPageContextOptional } from '@/components/public/product/MkSaasProductPageProvider'
 import { useBhModulePageContextOptional } from '@/components/public/product/BhModulePageProvider'
 import { useBuilderEditContext } from '@/builder/edit/BuilderEditContext'
+import { scrollToPageAnchor } from '@/builder/render/pageAnchorScroll'
 
 function normalizeButtonHref(href: string, label: string): string {
   const h = href.trim()
@@ -86,11 +87,9 @@ export function BuilderActionButton({ btn, className }: Props) {
         className={className}
         onClick={(e) => {
           if (!id) return
-          const el = document.getElementById(id)
-          if (el) {
-            e.preventDefault()
-            el.scrollIntoView({ behavior: 'smooth' })
-          }
+          // Hedef bölüm henüz yüklenmemiş olabilir; scrollToPageAnchor önce yükletir sonra kaydırır.
+          e.preventDefault()
+          scrollToPageAnchor(id)
         }}
       >
         {label}

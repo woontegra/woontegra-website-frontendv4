@@ -10,6 +10,7 @@ import {
 } from '@/components/public/muvekkil-kasa/comparePageUtils'
 import {
   MK_COMPARE_DEFAULT_PLATFORM,
+  isMkComparePlatformHidden,
   parseMkComparePlatformParam,
   scrollToComparePlatformCard,
   type MkComparePlatform,
@@ -109,9 +110,16 @@ export function MkComparePageProvider({ previewSafe = false, blocks = null, chil
   const surumParam = searchParams.get('surum')
   const hasSurumParam = surumParam != null && surumParam.trim() !== ''
   // Önceden saas dışındaki her ?surum= değeri masaüstünü vurguluyordu; bu korunur.
-  const highlightedPlatform: MkComparePlatform | null = hasSurumParam
+  const requestedPlatform: MkComparePlatform | null = hasSurumParam
     ? (parseMkComparePlatformParam(surumParam) ?? 'windows')
     : null
+  // Gizli sekme (masaüstü) yalnızca programdaki "Lisansı Yenile" bağlantısıyla (?renewalToken=) açılır;
+  // diğer durumlarda WEB sekmesi gösterilir.
+  const hasRenewalToken = Boolean(searchParams.get('renewalToken')?.trim())
+  const highlightedPlatform: MkComparePlatform | null =
+    requestedPlatform && isMkComparePlatformHidden(requestedPlatform) && !hasRenewalToken
+      ? MK_COMPARE_DEFAULT_PLATFORM
+      : requestedPlatform
   const [fromAffiliateLanding] = useState(readRecentAffiliateLanding)
   useEffect(() => {
     if (fromAffiliateLanding) clearAffiliateLanding()

@@ -1,3 +1,4 @@
+import { MOUNT_DEFERRED_BLOCKS_EVENT, scrollToPageAnchor } from '@/builder/render/pageAnchorScroll'
 import { Suspense, lazy, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react'
 import type { BuilderBlock } from '@/builder/types'
 import { HeroBlockRenderer } from '@/builder/render/blocks/HeroBlockRenderer'
@@ -102,7 +103,15 @@ function DeferredBlockSlot({
     )
 
     obs.observe(el)
-    return () => obs.disconnect()
+    const mountNow = () => {
+      setVisible(true)
+      obs.disconnect()
+    }
+    window.addEventListener(MOUNT_DEFERRED_BLOCKS_EVENT, mountNow)
+    return () => {
+      obs.disconnect()
+      window.removeEventListener(MOUNT_DEFERRED_BLOCKS_EVENT, mountNow)
+    }
   }, [])
 
   return (
@@ -124,6 +133,19 @@ export function PageBlocksRenderer({
 }: Props) {
   const sorted = useMemo(() => [...blocks].sort((a, b) => a.sortOrder - b.sortOrder), [blocks])
   const deferBelowFold = deferBelowFoldProp ?? (mode === 'public' && !annotateBlocks)
+
+  // Sayfa #bölüm ile açıldıysa (ör. paylaşılan link) hedef bloğu yükleyip oraya kaydır.
+  useEffect(() => {
+    if (!deferBelowFold) return
+    const goToHash = () => {
+      const hash = decodeURIComponent(window.location.hash.replace(/^#/, ''))
+      if (hash) scrollToPageAnchor(hash)
+    }
+    goToHash()
+    // Düz <a href="#..."> linkleri de çalışsın.
+    window.addEventListener('hashchange', goToHash)
+    return () => window.removeEventListener('hashchange', goToHash)
+  }, [deferBelowFold])
 
   if (!deferBelowFold) {
     return (

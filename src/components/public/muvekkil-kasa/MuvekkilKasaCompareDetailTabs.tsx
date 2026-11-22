@@ -14,6 +14,7 @@ import {
   scrollToCompareTable,
   type MkCompareEdition,
 } from '@/components/public/muvekkil-kasa/comparePageUtils'
+import { isMkComparePlatformHidden } from '@/components/public/muvekkil-kasa/mkComparePlatform'
 
 type TabId = MkCompareEdition
 type Query = UseQueryResult<PublicProductDetail, Error>
@@ -30,7 +31,10 @@ type Props = {
   onTabChange: (tab: TabId) => void
 }
 
-export function MuvekkilKasaCompareDetailTabs({ desktopQuery, saasQuery, tab, onTabChange }: Props) {
+export function MuvekkilKasaCompareDetailTabs({ desktopQuery, saasQuery, tab: requestedTab, onTabChange }: Props) {
+  // Masaüstü sekmesi müşteriden gizliyse (mkComparePlatform.ts → hiddenFromPublic) yalnız Web detayları gösterilir.
+  const desktopHidden = isMkComparePlatformHidden('windows')
+  const tab: TabId = desktopHidden ? 'saas' : requestedTab
   const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({ desktop: null, saas: null })
   const tablistId = useId()
   const saasCtx = useMkSaasProductPageContext()
@@ -63,6 +67,7 @@ export function MuvekkilKasaCompareDetailTabs({ desktopQuery, saasQuery, tab, on
 
   return (
     <section className="min-w-0">
+      {desktopHidden ? null : (
       <div className={MK_COMPARE_SHELL}>
         <div
           id={tablistId}
@@ -100,6 +105,7 @@ export function MuvekkilKasaCompareDetailTabs({ desktopQuery, saasQuery, tab, on
           })}
         </div>
       </div>
+      )}
 
       <div
         role="tabpanel"
@@ -198,6 +204,7 @@ export function MuvekkilKasaCompareDetailTabs({ desktopQuery, saasQuery, tab, on
                 >
                   Satın Alma Alanına Dön
                 </button>
+                {desktopHidden ? null : (
                 <button
                   type="button"
                   onClick={scrollToCompareTable}
@@ -205,6 +212,7 @@ export function MuvekkilKasaCompareDetailTabs({ desktopQuery, saasQuery, tab, on
                 >
                   Masaüstü ile Karşılaştır
                 </button>
+                )}
                 <button
                   type="button"
                   onClick={saasCtx.onOpenDemo}

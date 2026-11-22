@@ -21,6 +21,7 @@ import { HeroCarouselSection } from '@/builder/render/blocks/HeroCarouselSection
 import { isRemovedServicePublicLink } from '@/lib/serviceSlugs'
 import { MuvekkilKasaProductHero } from '@/components/public/muvekkil-kasa/MuvekkilKasaProductHero'
 import { BhModuleHeroBreadcrumb } from '@/components/public/product/BhModuleHeroBreadcrumb'
+import { MuvekkilKasaMobileAppBadges } from '@/components/public/muvekkil-kasa/MuvekkilKasaMobileAppBadges'
 
 function heroButtonClass(variant: BlockButton['variant'], outlineClass: string, primaryClass: string) {
   return variant === 'outline' ? outlineClass : primaryClass
@@ -792,6 +793,7 @@ function MkCompareHeroLayout({
           ))}
         </div>
       ) : null}
+      <MuvekkilKasaMobileAppBadges />
     </>
   )
 

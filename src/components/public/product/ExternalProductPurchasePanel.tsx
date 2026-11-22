@@ -27,6 +27,9 @@ import {
 } from '@/components/public/product/softwarePlatforms'
 import { bhDesktopInstallerForPlatform } from '@/lib/bhDesktopInstaller'
 
+/** Yıllık BH paketindeki "Müvekkil Kasa Masaüstü — 1 Yıl Ücretsiz" hediye kutusu. Tekrar göstermek için true yapın. */
+const SHOW_BH_ANNUAL_MK_GIFT = false
+
 type Props = {
   product: PublicProductDetail
   platformFamily?: ProductPlatformFamily | null
@@ -275,7 +278,7 @@ export function ExternalProductPurchasePanel({
           )}
         </div>
 
-        {product.slug === BILIRKISI_HESAP_SLUG && plan === 'annual' ? (
+        {SHOW_BH_ANNUAL_MK_GIFT && product.slug === BILIRKISI_HESAP_SLUG && plan === 'annual' ? (
           <div className="relative mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-3.5 py-3">
             <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">
               Yıllık pakete özel hediye

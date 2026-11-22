@@ -4,6 +4,7 @@ import { BlockSectionHeader, SectionBlockShell } from '@/builder/render/SectionB
 import { renderIfMediaUrl, renderIfText, shouldShowField } from '@/builder/render/renderRules'
 import { hasPublicImage, resolvePublicImage } from '@/media/resolvePublicImage'
 import { cn } from '@/lib/cn'
+import { scrollToPageAnchor } from '@/builder/render/pageAnchorScroll'
 import type { ImageTextBlock } from '@/builder/types'
 import {
   FileVaultMockup,
@@ -69,6 +70,14 @@ export function ImageTextBlockRenderer({ block, mode = 'public' }: BlockRenderer
       {showBtn ? (
         <a
           href={btn!.href}
+          onClick={(e) => {
+            // Sayfa içi #bölüm linki: hedef blok henüz yüklenmemiş olabilir, önce yükletip kaydır.
+            const href = btn!.href?.trim() ?? ''
+            if (href.startsWith('#') && href.length > 1) {
+              e.preventDefault()
+              scrollToPageAnchor(href.slice(1))
+            }
+          }}
           className="mt-4 inline-flex rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
         >
           {btn!.label}

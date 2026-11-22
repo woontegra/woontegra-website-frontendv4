@@ -35,6 +35,9 @@ import {
   validateTurkishTaxNumber,
 } from '@/utils/turkishTaxNumber'
 
+/** Yıllık pakette "Hediye: Müvekkil Kasa Masaüstü — 1 Yıl Ücretsiz" satırı. Tekrar göstermek için true yapın. */
+const SHOW_BH_ANNUAL_MK_GIFT = false
+
 type BhLegalKey =
   | 'PRE_INFORMATION'
   | 'DISTANCE_SALE'
@@ -1328,7 +1331,7 @@ export function BilirkisiCheckoutPage() {
                 </button>
               </div>
               )}
-              {!isDesktopCheckout && productType === 'annual' ? (
+              {SHOW_BH_ANNUAL_MK_GIFT && !isDesktopCheckout && productType === 'annual' ? (
                 <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-900">
                   Hediye: Müvekkil Kasa Masaüstü Programı — 1 Yıl Ücretsiz
                 </p>

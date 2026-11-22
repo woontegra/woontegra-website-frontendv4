@@ -25,6 +25,7 @@ export const MUVEKKIL_KASA_PLATFORM_FAMILY: ProductPlatformFamily = {
       summary: 'Windows masaüstü uygulaması',
       billingTerms: ['yearly'],
       checkout: 'live-web',
+      hiddenFromPublic: true,
     },
     {
       id: 'macos',
@@ -32,6 +33,7 @@ export const MUVEKKIL_KASA_PLATFORM_FAMILY: ProductPlatformFamily = {
       summary: 'Mac masaüstü uygulaması',
       billingTerms: ['yearly'],
       checkout: 'live-web',
+      hiddenFromPublic: true,
     },
   ],
 }
@@ -44,6 +46,11 @@ export function parseMkComparePlatformParam(value: string | null | undefined): M
   if (v === 'masaustu' || v === 'windows') return 'windows'
   if (v === 'macos' || v === 'mac') return 'macos'
   return null
+}
+
+/** Sekme müşteriden gizli mi (MUVEKKIL_KASA_PLATFORM_FAMILY içindeki hiddenFromPublic). */
+export function isMkComparePlatformHidden(platform: MkComparePlatform): boolean {
+  return Boolean(MUVEKKIL_KASA_PLATFORM_FAMILY.platforms.find((p) => p.id === platform)?.hiddenFromPublic)
 }
 
 export function isMkComparePlatform(value: string): value is MkComparePlatform {
