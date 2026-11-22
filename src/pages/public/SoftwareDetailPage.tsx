@@ -205,6 +205,11 @@ export function SoftwareDetailPage() {
     return <MkSaasProductPageProvider product={data}>{mkFallback}</MkSaasProductPageProvider>
   }
 
+  // Page Builder içeriği gelmeden yedek (eski) tasarımı gösterme; ürün yüklenirken görünen iskelet biraz daha kalır.
+  if (blocksPending && !isBuilderPreview) {
+    return <PublicDetailSkeleton />
+  }
+
   return (
     <>
       {productJsonLd ? <SoftwareProductJsonLd {...productJsonLd} /> : null}

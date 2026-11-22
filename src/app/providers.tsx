@@ -4,6 +4,8 @@ import {
   DEFAULT_PUBLIC_SITE_SETTINGS,
   PUBLIC_SITE_SETTINGS_QUERY_KEY,
 } from '@/hooks/usePublicSiteSettings'
+import { prefetchPublicPageContent } from '@/hooks/usePublicPageBlocks'
+import { PRODUCT_PAGES_CONTENT_KEY } from '@/lib/builderPageContentKeys'
 import { readPublicBootState } from '@/lib/publicBootState'
 import { router } from '@/routes/router'
 
@@ -25,6 +27,12 @@ if (publicBoot?.logo) {
     logoUpdatedAt: publicBoot.logoUpdatedAt,
     navbarLogoWidth: publicBoot.navbarLogoWidth,
   })
+}
+
+// Yazılım ürün sayfaları (Müvekkil Kasa, Bilirkişi Hesap vb.) Page Builder içeriğiyle çizilir.
+// İçerik, sayfa kodu indirilirken paralel istenir; böylece içerik beklenirken yedek tasarım görünmez.
+if (typeof window !== 'undefined' && /^\/yazilimlar\/[^/]+/.test(window.location.pathname)) {
+  prefetchPublicPageContent(queryClient, PRODUCT_PAGES_CONTENT_KEY)
 }
 
 export function AppProviders() {
