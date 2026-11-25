@@ -276,9 +276,36 @@ export const defaultLegalPrivacyPage: LegalPageContent = {
         'Müvekkil Kasası hesabınızın ve ilgili verilerinizin silinmesini talep etmek için [info@woontegra.com](mailto:info@woontegra.com) adresine, hesabınıza kayıtlı e-posta adresinden "Hesap silme talebi" konulu bir e-posta gönderebilirsiniz. Talepler en geç 30 gün içinde sonuçlandırılır.\n\nYasal saklama yükümlülüğü bulunan kayıtlar ilgili süre boyunca saklanır ve sürenin sonunda silinir. Büro yöneticileri, müvekkil ve kayıt verilerini uygulama içinden de silebilir.',
     },
     {
+      id: 'bilirkisi-hesap',
+      title: 'Bilirkişi Hesap Mobil Uygulaması ve SaaS Hizmeti',
+      order: 11,
+      active: true,
+      body:
+        'Bilirkişi Hesap, bilirkişilerin, avukatların ve hukuk bürolarının işçilik alacaklarıyla ilgili hesaplamaları yapması, kaydetmesi ve raporlaması için Woontegra tarafından sunulan bir yazılımdır. Mobil uygulama (Android ve iOS), web sürümüyle aynı hesabı ve aynı sunucuyu kullanır. Bu hizmet kapsamında işlenen veriler şunlardır:',
+      listItems: [
+        'Kullanıcı hesabı: ad soyad, e-posta adresi, telefon numarası, şirket/büro adı, müşteri numarası, kullanıcı rolü, profil resmi (yüklenirse), bildirim tercihleri ve oturum bilgileri',
+        'Güvenlik kayıtları: hesaba giriş yapılan cihaz bilgisi, IP adresi ve giriş zamanı (cihaz sınırını uygulamak ve hesabı yetkisiz girişlere karşı korumak için)',
+        'Fatura bilgileri: abonelik satın alma ve yenilemede kullanılan ad soyad veya unvan, adres, vergi dairesi ve vergi/kimlik numarası, e-posta ve telefon',
+        'Kullanıcının uygulamaya girdiği hesaplama kayıtları: dosya ve taraf bilgileri, çalışma tarihleri, ücret bilgileri, hesaplama sonuçları, notlar ve etiketler',
+        'Destek talepleri ve canlı destek yazışmaları (gönderilen görseller dahil)',
+        'Kullanıcının hesaplama kayıtlarına girdiği kişisel veriler bakımından veri sorumlusu ilgili kullanıcıdır (bilirkişi, avukat veya hukuk bürosu); Woontegra bu verileri yalnızca hizmeti sunmak amacıyla, kullanıcı adına veri işleyen olarak işler',
+        'Mobil uygulamada reklam, reklam takip aracı veya analitik aracı bulunmaz; mobil uygulama içinden ödeme alınmaz; veriler üçüncü kişilere satılmaz ve pazarlama amacıyla kullanılmaz',
+        'Veriler hizmetin barındırıldığı bulut sunucularında saklanır; e-posta bildirimleri (şifre sıfırlama, destek yanıtları, giriş uyarıları) e-posta hizmet sağlayıcısı üzerinden gönderilir',
+        'Uygulama ile sunucu arasındaki tüm iletişim şifreli (HTTPS) bağlantı üzerinden yapılır; oturum bilgileri cihazın güvenli depolama alanında saklanır',
+      ],
+    },
+    {
+      id: 'bilirkisi-hesap-silme',
+      title: 'Bilirkişi Hesap: Hesap ve Veri Silme',
+      order: 12,
+      active: true,
+      body:
+        'Bilirkişi Hesap hesabınızın ve ilgili verilerinizin silinmesini talep etmek için [info@woontegra.com](mailto:info@woontegra.com) adresine, hesabınıza kayıtlı e-posta adresinden "Bilirkişi Hesap – Hesap silme talebi" konulu bir e-posta gönderebilirsiniz. Talepler en geç 30 gün içinde sonuçlandırılır.\n\nYasal saklama yükümlülüğü bulunan kayıtlar (ör. fatura kayıtları) ilgili süre boyunca saklanır ve sürenin sonunda silinir. Kullanıcılar kayıtlı hesaplamalarını uygulama içinden de silebilir.',
+    },
+    {
       id: 'iletisim',
       title: 'İletişim',
-      order: 11,
+      order: 13,
       active: true,
       kind: 'company-details',
       body: 'Gizlilik ile ilgili sorularınız için bizimle iletişime geçebilirsiniz:',
