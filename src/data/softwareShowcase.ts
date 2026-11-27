@@ -52,7 +52,7 @@ export const SOFTWARE_SHOWCASE_ITEMS: SoftwareShowcaseItem[] = [
   {
     id: 'muvekkil-kasa-defteri',
     title: 'Müvekkil Kasa Defteri',
-    description: 'Avukat büroları için masaüstü ve web tabanlı kasa defteri.',
+    description: 'Avukat büroları için web tabanlı müvekkil kasa defteri.',
     href: '/yazilimlar/muvekkil-kasa-defteri',
     ctaLabel: 'Ürünü İncele',
     icon: Wallet,

@@ -44,6 +44,10 @@ type Props = {
 
 function licenseListNote(product: PublicProductListItem): string | null {
 
+  // Ücretsiz araçlarda (ör. Şifre Kasası) lisans notu yanıltıcı; gösterilmez.
+
+  if (isFreeDownloadProduct(product)) return null
+
   if (product.productType === 'DOWNLOAD') return 'Merkezi lisans destekli'
 
   if (product.productType === 'SAAS') return 'Abonelik / merkezi lisans'

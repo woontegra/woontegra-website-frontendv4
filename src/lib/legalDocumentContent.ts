@@ -13,7 +13,17 @@ export function isPlaceholderLegalHtml(html: string | null | undefined): boolean
   return PLACEHOLDER_MARKERS.some((marker) => body.includes(marker))
 }
 
+/**
+ * Admin paneli için metne eklenmiş iç notları müşteriye göstermez:
+ * "Yönetim notu" paragrafı ve "DOWNLOAD/SAAS varyantı —" ara başlıkları (Dijital Teslim Onayı).
+ */
+export function stripLegalAdminNotes(html: string): string {
+  return html
+    .replace(/<p[^>]*class="[^"]*legal-admin-note[^"]*"[^>]*>[\s\S]*?<\/p>/gi, '')
+    .replace(/<h2[^>]*>\s*(?:DOWNLOAD|SAAS) varyantı\s*—[\s\S]*?<\/h2>/gi, '')
+}
+
 export function resolvePublicLegalHtml(type: LegalDocType, content: string | null | undefined): string {
-  if (!isPlaceholderLegalHtml(content)) return content!.trim()
-  return resolveLegalDocumentHtml(type, content)
+  if (!isPlaceholderLegalHtml(content)) return stripLegalAdminNotes(content!.trim())
+  return stripLegalAdminNotes(resolveLegalDocumentHtml(type, content))
 }

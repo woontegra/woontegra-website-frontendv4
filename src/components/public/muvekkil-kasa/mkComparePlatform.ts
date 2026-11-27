@@ -53,6 +53,23 @@ export function isMkComparePlatformHidden(platform: MkComparePlatform): boolean 
   return Boolean(MUVEKKIL_KASA_PLATFORM_FAMILY.platforms.find((p) => p.id === platform)?.hiddenFromPublic)
 }
 
+/** Müvekkil Kasa masaüstü ürün sayfalarının (slug) hangi sekmeye ait olduğu. */
+const MK_DESKTOP_LISTING_SLUG_PLATFORM: Record<string, MkComparePlatform> = {
+  'muvekkil-kasa-defteri-yazilimi': 'windows',
+  'muvekkil-kasa-defteri-desktop': 'windows',
+  'muvekkil-kasa-defteri-macos': 'macos',
+}
+
+/**
+ * Ürün, Yazılımlar listesi ve ana sayfa ürün kartlarından gizlensin mi?
+ * Sekmesi gizli (hiddenFromPublic) olan masaüstü ürünleri listelenmez; ürün kaydı, satın alma ve
+ * "Lisansı Yenile" akışı aynen çalışır. Sekme tekrar açılınca ürün listeye kendiliğinden döner.
+ */
+export function isProductHiddenFromPublicListing(slug: string | null | undefined): boolean {
+  const platform = slug ? MK_DESKTOP_LISTING_SLUG_PLATFORM[slug.trim().toLowerCase()] : undefined
+  return platform ? isMkComparePlatformHidden(platform) : false
+}
+
 export function isMkComparePlatform(value: string): value is MkComparePlatform {
   return (MK_COMPARE_PLATFORMS as readonly string[]).includes(value)
 }

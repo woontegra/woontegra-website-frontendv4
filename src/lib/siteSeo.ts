@@ -57,7 +57,7 @@ export const SOFTWARE_ENTITY_HUB = [
   {
     name: 'Müvekkil Kasa Defteri',
     path: '/yazilimlar/muvekkil-kasa-defteri',
-    description: 'Avukat büroları için Woontegra masaüstü ve web tabanlı kasa defteri.',
+    description: 'Avukat büroları için Woontegra web tabanlı müvekkil kasa defteri.',
   },
   {
     name: 'KoopPlus',
