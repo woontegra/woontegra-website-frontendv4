@@ -43,7 +43,7 @@ export const defaultLegalCompanyInfo: LegalCompanyInfo = {
   twitter: 'https://x.com/woontegra',
   pinterest: 'https://tr.pinterest.com/0ei678dnhl2k9nvivv87o3oaoay1bs/',
   youtube: 'https://www.youtube.com/@woontegra_teknoloji',
-  lastUpdated: '2026-06-08',
+  lastUpdated: '2026-11-27',
 }
 
 function pickString(value: string | undefined, fallback = ''): string {

@@ -4,6 +4,7 @@ import {
   defaultLegalKvkkPage,
   defaultLegalPrivacyPage,
   defaultLegalRefundPage,
+  defaultLegalSubprocessorsPage,
   defaultLegalTermsPage,
 } from '@/data/legalPageDefaults'
 
@@ -14,6 +15,7 @@ export const LEGAL_PAGE_KEYS = {
   refund: 'legalRefundPage',
   consent: 'legalConsentPage',
   terms: 'legalTermsPage',
+  subprocessors: 'legalSubprocessorsPage',
 } as const
 
 export type LegalPageKey = (typeof LEGAL_PAGE_KEYS)[keyof typeof LEGAL_PAGE_KEYS]
@@ -97,6 +99,13 @@ export const LEGAL_PAGE_DEFINITIONS: LegalPageDefinition[] = [
     defaults: defaultLegalTermsPage,
     showCompanyRepresentative: false,
   },
+  {
+    key: LEGAL_PAGE_KEYS.subprocessors,
+    label: 'Alt Veri İşleyenler',
+    path: '/alt-veri-isleyenler',
+    defaults: defaultLegalSubprocessorsPage,
+    showCompanyRepresentative: false,
+  },
 ]
 
 function parseBoolean(value: unknown, fallback: boolean): boolean {
@@ -177,6 +186,7 @@ export const LEGAL_PRIVACY_PAGE_KEY = LEGAL_PAGE_KEYS.privacy
 export const LEGAL_COOKIE_PAGE_KEY = LEGAL_PAGE_KEYS.cookie
 export const LEGAL_CONSENT_PAGE_KEY = LEGAL_PAGE_KEYS.consent
 export const LEGAL_TERMS_PAGE_KEY = LEGAL_PAGE_KEYS.terms
+export const LEGAL_SUBPROCESSORS_PAGE_KEY = LEGAL_PAGE_KEYS.subprocessors
 
 export function isPlaceholderOnlyContent(content: LegalPageContent): boolean {
   const active = activeSections(content)

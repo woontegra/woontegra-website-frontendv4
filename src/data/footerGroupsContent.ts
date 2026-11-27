@@ -178,7 +178,14 @@ export const defaultFooterGroupsBundle: FooterGroupsBundle = {
           order: 8,
           enabled: true,
         },
-        { id: 'f-prefs', label: 'Çerez Tercihleri', action: 'cookie-preferences', order: 9, enabled: true },
+        {
+          id: 'f-subprocessors',
+          label: 'Alt Veri İşleyenler',
+          href: '/alt-veri-isleyenler',
+          order: 9,
+          enabled: true,
+        },
+        { id: 'f-prefs', label: 'Çerez Tercihleri', action: 'cookie-preferences', order: 10, enabled: true },
       ],
     },
     {

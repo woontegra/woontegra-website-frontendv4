@@ -5,6 +5,7 @@ import {
   defaultLegalKvkkPage,
   defaultLegalPrivacyPage,
   defaultLegalRefundPage,
+  defaultLegalSubprocessorsPage,
   defaultLegalTermsPage,
 } from '@/data/legalPageDefaults'
 import {
@@ -12,6 +13,7 @@ import {
   LEGAL_COOKIE_PAGE_KEY,
   LEGAL_KVKK_PAGE_KEY,
   LEGAL_PRIVACY_PAGE_KEY,
+  LEGAL_SUBPROCESSORS_PAGE_KEY,
   LEGAL_TERMS_PAGE_KEY,
 } from '@/types/legalPageContent'
 
@@ -44,5 +46,15 @@ export function AcikRizaMetniPage() {
 export function KullanimSartlariPage() {
   return (
     <LegalCmsPage pageKey={LEGAL_TERMS_PAGE_KEY} defaults={defaultLegalTermsPage} showCompanyRepresentative={false} />
+  )
+}
+
+export function AltVeriIsleyenlerPage() {
+  return (
+    <LegalCmsPage
+      pageKey={LEGAL_SUBPROCESSORS_PAGE_KEY}
+      defaults={defaultLegalSubprocessorsPage}
+      showCompanyRepresentative={false}
+    />
   )
 }

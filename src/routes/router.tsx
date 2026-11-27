@@ -97,6 +97,9 @@ const OnBilgilendirmeFormuPage = lazy(() =>
 )
 const KvkkPage = lazy(() => import('@/pages/public/LegalPublicPages').then((m) => ({ default: m.KvkkPage })))
 const PrivacyPage = lazy(() => import('@/pages/public/LegalPublicPages').then((m) => ({ default: m.PrivacyPage })))
+const AltVeriIsleyenlerPage = lazy(() =>
+  import('@/pages/public/LegalPublicPages').then((m) => ({ default: m.AltVeriIsleyenlerPage })),
+)
 const CookiePolicyPage = lazy(() =>
   import('@/pages/public/LegalPublicPages').then((m) => ({ default: m.CookiePolicyPage })),
 )
@@ -417,6 +420,8 @@ export const router = createBrowserRouter([
       { path: 'yasal/kvkk-aydinlatma-metni', element: <LazyPage><KvkkPage /></LazyPage> },
       { path: 'gizlilik-politikasi', element: <LazyPage><PrivacyPage /></LazyPage> },
       { path: 'yasal/gizlilik-politikasi', element: <LazyPage><PrivacyPage /></LazyPage> },
+      { path: 'alt-veri-isleyenler', element: <LazyPage><AltVeriIsleyenlerPage /></LazyPage> },
+      { path: 'yasal/alt-veri-isleyenler', element: <LazyPage><AltVeriIsleyenlerPage /></LazyPage> },
       { path: 'acik-riza-metni', element: <LazyPage><AcikRizaMetniPage /></LazyPage> },
       { path: 'yasal/acik-riza-metni', element: <LazyPage><AcikRizaMetniPage /></LazyPage> },
       { path: 'kullanim-sartlari', element: <LazyPage><KullanimSartlariPage /></LazyPage> },
