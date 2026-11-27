@@ -6,7 +6,7 @@ import type { LegalCompanyInfo } from '@/data/legalCompanyInfo'
 import type { LegalPageSection } from '@/types/legalPageContent'
 import { openCookiePreferences } from '@/lib/cookieConsent'
 import type { PublicCookieItem } from '@/lib/cookieInventory'
-import { renderLegalBody } from '@/lib/legalBodyRenderer'
+import { renderLegalBody, renderLegalInline } from '@/lib/legalBodyRenderer'
 
 type LegalPageRendererProps = {
   sections: LegalPageSection[]
@@ -51,7 +51,12 @@ export function LegalPageRenderer({
           <LegalSection key={section.id} id={section.id} title={section.title}>
             {section.body ? renderLegalBody(section.body, companyInfo, section.id) : null}
 
-            {section.listItems?.length ? <LegalList items={section.listItems} /> : null}
+            {section.listItems?.length ? (
+              <LegalList
+                items={section.listItems}
+                renderItem={(item, index) => renderLegalInline(item, companyInfo, `${section.id}-li-${index}`)}
+              />
+            ) : null}
 
             {kind === 'company-details' ? (
               <LegalCompanyDetails info={companyInfo} showRepresentative={showCompanyRepresentative} />

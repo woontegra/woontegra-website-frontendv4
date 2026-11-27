@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { saasDemoService } from '@/services/saasDemoService'
 import { trackLead } from '@/integrations/trackingEvents'
 import { getErrorMessage } from '@/api/client'
+import { useDemoTurnstile } from '@/components/public/product/useDemoTurnstile'
 
 type Props = {
   open: boolean
@@ -42,6 +43,8 @@ export function MkSaasDemoRequestModal({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loginUrl, setLoginUrl] = useState<string | null>(null)
+  const [kvkk, setKvkk] = useState(false)
+  const turnstile = useDemoTurnstile(open && !success)
 
   useEffect(() => {
     if (!open) return
@@ -54,6 +57,7 @@ export function MkSaasDemoRequestModal({
     setError(null)
     setSuccess(false)
     setLoginUrl(null)
+    setKvkk(false)
   }, [open, defaultEmail, defaultName, defaultPhone])
 
   useEffect(() => {
@@ -91,6 +95,14 @@ export function MkSaasDemoRequestModal({
       setError('Baro bilgisi zorunludur.')
       return
     }
+    if (!kvkk) {
+      setError('Devam etmek için KVKK Aydınlatma Metni’ni okuduğunuzu onaylayın.')
+      return
+    }
+    if (!turnstile.token) {
+      setError('Lütfen güvenlik doğrulamasını tamamlayın.')
+      return
+    }
 
     setSubmitting(true)
     try {
@@ -100,11 +112,14 @@ export function MkSaasDemoRequestModal({
         email: form.email.trim(),
         barAssociation: form.barAssociation.trim(),
         note: form.note.trim() || undefined,
+        kvkkConsent: true,
+        turnstileToken: turnstile.token,
       })
       setLoginUrl(result.loginUrl)
       setSuccess(true)
       trackLead({ source: 'mk-saas-demo', product: 'muvekkil-kasa-defteri' })
     } catch (err) {
+      turnstile.reset()
       setError(getErrorMessage(err, 'Demo talebi gönderilemedi'))
     } finally {
       setSubmitting(false)
@@ -234,6 +249,35 @@ export function MkSaasDemoRequestModal({
                   placeholder="Opsiyonel"
                 />
               </label>
+              <label className="flex cursor-pointer items-start gap-3 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={kvkk}
+                  onChange={(e) => setKvkk(e.target.checked)}
+                  disabled={submitting}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                  data-testid="mk-demo-kvkk"
+                />
+                <span>
+                  <a
+                    href="/kvkk-aydinlatma-metni"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-emerald-700 underline"
+                  >
+                    KVKK Aydınlatma Metni
+                  </a>
+                  {'’ni okudum. *'}
+                </span>
+              </label>
+              <div>
+                <div ref={turnstile.hostRef} data-testid="mk-demo-turnstile" />
+                {turnstile.error ? (
+                  <p className="mt-2 text-xs text-amber-700" role="status">
+                    {turnstile.error}
+                  </p>
+                ) : null}
+              </div>
               <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-end">
                 <Button type="button" variant="secondary" onClick={handleClose} disabled={submitting}>
                   Vazgeç

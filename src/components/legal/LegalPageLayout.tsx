@@ -84,11 +84,17 @@ export function LegalSection({
   )
 }
 
-export function LegalList({ items }: { items: string[] }) {
+export function LegalList({
+  items,
+  renderItem,
+}: {
+  items: string[]
+  renderItem?: (item: string, index: number) => ReactNode
+}) {
   return (
     <ul className="list-disc space-y-2 pl-5">
-      {items.map((item) => (
-        <li key={item}>{item}</li>
+      {items.map((item, index) => (
+        <li key={item}>{renderItem ? renderItem(item, index) : item}</li>
       ))}
     </ul>
   )

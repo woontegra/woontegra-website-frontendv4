@@ -13,6 +13,7 @@ import {
   type BhDemoProfessionGroupCode,
 } from '@/data/bhDemoRequestCatalog'
 import { cn } from '@/lib/cn'
+import { useDemoTurnstile } from '@/components/public/product/useDemoTurnstile'
 
 type Props = {
   open: boolean
@@ -29,6 +30,7 @@ type FormState = {
   professionGroup: BhDemoProfessionGroupCode | ''
   isExpertWitness: boolean | null
   expertiseCodes: string[]
+  kvkk: boolean
 }
 
 const emptyForm = (): FormState => ({
@@ -39,6 +41,7 @@ const emptyForm = (): FormState => ({
   professionGroup: '',
   isExpertWitness: null,
   expertiseCodes: [],
+  kvkk: false,
 })
 
 type PopoverPos = { top: number; left: number; width: number; maxHeight: number }
@@ -271,6 +274,7 @@ export function BilirkisiDemoRequestModal({
   const [demoAlreadyUsed, setDemoAlreadyUsed] = useState(false)
   const [success, setSuccess] = useState(false)
   const [panelLoginUrl, setPanelLoginUrl] = useState(BILIRKISI_HESAP_PANEL_URL)
+  const turnstile = useDemoTurnstile(open && !success)
 
   useEffect(() => {
     if (!open) return
@@ -330,6 +334,14 @@ export function BilirkisiDemoRequestModal({
       setError('En az bir uzmanlık alanı seçiniz.')
       return
     }
+    if (!form.kvkk) {
+      setError('Devam etmek için KVKK Aydınlatma Metni’ni okuduğunuzu onaylayın.')
+      return
+    }
+    if (!turnstile.token) {
+      setError('Lütfen güvenlik doğrulamasını tamamlayın.')
+      return
+    }
 
     setSubmitting(true)
     try {
@@ -346,6 +358,8 @@ export function BilirkisiDemoRequestModal({
           professionGroup: form.professionGroup,
           isExpertWitness: form.isExpertWitness,
           expertiseAreas,
+          kvkkConsent: true,
+          turnstileToken: turnstile.token,
         })
         onDesktopTrialStarted?.(result)
         onClose()
@@ -359,9 +373,12 @@ export function BilirkisiDemoRequestModal({
         professionGroup: form.professionGroup,
         isExpertWitness: form.isExpertWitness,
         expertiseAreas,
+        kvkkConsent: true,
+        turnstileToken: turnstile.token,
       })
       setSuccess(true)
     } catch (err) {
+      turnstile.reset()
       const code = err && typeof err === 'object' && 'code' in err ? String((err as { code?: string }).code) : ''
       if (code === 'DEMO_ALREADY_USED' || code === 'TRIAL_ALREADY_USED') {
         setDemoAlreadyUsed(true)
@@ -634,6 +651,37 @@ export function BilirkisiDemoRequestModal({
                   />
                 </div>
               ) : null}
+
+              <label className="flex cursor-pointer items-start gap-3 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={form.kvkk}
+                  onChange={(e) => setForm((f) => ({ ...f, kvkk: e.target.checked }))}
+                  disabled={submitting}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                  data-testid="bh-demo-kvkk"
+                />
+                <span>
+                  <a
+                    href="/kvkk-aydinlatma-metni"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-sky-700 underline"
+                  >
+                    KVKK Aydınlatma Metni
+                  </a>
+                  {'’ni okudum. *'}
+                </span>
+              </label>
+
+              <div>
+                <div ref={turnstile.hostRef} data-testid="bh-demo-turnstile" />
+                {turnstile.error ? (
+                  <p className="mt-2 text-xs text-amber-700" role="status">
+                    {turnstile.error}
+                  </p>
+                ) : null}
+              </div>
 
               {error ? (
                 <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700" role="alert">

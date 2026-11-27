@@ -77,6 +77,11 @@ function renderInlineText(text: string, keyPrefix: string) {
   return nodes
 }
 
+/** Liste maddeleri gibi tek satırlık metinler: {{company.*}} alanlarını doldurur ve [metin](link) bağlantılarını işler. */
+export function renderLegalInline(text: string, info: LegalCompanyInfo, keyPrefix: string) {
+  return renderInlineText(applyCompanyPlaceholders(text, info), keyPrefix)
+}
+
 export function renderLegalBody(body: string, info: LegalCompanyInfo, keyPrefix: string) {
   const resolved = applyCompanyPlaceholders(body, info)
   const paragraphs = resolved.split('\n\n').map((part) => part.trim()).filter(Boolean)

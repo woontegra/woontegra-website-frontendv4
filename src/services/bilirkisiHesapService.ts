@@ -118,6 +118,8 @@ export const bilirkisiHesapService = {
     professionGroup: string
     isExpertWitness: boolean
     expertiseAreas?: Array<{ code: string; name: string }>
+    kvkkConsent?: boolean
+    turnstileToken?: string
   }): Promise<BhDesktopTrialStart> {
     try {
       const { data } = await publicApi.post<BhDesktopTrialStart & { code?: string; message?: string }>(
@@ -179,6 +181,8 @@ export const bilirkisiHesapService = {
     professionGroup: string
     isExpertWitness: boolean
     expertiseAreas?: Array<{ code: string; name: string }>
+    kvkkConsent?: boolean
+    turnstileToken?: string
   }): Promise<{ success: boolean; message?: string }> {
     try {
       const { data } = await publicApi.post<{

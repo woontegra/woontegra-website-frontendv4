@@ -8,6 +8,8 @@ export type MkSaasDemoRequestBody = {
   email: string
   barAssociation: string
   note?: string
+  kvkkConsent?: boolean
+  turnstileToken?: string
 }
 
 export type MkSaasDemoRequestResponse = {
