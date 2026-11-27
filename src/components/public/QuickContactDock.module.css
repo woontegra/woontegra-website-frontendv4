@@ -13,26 +13,23 @@
 .orb {
   position: relative;
   display: grid;
-  width: 3.35rem;
-  height: 3.35rem;
+  width: 3rem;
+  height: 3rem;
   place-items: center;
   border: 0;
-  border-radius: 999px;
+  border-radius: 0.75rem;
   color: #fff;
   text-decoration: none;
   cursor: pointer;
   pointer-events: auto;
   isolation: isolate;
-  box-shadow:
-    0 10px 22px rgba(15, 23, 42, 0.22),
-    0 2px 4px rgba(15, 23, 42, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
-  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms ease;
+  box-shadow: 0 8px 20px -8px rgba(16, 24, 40, 0.45);
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms ease, background-color 180ms ease;
 }
 
 .orb:hover,
 .orb:focus-visible {
-  transform: translateY(-2px) scale(1.05);
+  transform: translateY(-2px);
   outline: none;
 }
 
@@ -44,37 +41,21 @@
 }
 
 .gloss {
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  background:
-    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.55), transparent 36%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 42%);
-  pointer-events: none;
+  display: none;
 }
 
 .phone {
-  background: linear-gradient(160deg, #60a5fa 0%, #2563eb 46%, #1e3a8a 100%);
-  box-shadow:
-    0 10px 22px rgba(37, 99, 235, 0.34),
-    0 2px 4px rgba(15, 23, 42, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  background: #1d6fd8;
 }
 
 .whatsapp {
-  background: linear-gradient(160deg, #4ade80 0%, #16a34a 48%, #14532d 100%);
-  box-shadow:
-    0 10px 22px rgba(22, 163, 74, 0.34),
-    0 2px 4px rgba(15, 23, 42, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: #16a34a;
 }
 
 .top {
-  background: linear-gradient(160deg, #38bdf8 0%, #1d4ed8 52%, #1e3a8a 100%);
-  box-shadow:
-    0 10px 22px rgba(29, 78, 216, 0.34),
-    0 2px 4px rgba(15, 23, 42, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  background: #ffffff;
+  color: #101828;
+  border: 1px solid #d0d5dd;
   animation: rise 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -85,9 +66,9 @@
   display: none;
   min-width: max-content;
   padding: 0.45rem 0.7rem;
-  border-radius: 0.8rem;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  background: rgba(15, 23, 42, 0.88);
+  border-radius: 0.5rem;
+  border: 0;
+  background: #101828;
   color: #fff;
   font-size: 0.75rem;
   font-weight: 650;
@@ -136,8 +117,9 @@
   }
 
   .orb {
-    width: 2.85rem;
-    height: 2.85rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.65rem;
   }
 
   .tip {
