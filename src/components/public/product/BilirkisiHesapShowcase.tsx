@@ -535,6 +535,7 @@ export function BhFlowDiagram() {
 type Box = { l: number; r: number; t: number; b: number; cx: number; cy: number }
 type MobilePaths = { ins: string[]; outs: string[] }
 
+/** Telefon ve tablet: masaüstündeki yatay şemanın küçültülmüş hali; her kutuya ayrı çizgi. */
 function BhFlowMobile() {
   const wrapRef = useRef<HTMLDivElement>(null)
   const coreRef = useRef<HTMLDivElement>(null)
@@ -566,22 +567,16 @@ function BhFlowMobile() {
       const outs = outRefs.current.flatMap((el) => (el ? [rel(el)] : []))
       if (!ins.length || !outs.length) return
 
-      // Girdiler solda: çizgi kutunun sağından çıkar, kutuların sağından dolaşıp çekirdeğin üstüne iner.
-      const maxRight = Math.max(...ins.map((c) => c.r))
       const inPaths = ins.map((c, i) => {
-        const x = Math.min(maxRight + 26 + i * 5, wb.width - 2)
-        const endX = core.cx + (i - (ins.length - 1) / 2) * 12
-        return `M ${c.r} ${c.cy} C ${x} ${c.cy}, ${x} ${core.t - 28}, ${endX} ${core.t}`
+        const endY = core.cy + (i - (ins.length - 1) / 2) * 6
+        const mx = (c.r + core.l) / 2
+        return `M ${c.r} ${c.cy} C ${mx} ${c.cy}, ${mx} ${endY}, ${core.l} ${endY}`
       })
-
-      // Çıktılar sağda: çizgi çekirdeğin altından çıkar, kutuların solundan dolaşıp kutuya girer.
-      const minLeft = Math.min(...outs.map((c) => c.l))
       const outPaths = outs.map((c, i) => {
-        const x = Math.max(minLeft - 26 - i * 5, 2)
-        const startX = core.cx + (i - (outs.length - 1) / 2) * 10
-        return `M ${startX} ${core.b} C ${x} ${core.b + 28}, ${x} ${c.cy}, ${c.l} ${c.cy}`
+        const startY = core.cy + (i - (outs.length - 1) / 2) * 6
+        const mx = (core.r + c.l) / 2
+        return `M ${core.r} ${startY} C ${mx} ${startY}, ${mx} ${c.cy}, ${c.l} ${c.cy}`
       })
-
       setPaths({ ins: inPaths, outs: outPaths })
     }
 
@@ -592,34 +587,37 @@ function BhFlowMobile() {
   }, [])
 
   const chipClass =
-    'inline-flex items-center gap-2 rounded-lg border border-white/15 bg-[#143a66] px-3 py-1.5 text-[13px] font-semibold text-white'
+    'flex items-center gap-1.5 rounded-md border border-white/15 bg-[#143a66] px-2 py-1.5 text-[11px] font-semibold leading-tight text-white'
 
   return (
-    <div ref={wrapRef} className="relative mx-auto w-full max-w-sm lg:hidden">
+    <div
+      ref={wrapRef}
+      className="relative mx-auto grid w-full max-w-xl grid-cols-[minmax(0,1fr)_auto_minmax(0,0.72fr)] items-center gap-x-6 sm:gap-x-12 lg:hidden"
+    >
       {paths ? (
         <svg className="pointer-events-none absolute inset-0 h-full w-full overflow-visible" aria-hidden>
           {paths.ins.map((d, i) => (
             <g key={`in-${d}`}>
-              <path d={d} fill="none" stroke="#60A5FA" strokeOpacity="0.18" strokeWidth="2" />
-              <path d={d} fill="none" stroke="#60A5FA" strokeOpacity="0.75" strokeWidth="2" className="bh-flow-line" />
-              <circle r="3.5" fill="#93C5FD" className="bh-flow-dot">
-                <animateMotion dur="2.2s" begin={`${i * 0.45}s`} repeatCount="indefinite" path={d} />
+              <path d={d} fill="none" stroke="#60A5FA" strokeOpacity="0.18" strokeWidth="1.5" />
+              <path d={d} fill="none" stroke="#60A5FA" strokeOpacity="0.75" strokeWidth="1.5" className="bh-flow-line" />
+              <circle r="2.5" fill="#93C5FD" className="bh-flow-dot">
+                <animateMotion dur="2s" begin={`${i * 0.45}s`} repeatCount="indefinite" path={d} />
               </circle>
             </g>
           ))}
           {paths.outs.map((d, i) => (
             <g key={`out-${d}`}>
-              <path d={d} fill="none" stroke="#34D399" strokeOpacity="0.18" strokeWidth="2" />
-              <path d={d} fill="none" stroke="#34D399" strokeOpacity="0.8" strokeWidth="2" className="bh-flow-line" />
-              <circle r="3.5" fill="#6EE7B7" className="bh-flow-dot">
-                <animateMotion dur="2.2s" begin={`${1.1 + i * 0.4}s`} repeatCount="indefinite" path={d} />
+              <path d={d} fill="none" stroke="#34D399" strokeOpacity="0.18" strokeWidth="1.5" />
+              <path d={d} fill="none" stroke="#34D399" strokeOpacity="0.8" strokeWidth="1.5" className="bh-flow-line" />
+              <circle r="2.5" fill="#6EE7B7" className="bh-flow-dot">
+                <animateMotion dur="2s" begin={`${1 + i * 0.4}s`} repeatCount="indefinite" path={d} />
               </circle>
             </g>
           ))}
         </svg>
       ) : null}
 
-      <ul className="relative flex flex-col items-start gap-1.5">
+      <ul className="relative flex flex-col items-end gap-2">
         {FLOW_INPUTS.map(({ label, Icon }, i) => (
           <li
             key={label}
@@ -628,26 +626,23 @@ function BhFlowMobile() {
             }}
             className={chipClass}
           >
-            <Icon className="h-4 w-4 text-sky-300" aria-hidden />
-            {label}
+            <Icon className="h-3.5 w-3.5 shrink-0 text-sky-300" aria-hidden />
+            <span>{label}</span>
           </li>
         ))}
       </ul>
 
-      <div className="relative mt-8 flex justify-center">
-        <div ref={coreRef} className="relative">
-          <span aria-hidden className="bh-core-ring absolute inset-0 rounded-xl border-2 border-sky-400/60" />
-          <div className="relative flex items-center gap-3 rounded-xl bg-gradient-to-br from-[#16A34A] to-[#1D6FD8] px-5 py-3.5 text-white shadow-[0_20px_40px_-18px_rgba(29,111,216,0.7)]">
-            <Calculator className="h-6 w-6" aria-hidden />
-            <span className="flex flex-col">
-              <span className="text-base font-extrabold">Bilirkişi Hesap</span>
-              <span className="text-xs font-semibold text-white/80">50+ hesaplama modülü</span>
-            </span>
-          </div>
+      <div ref={coreRef} className="relative">
+        <span aria-hidden className="bh-core-ring absolute inset-0 rounded-lg border-2 border-sky-400/60" />
+        <span aria-hidden className="bh-core-ring absolute inset-0 rounded-lg border-2 border-emerald-400/50 [animation-delay:1.2s]" />
+        <div className="relative flex w-[78px] flex-col items-center gap-1 rounded-lg bg-gradient-to-br from-[#16A34A] to-[#1D6FD8] px-1.5 py-3 text-center text-white shadow-[0_20px_40px_-18px_rgba(29,111,216,0.7)]">
+          <Calculator className="h-5 w-5" aria-hidden />
+          <span className="text-[12px] font-extrabold leading-tight">Bilirkişi Hesap</span>
+          <span className="text-[9px] font-semibold leading-tight text-white/80">50+ hesaplama modülü</span>
         </div>
       </div>
 
-      <ul className="relative mt-8 flex flex-col items-end gap-1.5">
+      <ul className="relative flex flex-col items-start gap-2">
         {FLOW_OUTPUTS.map(({ label, Icon }, i) => (
           <li
             key={label}
@@ -656,8 +651,8 @@ function BhFlowMobile() {
             }}
             className={chipClass}
           >
-            <Icon className="h-4 w-4 text-emerald-300" aria-hidden />
-            {label}
+            <Icon className="h-3.5 w-3.5 shrink-0 text-emerald-300" aria-hidden />
+            <span>{label}</span>
           </li>
         ))}
       </ul>
