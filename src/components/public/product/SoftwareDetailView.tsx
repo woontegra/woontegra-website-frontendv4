@@ -6,6 +6,8 @@ import { ProductContentSections } from '@/components/public/product/ProductConte
 import { ExternalProductPurchasePanel } from '@/components/public/product/ExternalProductPurchasePanel'
 import { ProductPurchasePanel } from '@/components/public/product/ProductPurchasePanel'
 import { ProductShowcaseHero } from '@/components/public/product/ProductShowcaseHero'
+import { BilirkisiHesapShowcase } from '@/components/public/product/BilirkisiHesapShowcase'
+import { BILIRKISI_HESAP_SLUG } from '@/data/canonicalSoftwareProducts'
 import { addToCart } from '@/lib/cartStorage'
 import {
   buildCartSnapshot,
@@ -221,6 +223,9 @@ export function SoftwareDetailView({
         )}
       </ProductShowcaseHero>
 
+      {data.slug === BILIRKISI_HESAP_SLUG ? (
+        <BilirkisiHesapShowcase />
+      ) : (
       <ProductContentSections
         product={data}
         bullets={bullets}
@@ -228,6 +233,7 @@ export function SoftwareDetailView({
         platformFacts={desktopFacts}
         platformDeliveryNotes={desktopFacts ? desktopDeliveryNotes : null}
       />
+      )}
     </div>
   )
 }

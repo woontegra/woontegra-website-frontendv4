@@ -145,8 +145,8 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
   return (
     <>
       <div className="space-y-4">
-        <div className="relative rounded-[2rem] bg-gradient-to-br from-emerald-500/20 via-sky-500/10 to-violet-500/15 p-[1px] shadow-[0_30px_80px_-40px_rgba(15,23,42,0.5)]">
-          <div className="pointer-events-none absolute inset-6 rounded-[1.75rem] bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.16),transparent_44%)] blur-2xl" />
+        <div className="relative rounded-xl bg-white/10 p-[1px] shadow-[0_30px_80px_-40px_rgba(0,0,0,0.6)]">
+          <div className="pointer-events-none absolute inset-6 rounded-xl bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.16),transparent_44%)] blur-2xl" />
           <div className="group/main relative overflow-hidden rounded-[calc(2rem-1px)] border border-white/70 bg-white/90 backdrop-blur-xl">
             {hasMultiple ? (
               <>
@@ -212,7 +212,7 @@ export function ProductGallery({ name, coverImage, galleryImages = [], productTy
                 type="button"
                 onClick={() => setActiveIndex(index)}
                 className={cn(
-                  'min-w-[88px] overflow-hidden rounded-2xl border bg-white/90 shadow-sm transition backdrop-blur sm:min-w-0',
+                  'min-w-[88px] overflow-hidden rounded-lg border bg-white/90 shadow-sm transition backdrop-blur sm:min-w-0',
                   index === activeIndex
                     ? 'border-emerald-400 ring-2 ring-emerald-100 shadow-lg shadow-emerald-500/10'
                     : 'border-slate-200/80 hover:-translate-y-0.5 hover:border-slate-300',
@@ -292,7 +292,7 @@ function ProductGalleryPlaceholder({
   isFreeDownload: boolean
 }) {
   return (
-    <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/85 p-6 shadow-[0_28px_70px_-42px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 backdrop-blur sm:p-8">
+    <div className="relative overflow-hidden rounded-xl border border-white/70 bg-white/85 p-6 shadow-[0_28px_70px_-42px_rgba(15,23,42,0.35)] ring-1 ring-slate-900/5 backdrop-blur sm:p-8">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.10),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.10),transparent_34%)]" />
       <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center">
         <div>
@@ -305,9 +305,9 @@ function ProductGalleryPlaceholder({
             {name} için ürün görseli bulunmuyor. Satın alma, indirme ve lisans akışı aynı şekilde çalışır; görsel alan bu nedenle dengeli bir ürün özeti olarak gösteriliyor.
           </p>
         </div>
-        <div className="rounded-[1.75rem] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(255,255,255,0.96))] p-5 shadow-sm">
-          <div className="rounded-[1.4rem] border border-dashed border-slate-300 bg-slate-50/80 p-6 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-sky-500 text-white shadow-lg shadow-emerald-500/20">
+        <div className="rounded-xl border border-slate-200/80 bg-[linear-gradient(180deg,rgba(248,250,252,0.96),rgba(255,255,255,0.96))] p-5 shadow-sm">
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-6 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-slate-900 text-white">
               <PlaceholderIcon productType={productType} isFreeDownload={isFreeDownload} />
             </div>
             <p className="mt-4 text-sm font-semibold text-slate-900">

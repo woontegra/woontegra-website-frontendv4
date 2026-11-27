@@ -120,15 +120,14 @@ export function ExternalProductPurchasePanel({
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-white/92 p-5 shadow-[0_28px_80px_-38px_rgba(15,23,42,0.5)] ring-1 ring-slate-900/5 backdrop-blur-xl sm:p-6">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.14),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.12),transparent_32%)]" />
+      <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5 text-slate-950 shadow-[0_32px_64px_-32px_rgba(0,0,0,0.55)] sm:p-7">
         {platformFamily && onPlatformChange ? (
           <div className="relative">
             <SoftwarePlatformPicker family={platformFamily} value={platformId} onChange={onPlatformChange} />
           </div>
         ) : null}
         <div
-          className={`relative flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-sky-700 ${
+          className={`relative flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500 ${
             platformFamily && onPlatformChange ? 'mt-5' : ''
           }`}
         >
@@ -149,7 +148,7 @@ export function ExternalProductPurchasePanel({
               ) : (
                 <div>
                   <p className="text-sm font-semibold text-slate-600">Yıllık Lisans</p>
-                  <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950">
+                  <p className="mt-1 text-4xl font-extrabold tracking-tight text-slate-950">
                     {formatBhPriceTl(desktopPriceTl)}
                     <span className="ml-1 text-base font-semibold text-slate-500">/ yıl</span>
                   </p>
@@ -157,38 +156,38 @@ export function ExternalProductPurchasePanel({
               )}
             </div>
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-white/70 bg-white/85 px-4 py-3 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Ürün tipi</p>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Ürün tipi</p>
                 <p className="mt-1 text-sm font-semibold text-slate-800">{desktopOffer.productTypeLabel}</p>
               </div>
-              <div className="rounded-2xl border border-white/70 bg-white/85 px-4 py-3 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Platform</p>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Platform</p>
                 <p className="mt-1 text-sm font-semibold text-slate-800">{desktopOffer.platformLabel}</p>
               </div>
-              <div className="rounded-2xl border border-white/70 bg-white/85 px-4 py-3 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Teslimat</p>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Teslimat</p>
                 <p className="mt-1 text-sm font-semibold text-slate-800">{desktopOffer.deliveryLabel}</p>
               </div>
-              <div className="rounded-2xl border border-white/70 bg-white/85 px-4 py-3 shadow-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Lisans</p>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Lisans</p>
                 <p className="mt-1 text-sm font-semibold text-slate-800">
                   {desktopLicenseLabel('yearly', desktopDeviceLimit)}
                 </p>
               </div>
             </div>
-            <p className="mt-5 rounded-2xl border border-sky-100/80 bg-sky-50/80 px-4 py-3 text-sm leading-relaxed text-slate-700">
+            <p className="mt-5 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-700">
               <ShieldCheck className="mb-0.5 mr-1 inline h-4 w-4 text-sky-600" aria-hidden />
               {desktopOffer.licenseNote}
             </p>
             <div className="mt-6 space-y-3">
               {platformId !== 'windows' && platformId !== 'macos' ? null : trialResult ? (
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">
                   <p className="font-semibold">{trialResult.message}</p>
                   <p className="mt-1">Platform: {trialResult.platformLabel}</p>
                   <p className="mt-1">7 günlük süre, program içinde demo hesabını oluşturup etkinleştirdiğinizde başlar. Başvuru bu süreyi başlatmaz.</p>
                   {trialResult.downloadUrl || desktopInstaller?.url ? (
                     <a
-                      className="mt-3 flex w-full items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white"
+                      className="mt-3 flex w-full items-center justify-center rounded-lg bg-slate-950 px-4 py-3 text-sm font-semibold text-white"
                       href={trialResult.downloadUrl || desktopInstaller?.url}
                     >
                       Kurulumu indir
@@ -200,15 +199,15 @@ export function ExternalProductPurchasePanel({
               ) : (
                 <button
                   type="button"
-                  className="flex w-full items-center justify-center rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3.5 text-sm font-semibold text-sky-900"
+                  className="flex min-h-12 w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-3.5 text-[15px] font-bold text-slate-900"
                   onClick={() => setDemoOpen(true)}
                 >
                   {desktopTrialLabel}
                 </button>
               )}
               <Link
-                className={`flex w-full items-center justify-center rounded-2xl px-4 py-3.5 text-sm font-semibold text-white ${
-                  desktopPriceTl == null ? 'pointer-events-none bg-slate-300' : 'bg-slate-950'
+                className={`flex min-h-12 w-full items-center justify-center rounded-lg px-4 py-3.5 text-[15px] font-bold text-white ${
+                  desktopPriceTl == null ? 'pointer-events-none bg-slate-300' : 'bg-[#16A34A] hover:bg-[#15803D]'
                 }`}
                 to={`${BILIRKISI_HESAP_CHECKOUT_PATH}?platform=${desktopCheckoutPlatform}`}
                 aria-disabled={desktopPriceTl == null}
@@ -220,11 +219,11 @@ export function ExternalProductPurchasePanel({
         ) : (
           <>
 
-        <div className="relative mt-5 grid grid-cols-2 gap-2 rounded-2xl bg-slate-100/90 p-1">
+        <div className="relative mt-5 grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-1">
           <button
             type="button"
             onClick={() => setPlan('monthly')}
-            className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+            className={`rounded-md px-3 py-2.5 text-sm font-semibold transition ${
               plan === 'monthly' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -233,12 +232,12 @@ export function ExternalProductPurchasePanel({
           <button
             type="button"
             onClick={() => setPlan('annual')}
-            className={`relative rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+            className={`relative rounded-md px-3 py-2.5 text-sm font-semibold transition ${
               plan === 'annual' ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             Yıllık
-            <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+            <span className="ml-1 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
               Avantajlı
             </span>
           </button>
@@ -260,7 +259,7 @@ export function ExternalProductPurchasePanel({
           ) : plan === 'monthly' ? (
             <div>
               <p className="text-sm font-semibold text-slate-600">Profesyonel Aylık</p>
-              <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950">
+              <p className="mt-1 text-4xl font-extrabold tracking-tight text-slate-950">
                 {formatBhPriceTl(selectedPriceTl)}
                 <span className="ml-1 text-base font-semibold text-slate-500">/ ay</span>
               </p>
@@ -269,7 +268,7 @@ export function ExternalProductPurchasePanel({
           ) : (
             <div>
               <p className="text-sm font-semibold text-slate-600">Profesyonel Yıllık</p>
-              <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950">
+              <p className="mt-1 text-4xl font-extrabold tracking-tight text-slate-950">
                 {formatBhPriceTl(selectedPriceTl)}
                 <span className="ml-1 text-base font-semibold text-slate-500">/ yıl</span>
               </p>
@@ -279,7 +278,7 @@ export function ExternalProductPurchasePanel({
         </div>
 
         {SHOW_BH_ANNUAL_MK_GIFT && product.slug === BILIRKISI_HESAP_SLUG && plan === 'annual' ? (
-          <div className="relative mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-3.5 py-3">
+          <div className="relative mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-3">
             <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">
               Yıllık pakete özel hediye
             </p>
@@ -290,19 +289,19 @@ export function ExternalProductPurchasePanel({
         ) : null}
 
         <div className="relative mt-5 grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-white/70 bg-white/85 px-4 py-3 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Teslimat</p>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Teslimat</p>
             <p className="mt-1 text-sm font-semibold text-slate-800">Panel erişimi</p>
           </div>
-          <div className="rounded-2xl border border-white/70 bg-white/85 px-4 py-3 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Lisans</p>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Lisans</p>
             <p className="mt-1 text-sm font-semibold text-slate-800">
               {plan === 'monthly' ? 'Aylık abonelik' : 'Yıllık abonelik'}
             </p>
           </div>
         </div>
 
-        <p className="relative mt-5 rounded-2xl border border-sky-100/80 bg-sky-50/80 px-4 py-3 text-sm leading-relaxed text-slate-700">
+        <p className="relative mt-5 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-700">
           <ShieldCheck className="mb-0.5 mr-1 inline h-4 w-4 text-sky-600" aria-hidden />
           {meta.disclaimer}
         </p>
@@ -310,10 +309,8 @@ export function ExternalProductPurchasePanel({
         <div className="relative mt-6 grid gap-2">
           <Link
             to={checkoutHref}
-            className={`flex w-full items-center justify-center rounded-2xl px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition ${
-              !selectedReady
-                ? 'pointer-events-none bg-slate-300'
-                : 'bg-gradient-to-r from-sky-600 via-sky-500 to-emerald-500 hover:brightness-105'
+            className={`flex min-h-12 w-full items-center justify-center rounded-lg px-4 py-3.5 text-[15px] font-bold text-white transition ${
+              !selectedReady ? 'pointer-events-none bg-slate-300' : 'bg-[#16A34A] hover:bg-[#15803D]'
             }`}
             aria-disabled={!selectedReady}
           >
@@ -323,7 +320,7 @@ export function ExternalProductPurchasePanel({
           <button
             type="button"
             onClick={() => setDemoOpen(true)}
-            className="flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+            className="flex min-h-12 w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-3 text-[15px] font-bold text-slate-900 transition hover:border-slate-900"
           >
             {meta.demoCtaLabel || 'Demo Talep Et'}
           </button>

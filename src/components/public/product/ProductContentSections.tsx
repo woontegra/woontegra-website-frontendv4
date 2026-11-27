@@ -145,7 +145,7 @@ function OverviewSectionHeading({
   const t = tones[tone]
   return (
     <div className="flex items-center gap-3">
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl sm:h-11 sm:w-11 ${t.iconWrap}`}>
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg sm:h-11 sm:w-11 ${t.iconWrap}`}>
         {icon}
       </div>
       <div className="min-w-0">
@@ -170,7 +170,7 @@ function OverviewBulletList({
       {items.map((item) => (
         <li
           key={item}
-          className="flex gap-3 rounded-2xl border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.88))] px-3.5 py-3 text-sm leading-relaxed text-slate-700 shadow-sm sm:px-4 sm:py-3.5"
+          className="flex gap-3 rounded-lg border border-slate-200/80 bg-slate-50 px-3.5 py-3 text-sm leading-relaxed text-slate-700 sm:px-4 sm:py-3.5"
         >
           <span
             className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${markerClass}`}
@@ -199,10 +199,10 @@ function CompareStructuredOverview({
   const accent = isWeb ? 'sky' : 'emerald'
 
   return (
-    <section className="rounded-[1.75rem] border border-white/70 bg-white/90 p-5 shadow-[0_28px_70px_-42px_rgba(15,23,42,0.3)] ring-1 ring-slate-900/5 sm:rounded-[2rem] sm:p-8">
+    <section className="rounded-xl border border-slate-200 bg-white p-5 sm:rounded-xl sm:p-8">
       <div className="flex items-center gap-3">
         <div
-          className={`flex h-11 w-11 items-center justify-center rounded-2xl ${
+          className={`flex h-11 w-11 items-center justify-center rounded-lg ${
             isWeb ? 'bg-sky-500/10 text-sky-700' : 'bg-emerald-500/10 text-emerald-700'
           }`}
         >
@@ -216,15 +216,15 @@ function CompareStructuredOverview({
           >
             {eyebrow}
           </p>
-          <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">{title}</h2>
+          <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">{title}</h2>
         </div>
       </div>
 
       <div
-        className={`mt-6 rounded-2xl border px-4 py-4 sm:px-5 sm:py-5 ${
+        className={`mt-6 rounded-lg border px-4 py-4 sm:px-5 sm:py-5 ${
           isWeb
-            ? 'border-sky-100 bg-[linear-gradient(135deg,rgba(240,249,255,0.95),rgba(255,255,255,0.98))]'
-            : 'border-emerald-100 bg-[linear-gradient(135deg,rgba(236,253,245,0.95),rgba(255,255,255,0.98))]'
+            ? 'border-slate-200 bg-slate-50'
+            : 'border-slate-200 bg-slate-50'
         }`}
       >
         <p className="text-[15px] leading-relaxed text-slate-700 sm:text-base sm:leading-relaxed">
@@ -242,7 +242,7 @@ function CompareStructuredOverview({
           />
           <OverviewBulletList
             items={overview.canDo}
-            markerClass={isWeb ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'}
+            markerClass="bg-emerald-100 text-emerald-700"
           />
         </div>
 
@@ -253,7 +253,7 @@ function CompareStructuredOverview({
             title="Kimler için uygun?"
             icon={<Users className="h-5 w-5" aria-hidden />}
           />
-          <OverviewBulletList items={overview.suitableFor} markerClass="bg-violet-100 text-violet-700" />
+          <OverviewBulletList items={overview.suitableFor} markerClass="bg-emerald-100 text-emerald-700" />
         </div>
 
         <div>
@@ -263,7 +263,7 @@ function CompareStructuredOverview({
             title="Bu sürümün avantajları"
             icon={<Sparkles className="h-5 w-5" aria-hidden />}
           />
-          <OverviewBulletList items={overview.advantages} markerClass="bg-amber-100 text-amber-700" />
+          <OverviewBulletList items={overview.advantages} markerClass="bg-emerald-100 text-emerald-700" />
         </div>
       </div>
     </section>
@@ -319,16 +319,16 @@ export function ProductContentSections({
               title={headings?.overviewTitle?.trim() || 'Genel bakış'}
             />
           ) : (
-            <section className="rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-[0_28px_70px_-42px_rgba(15,23,42,0.3)] ring-1 ring-slate-900/5 sm:p-8">
+            <section className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-700">
                   <BadgeCheck className="h-5 w-5" aria-hidden />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
                     {headings?.overviewEyebrow?.trim() || 'Ürün detay içeriği'}
                   </p>
-                  <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">
+                  <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">
                     {headings?.overviewTitle?.trim() || 'Genel bakış'}
                   </h2>
                 </div>
@@ -345,16 +345,16 @@ export function ProductContentSections({
           )}
 
           {!showStructuredCompare && bullets.length > 0 ? (
-            <section className="rounded-[2rem] border border-white/70 bg-white/88 p-6 shadow-[0_28px_70px_-42px_rgba(15,23,42,0.24)] ring-1 ring-slate-900/5 sm:p-8">
+            <section className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-700">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-sky-500/10 text-sky-700">
                   <Layers3 className="h-5 w-5" aria-hidden />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">
                     {headings?.featuresEyebrow?.trim() || 'Avantajlar'}
                   </p>
-                  <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">
+                  <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">
                     {headings?.featuresTitle?.trim() || 'Öne çıkan özellikler'}
                   </h2>
                 </div>
@@ -363,10 +363,10 @@ export function ProductContentSections({
                 {bullets.map((item) => (
                   <div
                     key={item}
-                    className="rounded-[1.6rem] border border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.92))] p-5 shadow-sm"
+                    className="rounded-xl border border-slate-200/80 bg-slate-50 p-5"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-sky-500 text-white shadow-lg shadow-emerald-500/20">
+                      <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white">
                         <Check className="h-5 w-5" aria-hidden />
                       </div>
                       <p className="text-base font-semibold leading-relaxed text-slate-900">{item}</p>
@@ -378,23 +378,23 @@ export function ProductContentSections({
           ) : null}
 
           {useCases.length > 0 && !isCompare ? (
-            <section className="rounded-[2rem] border border-white/70 bg-white/88 p-6 shadow-[0_28px_70px_-42px_rgba(15,23,42,0.22)] ring-1 ring-slate-900/5 sm:p-8">
+            <section className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-700">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-violet-500/10 text-violet-700">
                   <Headset className="h-5 w-5" aria-hidden />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-violet-700">Kullanım</p>
-                  <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">Kimler için uygun</h2>
+                  <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">Kimler için uygun</h2>
                 </div>
               </div>
               <ul className="mt-6 space-y-3">
                 {useCases.map((item) => (
                   <li
                     key={item}
-                    className="flex gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 text-sm leading-relaxed text-slate-700"
+                    className="flex gap-3 rounded-lg border border-slate-200/80 bg-slate-50/80 px-4 py-3 text-sm leading-relaxed text-slate-700"
                   >
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" aria-hidden />
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -406,53 +406,53 @@ export function ProductContentSections({
         <div className="space-y-6">
           {!isCompare && product.slug === BILIRKISI_HESAP_SLUG ? <BhProductPageModulesSidebar /> : null}
 
-          <section className="rounded-[2rem] border border-emerald-100/90 bg-[linear-gradient(180deg,rgba(236,253,245,0.98),rgba(255,255,255,0.98))] p-6 shadow-[0_28px_70px_-42px_rgba(16,185,129,0.2)] ring-1 ring-emerald-900/5 sm:p-7">
+          <section className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-6 sm:p-7">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-700">
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-500/12 text-emerald-700">
                 <ShieldCheck className="h-5 w-5" aria-hidden />
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Bilgilendirme</p>
-                <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-950">Teslimat ve lisans</h2>
+                <h2 className="mt-1 text-xl font-extrabold tracking-tight text-slate-950">Teslimat ve lisans</h2>
               </div>
             </div>
             <ul className="mt-5 space-y-3 text-sm leading-relaxed text-slate-700">
               {isExternalSales &&
                 deliveryNotes.map((note) => (
-                  <li key={note} className="rounded-2xl border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
+                  <li key={note} className="rounded-lg border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
                     {note}
                   </li>
                 ))}
               {!isExternalSales && product.licenseRequired ? (
-                <li className="rounded-2xl border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
+                <li className="rounded-lg border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
                   {isCompare ? compareAccessNote : 'Lisans bilgileri e-posta ile iletilir.'}
                 </li>
               ) : null}
               {!isExternalSales && product.hasDownload && !isFreeDownload ? (
-                <li className="rounded-2xl border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
+                <li className="rounded-lg border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
                   Dijital indirme linki ödeme onayı sonrası paylaşılır.
                 </li>
               ) : null}
               {!isExternalSales && product.productType === 'SERVICE' ? (
-                <li className="rounded-2xl border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
+                <li className="rounded-lg border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
                   Hizmet teslimatı Woontegra ekibi tarafından planlanır.
                 </li>
               ) : null}
               {isFreeDownload ? (
-                <li className="rounded-2xl border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
+                <li className="rounded-lg border border-emerald-100/80 bg-white/75 px-4 py-3 shadow-sm">
                   Ücretsiz sürümü indirme butonlarından hemen indirebilirsiniz.
                 </li>
               ) : null}
             </ul>
           </section>
 
-          <section className="rounded-[2rem] border border-white/70 bg-white/90 p-6 shadow-[0_28px_70px_-42px_rgba(15,23,42,0.22)] ring-1 ring-slate-900/5 sm:p-7">
-            <h2 className="text-xl font-bold tracking-tight text-slate-950">Teknik bilgiler</h2>
+          <section className="rounded-xl border border-slate-200 bg-white p-6 sm:p-7">
+            <h2 className="text-xl font-extrabold tracking-tight text-slate-950">Teknik bilgiler</h2>
             <dl className="mt-5 space-y-3">
               {technicalRows.map((row) => (
                 <div
                   key={`${row.label}-${row.value}`}
-                  className="rounded-2xl border border-slate-200/80 bg-slate-50/80 px-4 py-3"
+                  className="rounded-lg border border-slate-200/80 bg-slate-50/80 px-4 py-3"
                 >
                   <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
                     {row.label}

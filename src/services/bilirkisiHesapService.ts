@@ -69,12 +69,12 @@ function kurusToTl(kurus: number | null | undefined): number | null {
 }
 
 export function formatBhPriceTl(amountTl: number): string {
-  return new Intl.NumberFormat('tr-TR', {
-    style: 'currency',
-    currency: 'TRY',
+  // TL işareti rakamın sağında: 20.000 ₺
+  const amount = new Intl.NumberFormat('tr-TR', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(amountTl)
+  return `${amount} ₺`
 }
 
 /** Masaüstü yıllık katalog fiyatı, kuruş. SaaS price / priceMonthly kullanılmaz. */
