@@ -46,9 +46,10 @@ export function PublicFooter() {
   const linkGroups = groups.filter((g) => g.id !== 'iletisim')
 
   return (
-    <footer className="border-t border-slate-200 bg-slate-900 text-slate-300">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="bg-[#101828] text-slate-300">
+      <div aria-hidden className="h-[3px] bg-gradient-to-r from-[#16A34A] to-[#1D6FD8]" />
+      <div className="mx-auto max-w-7xl px-5 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_2fr_1.4fr] lg:gap-12">
           <div className="sm:col-span-2 lg:col-span-1">
             <p className="text-lg font-semibold text-white">{siteName}</p>
             <p className="mt-3 text-sm leading-relaxed text-slate-400">
@@ -65,7 +66,7 @@ export function PublicFooter() {
                       rel="noopener noreferrer"
                       aria-label={`Woontegra ${profile.label}`}
                       title={profile.label}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700 text-slate-300 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 text-slate-300 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
                     >
                       <Icon className="h-4 w-4" aria-hidden />
                       <span className="sr-only">{profile.label}</span>
@@ -78,14 +79,20 @@ export function PublicFooter() {
 
           {linkGroups.map((group) => (
             <div key={group.id}>
-              <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">{group.title}</p>
-              <ul className="mt-4 space-y-2 text-sm">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">{group.title}</p>
+              <ul
+                className={
+                  group.links.length > 6
+                    ? 'mt-4 grid grid-cols-2 gap-x-8 gap-y-1.5 text-sm'
+                    : 'mt-4 grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm sm:block sm:space-y-1.5'
+                }
+              >
                 {group.links.map((link) => (
                   <li key={link.id}>
                     {link.action === 'cookie-preferences' ? (
                       <button
                         type="button"
-                        className="text-left hover:text-white"
+                        className="text-left inline-block py-1 transition-colors hover:text-white"
                         onClick={() => openCookiePreferences()}
                       >
                         {link.label}
@@ -95,7 +102,7 @@ export function PublicFooter() {
                       link.href?.startsWith('tel:') ? (
                       <a
                         href={link.href}
-                        className="hover:text-white"
+                        className="inline-block py-1 transition-colors hover:text-white"
                         target={link.openInNewTab || link.href.startsWith('http') ? '_blank' : undefined}
                         rel={
                           link.openInNewTab || link.href.startsWith('http') ? 'noopener noreferrer' : undefined
@@ -104,7 +111,7 @@ export function PublicFooter() {
                         {link.label}
                       </a>
                     ) : (
-                      <Link to={resolvePublicHref(link.href ?? '/')} className="hover:text-white">
+                      <Link to={resolvePublicHref(link.href ?? '/')} className="inline-block py-1 transition-colors hover:text-white">
                         {link.label}
                       </Link>
                     )}
@@ -115,23 +122,23 @@ export function PublicFooter() {
           ))}
 
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">İletişim</p>
-            <ul className="mt-4 space-y-2 text-sm">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">İletişim</p>
+            <ul className="mt-4 space-y-1.5 text-sm">
               {contactPhone ? (
                 <li>
-                  <a href={`tel:${contactPhone.replace(/\s/g, '')}`} className="hover:text-white">
+                  <a href={`tel:${contactPhone.replace(/\s/g, '')}`} className="inline-block py-1 transition-colors hover:text-white">
                     {contactPhone}
                   </a>
                 </li>
               ) : null}
               {contactEmail ? (
                 <li>
-                  <a href={`mailto:${contactEmail}`} className="hover:text-white">
+                  <a href={`mailto:${contactEmail}`} className="inline-block py-1 transition-colors hover:text-white">
                     {contactEmail}
                   </a>
                 </li>
               ) : null}
-              {contactAddress ? <li className="text-slate-400">{contactAddress}</li> : null}
+              {contactAddress ? <li className="pt-1 leading-relaxed text-slate-400">{contactAddress}</li> : null}
             </ul>
           </div>
         </div>

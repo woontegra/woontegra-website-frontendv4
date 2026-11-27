@@ -13,6 +13,7 @@ import { capturePrerenderHold } from '@/lib/prerenderHold'
 
 import { applyRecoveryBypassOnBoot } from '@/lib/recoveryStorage'
 
+import '@fontsource-variable/plus-jakarta-sans'
 import '@/index.css'
 
 

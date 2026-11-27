@@ -75,8 +75,8 @@ export function SoftwareMegaMenu({ item }: Props) {
       <button
         type="button"
         className={cn(
-          'whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-700 transition-colors',
-          open ? 'text-emerald-700' : 'hover:text-slate-900',
+          'whitespace-nowrap rounded-lg px-3 py-2 text-[15px] font-semibold transition-colors',
+          open ? 'text-emerald-700' : 'text-slate-800 hover:text-emerald-700',
         )}
         aria-expanded={open}
         aria-haspopup="true"
@@ -97,7 +97,7 @@ export function SoftwareMegaMenu({ item }: Props) {
         aria-hidden={!open}
         inert={!open || undefined}
       >
-        <div className="overflow-hidden rounded-[16px] border border-slate-200 bg-white shadow-[0_18px_50px_-24px_rgba(15,23,42,0.35)]">
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-[0_18px_50px_-24px_rgba(15,23,42,0.35)]">
           <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
             <div>
               <p className="text-sm font-semibold text-slate-900">Yazılımlarımız</p>
@@ -119,7 +119,7 @@ export function SoftwareMegaMenu({ item }: Props) {
                   key={product.id}
                   to={product.href}
                   onClick={closeMenu}
-                  className="group rounded-xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-sm"
+                  className="group rounded-lg border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-sm"
                 >
                   <div className="flex items-start gap-3">
                     <SoftwareShowcaseMark item={product} />

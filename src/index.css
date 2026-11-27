@@ -4,7 +4,10 @@
 @source not '../src/builder/admin/**';
 
 @theme {
-  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Kurumsal görünüm: köşe yuvarlaklıkları biraz azaltıldı (varsayılan 2xl=16px, 3xl=24px) */
+  --radius-2xl: 0.75rem;
+  --radius-3xl: 1rem;
   --color-brand-50: #f0fdf4;
   --color-brand-100: #dcfce7;
   --color-brand-500: #22c55e;
@@ -23,6 +26,13 @@
   body {
     @apply bg-white text-slate-900;
     font-family: var(--font-sans);
+  }
+
+  /* Kurumsal görünüm: başlıklarda hafif sıkı harf aralığı */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.02em;
   }
 }
 

@@ -60,7 +60,7 @@ function MkBenefitVariant({ block, cards }: { block: CardGridBlock; cards: CardG
           ) : null}
           {block.visibility.showDescription !== false && renderIfText(block.description) ? (
             <BuilderField path="description" label="Açıklama" type="text" className="mx-auto mt-4 w-fit">
-              <p className="text-base leading-relaxed text-slate-600 sm:text-lg">{block.description}</p>
+              <p className="mt-4 text-base leading-relaxed text-slate-600 sm:text-lg">{block.description}</p>
             </BuilderField>
           ) : null}
         </div>
@@ -120,52 +120,44 @@ function DefaultVariant({ block, cards }: { block: CardGridBlock; cards: CardGri
 function IntroVariant({ block, cards }: { block: CardGridBlock; cards: CardGridItem[] }) {
   return (
     <section
-      className="relative bg-gradient-to-b from-white via-slate-50 to-white py-14 sm:py-16"
+      className="bg-white py-14 sm:py-20"
       style={{
         paddingTop: block.style.paddingTop?.desktop,
         paddingBottom: block.style.paddingBottom?.desktop,
       }}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          {block.settings.eyebrow ? (
-            <BuilderField path="eyebrow" label="Üst başlık" type="text" className="mb-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                {block.settings.eyebrow}
-              </p>
+        <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
+          <div className="flex flex-col gap-4 rounded-xl bg-gradient-to-br from-[#16A34A] to-[#1D6FD8] p-7 text-white sm:p-10 md:col-span-3 lg:px-14 lg:py-12">
+            {block.settings.eyebrow ? (
+              <BuilderField path="eyebrow" label="Üst başlık" type="text" className="w-fit">
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-white/80">{block.settings.eyebrow}</p>
+              </BuilderField>
+            ) : null}
+            <BuilderField path="title" label="Ana başlık" type="text" className="w-fit max-w-full">
+              <h2 className="max-w-4xl text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl lg:text-4xl">{block.title}</h2>
             </BuilderField>
-          ) : null}
-          <BuilderField path="title" label="Ana başlık" type="text" className="w-fit max-w-full mx-auto">
-            <h1 className="text-balance bg-gradient-to-r from-emerald-700 via-green-600 to-blue-700 bg-clip-text text-2xl font-semibold text-transparent sm:text-3xl">
-              {block.title}
-            </h1>
-          </BuilderField>
-          {block.description ? (
-            <BuilderField path="description" label="Açıklama" type="text" className="mx-auto mt-4 max-w-2xl">
-              <p className="text-sm leading-relaxed text-slate-600 whitespace-pre-line">{block.description}</p>
-            </BuilderField>
-          ) : null}
-        </div>
-        {cards.length > 0 ? (
-          <div className="mx-auto mt-10 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {cards.map((card) => (
-              <CardLinkShell
-                key={card.id}
-                card={card}
-                as="div"
-                className="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur"
-              >
-                {card.icon ? (
-                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl border bg-gradient-to-br from-emerald-600/10 to-transparent text-emerald-700">
-                    <BuilderCardIcon name={card.icon} className="h-4 w-4" />
-                  </div>
-                ) : null}
-                <CardTitleDescription card={card} />
-                <CardButtonLabel card={card} />
-              </CardLinkShell>
-            ))}
+            {block.description ? (
+              <BuilderField path="description" label="Açıklama" type="text" className="w-fit max-w-full">
+                <p className="max-w-2xl text-base leading-relaxed text-white/85 whitespace-pre-line">{block.description}</p>
+              </BuilderField>
+            ) : null}
           </div>
-        ) : null}
+          {cards.map((card, index) => (
+            <CardLinkShell
+              key={card.id}
+              card={card}
+              as="div"
+              className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-6 sm:p-8"
+            >
+              <span aria-hidden className="mb-5 text-4xl font-extrabold tracking-tight text-slate-300 sm:mb-8 sm:text-5xl">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <CardTitleDescription card={card} />
+              <CardButtonLabel card={card} />
+            </CardLinkShell>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -175,49 +167,38 @@ function IconDarkVariant({ block, cards }: { block: CardGridBlock; cards: CardGr
   return (
     <section
       id="hizmetler"
-      className="bg-slate-900 py-14 sm:py-16 lg:py-20"
+      className="border-y border-slate-200 bg-slate-50 py-14 sm:py-20 lg:py-24"
       style={{
-        backgroundColor: block.style.backgroundColor,
         paddingTop: block.style.paddingTop?.desktop,
         paddingBottom: block.style.paddingBottom?.desktop,
       }}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 text-center sm:mb-16">
-          <BuilderField path="title" label="Başlık" type="text" className="mx-auto w-fit">
-            <h2 className="mb-4 text-3xl font-bold text-white sm:text-4xl">{block.title}</h2>
+        <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+          <BuilderField path="title" label="Başlık" type="text" className="w-fit max-w-full">
+            <h2 className="max-w-2xl text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">{block.title}</h2>
           </BuilderField>
           {block.description ? (
-            <BuilderField path="description" label="Açıklama" type="text" className="mx-auto w-fit">
-              <p className="text-lg text-gray-400">{block.description}</p>
+            <BuilderField path="description" label="Açıklama" type="text" className="w-fit max-w-full">
+              <p className="max-w-md text-base leading-relaxed text-slate-600 sm:text-right sm:text-lg">{block.description}</p>
             </BuilderField>
           ) : null}
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {cards.map((card) => (
             <CardLinkShell
               key={card.id}
               card={card}
               as="div"
-              className="group relative rounded-2xl border border-slate-700 bg-slate-800 p-6 sm:p-8"
+              className="flex flex-col rounded-xl border border-slate-200 bg-white p-6 transition hover:border-emerald-300"
             >
-              {card.color ? (
-                <div
-                  className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${card.color} opacity-0 transition group-hover:opacity-10`}
-                />
-              ) : null}
               {card.icon ? (
-                <div
-                  className={cn(
-                    'mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br shadow-lg sm:mb-6 sm:h-16 sm:w-16',
-                    card.color ?? 'from-emerald-500 to-green-600',
-                  )}
-                >
-                  <BuilderCardIcon name={card.icon} className="h-7 w-7 text-white sm:h-8 sm:w-8" />
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                  <BuilderCardIcon name={card.icon} className="h-5 w-5" />
                 </div>
               ) : null}
-              <CardTitleDescription card={card} light />
-              <CardButtonLabel card={card} light />
+              <CardTitleDescription card={card} />
+              <CardButtonLabel card={card} />
             </CardLinkShell>
           ))}
         </div>
@@ -279,12 +260,12 @@ function StepsVariant({ block, cards }: { block: CardGridBlock; cards: CardGridI
             key={card.id}
             card={card}
             as="div"
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            className="rounded-xl border border-slate-200 bg-slate-50 p-6 sm:p-7"
           >
             {/* Step badge — asla card.icon raw string basma */}
-            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-sm font-bold text-white">
-              {index + 1}
-            </div>
+            <span aria-hidden className="mb-6 block text-4xl font-extrabold tracking-tight text-slate-300">
+              {String(index + 1).padStart(2, '0')}
+            </span>
             <CardTitleDescription card={card} />
             <CardButtonLabel card={card} />
           </CardLinkShell>
@@ -305,38 +286,33 @@ function WhyVariant({ block, cards }: { block: CardGridBlock; cards: CardGridIte
 
   return (
     <section
-      className="py-20 md:py-24"
+      className="bg-white py-14 sm:py-20 md:py-24"
       style={{
         paddingTop: block.style.paddingTop?.desktop,
         paddingBottom: block.style.paddingBottom?.desktop,
       }}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <BuilderField path="title" label="Başlık" type="text" className="mx-auto w-fit">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{block.title}</h2>
+        <div className="max-w-3xl">
+          <BuilderField path="title" label="Başlık" type="text" className="w-fit max-w-full">
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">{block.title}</h2>
           </BuilderField>
           {block.description ? (
-            <BuilderField path="description" label="Açıklama" type="text" className="mx-auto mt-4 w-fit">
-              <p className="text-base text-slate-600">{block.description}</p>
+            <BuilderField path="description" label="Açıklama" type="text" className="mt-4 w-fit max-w-full">
+              <p className="mt-4 text-base leading-relaxed text-slate-600 sm:text-lg">{block.description}</p>
             </BuilderField>
           ) : null}
         </div>
-        <div className={cn('mt-12 grid gap-6', colClass)}>
+        <div className={cn('mt-10 grid gap-3 sm:gap-4', colClass)}>
           {cards.map((card) => (
             <CardLinkShell
               key={card.id}
               card={card}
-              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+              className="rounded-xl border border-slate-200 bg-white p-6 transition hover:border-emerald-300 sm:p-7"
             >
               {card.icon ? (
-                <div
-                  className={cn(
-                    'mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-white',
-                    card.color ?? 'from-emerald-500 to-green-600',
-                  )}
-                >
-                  <BuilderCardIcon name={card.icon} className="h-6 w-6" />
+                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-slate-900 text-white">
+                  <BuilderCardIcon name={card.icon} className="h-5 w-5" />
                 </div>
               ) : null}
               <CardTitleDescription card={card} />
@@ -548,7 +524,7 @@ function CardTitleDescription({ card, light }: { card: CardGridItem; light?: boo
     <>
       {renderIfText(card.title) ? (
         <BuilderField path={`card.${card.id}.title`} label="Kart Başlığı" type="card" className="w-fit max-w-full">
-          <h3 className={cn('font-semibold', light ? 'text-lg text-white' : 'text-slate-900')}>{card.title}</h3>
+          <h3 className={cn('text-lg font-bold tracking-tight', light ? 'text-white' : 'text-slate-950')}>{card.title}</h3>
         </BuilderField>
       ) : null}
       {renderIfText(card.description) ? (
@@ -558,7 +534,7 @@ function CardTitleDescription({ card, light }: { card: CardGridItem; light?: boo
           type="card"
           className="w-fit max-w-full"
         >
-          <p className={cn('mt-2 text-sm', light ? 'text-gray-400' : 'text-slate-600')}>{card.description}</p>
+          <p className={cn('mt-2 text-[15px] leading-relaxed', light ? 'text-gray-400' : 'text-slate-600')}>{card.description}</p>
         </BuilderField>
       ) : null}
     </>

@@ -38,7 +38,7 @@ export function SectionBlockShell({ style, children, className }: Props) {
         paddingBottom: pb,
       }}
     >
-      <div className={cn('mx-auto px-4', width, align)}>{children}</div>
+      <div className={cn('mx-auto px-4 sm:px-6 lg:px-8', width, align)}>{children}</div>
     </section>
   )
 }
@@ -60,15 +60,15 @@ export function BlockSectionHeader({
   if (showTitle !== false && !t && showDescription !== false && !d) return null
 
   return (
-    <header className="mb-8">
+    <header className="mb-10">
       {showTitle !== false && t ? (
         <BuilderField path="title" label="Başlık" type="text" className="w-fit max-w-full">
-          <h2 className="text-2xl font-bold text-slate-900 md:text-3xl">{t}</h2>
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">{t}</h2>
         </BuilderField>
       ) : null}
       {showDescription !== false && d ? (
         <BuilderField path="description" label="Açıklama" type="text" className="w-fit max-w-full">
-          <p className="mt-2 text-slate-600">{d}</p>
+          <p className="mt-3 text-base leading-relaxed text-slate-600 sm:text-lg">{d}</p>
         </BuilderField>
       ) : null}
     </header>

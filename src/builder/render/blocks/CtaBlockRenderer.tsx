@@ -2,7 +2,6 @@ import type { CSSProperties } from 'react'
 import { Check } from 'lucide-react'
 import type { BlockRendererProps } from '@/builder/registry/renderRegistry'
 import { BuilderField } from '@/builder/edit/BuilderField'
-import { BlockSectionHeader } from '@/builder/render/SectionBlockShell'
 import { BlockButtonLink } from '@/builder/render/BlockButtonLink'
 import { isMkSaasProblemBand, MK_SAAS_PROBLEM_PILLS } from '@/builder/render/mkSaasBuilderVisuals'
 import { renderIfText } from '@/builder/render/renderRules'
@@ -214,72 +213,79 @@ export function CtaBlockRenderer({ block, mode = 'public' }: BlockRendererProps)
     )
   }
 
+  const hasCustomBg = Boolean(bgStyle.background || bgStyle.backgroundImage || bgStyle.backgroundColor)
+
   return (
     <section
-      className="w-full py-12"
+      className="w-full bg-white py-14 sm:py-20"
       style={{
-        ...bgStyle,
         paddingTop: b.style.paddingTop?.desktop,
         paddingBottom: b.style.paddingBottom?.desktop,
       }}
     >
-      <div className="mx-auto max-w-7xl px-4 text-center">
-        {useLightText ? (
-          <header className="mb-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div
+          className={cn(
+            'flex flex-col gap-8 rounded-xl px-6 py-10 sm:px-10 sm:py-12 lg:flex-row lg:items-center lg:justify-between lg:px-14',
+            !hasCustomBg && 'border border-slate-200 bg-slate-50',
+          )}
+          style={bgStyle}
+        >
+          <div className="max-w-2xl text-left">
             {b.visibility.showTitle !== false && renderIfText(b.title) ? (
-              <BuilderField path="title" label="Başlık" type="text" className="mx-auto w-fit max-w-full">
-                <h2 className="text-2xl font-bold tracking-tight text-white md:text-3xl">{b.title}</h2>
+              <BuilderField path="title" label="Başlık" type="text" className="w-fit max-w-full">
+                <h2
+                  className={cn(
+                    'text-3xl font-extrabold tracking-tight sm:text-4xl',
+                    useLightText ? 'text-white' : 'text-slate-950',
+                  )}
+                >
+                  {b.title}
+                </h2>
               </BuilderField>
             ) : null}
             {b.visibility.showDescription !== false && renderIfText(b.description) ? (
-              <BuilderField
-                path="description"
-                label="Açıklama"
-                type="text"
-                className="mx-auto mt-3 w-fit max-w-2xl"
-              >
-                <p className="text-base leading-relaxed text-slate-200 md:text-lg">{b.description}</p>
+              <BuilderField path="description" label="Açıklama" type="text" className="mt-3 w-fit max-w-full">
+                <p
+                  className={cn(
+                    'mt-3 text-base leading-relaxed sm:text-lg',
+                    useLightText ? 'text-white/85' : 'text-slate-600',
+                  )}
+                >
+                  {b.description}
+                </p>
               </BuilderField>
             ) : null}
-          </header>
-        ) : (
-          <BlockSectionHeader
-            title={b.title}
-            description={b.description}
-            showTitle={b.visibility.showTitle}
-            showDescription={b.visibility.showDescription}
-          />
-        )}
-        {showButtons ? (
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            {buttons.map((btn, btnIndex) => (
-              <BuilderField
-                key={btn.id}
-                path={`button.${btn.id}`}
-                label={btnIndex === 0 ? 'Primary Button' : 'Secondary Button'}
-                type="button"
-                className="inline-block"
-              >
-                <BlockButtonLink
-                  btn={btn}
-                  className={cn(
-                    'inline-flex min-h-11 items-center rounded-lg px-5 py-2.5 text-sm font-semibold transition',
-                    btn.variant === 'outline' &&
-                      (useLightText
-                        ? 'border border-white/80 text-white hover:bg-white/10'
-                        : 'border border-slate-300 text-slate-800'),
-                    btn.variant === 'secondary' &&
-                      (useLightText
-                        ? 'bg-white text-slate-900 hover:bg-slate-100'
-                        : 'bg-slate-100 text-slate-800'),
-                    (!btn.variant || btn.variant === 'primary') &&
-                      'bg-emerald-600 text-white hover:bg-emerald-500',
-                  )}
-                />
-              </BuilderField>
-            ))}
           </div>
-        ) : null}
+          {showButtons ? (
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap lg:shrink-0">
+              {buttons.map((btn, btnIndex) => (
+                <BuilderField
+                  key={btn.id}
+                  path={`button.${btn.id}`}
+                  label={btnIndex === 0 ? 'Primary Button' : 'Secondary Button'}
+                  type="button"
+                  className="block sm:inline-block"
+                >
+                  <BlockButtonLink
+                    btn={btn}
+                    className={cn(
+                      'inline-flex min-h-12 w-full items-center justify-center rounded-lg px-6 py-3 text-[15px] font-bold transition sm:w-auto',
+                      btn.variant === 'outline' &&
+                        (useLightText
+                          ? 'border border-white/70 text-white hover:bg-white/10'
+                          : 'border border-slate-300 bg-white text-slate-900 hover:border-slate-900'),
+                      btn.variant === 'secondary' &&
+                        (useLightText ? 'bg-white/15 text-white hover:bg-white/25' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'),
+                      (!btn.variant || btn.variant === 'primary') &&
+                        (useLightText ? 'bg-white text-slate-950 hover:bg-slate-100' : 'bg-[#101828] text-white hover:bg-slate-800'),
+                    )}
+                  />
+                </BuilderField>
+              ))}
+            </div>
+          ) : null}
+        </div>
       </div>
     </section>
   )

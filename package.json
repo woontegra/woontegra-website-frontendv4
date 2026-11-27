@@ -11,7 +11,6 @@
     "koopplus:screenshots": "node scripts/koopplus-screenshots.mjs",
     "koopplus:check-copy": "node scripts/check-koopplus-saas-copy.mjs",
     "test": "vitest run",
-
     "prerender": "node scripts/prerender.mjs",
     "verify:seo": "node scripts/verify-seo.mjs",
     "indexnow:key": "node scripts/generate-indexnow-key.mjs",
@@ -23,6 +22,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "@tanstack/react-query": "^5.90.12",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",

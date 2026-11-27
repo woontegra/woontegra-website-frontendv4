@@ -60,7 +60,7 @@ function DesktopNavItem({ item }: { item: PublicNavigationMenuItem }) {
           href={item.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900"
+          className="whitespace-nowrap rounded-lg px-3 py-2 text-[15px] font-semibold text-slate-800 transition-colors hover:text-emerald-700"
         >
           {item.label}
         </a>
@@ -71,8 +71,8 @@ function DesktopNavItem({ item }: { item: PublicNavigationMenuItem }) {
         to={item.href}
         className={({ isActive }) =>
           cn(
-            'whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors',
-            isActive ? 'text-emerald-700' : 'text-slate-700 hover:text-slate-900',
+            'whitespace-nowrap rounded-lg px-3 py-2 text-[15px] font-semibold transition-colors',
+            isActive ? 'text-emerald-700' : 'text-slate-800 hover:text-emerald-700',
           )
         }
       >
@@ -83,17 +83,17 @@ function DesktopNavItem({ item }: { item: PublicNavigationMenuItem }) {
 
   return (
     <div className="relative shrink-0" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
-      <Link to={item.href} className="whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium text-slate-700">
+      <Link to={item.href} className="whitespace-nowrap rounded-lg px-3 py-2 text-[15px] font-semibold text-slate-800 transition-colors hover:text-emerald-700">
         {item.label} <span className="text-slate-400">▾</span>
       </Link>
       {open ? (
         <div className="absolute left-0 top-full z-[110] pt-0.5">
-          <div className="min-w-[240px] rounded-xl border border-slate-200 bg-white py-2 shadow-lg">
+          <div className="min-w-[240px] rounded-lg border border-slate-200 bg-white py-2 shadow-[0_16px_40px_-16px_rgba(16,24,40,0.28)]">
             {item.children.map((child) => (
               <Link
                 key={child.id}
                 to={child.href}
-                className="block rounded-lg px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                className="block px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-emerald-700"
                 onClick={() => setOpen(false)}
               >
                 {child.label}
@@ -133,8 +133,9 @@ export function PublicHeader() {
   }, [menuOpen])
 
   return (
-    <header className="sticky top-0 z-[100] w-full border-b border-slate-100 bg-white">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-[100] w-full border-b border-slate-200 bg-white">
+      <div aria-hidden className="h-[3px] bg-gradient-to-r from-[#16A34A] to-[#1D6FD8]" />
+      <div className="mx-auto flex h-16 max-w-7xl lg:h-[72px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex shrink-0 items-center gap-2" aria-label={`${siteName} Ana Sayfa`} onClick={() => setMenuOpen(false)}>
           <span
             className="flex shrink-0 items-center"
@@ -187,7 +188,7 @@ export function PublicHeader() {
       </div>
 
       {menuOpen ? (
-        <div className="max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-slate-200 bg-white lg:hidden">
+        <div className="max-h-[calc(100dvh-4.25rem)] overflow-y-auto border-t border-slate-200 bg-white lg:hidden">
           <AccountMenu compact onNavigate={() => setMenuOpen(false)} />
           <MobileMenu items={nav} onNavigate={() => setMenuOpen(false)} />
         </div>

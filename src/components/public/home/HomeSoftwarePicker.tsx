@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { SoftwareShowcaseMark } from '@/components/public/SoftwareShowcaseMark'
 import { SOFTWARE_SHOWCASE_ITEMS, type SoftwareShowcaseItem } from '@/data/softwareShowcase'
+import { cn } from '@/lib/cn'
 
 const HOME_SOFTWARE_COPY: Record<string, { summary: string; cta: string; free?: boolean }> = {
   'aktuerya-hesaplama': {
@@ -40,120 +40,179 @@ function cards(): { item: SoftwareShowcaseItem; summary: string; cta: string; fr
   })
 }
 
+/** Kurumsal tasarım (Yön C): her ürünün kendi rengi ve mozaik yerleşim. */
+type TileTheme = {
+  label: string
+  /** Masaüstü mozaik yerleşimi */
+  span: string
+  bg: string
+  border?: string
+  dark: boolean
+  labelColor: string
+  descColor: string
+  large?: boolean
+}
+
+const TILE_THEMES: Record<string, TileTheme> = {
+  'bilirkisi-hesap': {
+    label: 'Hukuk · Web',
+    span: 'lg:col-span-2 lg:row-span-2',
+    bg: 'bg-[#0F2A4A]',
+    dark: true,
+    labelColor: 'text-sky-300',
+    descColor: 'text-[#C7D7EC]',
+    large: true,
+  },
+  'muvekkil-kasa-defteri': {
+    label: 'Hukuk · Web + Mobil',
+    span: 'lg:col-span-2',
+    bg: 'bg-[#14532D]',
+    dark: true,
+    labelColor: 'text-green-300',
+    descColor: 'text-[#C9E9D3]',
+  },
+  koopplus: {
+    label: 'Kooperatif',
+    span: '',
+    bg: 'bg-[#FFF4E5]',
+    dark: false,
+    labelColor: 'text-amber-700',
+    descColor: 'text-slate-600',
+  },
+  'aktuerya-hesaplama': {
+    label: 'Hukuk',
+    span: '',
+    bg: 'bg-[#F2F4F7]',
+    dark: false,
+    labelColor: 'text-slate-500',
+    descColor: 'text-slate-600',
+  },
+  'avukat-siteleri': {
+    label: 'Hukuk · Web sitesi',
+    span: 'lg:col-span-2',
+    bg: 'bg-[#EEF4FF]',
+    dark: false,
+    labelColor: 'text-blue-700',
+    descColor: 'text-slate-600',
+  },
+  'sifre-kasasi': {
+    label: 'Ücretsiz',
+    span: 'sm:col-span-2 lg:col-span-2',
+    bg: 'bg-white',
+    border: 'border border-slate-200',
+    dark: false,
+    labelColor: 'text-emerald-700',
+    descColor: 'text-slate-600',
+  },
+}
+
+const FALLBACK_THEME: TileTheme = {
+  label: 'Yazılım',
+  span: '',
+  bg: 'bg-[#F2F4F7]',
+  dark: false,
+  labelColor: 'text-slate-500',
+  descColor: 'text-slate-600',
+}
+
 type Props = {
   /** Sayfada bu bölümden önce bir h1 varsa başlıklar h2/h3 olur. Görsel hero h1 taşımıyorsa başlıklar paragraf kalır; alttaki sayfa h1’i yerinde durur. */
   followsPageTitle?: boolean
 }
 
+/** Mozaikte gösterim sırası; listede olmayan ürünler sona eklenir. */
+const TILE_ORDER = ['bilirkisi-hesap', 'muvekkil-kasa-defteri', 'koopplus', 'avukat-siteleri', 'aktuerya-hesaplama', 'sifre-kasasi']
+
+function orderIndex(id: string): number {
+  const i = TILE_ORDER.indexOf(id)
+  return i < 0 ? TILE_ORDER.length : i
+}
+
 export function HomeSoftwarePicker({ followsPageTitle = true }: Props) {
-  const items = cards()
-  const scrollerRef = useRef<HTMLUListElement>(null)
-  const [canPrev, setCanPrev] = useState(false)
-  const [canNext, setCanNext] = useState(false)
-
-  useEffect(() => {
-    const el = scrollerRef.current
-    if (!el) return
-    const sync = () => {
-      setCanPrev(el.scrollLeft > 2)
-      setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 2)
-    }
-    sync()
-    el.addEventListener('scroll', sync, { passive: true })
-    const observer = new ResizeObserver(sync)
-    observer.observe(el)
-    return () => {
-      el.removeEventListener('scroll', sync)
-      observer.disconnect()
-    }
-  }, [items.length])
-
+  const items = cards().sort((a, b) => orderIndex(a.item.id) - orderIndex(b.item.id))
   if (items.length === 0) return null
   const TitleTag = followsPageTitle ? 'h2' : 'p'
   const NameTag = followsPageTitle ? 'h3' : 'p'
 
-  const scrollByCard = (direction: -1 | 1) => {
-    const el = scrollerRef.current
-    if (!el) return
-    const card = el.querySelector('li')
-    const gap = Number.parseFloat(getComputedStyle(el).columnGap) || 16
-    const width = card?.getBoundingClientRect().width ?? el.clientWidth
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    el.scrollBy({ left: direction * (width + gap), behavior: reduce ? 'auto' : 'smooth' })
-  }
-
   return (
-    <section
-      aria-labelledby="home-yazilimlar-baslik"
-      className="relative bg-white pb-24 pt-12 sm:pb-32 sm:pt-14"
-    >
+    <section aria-labelledby="home-yazilimlar-baslik" className="bg-white py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <header className="mx-auto max-w-2xl text-center">
-          <TitleTag id="home-yazilimlar-baslik" className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
+          <TitleTag
+            id="home-yazilimlar-baslik"
+            className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl"
+          >
             Yazılımlarımız
           </TitleTag>
-          <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
+          <p className="max-w-md text-base leading-relaxed text-slate-600 sm:text-right sm:text-lg">
             Size uygun programı doğrudan seçin ve detaylarını inceleyin.
           </p>
         </header>
 
-        <div className="mt-6 flex justify-end gap-2">
-          <button
-            type="button"
-            aria-label="Önceki yazılımlar"
-            disabled={!canPrev}
-            onClick={() => scrollByCard(-1)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <ChevronLeft className="h-4 w-4" aria-hidden />
-          </button>
-          <button
-            type="button"
-            aria-label="Sonraki yazılımlar"
-            disabled={!canNext}
-            onClick={() => scrollByCard(1)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <ChevronRight className="h-4 w-4" aria-hidden />
-          </button>
-        </div>
-
-        <ul
-          ref={scrollerRef}
-          className="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-smooth pb-4 pt-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {items.map(({ item, summary, cta, free }) => (
-            <li
-              key={item.id}
-              className="flex w-full shrink-0 snap-start sm:w-[calc((100%-1rem)/2)] xl:w-[calc((100%-3rem)/4)]"
-            >
-              <Link
-                to={item.href}
-                className="group flex h-full w-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm outline-none transition duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:shadow-[0_18px_40px_-24px_rgba(15,23,42,0.45)] focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <SoftwareShowcaseMark item={item} size="md" />
-                  {free ? (
-                    <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-800">
-                      Ücretsiz
-                    </span>
+        <ul className="mt-8 grid grid-cols-1 gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:auto-rows-[minmax(15rem,auto)] lg:grid-flow-row-dense lg:grid-cols-4">
+          {items.map(({ item, summary, cta }) => {
+            const theme = TILE_THEMES[item.id] ?? FALLBACK_THEME
+            return (
+              <li key={item.id} className={cn('flex', theme.span, theme.large && 'sm:col-span-2')}>
+                <Link
+                  to={item.href}
+                  className={cn(
+                    'group relative flex w-full flex-col justify-between gap-5 overflow-hidden rounded-xl p-6 sm:gap-8 outline-none transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_48px_-24px_rgba(16,24,40,0.45)] focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:p-8',
+                    theme.bg,
+                    theme.border,
+                    theme.large && 'lg:p-10',
+                  )}
+                >
+                  {theme.large ? (
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute -bottom-24 -right-24 h-80 w-80 rounded-full border-[48px] border-[#1D6FD8] opacity-30"
+                    />
                   ) : null}
-                </div>
-                <NameTag className="mt-4 text-base font-semibold text-slate-950">{item.title}</NameTag>
-                <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{summary}</p>
-                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700">
-                  {cta}
-                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden />
-                </span>
-              </Link>
-            </li>
-          ))}
+                  <div className="relative flex items-start justify-between gap-4">
+                    <span className={cn('text-xs font-bold uppercase tracking-[0.12em]', theme.labelColor)}>
+                      {theme.label}
+                    </span>
+                    <span className="rounded-lg bg-white p-0.5">
+                      <SoftwareShowcaseMark item={item} size="sm" />
+                    </span>
+                  </div>
+                  <div className="relative flex flex-col gap-2">
+                    <NameTag
+                      className={cn(
+                        'font-extrabold tracking-tight',
+                        theme.dark ? 'text-white' : 'text-slate-950',
+                        theme.large ? 'text-3xl sm:text-4xl lg:text-5xl' : 'text-2xl lg:text-[1.75rem]',
+                      )}
+                    >
+                      {item.title}
+                    </NameTag>
+                    <p className={cn('max-w-md text-[15px] leading-relaxed', theme.descColor, theme.large && 'sm:text-lg')}>
+                      {summary}
+                    </p>
+                    {theme.large ? (
+                      <span className="mt-4 inline-flex w-fit items-center gap-2 rounded-lg bg-white px-5 py-3 text-[15px] font-bold text-[#0F2A4A]">
+                        {cta}
+                        <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden />
+                      </span>
+                    ) : (
+                      <span
+                        className={cn(
+                          'mt-2 inline-flex items-center gap-1.5 text-sm font-bold',
+                          theme.dark ? 'text-white' : 'text-emerald-700',
+                        )}
+                      >
+                        {cta}
+                        <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1 motion-reduce:transition-none" aria-hidden />
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            )
+          })}
         </ul>
       </div>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-white to-slate-50 sm:h-20"
-      />
     </section>
   )
 }

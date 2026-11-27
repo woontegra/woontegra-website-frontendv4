@@ -13,8 +13,10 @@ type Props = {
 
 function linkClass(active: boolean, nested = false) {
   return cn(
-    nested ? 'block rounded-lg px-4 py-2.5 pl-8 text-sm font-medium' : 'block rounded-lg px-4 py-3 text-sm font-medium',
-    active ? 'text-emerald-700' : 'text-slate-700 hover:bg-slate-50',
+    nested
+      ? 'block rounded-lg px-4 py-3 pl-8 text-[15px] font-medium'
+      : 'block rounded-lg px-4 py-3.5 text-base font-semibold',
+    active ? 'text-emerald-700' : nested ? 'text-slate-600 hover:bg-slate-50' : 'text-slate-900 hover:bg-slate-50',
   )
 }
 
@@ -47,7 +49,7 @@ export function MobileMenu({ items, onNavigate }: Props) {
   const toggle = (id: string) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }))
 
   return (
-    <nav className="space-y-1 px-4 py-3 pb-6">
+    <nav className="divide-y divide-slate-100 px-4 py-2 pb-6">
       {items.map((item) => {
         const hasChildren = item.children.length > 0
         const software = isSoftwareNavItem(item)
@@ -82,7 +84,7 @@ export function MobileMenu({ items, onNavigate }: Props) {
                         key={product.id}
                         to={product.href}
                         onClick={onNavigate}
-                        className="flex min-h-14 items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3"
+                        className="flex min-h-14 items-start gap-3 rounded-lg border border-slate-200 bg-white px-3 py-3"
                       >
                         <span className="mt-0.5">
                           <SoftwareShowcaseMark item={product} size="sm" />
