@@ -8,7 +8,7 @@ type ShowcaseTab = (typeof KOOPPLUS_SHOWCASE_GALLERY)[number]
 
 function BrowserChrome({ children, urlLabel }: { children: ReactNode; urlLabel: string }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.45)]">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-950 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.45)]">
       <div className="flex items-center gap-1.5 border-b border-white/10 bg-slate-900 px-3 py-2">
         <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
         <span className="h-2.5 w-2.5 rounded-full bg-amber-300/80" />
@@ -100,14 +100,14 @@ export function KoopPlusShowcaseGallery() {
   return (
     <section
       id="koopplus-yakinindan"
-      className="scroll-mt-24 border-b border-slate-200 bg-gradient-to-b from-white via-slate-50 to-white py-14 sm:py-16 lg:py-20"
+      className="scroll-mt-24 py-20 sm:py-28"
       aria-labelledby="koopplus-gallery-heading"
     >
       <div className={SHELL}>
         <div className="max-w-3xl">
           <h2
             id="koopplus-gallery-heading"
-            className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl"
+            className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl"
           >
             KoopPlus’ı yakından tanıyın
           </h2>
@@ -133,9 +133,9 @@ export function KoopPlusShowcaseGallery() {
                 aria-controls={`koopplus-panel-${tab.id}`}
                 onClick={() => setActiveId(tab.id)}
                 className={cn(
-                  'shrink-0 rounded-xl px-3.5 py-2 text-sm font-semibold transition',
+                  'shrink-0 rounded-lg px-4 py-2.5 text-sm font-bold transition',
                   selected
-                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
+                    ? 'bg-[#7C2D12] text-white'
                     : 'bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50',
                 )}
               >
@@ -188,8 +188,8 @@ export function KoopPlusShowcaseGallery() {
             ) : null}
           </div>
 
-          <div className={cn(isDebt && 'rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 sm:p-6')}>
-            <h3 className="text-xl font-semibold tracking-tight text-slate-950 sm:text-2xl">{active.title}</h3>
+          <div className={cn(isDebt && 'rounded-xl border border-[#FCE3C4] bg-[#FFF7ED] p-5 sm:p-6')}>
+            <h3 className="text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">{active.title}</h3>
             <p
               className={cn(
                 'mt-3 text-base leading-relaxed',
@@ -201,7 +201,7 @@ export function KoopPlusShowcaseGallery() {
             <ul className="mt-5 space-y-2.5">
               {active.bullets.map((bullet) => (
                 <li key={bullet} className="flex gap-2.5 text-sm leading-relaxed text-slate-700">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#C2410C]" aria-hidden />
                   <span>{bullet}</span>
                 </li>
               ))}

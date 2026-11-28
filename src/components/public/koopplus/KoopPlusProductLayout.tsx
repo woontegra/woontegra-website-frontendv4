@@ -1,20 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, CalendarDays, Cloud, FolderSync, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Check, ChevronDown, Cloud } from 'lucide-react'
 import { Breadcrumbs } from '@/components/public/Breadcrumbs'
 import { DesktopLicenseRenewalPanel } from '@/components/public/product/DesktopLicenseRenewalPanel'
 import { KoopPlusDemoModal } from '@/components/public/koopplus/KoopPlusDemoModal'
 import { KoopPlusShowcaseGallery } from '@/components/public/koopplus/KoopPlusShowcaseGallery'
+import { KoopPlusDuesAnimation } from '@/components/public/koopplus/KoopPlusDuesAnimation'
 import {
   getDefaultKoopPlusProductContent,
   resolveKoopPlusFeatureIcon,
   sanitizeKoopPlusProductContentForSaas,
   type KoopPlusProductContent,
 } from '@/builder/types/koopplusProduct'
-import { KOOPPLUS_BRAND_ICON, KOOPPLUS_HERO_IMAGE, KOOPPLUS_NAME, KOOPPLUS_TAGLINE } from '@/data/koopplusProduct'
+import { KOOPPLUS_HERO_IMAGE, KOOPPLUS_NAME, KOOPPLUS_TAGLINE } from '@/data/koopplusProduct'
 import { trackKoopplusEvent } from '@/integrations/trackingEvents'
 import { addToCart } from '@/lib/cartStorage'
-import { ProductScreenshotCarousel } from '@/components/public/product/ProductScreenshotCarousel'
 import { koopPlusScreenshotEntries, productScreenshotAlt } from '@/lib/productScreenshots'
 import { cn } from '@/lib/cn'
 import { mapKoopPlusCatalogOffer, resolveKoopPlusBuyAction } from '@/lib/koopplusCatalog'
@@ -37,7 +37,8 @@ const SALES_PREP_NOTICE = 'Satışa hazırlanıyor. Satın alma henüz açılmam
 const PLAN_SECTION_ID = 'koopplus-satin-al'
 const TRIAL_SECTION_ID = 'koopplus-deneme'
 
-const TRIAL_HIGHLIGHT_ICONS = [CalendarDays, ShieldCheck, FolderSync] as const
+/** KoopPlus ürün rengi (koyu turuncu-kahve); ana sayfadaki seçiciyle aynı. */
+const KOOP_HERO_COLOR = '#7C2D12'
 
 type ScreenshotEntry = { url: string; alt?: string }
 
@@ -82,42 +83,6 @@ export type KoopPlusProductLayoutProps = {
 
 function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
-
-function KoopPlusHeroVisual({
-  product,
-  content,
-}: {
-  product: PublicProductDetail | null
-  content: KoopPlusProductContent
-}) {
-  const screenshots = resolveScreenshots(product, content)
-  if (screenshots.length > 0) {
-    return <ProductScreenshotCarousel images={screenshots} productName={KOOPPLUS_NAME} />
-  }
-
-  const heroImage = content.hero.imageUrl ? resolveMediaUrl(content.hero.imageUrl) || content.hero.imageUrl : ''
-  if (heroImage) {
-    return (
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-2xl shadow-emerald-950/40">
-        <img
-          src={heroImage}
-          alt={content.hero.imageAlt || 'KoopPlus web tabanlı kooperatif yönetim paneli'}
-          className="aspect-[16/10] w-full object-cover object-top"
-        />
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex aspect-[16/10] w-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 text-center shadow-2xl shadow-emerald-950/40">
-      <span className="inline-flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-white/15 bg-white/95 p-1.5">
-        <img src={KOOPPLUS_BRAND_ICON} alt="" className="h-full w-full object-contain" />
-      </span>
-      <p className="mt-4 text-lg font-semibold text-white">{KOOPPLUS_NAME}</p>
-      <p className="mt-1 text-sm text-emerald-200">{KOOPPLUS_TAGLINE}</p>
-    </div>
-  )
 }
 
 export function KoopPlusProductLayout({
@@ -198,15 +163,28 @@ export function KoopPlusProductLayout({
     setDemoOpen(true)
   }
 
-  const trialTitleRest = content.trial.title.startsWith('7 Gün')
-    ? content.trial.title.replace(/^7 Gün/, '')
-    : null
+  const highlights = [
+    { big: 'Kurulumsuz', title: 'Web tabanlı', desc: 'Bilgisayar, tablet veya telefondan tarayıcıyla girin.' },
+    { big: 'Her cihaz', title: 'Cihaz sınırı yok', desc: 'İstediğiniz cihazdan, istediğiniz yerden kullanın.' },
+    {
+      big: 'Çoklu',
+      title: 'Birden fazla kooperatif',
+      desc: pricing
+        ? `Hepsini tek hesaptan yönetin; her ek kooperatif ${formatMoney(pricing.additionalPrice, pricing.currency)} / yıl.`
+        : 'Hepsini tek hesaptan yönetin; ek kooperatifler daha uygun fiyatlıdır.',
+    },
+    { big: '7 gün', title: 'Ücretsiz deneme', desc: 'Kredi kartı gerekmez; demoda girdiğiniz kayıtlar silinmez.' },
+  ]
 
   return (
     <div className="overflow-x-hidden bg-white">
-      <section className="relative bg-gradient-to-br from-slate-950 via-[#0f2744] to-slate-900 text-white">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(16,185,129,0.16),transparent_42%),radial-gradient(circle_at_82%_55%,rgba(56,189,248,0.12),transparent_40%)]" />
-        <div className={`relative ${SHELL} py-8 lg:py-10`}>
+      {/* Üst bölüm: solda tanıtım ve aidat çizelgesi, sağda satın alma kutusu */}
+      <section className="relative overflow-hidden text-white" style={{ backgroundColor: KOOP_HERO_COLOR }}>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-40 -top-40 h-[32rem] w-[32rem] rounded-full border-[72px] border-[#F97316] opacity-20"
+        />
+        <div className={`relative ${SHELL} pb-12 pt-6 lg:pb-16 lg:pt-8`}>
           <Breadcrumbs
             dark
             items={[
@@ -215,253 +193,172 @@ export function KoopPlusProductLayout({
               { label: KOOPPLUS_NAME },
             ]}
           />
-          <div className="mt-6 grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
+          <div className="mt-4 grid gap-6 sm:mt-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-center xl:gap-8">
             <div className="min-w-0">
-              <p className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-200">
-                {content.hero.kicker}
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-orange-300 sm:text-xs">
+                {content.hero.identity}
               </p>
-              <p className="mt-3 text-sm font-medium text-sky-200">{content.hero.identity}</p>
-              <h1 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl lg:text-[2.35rem] lg:leading-[1.15]">
+              <h1 className="mt-2 max-w-4xl text-[28px] font-extrabold leading-tight tracking-tight sm:mt-4 sm:text-5xl lg:leading-[1.04]">
                 {content.hero.title}
               </h1>
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-slate-300">{content.hero.description}</p>
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <button
-                  type="button"
-                  onClick={handleHeroBuy}
-                  aria-disabled={!buyReady}
-                  className={cn(
-                    'inline-flex min-h-12 w-full items-center justify-center rounded-xl px-6 py-3.5 text-sm font-semibold shadow-lg sm:w-auto',
-                    buyReady
-                      ? 'bg-gradient-to-r from-emerald-500 to-sky-400 text-slate-950 shadow-emerald-500/20 transition hover:brightness-105'
-                      : 'cursor-not-allowed bg-slate-200 text-slate-500 shadow-none',
-                  )}
-                >
-                  {buyReady ? content.hero.primaryCtaLabel : salesNotReadyLabel}
-                </button>
-                <button
-                  type="button"
-                  onClick={openDemo}
-                  className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/15 sm:w-auto"
-                >
-                  {content.hero.secondaryCtaLabel}
-                </button>
-              </div>
-              {buyNotice ? (
-                <p className="mt-3 text-sm text-amber-200" role="status">
-                  {buyNotice}
-                </p>
-              ) : null}
+              <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/75 sm:mt-4 sm:text-lg">
+                {content.hero.description}
+              </p>
+              <KoopPlusDuesAnimation />
             </div>
-            <KoopPlusHeroVisual product={product} content={content} />
+
+            <aside id={PLAN_SECTION_ID} className="scroll-mt-24 xl:sticky xl:top-24 xl:self-start">
+              <article
+                className="rounded-xl bg-white p-6 text-slate-950 shadow-[0_40px_80px_-40px_rgba(0,0,0,0.6)] sm:p-7"
+                data-testid="koopplus-plan-card"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-orange-50 text-[#C2410C]">
+                      <Cloud className="h-5 w-5" aria-hidden />
+                    </span>
+                    <div>
+                      <h2 className="text-lg font-extrabold text-slate-950">{planTitle}</h2>
+                      <p className="text-sm text-slate-500">{content.platforms.windows.status}</p>
+                    </div>
+                  </div>
+                  <span className="rounded-md bg-orange-50 px-2 py-1 text-xs font-bold text-[#C2410C]">{planBadge}</span>
+                </div>
+                <div className="mt-5">
+                  {offer.priceLabel ? (
+                    <p className="flex flex-wrap items-baseline gap-x-2">
+                      <span className="text-4xl font-extrabold tracking-tight text-slate-950">{offer.priceLabel}</span>
+                      <span className="text-sm text-slate-500">/ yıl · KDV dahil</span>
+                    </p>
+                  ) : (
+                    <p className="text-sm text-slate-500">{productLoading ? 'Fiyat yükleniyor…' : 'Fiyat bilgisi yakında'}</p>
+                  )}
+                  {pricing ? (
+                    <p className="mt-1 text-sm text-slate-600" data-testid="koopplus-additional-price">
+                      Her ek kooperatif: <strong>{formatMoney(pricing.additionalPrice, pricing.currency)}</strong> / yıl
+                    </p>
+                  ) : null}
+                  <p className="mt-2 text-xs text-slate-500">
+                    {content.platforms.trialSuffix}
+                    {offer.licenseDaysLabel ? ` · Lisans süresi ${offer.licenseDaysLabel}` : ''}
+                  </p>
+                </div>
+                {buyReady ? (
+                  <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4" data-testid="koopplus-quantity">
+                    <label htmlFor="koopplus-coop-qty" className="block text-sm font-semibold text-slate-900">
+                      Kaç kooperatif?
+                    </label>
+                    <select
+                      id="koopplus-coop-qty"
+                      value={coopQuantity}
+                      onChange={(e) => setCoopQuantity(Math.max(1, Number(e.target.value) || 1))}
+                      className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                    >
+                      {Array.from({ length: pricing?.maxQuantity ?? KOOPPLUS_DEFAULT_MAX_QUANTITY }, (_, i) => i + 1).map(
+                        (n) => (
+                          <option key={n} value={n}>
+                            {n} kooperatif
+                          </option>
+                        ),
+                      )}
+                    </select>
+                    {pricing && pricing.firstPrice != null ? (
+                      <p className="mt-3 text-sm text-slate-700">
+                        {coopQuantity > 1
+                          ? `1 × ${formatMoney(pricing.firstPrice, pricing.currency)} + ${coopQuantity - 1} × ${formatMoney(pricing.additionalPrice, pricing.currency)} = `
+                          : 'Toplam: '}
+                        <strong className="text-slate-950">
+                          {formatMoney(estimateKoopPlusTotal(pricing, coopQuantity) ?? 0, pricing.currency)}
+                        </strong>
+                        <span className="text-slate-500"> / yıl</span>
+                      </p>
+                    ) : null}
+                    {coopQuantity > 1 ? (
+                      <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                        İlk kooperatifiniz ödeme sonrası otomatik açılır; diğerlerini KoopPlus içinden (Kooperatifler →
+                        + Yeni Kooperatif) kendiniz açarsınız.
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+                {desktopLicenseRenewalLoading ? (
+                  <p className="mt-4 text-sm text-slate-500">Lisans bilgileri doğrulanıyor…</p>
+                ) : desktopLicenseRenewal && isDesktopLicenseRenewalContext(desktopLicenseRenewal) ? (
+                  <div className="mt-4">
+                    <DesktopLicenseRenewalPanel
+                      data={desktopLicenseRenewal}
+                      renewalDays={renewalDays}
+                      renewalLabel={offer.licenseDaysLabel}
+                    />
+                  </div>
+                ) : null}
+                <div className="mt-6 flex flex-col gap-2.5">
+                  <button
+                    type="button"
+                    onClick={handleBuy}
+                    disabled={!buyReady}
+                    aria-disabled={!buyReady}
+                    className={cn(
+                      'inline-flex min-h-12 items-center justify-center rounded-lg px-5 text-[15px] font-bold',
+                      buyReady ? 'bg-[#16A34A] text-white transition hover:bg-[#15803D]' : 'cursor-not-allowed bg-slate-100 text-slate-400',
+                    )}
+                  >
+                    {buyReady ? planPurchaseCta : salesNotReadyLabel}
+                    {buyReady ? <ArrowRight className="ml-2 h-4 w-4" aria-hidden /> : null}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openDemo}
+                    className="inline-flex min-h-12 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 text-[15px] font-bold text-slate-900 transition hover:bg-slate-50"
+                  >
+                    {planTrialCta}
+                  </button>
+                </div>
+                {buyNotice ? (
+                  <p className="mt-3 text-sm text-amber-800" role="status">
+                    {buyNotice}
+                  </p>
+                ) : null}
+              </article>
+            </aside>
           </div>
         </div>
       </section>
 
-      <section id={PLAN_SECTION_ID} className="scroll-mt-24 border-b border-slate-200 bg-slate-50 py-12 sm:py-16">
-        <div className={SHELL}>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{content.platforms.heading}</h2>
-          <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600">
-            {content.platforms.trialSuffix}
-            {offer.licenseDaysLabel ? ` · Lisans süresi ${offer.licenseDaysLabel}` : ''}
-          </p>
-          <div className="mt-10 max-w-xl">
-            <article
-              className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm"
-              data-testid="koopplus-plan-card"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                    <Cloud className="h-5 w-5" aria-hidden />
-                  </span>
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-900">{planTitle}</h3>
-                    <p className="text-sm text-slate-500">{content.platforms.windows.status}</p>
-                  </div>
-                </div>
-                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                  {planBadge}
-                </span>
-              </div>
-              <div className="mt-5">
-                {offer.priceLabel ? (
-                  <p className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="text-3xl font-black tracking-tight text-slate-950">{offer.priceLabel}</span>
-                    <span className="text-sm text-slate-500">/ yıl · KDV dahil</span>
-                  </p>
-                ) : (
-                  <p className="text-sm text-slate-500">{productLoading ? 'Fiyat yükleniyor…' : 'Fiyat bilgisi yakında'}</p>
-                )}
-                {pricing ? (
-                  <p className="mt-1 text-sm text-slate-600" data-testid="koopplus-additional-price">
-                    Her ek kooperatif: <strong>{formatMoney(pricing.additionalPrice, pricing.currency)}</strong> / yıl
-                  </p>
-                ) : null}
-              </div>
-              {buyReady ? (
-                <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50/70 p-4" data-testid="koopplus-quantity">
-                  <label htmlFor="koopplus-coop-qty" className="block text-sm font-medium text-slate-900">
-                    Kaç kooperatif?
-                  </label>
-                  <select
-                    id="koopplus-coop-qty"
-                    value={coopQuantity}
-                    onChange={(e) => setCoopQuantity(Math.max(1, Number(e.target.value) || 1))}
-                    className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-                  >
-                    {Array.from({ length: pricing?.maxQuantity ?? KOOPPLUS_DEFAULT_MAX_QUANTITY }, (_, i) => i + 1).map(
-                      (n) => (
-                        <option key={n} value={n}>
-                          {n} kooperatif
-                        </option>
-                      ),
-                    )}
-                  </select>
-                  {pricing && pricing.firstPrice != null ? (
-                    <p className="mt-3 text-sm text-slate-700">
-                      {coopQuantity > 1
-                        ? `1 × ${formatMoney(pricing.firstPrice, pricing.currency)} + ${coopQuantity - 1} × ${formatMoney(pricing.additionalPrice, pricing.currency)} = `
-                        : 'Toplam: '}
-                      <strong className="text-slate-950">
-                        {formatMoney(estimateKoopPlusTotal(pricing, coopQuantity) ?? 0, pricing.currency)}
-                      </strong>
-                      <span className="text-slate-500"> / yıl</span>
-                    </p>
-                  ) : null}
-                  {coopQuantity > 1 ? (
-                    <p className="mt-2 text-xs leading-relaxed text-slate-500">
-                      İlk kooperatifiniz ödeme sonrası otomatik açılır; diğerlerini KoopPlus içinden (Kooperatifler →
-                      + Yeni Kooperatif) kendiniz açarsınız.
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
-              {desktopLicenseRenewalLoading ? (
-                <p className="mt-4 text-sm text-slate-500">Lisans bilgileri doğrulanıyor…</p>
-              ) : desktopLicenseRenewal && isDesktopLicenseRenewalContext(desktopLicenseRenewal) ? (
-                <div className="mt-4">
-                  <DesktopLicenseRenewalPanel
-                    data={desktopLicenseRenewal}
-                    renewalDays={renewalDays}
-                    renewalLabel={offer.licenseDaysLabel}
-                  />
-                </div>
-              ) : null}
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={handleBuy}
-                  disabled={!buyReady}
-                  aria-disabled={!buyReady}
-                  className={cn(
-                    'inline-flex min-h-12 flex-1 items-center justify-center rounded-xl px-5 text-sm font-semibold',
-                    buyReady
-                      ? 'bg-emerald-600 text-white transition hover:bg-emerald-700'
-                      : 'cursor-not-allowed bg-slate-100 text-slate-400',
-                  )}
-                >
-                  {buyReady ? planPurchaseCta : salesNotReadyLabel}
-                  {buyReady ? <ArrowRight className="ml-2 h-4 w-4" aria-hidden /> : null}
-                </button>
-                <button
-                  type="button"
-                  onClick={openDemo}
-                  className="inline-flex min-h-12 flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                >
-                  {planTrialCta}
-                </button>
-              </div>
-              {buyNotice ? (
-                <p className="mt-3 text-sm text-amber-800" role="status">
-                  {buyNotice}
-                </p>
-              ) : null}
-            </article>
-          </div>
-        </div>
+      {/* Öne çıkanlar */}
+      <section className={`${SHELL} pt-16 sm:pt-24`}>
+        <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          {highlights.map((h) => (
+            <li key={h.title} className="flex flex-col gap-2 rounded-xl border border-[#FCE3C4] bg-[#FFF7ED] p-6 sm:p-7">
+              <span className="whitespace-nowrap text-3xl font-extrabold tracking-tight text-[#7C2D12] sm:text-4xl">{h.big}</span>
+              <span className="text-[17px] font-extrabold text-slate-950">{h.title}</span>
+              <span className="text-[15px] leading-relaxed text-slate-600">{h.desc}</span>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <KoopPlusShowcaseGallery />
 
-      {visibility.trial ? (
-        <section
-          id={TRIAL_SECTION_ID}
-          className="relative scroll-mt-24 overflow-hidden border-y border-slate-800 bg-gradient-to-br from-slate-950 via-[#0f2744] to-slate-900 py-10 sm:py-12 lg:py-14"
-        >
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.18),transparent_42%),radial-gradient(circle_at_88%_80%,rgba(56,189,248,0.10),transparent_36%)]" />
-          <div className={`relative ${SHELL}`}>
-            <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-white/5 px-5 py-8 shadow-2xl shadow-emerald-950/40 sm:px-8 sm:py-10 lg:px-10 lg:py-11">
-              <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
-              <div className="relative mx-auto max-w-2xl text-center">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-300">
-                  {content.trial.eyebrow}
-                </p>
-                <h2 className="mt-3 text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl lg:text-[2.45rem] lg:leading-[1.15]">
-                  {trialTitleRest != null ? (
-                    <>
-                      <span className="text-emerald-300">7 Gün</span>
-                      {trialTitleRest}
-                    </>
-                  ) : (
-                    content.trial.title
-                  )}
-                </h2>
-                <p className="mt-4 text-base leading-relaxed text-slate-300 sm:text-lg">{content.trial.intro}</p>
-              </div>
-
-              <ul className="relative mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {content.trial.highlights.map((item, index) => {
-                  const Icon = TRIAL_HIGHLIGHT_ICONS[index] ?? ShieldCheck
-                  return (
-                    <li
-                      key={item.title}
-                      className="rounded-2xl border border-white/10 bg-slate-950/55 p-5 shadow-lg shadow-black/20 transition hover:border-emerald-400/35 hover:bg-slate-950/75"
-                    >
-                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-300">
-                        <Icon className="h-5 w-5" aria-hidden />
-                      </span>
-                      <p className="mt-4 text-base font-semibold text-white">{item.title}</p>
-                      <p className="mt-1.5 text-sm leading-relaxed text-slate-300">{item.description}</p>
-                    </li>
-                  )
-                })}
-              </ul>
-
-              <div className="relative mt-8 flex flex-col items-center text-center">
-                <button
-                  type="button"
-                  onClick={openDemo}
-                  className="inline-flex min-h-14 w-full items-center justify-center rounded-xl bg-gradient-to-r from-emerald-500 to-sky-400 px-8 text-base font-bold text-slate-950 shadow-lg shadow-emerald-500/25 transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 active:brightness-95 sm:w-auto sm:min-w-[20rem]"
-                >
-                  {content.trial.downloadCtaLabel}
-                </button>
-                <p className="mt-4 text-sm font-medium text-slate-200">{content.trial.trustLine}</p>
-                <p className="mt-1.5 text-sm text-slate-400">{content.trial.downloadHint}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-      ) : null}
-
       {visibility.features ? (
-        <section className="scroll-mt-24 py-16 sm:py-20 lg:py-24">
+        <section className="scroll-mt-24 pb-4 pt-4">
           <div className={SHELL}>
-            <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{content.features.heading}</h2>
-            <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
-              {content.features.description}
-            </p>
-            <ul className="mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="mb-8 flex flex-col gap-3 sm:mb-10 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
+              <h2 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">{content.features.heading}</h2>
+              <p className="max-w-md text-base leading-relaxed text-slate-600 sm:text-lg lg:text-right">{content.features.description}</p>
+            </div>
+            <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
               {content.features.items.map((feature) => {
                 const Icon = resolveKoopPlusFeatureIcon(feature.icon)
                 return (
-                  <li
-                    key={feature.title}
-                    className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-emerald-300 hover:shadow-sm"
-                  >
-                    <Icon className="h-5 w-5 text-emerald-700" aria-hidden />
-                    <p className="mt-3 text-base font-semibold text-slate-900">{feature.title}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{feature.description}</p>
+                  <li key={feature.title} className="flex gap-4 rounded-xl border border-slate-200 bg-white p-6">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#C2410C]">
+                      <Icon className="h-5 w-5" aria-hidden />
+                    </span>
+                    <span className="flex flex-col gap-1.5">
+                      <span className="text-[17px] font-extrabold text-slate-950">{feature.title}</span>
+                      <span className="text-[15px] leading-relaxed text-slate-600">{feature.description}</span>
+                    </span>
                   </li>
                 )
               })}
@@ -471,74 +368,89 @@ export function KoopPlusProductLayout({
       ) : null}
 
       {visibility.why ? (
-        <section className="border-y border-slate-200 bg-slate-50 py-16 sm:py-20">
+        <section className="pt-20 sm:pt-28">
           <div className={SHELL}>
-            <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{content.why.heading}</h2>
-            <ul className="mt-10 grid gap-4 md:grid-cols-2">
-              {content.why.items.map((item) => (
-                <li key={item.title} className="rounded-2xl border border-slate-200 bg-white p-5">
-                  <p className="text-base font-semibold text-slate-900">{item.title}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.description}</p>
+            <h2 className="mb-8 text-3xl font-extrabold tracking-tight text-slate-950 sm:mb-10 sm:text-4xl lg:text-5xl">{content.why.heading}</h2>
+            <ol className="grid gap-3 sm:gap-4 md:grid-cols-2">
+              {content.why.items.map((item, index) => (
+                <li key={item.title} className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-slate-50 p-6 sm:p-8">
+                  <span aria-hidden className="text-3xl font-extrabold tracking-tight text-slate-300">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="text-xl font-extrabold text-slate-950">{item.title}</span>
+                  <span className="text-[15px] leading-relaxed text-slate-600">{item.description}</span>
                 </li>
               ))}
-            </ul>
+            </ol>
           </div>
         </section>
       ) : null}
 
-      {visibility.info ? (
-        <section className="py-16 sm:py-20">
+      {visibility.info || visibility.license ? (
+        <section className="pt-20 sm:pt-28">
           <div className={SHELL}>
-            <div className="grid gap-8 rounded-3xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-6 sm:p-10 lg:grid-cols-2">
-              <div>
-                <h2 className="text-3xl font-bold tracking-tight text-slate-950">{content.info.multiCoop.title}</h2>
-                <p className="mt-4 text-base leading-relaxed text-slate-600">{fillKoopPlusPriceTokens(content.info.multiCoop.description, pricing)}</p>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-slate-900">{content.info.localData.title}</h3>
-                <p className="mt-3 text-base leading-relaxed text-slate-600">{content.info.localData.description}</p>
-              </div>
+            <div className="grid gap-8 rounded-xl border border-slate-200 bg-white p-6 sm:p-10 lg:grid-cols-2 lg:gap-12">
+              {visibility.license ? (
+                <div>
+                  <h2 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl">{content.license.heading}</h2>
+                  <ul className="mt-6 flex flex-col gap-3">
+                    {content.license.points.map((point) => (
+                      <li key={point} className="flex gap-2.5 text-[15px] leading-relaxed text-slate-700">
+                        <Check className="mt-1 h-4 w-4 shrink-0 text-[#16A34A]" strokeWidth={3} aria-hidden />
+                        {fillKoopPlusPriceTokens(point, pricing)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {visibility.info ? (
+                <div className="flex flex-col gap-6">
+                  <div className="rounded-lg bg-[#FFF7ED] p-5 sm:p-6">
+                    <h3 className="text-xl font-extrabold text-slate-950">{content.info.multiCoop.title}</h3>
+                    <p className="mt-2 text-[15px] leading-relaxed text-slate-700">
+                      {fillKoopPlusPriceTokens(content.info.multiCoop.description, pricing)}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-slate-50 p-5 sm:p-6">
+                    <h3 className="text-xl font-extrabold text-slate-950">{content.info.localData.title}</h3>
+                    <p className="mt-2 text-[15px] leading-relaxed text-slate-700">{content.info.localData.description}</p>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </section>
       ) : null}
 
-      {visibility.license ? (
-        <section className="py-16 sm:py-20">
-          <div className={SHELL}>
-            <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{content.license.heading}</h2>
-            <ul className="mt-8 grid gap-3 sm:grid-cols-2">
-              {content.license.points.map((point) => (
-                <li key={point} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
-                  {fillKoopPlusPriceTokens(point, pricing)}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-      ) : null}
-
       {visibility.faq ? (
-        <section className="border-t border-slate-200 bg-slate-50 py-16 sm:py-20">
-          <div className={`${SHELL} max-w-3xl`}>
-            <h2 className="text-3xl font-bold tracking-tight text-slate-950">{content.faq.heading}</h2>
-            <div className="mt-8 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white">
+        <section className="pt-20 sm:pt-28">
+          <div className={`${SHELL} flex flex-col gap-8 lg:flex-row lg:gap-14`}>
+            <div className="lg:w-1/3 lg:shrink-0">
+              <h2 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">{content.faq.heading}</h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-600 sm:text-lg">
+                Başka bir sorunuz varsa WhatsApp'tan yazabilir ya da bizi arayabilirsiniz.
+              </p>
+            </div>
+            <div className="flex-1 border-t border-slate-200">
               {content.faq.items.map((item) => {
                 const open = openFaq === item.question
                 return (
-                  <div key={item.question} className="px-4 py-3">
+                  <div key={item.question} className="border-b border-slate-200 py-5">
                     <button
                       type="button"
-                      className="flex min-h-11 w-full items-center justify-between gap-4 text-left text-sm font-medium text-slate-900"
+                      className="flex w-full items-center justify-between gap-4 text-left text-[17px] font-bold text-slate-950"
                       aria-expanded={open}
                       onClick={() => setOpenFaq(open ? null : item.question)}
                     >
                       <span>{item.question}</span>
-                      <span className="text-slate-400" aria-hidden>
-                        {open ? '−' : '+'}
-                      </span>
+                      <ChevronDown
+                        className={cn('h-5 w-5 shrink-0 text-slate-400 transition', open && 'rotate-180')}
+                        aria-hidden
+                      />
                     </button>
-                    {open ? <p className="mt-2 text-sm text-slate-600">{fillKoopPlusPriceTokens(item.answer, pricing)}</p> : null}
+                    {open ? (
+                      <p className="mt-3 text-[15px] leading-relaxed text-slate-600">{fillKoopPlusPriceTokens(item.answer, pricing)}</p>
+                    ) : null}
                   </div>
                 )
               })}
@@ -547,30 +459,34 @@ export function KoopPlusProductLayout({
         </section>
       ) : null}
 
-      {visibility.closing ? (
-        <section className="border-t border-slate-800 bg-gradient-to-br from-slate-950 via-[#10263f] to-slate-900 py-16 text-white sm:py-20">
-          <div className={`${SHELL} text-center`}>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">{content.closing.heading}</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-base text-slate-300">{content.closing.description}</p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={handleBuy}
-                disabled={!buyReady}
-                aria-disabled={!buyReady}
-                className={cn(
-                  'inline-flex min-h-12 w-full items-center justify-center rounded-xl px-6 text-sm font-semibold sm:w-auto',
-                  buyReady ? 'bg-emerald-500 text-slate-950' : 'cursor-not-allowed bg-slate-200 text-slate-500',
-                )}
-              >
-                {buyReady ? content.closing.primaryCtaLabel : salesNotReadyLabel}
-              </button>
+      {visibility.trial || visibility.closing ? (
+        <section id={TRIAL_SECTION_ID} className={`${SHELL} scroll-mt-24 py-20 sm:py-28`}>
+          <div className="flex flex-col gap-6 rounded-xl bg-gradient-to-br from-[#16A34A] to-[#1D6FD8] px-6 py-10 text-white sm:px-12 sm:py-14 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">7 gün boyunca ücretsiz deneyin</h2>
+              <ul className="mt-4 flex flex-col gap-2">
+                {content.trial.highlights.map((item) => (
+                  <li key={item.title} className="flex gap-2.5 text-[15px] leading-relaxed text-white/90 sm:text-base">
+                    <Check className="mt-1 h-4 w-4 shrink-0" strokeWidth={3} aria-hidden />
+                    {item.description}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row lg:shrink-0">
               <button
                 type="button"
                 onClick={openDemo}
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-white/20 px-6 text-sm font-semibold text-white sm:w-auto"
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-white px-6 py-3 text-[15px] font-bold text-slate-950 transition hover:bg-slate-100 sm:w-auto"
               >
                 {content.closing.secondaryCtaLabel}
+              </button>
+              <button
+                type="button"
+                onClick={handleHeroBuy}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-lg border border-white/50 px-6 py-3 text-[15px] font-bold text-white transition hover:bg-white/10 sm:w-auto"
+              >
+                {buyReady ? content.closing.primaryCtaLabel : salesNotReadyLabel}
               </button>
             </div>
           </div>
