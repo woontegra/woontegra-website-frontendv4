@@ -1,9 +1,12 @@
 import {
   defaultLegalAcikRizaPage,
   defaultLegalCookiePage,
+  defaultLegalDpaPage,
   defaultLegalKvkkPage,
+  defaultLegalPartnerPage,
   defaultLegalPrivacyPage,
   defaultLegalRefundPage,
+  defaultLegalRetentionPage,
   defaultLegalSubprocessorsPage,
   defaultLegalTermsPage,
 } from '@/data/legalPageDefaults'
@@ -16,6 +19,9 @@ export const LEGAL_PAGE_KEYS = {
   consent: 'legalConsentPage',
   terms: 'legalTermsPage',
   subprocessors: 'legalSubprocessorsPage',
+  dpa: 'legalDpaPage',
+  retention: 'legalRetentionPage',
+  partner: 'legalPartnerPage',
 } as const
 
 export type LegalPageKey = (typeof LEGAL_PAGE_KEYS)[keyof typeof LEGAL_PAGE_KEYS]
@@ -106,6 +112,26 @@ export const LEGAL_PAGE_DEFINITIONS: LegalPageDefinition[] = [
     defaults: defaultLegalSubprocessorsPage,
     showCompanyRepresentative: false,
   },
+  {
+    key: LEGAL_PAGE_KEYS.dpa,
+    label: 'Kişisel Veri İşleme Eki',
+    path: '/kisisel-veri-isleme-eki',
+    defaults: defaultLegalDpaPage,
+    showCompanyRepresentative: false,
+  },
+  {
+    key: LEGAL_PAGE_KEYS.retention,
+    label: 'Saklama ve İmha Politikası',
+    path: '/saklama-ve-imha-politikasi',
+    defaults: defaultLegalRetentionPage,
+  },
+  {
+    key: LEGAL_PAGE_KEYS.partner,
+    label: 'İş Ortağı Sözleşmesi',
+    path: '/is-ortagi-sozlesmesi',
+    defaults: defaultLegalPartnerPage,
+    showCompanyRepresentative: false,
+  },
 ]
 
 function parseBoolean(value: unknown, fallback: boolean): boolean {
@@ -187,6 +213,9 @@ export const LEGAL_COOKIE_PAGE_KEY = LEGAL_PAGE_KEYS.cookie
 export const LEGAL_CONSENT_PAGE_KEY = LEGAL_PAGE_KEYS.consent
 export const LEGAL_TERMS_PAGE_KEY = LEGAL_PAGE_KEYS.terms
 export const LEGAL_SUBPROCESSORS_PAGE_KEY = LEGAL_PAGE_KEYS.subprocessors
+export const LEGAL_DPA_PAGE_KEY = LEGAL_PAGE_KEYS.dpa
+export const LEGAL_RETENTION_PAGE_KEY = LEGAL_PAGE_KEYS.retention
+export const LEGAL_PARTNER_PAGE_KEY = LEGAL_PAGE_KEYS.partner
 
 export function isPlaceholderOnlyContent(content: LegalPageContent): boolean {
   const active = activeSections(content)

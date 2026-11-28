@@ -100,6 +100,15 @@ const PrivacyPage = lazy(() => import('@/pages/public/LegalPublicPages').then((m
 const AltVeriIsleyenlerPage = lazy(() =>
   import('@/pages/public/LegalPublicPages').then((m) => ({ default: m.AltVeriIsleyenlerPage })),
 )
+const KisiselVeriIslemeEkiPage = lazy(() =>
+  import('@/pages/public/LegalPublicPages').then((m) => ({ default: m.KisiselVeriIslemeEkiPage })),
+)
+const SaklamaImhaPolitikasiPage = lazy(() =>
+  import('@/pages/public/LegalPublicPages').then((m) => ({ default: m.SaklamaImhaPolitikasiPage })),
+)
+const IsOrtagiSozlesmesiPage = lazy(() =>
+  import('@/pages/public/LegalPublicPages').then((m) => ({ default: m.IsOrtagiSozlesmesiPage })),
+)
 const CookiePolicyPage = lazy(() =>
   import('@/pages/public/LegalPublicPages').then((m) => ({ default: m.CookiePolicyPage })),
 )
@@ -422,6 +431,9 @@ export const router = createBrowserRouter([
       { path: 'yasal/gizlilik-politikasi', element: <LazyPage><PrivacyPage /></LazyPage> },
       { path: 'alt-veri-isleyenler', element: <LazyPage><AltVeriIsleyenlerPage /></LazyPage> },
       { path: 'yasal/alt-veri-isleyenler', element: <LazyPage><AltVeriIsleyenlerPage /></LazyPage> },
+      { path: 'kisisel-veri-isleme-eki', element: <LazyPage><KisiselVeriIslemeEkiPage /></LazyPage> },
+      { path: 'saklama-ve-imha-politikasi', element: <LazyPage><SaklamaImhaPolitikasiPage /></LazyPage> },
+      { path: 'is-ortagi-sozlesmesi', element: <LazyPage><IsOrtagiSozlesmesiPage /></LazyPage> },
       { path: 'acik-riza-metni', element: <LazyPage><AcikRizaMetniPage /></LazyPage> },
       { path: 'yasal/acik-riza-metni', element: <LazyPage><AcikRizaMetniPage /></LazyPage> },
       { path: 'kullanim-sartlari', element: <LazyPage><KullanimSartlariPage /></LazyPage> },
