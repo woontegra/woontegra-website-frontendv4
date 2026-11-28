@@ -12,7 +12,7 @@ export function SectionHeader({ eyebrow, title, description, align = 'center' }:
       {eyebrow ? (
         <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">{eyebrow}</p>
       ) : null}
-      <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{title}</h2>
+      <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">{title}</h2>
       {description ? <p className="mt-4 text-base text-slate-600">{description}</p> : null}
     </div>
   )

@@ -11,7 +11,7 @@ export function SolutionCard({ card }: Props) {
       icon={card.icon}
       title={card.title}
       description={card.description}
-      href={card.href}
+      href={card.href === '/cozumler/bilirkisi-hesaplama' ? '/yazilimlar/bilirkisi-hesap' : card.href}
       gradient={card.gradient}
     />
   )

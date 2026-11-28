@@ -37,7 +37,7 @@ export function BlogCard({ post, compact = false }: Props) {
         </Link>
 
         {post.excerpt ? (
-          <p className="line-clamp-3 flex-1 text-sm leading-relaxed text-slate-600">{post.excerpt}</p>
+          <p className="line-clamp-3 flex-1 text-[15px] leading-relaxed text-slate-600">{post.excerpt}</p>
         ) : (
           <div className="flex-1" aria-hidden />
         )}

@@ -32,7 +32,7 @@ export function BlogDetailView({ post: data }: Props) {
               {formatBlogDate(data.publishedAt || data.createdAt)}
             </time>
           </div>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{data.title}</h1>
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">{data.title}</h1>
           {data.excerpt ? <p className="mt-4 text-lg leading-relaxed text-slate-600">{data.excerpt}</p> : null}
         </header>
 

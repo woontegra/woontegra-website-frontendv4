@@ -29,7 +29,7 @@ function FeatureCard({
         <Icon className="h-6 w-6" aria-hidden />
       </div>
       <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-slate-600">{description}</p>
+      <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{description}</p>
     </div>
   )
 }
@@ -74,7 +74,7 @@ export function SolutionDetailLayout({ content }: Props) {
       <section className="bg-gradient-to-b from-slate-50 to-white py-16 md:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">{content.audience.title}</h2>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">{content.audience.title}</h2>
             <p className="mt-3 text-base text-slate-600">{content.audience.subtitle}</p>
           </div>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -86,7 +86,7 @@ export function SolutionDetailLayout({ content }: Props) {
                     <Icon className="h-5 w-5" aria-hidden />
                   </div>
                   <h3 className="text-base font-bold text-slate-900">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.description}</p>
+                  <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{item.description}</p>
                 </div>
               )
             })}
@@ -98,7 +98,7 @@ export function SolutionDetailLayout({ content }: Props) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-start gap-12 lg:grid-cols-2">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">{content.benefits.title}</h2>
+              <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">{content.benefits.title}</h2>
               <p className="mt-3 text-base text-slate-600">{content.benefits.subtitle}</p>
               <ul className="mt-6 space-y-3">
                 {content.benefits.items.map((item) => (
@@ -130,7 +130,7 @@ export function SolutionDetailLayout({ content }: Props) {
       <section className="bg-gradient-to-b from-slate-50 to-white py-16 md:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">{content.modules.title}</h2>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">{content.modules.title}</h2>
             <p className="mt-3 text-base text-slate-600">{content.modules.subtitle}</p>
           </div>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -151,7 +151,7 @@ export function SolutionDetailLayout({ content }: Props) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">{content.implementation.title}</h2>
+              <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">{content.implementation.title}</h2>
               <p className="mt-3 text-base text-slate-600">{content.implementation.description}</p>
               <ul className="mt-6 space-y-2">
                 {content.implementation.bullets.map((bullet) => (
@@ -167,7 +167,7 @@ export function SolutionDetailLayout({ content }: Props) {
                 {content.implementation.flowSteps.map((step, i) => (
                   <div
                     key={step}
-                    className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm"
+                    className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm"
                   >
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
                       {i + 1}

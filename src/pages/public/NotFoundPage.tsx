@@ -20,7 +20,7 @@ export function NotFoundPage() {
     <div className="flex min-h-[60vh] items-center bg-gradient-to-b from-slate-50 to-white py-20">
       <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
         <p className="text-sm font-semibold uppercase tracking-widest text-emerald-600">404</p>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+        <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
           Sayfa bulunamadı
         </h1>
         <p className="mt-4 text-base leading-relaxed text-slate-600">

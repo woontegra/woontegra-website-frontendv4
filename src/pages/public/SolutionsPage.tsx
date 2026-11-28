@@ -88,7 +88,7 @@ export function SolutionsPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-wide text-emerald-600">{page.sectionEyebrow}</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{page.sectionTitle}</h2>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">{page.sectionTitle}</h2>
             <p className="mt-4 text-base text-slate-600">{page.sectionDescription}</p>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -103,7 +103,7 @@ export function SolutionsPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-wide text-emerald-600">Değer</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">İşletmeye Ne Kazandırır?</h2>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">İşletmeye Ne Kazandırır?</h2>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {benefits.map((item) => {
@@ -112,7 +112,7 @@ export function SolutionsPage() {
                 <div key={item.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                   <Icon className="mb-4 h-8 w-8 text-emerald-600" aria-hidden />
                   <h3 className="text-lg font-bold text-slate-900">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.description}</p>
+                  <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{item.description}</p>
                 </div>
               )
             })}
@@ -120,14 +120,14 @@ export function SolutionsPage() {
         </div>
       </section>
 
-      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-20 md:py-24">
+      <section className="bg-slate-50 py-20 md:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Merkezi Yönetim</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-white md:text-4xl">Tek Merkezden Yönetim</h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-400">
-    'Entegre e-ticaret, pazaryeri ve operasyon katmanlarını birbirine bağlı, yönetilebilir bir dijital sistem olarak kuruyoruz.',
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-700">Merkezi Yönetim</p>
+              <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">Tek Merkezden Yönetim</h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-600 sm:text-lg">
+                Entegre e-ticaret, pazaryeri ve operasyon katmanlarını birbirine bağlı, yönetilebilir bir dijital sistem olarak kuruyoruz.
               </p>
             </div>
             <div className="grid gap-4">
@@ -136,10 +136,12 @@ export function SolutionsPage() {
                 { icon: Workflow, title: 'Entegre iş akışı', desc: 'Satış, operasyon ve raporlama birbirini besler.' },
                 { icon: Boxes, title: 'Modüler büyüme', desc: 'İhtiyaç arttıkça sisteme yeni modüller eklenir.' },
               ].map((item) => (
-                <div key={item.title} className="rounded-2xl border border-slate-700 bg-slate-800/80 p-5">
-                  <item.icon className="mb-3 h-6 w-6 text-emerald-400" aria-hidden />
-                  <h3 className="font-semibold text-white">{item.title}</h3>
-                  <p className="mt-1 text-sm text-slate-400">{item.desc}</p>
+                <div key={item.title} className="flex gap-4 rounded-xl border border-slate-200 bg-white p-6">
+                  <item.icon className="h-6 w-6 shrink-0 text-emerald-600" aria-hidden />
+                  <span className="flex flex-col gap-1">
+                  <h3 className="text-[17px] font-extrabold text-slate-950">{item.title}</h3>
+                  <p className="text-[15px] leading-relaxed text-slate-600">{item.desc}</p>
+                  </span>
                 </div>
               ))}
             </div>

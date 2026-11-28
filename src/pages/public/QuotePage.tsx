@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Cloud, Code2, Lightbulb, Palette, ShoppingCart, type LucideIcon } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { PageHero } from '@/components/public/PageHero'
 import { Button } from '@/components/ui/Button'
 import { usePageMeta } from '@/hooks/usePageMeta'
@@ -7,11 +8,11 @@ import { publicApi } from '@/api/client'
 import { trackLead } from '@/integrations/trackingEvents'
 
 const projectTypes = [
-  { id: 'software', label: 'Yazılım Geliştirme', icon: '💻' },
-  { id: 'web-design', label: 'Web Tasarım', icon: '🎨' },
-  { id: 'ecommerce', label: 'E-Ticaret', icon: '🛒' },
-  { id: 'saas', label: 'SaaS Ürün', icon: '☁️' },
-  { id: 'consulting', label: 'Danışmanlık', icon: '💡' },
+  { id: 'software', label: 'Yazılım Geliştirme', icon: Code2 as LucideIcon },
+  { id: 'web-design', label: 'Web Tasarım', icon: Palette as LucideIcon },
+  { id: 'ecommerce', label: 'E-Ticaret', icon: ShoppingCart as LucideIcon },
+  { id: 'saas', label: 'SaaS Ürün', icon: Cloud as LucideIcon },
+  { id: 'consulting', label: 'Danışmanlık', icon: Lightbulb as LucideIcon },
 ]
 
 const budgetOptions = [
@@ -139,10 +140,12 @@ export function QuotePage() {
                 key={type.id}
                 type="button"
                 onClick={() => setFormData((p) => ({ ...p, type: type.id }))}
-                className={`rounded-xl border p-4 text-left transition-all ${formData.type === type.id ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-emerald-200'}`}
+                className={`flex items-center gap-4 rounded-xl border p-5 text-left transition-all ${formData.type === type.id ? 'border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500' : 'border-slate-200 bg-white hover:border-emerald-300'}`}
               >
-                <span className="text-2xl">{type.icon}</span>
-                <p className="mt-2 font-semibold text-slate-900">{type.label}</p>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                  <type.icon className="h-5 w-5" aria-hidden />
+                </span>
+                <span className="text-[17px] font-bold text-slate-950">{type.label}</span>
               </button>
             ))}
             {errors.type ? <p className="text-sm text-red-600 sm:col-span-2">{errors.type}</p> : null}
@@ -217,6 +220,13 @@ export function QuotePage() {
               value={formData.company}
               onChange={(e) => setFormData((p) => ({ ...p, company: e.target.value }))}
             />
+            <p className="text-xs leading-relaxed text-slate-500">
+              Bilgileriniz yalnızca teklifinizi hazırlamak ve size dönüş yapmak için kullanılır. Ayrıntılar için{' '}
+              <Link to="/kvkk-aydinlatma-metni" className="font-semibold text-emerald-700 underline-offset-2 hover:underline">
+                KVKK Aydınlatma Metni
+              </Link>
+              .
+            </p>
             {errors.submit ? <p className="text-sm text-red-600">{errors.submit}</p> : null}
           </div>
         ) : null}

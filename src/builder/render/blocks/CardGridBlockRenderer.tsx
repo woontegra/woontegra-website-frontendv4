@@ -330,7 +330,7 @@ function SolutionsVariant({ block, cards }: { block: CardGridBlock; cards: CardG
     <section className="border-y border-slate-100 bg-white py-14 sm:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {block.settings.eyebrow ? (
-          <p className="text-center text-xs font-semibold uppercase tracking-wider text-emerald-600">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-emerald-700">
             {block.settings.eyebrow}
           </p>
         ) : null}
@@ -340,12 +340,12 @@ function SolutionsVariant({ block, cards }: { block: CardGridBlock; cards: CardG
           showTitle={block.visibility.showTitle}
           showDescription={block.visibility.showDescription}
         />
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={cn('mt-10 grid gap-4 sm:grid-cols-2', cards.length === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3')}>
           {cards.map((card) => (
             <CardLinkShell
               key={card.id}
               card={card}
-              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
+              className="rounded-xl border border-slate-200 bg-white p-6 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md"
             >
               {card.icon ? (
                 <div
@@ -445,7 +445,7 @@ function AboutBrandsVariant({ block, cards }: { block: CardGridBlock; cards: Car
             <CardLinkShell
               key={brand.id}
               card={brand}
-              className="group flex flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-md transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-xl"
+              className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-xl"
             >
               {hasPublicImage(brand) ? (
                 <BuilderField path={`card.${brand.id}.image`} label="Marka görseli" type="media" className="relative">

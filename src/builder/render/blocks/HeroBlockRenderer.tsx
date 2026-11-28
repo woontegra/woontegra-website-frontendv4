@@ -176,6 +176,9 @@ function HeroVideoMedia({
   )
 }
 
+/** İç sayfa üst bölümleri (hakkımızda, hizmetler, çözümler…): kurumsal koyu zemin. */
+const INNER_HERO_BG = '#101828'
+
 export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps) {
   if (block.type !== 'hero') return null
   const hero = block as HeroBlock
@@ -368,15 +371,17 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
 
     return (
       <section
-        className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 py-12 md:py-16 lg:py-20"
+        className="relative overflow-hidden py-12 md:py-16 lg:py-20"
         style={{
-          background: style.backgroundGradient ?? bgStyle.background,
+          backgroundColor: INNER_HERO_BG,
           paddingTop: style.paddingTop?.desktop,
           paddingBottom: style.paddingBottom?.desktop,
         }}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(34,197,94,0.15),transparent_55%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_60%,rgba(59,130,246,0.12),transparent_50%)]" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-40 -top-40 h-[32rem] w-[32rem] rounded-full border-[72px] border-[#16A34A] opacity-[0.14]"
+        />
         {style.overlay?.enabled ? (
           <div
             className="pointer-events-none absolute inset-0 z-[1]"
@@ -407,14 +412,14 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
               ) : null}
               {visibility.showBadge !== false && settings.badge?.trim() ? (
                 <BuilderField path="badge" label="Badge" type="text" className="mb-4 inline-block">
-                  <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-400">
+                  <span className="mb-3 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-300 sm:mb-4 sm:text-xs">
                     {settings.badge}
                   </span>
                 </BuilderField>
               ) : null}
               {showTitle ? (
                 <BuilderField path="title" label="Başlık" type="text" className="w-fit max-w-full">
-                  <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl lg:text-5xl">
+                  <h1 className="text-[28px] font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl lg:leading-[1.06]">
                     {title}
                   </h1>
                 </BuilderField>
@@ -464,8 +469,8 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
                         btn={btn}
                         className={heroButtonClass(
                           btn.variant,
-                          'inline-flex rounded-lg border border-white/30 px-6 py-2.5 text-sm font-medium text-white',
-                          'inline-flex rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white',
+                          'inline-flex min-h-12 items-center rounded-lg border border-white/35 px-6 text-[15px] font-bold text-white transition hover:bg-white/10',
+                          'inline-flex min-h-12 items-center rounded-lg bg-[#16A34A] px-6 text-[15px] font-bold text-white transition hover:bg-[#15803D]',
                         )}
                       />
                     </BuilderField>
@@ -502,14 +507,14 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
             : cn('py-12 sm:py-16 lg:py-20', height),
         )}
         style={{
-          background:
-            style.backgroundGradient ??
-            bgStyle.background ??
-            'linear-gradient(to bottom right, #0f172a, #1e293b, #14532d)',
+          backgroundColor: INNER_HERO_BG,
           ...heroHeightVars(settings, '520px'),
         }}
       >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(34,197,94,0.15),transparent_70%)]" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-40 -top-40 h-[32rem] w-[32rem] rounded-full border-[72px] border-[#16A34A] opacity-[0.14]"
+        />
         {style.overlay?.enabled ? (
           <div
             className="pointer-events-none absolute inset-0 z-[1]"
@@ -529,14 +534,14 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
             <div className={cn('text-white', hideContentOnMobile && 'max-[640px]:hidden')}>
               {visibility.showBadge !== false && settings.badge?.trim() ? (
                 <BuilderField path="badge" label="Badge" type="text" className="mb-4 inline-block">
-                  <span className="inline-block rounded-full bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400">
+                  <span className="mb-3 inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-300 sm:mb-4 sm:text-xs">
                     {settings.badge}
                   </span>
                 </BuilderField>
               ) : null}
               {showTitle ? (
                 <BuilderField path="title" label="Başlık" type="text" className="w-fit max-w-full">
-                  <h1 className="mb-4 text-3xl font-semibold leading-tight text-white md:text-4xl lg:text-5xl">
+                  <h1 className="mb-4 text-[28px] font-extrabold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl lg:leading-[1.06]">
                     {title}
                   </h1>
                 </BuilderField>
@@ -563,8 +568,8 @@ export function HeroBlockRenderer({ block, mode = 'public' }: BlockRendererProps
                         btn={btn}
                         className={heroButtonClass(
                           btn.variant,
-                          'inline-flex rounded-lg border border-white/30 px-6 py-2.5 text-sm font-medium text-white',
-                          'inline-flex rounded-lg bg-green-600 px-6 py-2.5 text-sm font-medium text-white',
+                          'inline-flex min-h-12 items-center rounded-lg border border-white/35 px-6 text-[15px] font-bold text-white transition hover:bg-white/10',
+                          'inline-flex min-h-12 items-center rounded-lg bg-[#16A34A] px-6 text-[15px] font-bold text-white transition hover:bg-[#15803D]',
                         )}
                       />
                     </BuilderField>

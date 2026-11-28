@@ -94,11 +94,7 @@ export function PageHero({
 
         isCompact ? 'py-10 md:py-12' : 'py-12 md:py-16 lg:py-20',
 
-        isDark
-
-          ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950'
-
-          : 'bg-gradient-to-b from-slate-50 via-white to-slate-100',
+        isDark ? 'bg-[#101828]' : 'bg-slate-50',
 
         className,
 
@@ -110,9 +106,10 @@ export function PageHero({
 
         <>
 
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_40%,rgba(34,197,94,0.15),transparent_55%)]" />
-
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_60%,rgba(59,130,246,0.12),transparent_50%)]" />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-40 -top-40 h-[32rem] w-[32rem] rounded-full border-[72px] border-[#16A34A] opacity-[0.14]"
+          />
 
         </>
 
@@ -140,13 +137,8 @@ export function PageHero({
 
                 className={cn(
 
-                  'mb-4 inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide',
-
-                  isDark
-
-                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
-
-                    : 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                  'mb-3 text-[11px] font-bold uppercase tracking-[0.12em] sm:mb-4 sm:text-xs',
+                  isDark ? 'text-emerald-300' : 'text-emerald-700',
 
                 )}
 
@@ -158,7 +150,7 @@ export function PageHero({
 
             ) : null}
 
-            <h1 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl lg:text-5xl">{title}</h1>
+            <h1 className="text-[28px] font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl lg:leading-[1.06]">{title}</h1>
 
             {description ? (
 
@@ -166,9 +158,8 @@ export function PageHero({
 
                 className={cn(
 
-                  'mt-5 max-w-xl text-base leading-relaxed md:text-lg',
-
-                  isDark ? 'text-slate-300' : 'text-slate-600',
+                  'mt-3 max-w-xl text-[15px] leading-relaxed sm:mt-5 md:text-lg',
+                  isDark ? 'text-white/75' : 'text-slate-600',
 
                 )}
 

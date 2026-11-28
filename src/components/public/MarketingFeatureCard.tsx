@@ -23,7 +23,7 @@ export function MarketingFeatureCard({ icon, title, description, href, gradient,
       </div>
       {tag ? <span className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-600">{tag}</span> : null}
       <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-      <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{description}</p>
+      <p className="mt-2 flex-1 text-[15px] leading-relaxed text-slate-600">{description}</p>
       {href ? (
         <span className="mt-4 inline-flex items-center text-sm font-semibold text-emerald-700 group-hover:underline">
           Detaylı incele

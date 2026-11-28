@@ -7,6 +7,7 @@ import { ExternalProductPurchasePanel } from '@/components/public/product/Extern
 import { ProductPurchasePanel } from '@/components/public/product/ProductPurchasePanel'
 import { ProductShowcaseHero } from '@/components/public/product/ProductShowcaseHero'
 import { BilirkisiHesapShowcase } from '@/components/public/product/BilirkisiHesapShowcase'
+import { SIFRE_KASASI_SLUG, SifreKasasiShowcase } from '@/components/public/product/SifreKasasiShowcase'
 import { BILIRKISI_HESAP_SLUG } from '@/data/canonicalSoftwareProducts'
 import { addToCart } from '@/lib/cartStorage'
 import {
@@ -225,6 +226,8 @@ export function SoftwareDetailView({
 
       {data.slug === BILIRKISI_HESAP_SLUG ? (
         <BilirkisiHesapShowcase />
+      ) : data.slug === SIFRE_KASASI_SLUG ? (
+        <SifreKasasiShowcase coverImage={data.coverImage} />
       ) : (
       <ProductContentSections
         product={data}

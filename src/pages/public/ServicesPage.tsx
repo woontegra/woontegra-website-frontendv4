@@ -71,7 +71,7 @@ export function ServicesPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-wide text-emerald-600">{page.sectionEyebrow}</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{page.sectionTitle}</h2>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">{page.sectionTitle}</h2>
             <p className="mt-4 text-base text-slate-600">{page.sectionDescription}</p>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -94,7 +94,7 @@ export function ServicesPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-wide text-emerald-400">Süreç</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-white md:text-4xl">Nasıl Çalışıyoruz?</h2>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">Nasıl Çalışıyoruz?</h2>
             <p className="mt-4 text-base text-slate-400">
               Şeffaf, planlı ve sonuç odaklı bir iş akışı ile projelerinizi hayata geçiriyoruz.
             </p>
@@ -119,7 +119,7 @@ export function ServicesPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-semibold uppercase tracking-wide text-emerald-600">Farkımız</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">Neden Woontegra?</h2>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">Neden Woontegra?</h2>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {WHY.map((item) => (
@@ -129,7 +129,7 @@ export function ServicesPage() {
               >
                 <item.icon className="mb-4 h-8 w-8 text-emerald-600" aria-hidden />
                 <h3 className="text-lg font-bold text-slate-900">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.desc}</p>
+                <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{item.desc}</p>
               </div>
             ))}
           </div>

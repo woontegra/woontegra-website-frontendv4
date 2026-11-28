@@ -30,7 +30,7 @@ function FeatureCard({
         <Icon className="h-6 w-6" aria-hidden />
       </div>
       <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-slate-600">{description}</p>
+      <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{description}</p>
     </div>
   )
 }
@@ -38,7 +38,7 @@ function FeatureCard({
 function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="mx-auto max-w-3xl text-center">
-      <h2 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">{title}</h2>
+      <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">{title}</h2>
       {subtitle ? <p className="mt-3 text-base text-slate-600">{subtitle}</p> : null}
     </div>
   )
@@ -98,7 +98,7 @@ export function ServiceDetailLayout({ content, serviceLabel }: Props) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className={cn('mx-auto max-w-3xl', hasApproachExtras ? 'lg:max-w-none lg:grid lg:grid-cols-2 lg:items-start lg:gap-12' : 'text-center')}>
             <div className={hasApproachExtras ? '' : 'mx-auto'}>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">{content.approach.title}</h2>
+              <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">{content.approach.title}</h2>
               <p className="mt-3 text-base leading-relaxed text-slate-600">{content.approach.description}</p>
               {content.approach.bullets.length > 0 ? (
                 <ul className="mt-6 space-y-3">
@@ -117,7 +117,7 @@ export function ServiceDetailLayout({ content, serviceLabel }: Props) {
                 <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
                   {content.approach.flowSteps.map((step, index) => (
                     <div key={step} className="flex items-center gap-2 md:gap-3">
-                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-800">
+                      <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-800">
                         {step}
                       </span>
                       {index < content.approach.flowSteps.length - 1 ? (
@@ -160,7 +160,7 @@ export function ServiceDetailLayout({ content, serviceLabel }: Props) {
                     {step.step}
                   </span>
                   <h3 className="mt-4 text-base font-bold text-slate-900">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{step.description}</p>
+                  <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{step.description}</p>
                 </div>
               ))}
             </div>
@@ -185,7 +185,7 @@ export function ServiceDetailLayout({ content, serviceLabel }: Props) {
                     <Icon className="h-5 w-5" aria-hidden />
                   </div>
                   <h3 className="text-base font-bold text-slate-900">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.description}</p>
+                  <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{item.description}</p>
                 </div>
               )
             })}
@@ -207,7 +207,7 @@ export function ServiceDetailLayout({ content, serviceLabel }: Props) {
                     </div>
                     <div>
                       <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
-                      <p className="mt-1 text-sm leading-relaxed text-slate-600">{item.description}</p>
+                      <p className="mt-1 text-[15px] leading-relaxed text-slate-600">{item.description}</p>
                     </div>
                   </div>
                 )
@@ -217,24 +217,27 @@ export function ServiceDetailLayout({ content, serviceLabel }: Props) {
         </section>
       ) : null}
 
-      <section className="bg-slate-950 py-16 md:py-20">
+      <section className="py-16 md:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-2xl font-bold tracking-tight text-white md:text-3xl">{content.whyUs.title}</h2>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2">
-            {content.whyUs.items.map((item) => (
-              <div key={item.title} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-                <h3 className="text-lg font-bold text-white">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.description}</p>
-              </div>
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">{content.whyUs.title}</h2>
+          <ol className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4">
+            {content.whyUs.items.map((item, index) => (
+              <li key={item.title} className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-slate-50 p-6 sm:p-8">
+                <span aria-hidden className="text-3xl font-extrabold tracking-tight text-slate-300">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <h3 className="text-xl font-extrabold text-slate-950">{item.title}</h3>
+                <p className="text-[15px] leading-relaxed text-slate-600">{item.description}</p>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
       {hasRelated ? (
         <section className="border-t border-slate-100 bg-slate-50 py-14 md:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-xl font-bold text-slate-900 md:text-2xl">{content.related!.title}</h2>
+            <h2 className="text-2xl font-extrabold tracking-tight text-slate-950 md:text-3xl">{content.related!.title}</h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {relatedLinks.map((link) => (
                 <Link

@@ -5,6 +5,7 @@ import { ProductGallery } from '@/components/public/product/ProductGallery'
 import { getPromotionalSoftwareMeta, isExternalSalesProduct } from '@/lib/publicSoftwareCatalog'
 import type { PublicProductDetail } from '@/types/product'
 import { BhFlowDiagram } from '@/components/public/product/BilirkisiHesapShowcase'
+import { SIFRE_KASASI_SLUG, SifreVaultAnimation } from '@/components/public/product/SifreKasasiShowcase'
 import { BILIRKISI_HESAP_SLUG } from '@/data/canonicalSoftwareProducts'
 import { productTypeLabel } from '@/types/product'
 import { licenseDisplayLabel } from '@/utils/productPurchase'
@@ -60,6 +61,11 @@ export function ProductShowcaseHero({ product, lead, isFreeDownload, children, m
   const resolvedMetaItems = metaItems ?? productMetaItems(product, isFreeDownload, isExternalSales)
   /** Bilirkişi Hesap: görseller aşağıdaki tanıtım bölümünde; üstte mağaza rozetleri gösterilir. */
   const isBh = product.slug === BILIRKISI_HESAP_SLUG
+  /** Şifre Kasası: görseller aşağıdaki tanıtım bölümünde; üstte kasaya kilitleme animasyonu. */
+  const isSifre = product.slug === SIFRE_KASASI_SLUG
+  /** Yeni düzen: görsel ve bilgi kutuları yerine animasyon, telefonda küçük yazılar. */
+  const compact = isBh || isSifre
+  const displayName = isSifre ? product.name.replace(/^Ücretsiz\s+/i, '') : product.name
 
   return (
     <section
@@ -81,30 +87,30 @@ export function ProductShowcaseHero({ product, lead, isFreeDownload, children, m
           ]}
         />
 
-        <div className={'grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:gap-8' + (isBh ? ' mt-4 sm:mt-6 xl:items-center' : ' mt-6')}>
+        <div className={'grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:gap-8' + (compact ? ' mt-4 sm:mt-6 xl:items-center' : ' mt-6')}>
           <div className="space-y-6">
             <div className="max-w-4xl">
-              <p className={(isBh ? 'text-[11px] sm:text-xs' : 'text-xs') + ' font-bold uppercase tracking-[0.12em] text-sky-300'}>
-                {[
+              <p className={(compact ? 'text-[11px] sm:text-xs' : 'text-xs') + ' font-bold uppercase tracking-[0.12em] text-sky-300'}>
+                {Array.from(new Set([
                   ...(promotionalMeta
                     ? promotionalMeta.badges
                     : [productTypeLabel(product.productType), licenseDisplayLabel(product)]),
                   ...(product.category ? [product.category.name] : []),
                   ...(isFreeDownload ? ['Ücretsiz'] : []),
-                ].join(' · ')}
+                ].map((label) => label.trim()).filter(Boolean).map((label) => label.toLocaleUpperCase('tr-TR')))).join(' · ')}
               </p>
 
               <h1
                 className={
-                  (isBh ? 'mt-2 text-[28px] leading-tight sm:mt-4' : 'mt-4 text-4xl') +
+                  (compact ? 'mt-2 text-[28px] leading-tight sm:mt-4' : 'mt-4 text-4xl') +
                   ' max-w-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl lg:leading-[1.02]'
                 }
               >
-                {product.name}
+                {displayName}
               </h1>
               <p
                 className={
-                  (isBh ? 'mt-2 text-sm sm:mt-4' : 'mt-4 text-base') + ' max-w-3xl leading-relaxed text-white/75 sm:text-lg'
+                  (compact ? 'mt-2 text-sm sm:mt-4' : 'mt-4 text-base') + ' max-w-3xl leading-relaxed text-white/75 sm:text-lg'
                 }
               >
                 {lead}
@@ -112,6 +118,8 @@ export function ProductShowcaseHero({ product, lead, isFreeDownload, children, m
 
               {isBh ? (
                 <BhFlowDiagram />
+              ) : isSifre ? (
+                <SifreVaultAnimation />
               ) : (
               <div className="mt-5 flex flex-wrap gap-3">
                 {isExternalSales ? (
@@ -140,7 +148,7 @@ export function ProductShowcaseHero({ product, lead, isFreeDownload, children, m
               )}
             </div>
 
-            {isBh ? null : (
+            {compact ? null : (
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
               <ProductGallery
                 name={product.name}

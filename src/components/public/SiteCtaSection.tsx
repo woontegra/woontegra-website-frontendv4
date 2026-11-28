@@ -19,18 +19,17 @@ export function SiteCtaSection({
   secondaryButtonLink,
 }: Props) {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-600 py-20 md:py-24">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.12),transparent_50%)]" />
-      <div className="relative z-10 mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">{title}</h2>
-        {description ? (
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-emerald-50 md:text-lg">{description}</p>
-        ) : null}
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+    <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+      <div className="flex flex-col gap-6 rounded-xl bg-gradient-to-br from-[#16A34A] to-[#1D6FD8] px-6 py-10 text-white sm:px-12 sm:py-14 lg:flex-row lg:items-center lg:justify-between">
+        <div className="max-w-2xl">
+          <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{title}</h2>
+          {description ? <p className="mt-3 text-base leading-relaxed text-white/85 sm:text-lg">{description}</p> : null}
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row lg:shrink-0">
           {buttonText ? (
             <Link
               to={resolvePublicHref(buttonLink)}
-              className="inline-flex items-center justify-center rounded-lg border border-white/40 px-8 py-3 text-base font-semibold text-white transition hover:bg-white hover:text-emerald-700"
+              className="inline-flex min-h-12 items-center justify-center rounded-lg bg-white px-6 text-[15px] font-bold text-slate-950 transition hover:bg-slate-100"
             >
               {buttonText}
             </Link>
@@ -38,7 +37,7 @@ export function SiteCtaSection({
           {secondaryButtonText && secondaryButtonLink ? (
             <Link
               to={resolvePublicHref(secondaryButtonLink)}
-              className="inline-flex items-center justify-center rounded-lg px-6 py-3 text-base font-semibold text-white transition hover:bg-white/10"
+              className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/50 px-6 text-[15px] font-bold text-white transition hover:bg-white/10"
             >
               {secondaryButtonText}
             </Link>

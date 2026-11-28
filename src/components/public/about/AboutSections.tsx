@@ -43,7 +43,7 @@ export function AboutWhatIs({ whatIs }: { whatIs: AboutPageContent['whatIs'] }) 
         <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(300px,0.95fr)] lg:gap-12">
           <div>
             {whatIs.title ? (
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{whatIs.title}</h2>
+              <h2 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">{whatIs.title}</h2>
             ) : null}
             <div className="mt-5 space-y-3 text-base leading-relaxed text-slate-600">
               {whatIs.paragraphs.map((p) => (
@@ -56,8 +56,8 @@ export function AboutWhatIs({ whatIs }: { whatIs: AboutPageContent['whatIs'] }) 
             <div className="grid gap-4">
               {cards.map((card) => (
                 <div key={card.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="text-lg font-semibold text-slate-900">{card.title}</h3>
-                  {card.text ? <p className="mt-2 text-sm leading-relaxed text-slate-600">{card.text}</p> : null}
+                  <h3 className="text-lg font-extrabold text-slate-950">{card.title}</h3>
+                  {card.text ? <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{card.text}</p> : null}
                 </div>
               ))}
             </div>
@@ -76,7 +76,7 @@ export function AboutTimeline({ timeline }: { timeline: AboutPageContent['timeli
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           {timeline.title ? (
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{timeline.title}</h2>
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">{timeline.title}</h2>
           ) : null}
           {timeline.subtitle ? <p className="mt-4 text-base text-slate-600">{timeline.subtitle}</p> : null}
         </div>
@@ -92,8 +92,8 @@ export function AboutTimeline({ timeline }: { timeline: AboutPageContent['timeli
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Adım {index + 1}</p>
-                  <h3 className="mt-1 text-lg font-semibold text-slate-900">{step.title}</h3>
-                  {step.text ? <p className="mt-2 text-sm leading-relaxed text-slate-600">{step.text}</p> : null}
+                  <h3 className="mt-1 text-lg font-extrabold text-slate-950">{step.title}</h3>
+                  {step.text ? <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{step.text}</p> : null}
                 </div>
               </div>
             )
@@ -112,7 +112,7 @@ export function AboutDifferentiators({ section }: { section: AboutPageContent['d
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           {section.title ? (
-            <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">{section.title}</h2>
+            <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">{section.title}</h2>
           ) : null}
           {section.subtitle ? <p className="mt-4 text-base text-slate-400">{section.subtitle}</p> : null}
         </div>
@@ -146,7 +146,7 @@ export function AboutBrands({ brands }: { brands: AboutPageContent['brands'] }) 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           {brands.title ? (
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{brands.title}</h2>
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">{brands.title}</h2>
           ) : null}
           {brands.subtitle ? <p className="mt-4 text-base text-slate-600">{brands.subtitle}</p> : null}
         </div>
@@ -154,7 +154,7 @@ export function AboutBrands({ brands }: { brands: AboutPageContent['brands'] }) 
           {cards.map((brand) => {
             const isInternal = brand.url.startsWith('/')
             const cardClass =
-              'group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-md transition hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl'
+              'group flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-md transition hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl'
 
             const inner = (
               <>
@@ -177,7 +177,7 @@ export function AboutBrands({ brands }: { brands: AboutPageContent['brands'] }) 
                 )}
                 <div className="flex flex-1 flex-col p-5 md:p-6">
                   <h3 className="text-lg font-bold text-slate-900">{brand.name}</h3>
-                  {brand.text ? <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{brand.text}</p> : null}
+                  {brand.text ? <p className="mt-2 flex-1 text-[15px] leading-relaxed text-slate-600">{brand.text}</p> : null}
                   <span className="mt-5 inline-flex items-center text-sm font-semibold text-emerald-700 group-hover:underline">
                     İncele
                     <ArrowRight className="ml-1 h-4 w-4" />
@@ -210,7 +210,7 @@ export function AboutWorkApproach({ section }: { section: AboutPageContent['work
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           {section.title ? (
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{section.title}</h2>
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">{section.title}</h2>
           ) : null}
           {section.subtitle ? <p className="mt-4 text-base text-slate-600">{section.subtitle}</p> : null}
         </div>
@@ -222,8 +222,8 @@ export function AboutWorkApproach({ section }: { section: AboutPageContent['work
                 <div className={cn('mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br', item.gradient)}>
                   <Icon className="h-6 w-6 text-white" aria-hidden />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900">{item.title}</h3>
-                {item.text ? <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.text}</p> : null}
+                <h3 className="text-lg font-extrabold text-slate-950">{item.title}</h3>
+                {item.text ? <p className="mt-2 text-[15px] leading-relaxed text-slate-600">{item.text}</p> : null}
               </div>
             )
           })}
@@ -242,7 +242,7 @@ export function AboutStructure({ section }: { section: AboutPageContent['structu
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.02fr)_minmax(320px,0.98fr)] lg:gap-12">
           <div>
             {section.title ? (
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">{section.title}</h2>
+              <h2 className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">{section.title}</h2>
             ) : null}
             <div className="mt-5 space-y-3 text-base leading-relaxed text-slate-600">
               {section.paragraphs.map((p) => (
@@ -261,7 +261,7 @@ export function AboutStructure({ section }: { section: AboutPageContent['structu
                     </div>
                     <div>
                       <h3 className="font-semibold text-slate-900">{stat.title}</h3>
-                      {stat.text ? <p className="mt-1 text-sm leading-relaxed text-slate-600">{stat.text}</p> : null}
+                      {stat.text ? <p className="mt-1 text-[15px] leading-relaxed text-slate-600">{stat.text}</p> : null}
                     </div>
                   </div>
                 )
@@ -279,7 +279,7 @@ export function AboutVision({ vision }: { vision: AboutPageContent['vision'] }) 
   return (
     <section className="bg-gradient-to-br from-slate-900 to-slate-800 py-20 md:py-24">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        {vision.title ? <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">{vision.title}</h2> : null}
+        {vision.title ? <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">{vision.title}</h2> : null}
         <div className="mt-6 space-y-4 text-base leading-relaxed text-slate-300">
           {vision.paragraphs.map((p) => (
             <p key={p}>{p}</p>
@@ -296,7 +296,7 @@ export function AboutCta({ cta }: { cta: AboutPageContent['cta'] }) {
     <section className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-600 py-20 md:py-24">
       <div className="relative z-10 mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
         {cta.title ? (
-          <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">{cta.title}</h2>
+          <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">{cta.title}</h2>
         ) : null}
         {cta.subtitle ? (
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-emerald-50 md:text-lg">{cta.subtitle}</p>
