@@ -68,6 +68,41 @@ function legalTitle(key: BhLegalKey): string {
   return LEGAL_DOCUMENTS.find((d) => d.key === key)?.title || key
 }
 
+function escapeLegalHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+/**
+ * Bilirkişi Hesap programı ödeme öncesi önizlemede müşteri bilgisi almadığı için
+ * "Örnek Abone" gibi örnek değerler döndürür. Bu değerleri formdaki bilgilerle değiştirir.
+ * Sipariş ve paket numarası ödeme adımında oluştuğu için açıklama yazılır.
+ */
+function personalizeBhLegalHtml(html: string, billing: Billing): string {
+  const corporate = billing.invoiceType === 'corporate'
+  const or = (value: string) => {
+    const v = value.trim()
+    return v ? escapeLegalHtml(v) : '—'
+  }
+  const name = corporate ? billing.companyName.trim() || billing.fullName.trim() : billing.fullName.trim()
+  const place = [billing.district.trim(), billing.city.trim()].filter(Boolean).join(' / ')
+  const address = [billing.address.trim(), place].filter(Boolean).join(', ')
+  const identity = corporate ? '' : billing.identityNumber.trim()
+  const tax = corporate ? billing.taxNumber.trim() : ''
+  const pending = 'Ödeme adımında oluşturulur'
+  return html
+    .split('Örnek Abone').join(or(name))
+    .split('ornek@bilirkisihesap.com').join(or(billing.email))
+    .split('05XX XXX XX XX').join(or(billing.phone))
+    .split('Örnek Mah. Örnek Cad. No:1 İstanbul').join(or(address))
+    .replace(/(T\.C\. Kimlik No \/ Vergi No:\s*)— \/ —/g, `$1${or(identity)} / ${or(tax)}`)
+    .split('ORDER0000000000').join(pending)
+    .split('BH-ÖRNEK').join(pending)
+}
+
 type ProductType = 'monthly' | 'annual'
 type PaymentMethod = 'card' | 'bank_transfer'
 type InvoiceType = 'individual' | 'corporate'
@@ -712,7 +747,12 @@ export function BilirkisiCheckoutPage() {
       })
       .then((doc) => {
         setLegalModalTitle(doc.title || legalTitle(key))
-        setLegalModalHtml(doc.contentHtml || `<pre class="whitespace-pre-wrap">${doc.content}</pre>`)
+        setLegalModalHtml(
+          personalizeBhLegalHtml(
+            doc.contentHtml || `<pre class="whitespace-pre-wrap">${doc.content}</pre>`,
+            billing,
+          ),
+        )
       })
       .catch((err) => {
         setLegalModalError(getErrorMessage(err, 'Sözleşme metni yüklenemedi.'))
