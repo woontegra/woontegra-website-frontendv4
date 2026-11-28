@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import {
   BookOpen,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Languages,
@@ -17,7 +18,6 @@ import {
 } from 'lucide-react'
 import { Breadcrumbs } from '@/components/public/Breadcrumbs'
 import {
-  AVUKAT_HERO_IMAGE,
   AVUKAT_PHONE_DISPLAY,
   AVUKAT_PHONE_HREF,
   AVUKAT_QUOTE_HREF,
@@ -165,14 +165,14 @@ function CellValue({ value }: { value: Cell }) {
 
 function ContactButtons({ light = false }: { light?: boolean }) {
   const solid = light
-    ? 'bg-white text-[#123b63] hover:bg-slate-100'
+    ? 'bg-white text-slate-950 hover:bg-slate-100'
     : 'bg-[#123b63] text-white hover:bg-[#0e2f50]'
   const outline = light
     ? 'border border-white/50 text-white hover:bg-white/10'
     : 'border border-slate-300 bg-white text-slate-800 hover:bg-slate-50'
   return (
     <div className="flex flex-wrap gap-3">
-      <a href={AVUKAT_PHONE_HREF} className={cn('inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold', solid)}>
+      <a href={AVUKAT_PHONE_HREF} className={cn('inline-flex min-h-12 items-center gap-2 rounded-lg px-5 text-[15px] font-bold', solid)}>
         <Phone className="h-4 w-4" aria-hidden />
         Bizi arayın: {AVUKAT_PHONE_DISPLAY}
       </a>
@@ -180,7 +180,7 @@ function ContactButtons({ light = false }: { light?: boolean }) {
         href={AVUKAT_WHATSAPP_HREF}
         target="_blank"
         rel="noreferrer"
-        className={cn('inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold', outline)}
+        className={cn('inline-flex min-h-12 items-center gap-2 rounded-lg px-5 text-[15px] font-bold', outline)}
       >
         <MessageCircle className="h-4 w-4" aria-hidden />
         WhatsApp’tan yazın
@@ -189,16 +189,112 @@ function ContactButtons({ light = false }: { light?: boolean }) {
   )
 }
 
-function BrowserFrame({ src, alt }: { src: string; alt: string }) {
+/** Avukat Siteleri ürün rengi (lacivert-mavi); ana sayfadaki seçiciyle aynı. */
+const AVUKAT_HERO_COLOR = '#1E3A8A'
+const THEME_STEP_MS = 3200
+
+/**
+ * Üst bölümdeki hareketli tema vitrini: bilgisayar ve telefon çerçevesinde
+ * 10 tema sırayla, yumuşak geçişle gösterilir. Fare üstündeyken durur;
+ * "hareketi azalt" tercihinde kendiliğinden değişmez.
+ */
+function ThemeShowcase({ onOpen }: { onOpen: (index: number) => void }) {
+  const count = AVUKAT_TEMALAR.length
+  const [current, setCurrent] = useState(0)
+  const [previous, setPrevious] = useState<number | null>(null)
+  const [paused, setPaused] = useState(false)
+
+  const show = (next: number) => {
+    setPrevious(current)
+    setCurrent(next)
+  }
+
+  useEffect(() => {
+    if (paused || typeof window === 'undefined') return
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+    const id = window.setTimeout(() => {
+      setPrevious(current)
+      setCurrent((current + 1) % count)
+    }, THEME_STEP_MS)
+    return () => window.clearTimeout(id)
+  }, [current, paused, count])
+
+  // Sıradaki temanın görsellerini önceden indir; geçişte boşluk görünmesin.
+  useEffect(() => {
+    const next = AVUKAT_TEMALAR[(current + 1) % count]
+    if (!next || typeof Image === 'undefined') return
+    const a = new Image()
+    a.src = next.masaustu
+    const b = new Image()
+    b.src = next.telefon
+  }, [current, count])
+
+  const tema = AVUKAT_TEMALAR[current]!
+  const prevTema = previous != null ? AVUKAT_TEMALAR[previous] : null
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.55)]">
-      <div className="flex items-center gap-1.5 border-b border-white/10 bg-slate-900 px-3 py-2">
-        <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
-        <span className="h-2.5 w-2.5 rounded-full bg-amber-300/80" />
-        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-        <span className="ml-2 truncate text-[10px] text-slate-400">ornekhukuk.com</span>
+    <div
+      className="relative pb-8 pr-6 sm:pb-10 sm:pr-10"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <button
+        type="button"
+        onClick={() => onOpen(current)}
+        className="block w-full overflow-hidden rounded-xl border border-white/15 bg-slate-950 text-left shadow-[0_40px_80px_-30px_rgba(0,0,0,0.7)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
+        aria-label={`${tema.panelAdi} temasını büyüt`}
+      >
+        <span className="flex items-center gap-1.5 border-b border-white/10 bg-slate-900 px-3 py-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
+          <span className="h-2.5 w-2.5 rounded-full bg-amber-300/80" />
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
+          <span className="ml-2 truncate text-[10px] text-slate-400">ornekhukuk.com</span>
+        </span>
+        <span className="relative block aspect-[16/10] w-full overflow-hidden">
+          {prevTema ? (
+            <img src={prevTema.masaustu} alt="" className="absolute inset-0 h-full w-full object-cover object-top" />
+          ) : null}
+          <img
+            key={tema.kisaAd}
+            src={tema.masaustu}
+            alt={`${tema.panelAdi} teması masaüstü görünümü`}
+            className="avukat-theme-fade absolute inset-0 h-full w-full object-cover object-top"
+          />
+        </span>
+      </button>
+
+      <div className="absolute bottom-0 right-0 w-[24%] max-w-[150px] rounded-[18px] bg-slate-950 p-1 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8)] sm:rounded-[24px] sm:p-1.5">
+        <span className="relative block aspect-[9/19] w-full overflow-hidden rounded-[14px] sm:rounded-[19px]">
+          {prevTema ? (
+            <img src={prevTema.telefon} alt="" className="absolute inset-0 h-full w-full object-cover object-top" />
+          ) : null}
+          <img
+            key={`${tema.kisaAd}-tel`}
+            src={tema.telefon}
+            alt={`${tema.panelAdi} teması telefon görünümü`}
+            className="avukat-theme-fade absolute inset-0 h-full w-full object-cover object-top"
+          />
+        </span>
       </div>
-      <img src={src} alt={alt} className="aspect-[16/10] w-full object-cover object-top" />
+
+      <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 pr-[26%]">
+        <span className="text-sm font-bold text-white">{tema.panelAdi}</span>
+        <span className="flex items-center gap-1.5" role="group" aria-label="Temalar">
+          {AVUKAT_TEMALAR.map((item, i) => (
+            <button
+              key={item.kisaAd}
+              type="button"
+              onClick={() => show(i)}
+              aria-label={`${item.panelAdi} temasını göster`}
+              aria-current={i === current ? 'true' : undefined}
+              className={cn(
+                'h-2 rounded-full transition-all duration-300',
+                i === current ? 'w-5 bg-sky-300' : 'w-2 bg-white/30 hover:bg-white/60',
+              )}
+            />
+          ))}
+        </span>
+      </div>
     </div>
   )
 }
@@ -359,6 +455,7 @@ function ThemeLightbox({
 export function AvukatSiteleriPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const [openFaq, setOpenFaq] = useState<string | null>(FAQ[0]?.q ?? null)
+  const [showAllRows, setShowAllRows] = useState(false)
 
   usePageMeta({
     title: AVUKAT_SITELERI_SEO.title,
@@ -368,65 +465,67 @@ export function AvukatSiteleriPage() {
 
   return (
     <div className="bg-white text-slate-800">
-      <section className="border-b border-slate-200 bg-gradient-to-b from-slate-50 via-white to-white">
-        <div className={`${SHELL} py-6 lg:py-10`}>
+      <section className="relative overflow-hidden text-white" style={{ backgroundColor: AVUKAT_HERO_COLOR }}>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-40 -top-40 h-[32rem] w-[32rem] rounded-full border-[72px] border-[#3B82F6] opacity-20"
+        />
+        <div className={`relative ${SHELL} pb-12 pt-6 lg:pb-16 lg:pt-8`}>
           <Breadcrumbs
+            dark
             items={[
               { label: 'Ana Sayfa', href: '/' },
               { label: 'Yazılımlar', href: '/yazilimlar' },
               { label: AVUKAT_SITELERI_NAME },
             ]}
           />
-          <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center">
+          <div className="mt-4 grid gap-10 sm:mt-6 lg:grid-cols-2 lg:items-center lg:gap-12">
             <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-800">
-                <Scale className="h-3.5 w-3.5" aria-hidden />
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-sky-300 sm:text-xs">
                 Avukatlara ve hukuk bürolarına özel
-              </span>
-              <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl lg:text-[2.5rem] lg:leading-[1.12]">
+              </p>
+              <h1 className="mt-2 text-[28px] font-extrabold leading-tight tracking-tight sm:mt-4 sm:text-5xl lg:leading-[1.06]">
                 Hukuk büronuz için KVKK uyumlu, reklam yasağına uygun web sitesi
               </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/75 sm:mt-4 sm:text-lg">
                 10 hazır tema, kolay yönetim paneli, makale sistemi ve kurumsal e-posta. Sitenizi biz kurarız; siz yalnızca
                 içeriğinizi girersiniz.
               </p>
               <div className="mt-6">
-                <ContactButtons />
+                <ContactButtons light />
               </div>
-              <p className="mt-4 text-sm text-slate-500">
+              <p className="mt-4 text-sm text-white/60">
                 Online satış yoktur. Sizi arayıp ihtiyacınıza uygun paketi birlikte belirliyoruz.
               </p>
             </div>
-            <BrowserFrame src={AVUKAT_HERO_IMAGE} alt="Örnek avukat sitesi masaüstü görünümü" />
+            <ThemeShowcase onOpen={setOpenIndex} />
           </div>
         </div>
       </section>
 
-      <section className="border-b border-slate-200 bg-[#123b63] text-white" aria-label="Öne çıkan özellikler">
-        <div className={`${SHELL} py-4`}>
-          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-center text-sm font-medium text-slate-100">
-            {[
-              '10 hazır tema',
-              'Hazır KVKK, gizlilik ve çerez sayfaları',
-              'Kurumsal e-posta',
-              'Türkçe, İngilizce, Almanca',
-              'Hafta içi destek',
-            ].map((item) => (
-              <li key={item} className="inline-flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" aria-hidden />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
+      <section className={`${SHELL} pt-16 sm:pt-24`} aria-label="Öne çıkan özellikler">
+        <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          {[
+            { big: '10 tema', title: 'Hazır tasarımlar', desc: 'Her biri büronuza uyarlanır; tek tıkla değiştirilir.' },
+            { big: 'KVKK', title: 'Hazır sayfalar', desc: 'KVKK, gizlilik ve çerez sayfaları; onay kutulu iletişim formu.' },
+            { big: 'E-posta', title: 'Kurumsal e-posta', desc: 'Büronuzun alan adıyla e-posta hesapları, panelden yönetim.' },
+            { big: '3 dil', title: 'Türkçe, İngilizce, Almanca', desc: 'Profesyonel ve Kurumsal pakette çok dilli site.' },
+          ].map((h) => (
+            <li key={h.title} className="flex flex-col gap-2 rounded-xl border border-[#DCE6FB] bg-[#EEF4FF] p-6 sm:p-7">
+              <span className="whitespace-nowrap text-3xl font-extrabold tracking-tight text-[#1E3A8A] sm:text-4xl">{h.big}</span>
+              <span className="text-[17px] font-extrabold text-slate-950">{h.title}</span>
+              <span className="text-[15px] leading-relaxed text-slate-600">{h.desc}</span>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <section className="border-b border-slate-200 py-14" aria-labelledby="avukat-ihtiyac">
+      <section className="pt-20 sm:pt-28" aria-labelledby="avukat-ihtiyac">
         <div className={SHELL}>
-          <h2 id="avukat-ihtiyac" className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+          <h2 id="avukat-ihtiyac" className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
             Avukatların ihtiyacına göre tasarlandı
           </h2>
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {[
               {
                 icon: Shield,
@@ -459,32 +558,36 @@ export function AvukatSiteleriPage() {
                 text: 'İngilizce/Almanca, SEO puanı, Analytics, Search Console.',
               },
             ].map((card) => (
-              <li key={card.title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <card.icon className="h-5 w-5 text-emerald-700" aria-hidden />
-                <h3 className="mt-3 text-base font-semibold text-slate-950">{card.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">{card.text}</p>
+              <li key={card.title} className="flex gap-4 rounded-xl border border-slate-200 bg-white p-6">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#EEF4FF] text-[#1E3A8A]">
+                  <card.icon className="h-5 w-5" aria-hidden />
+                </span>
+                <span className="flex flex-col gap-1.5">
+                  <h3 className="text-[17px] font-extrabold text-slate-950">{card.title}</h3>
+                  <p className="text-[15px] leading-relaxed text-slate-600">{card.text}</p>
+                </span>
               </li>
             ))}
           </ul>
         </div>
       </section>
 
-      <section className="border-b border-slate-200 bg-slate-50 py-14" aria-labelledby="avukat-temalar">
+      <section className="pt-20 sm:pt-28" aria-labelledby="avukat-temalar">
         <div className={SHELL}>
-          <h2 id="avukat-temalar" className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+          <h2 id="avukat-temalar" className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
             10 tema, her biri büronuza uyarlanır
           </h2>
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <ul className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
             {AVUKAT_TEMALAR.map((tema, i) => (
               <li key={tema.kisaAd}>
                 <button
                   type="button"
                   onClick={() => setOpenIndex(i)}
-                  className="group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md"
+                  className="group flex h-full w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white text-left transition hover:-translate-y-0.5 hover:border-[#3B82F6] hover:shadow-md"
                 >
                   <img src={tema.masaustu} alt="" className="aspect-[16/10] w-full object-cover object-top" loading="lazy" />
                   <span className="border-t border-slate-100 p-3">
-                    <span className="block text-sm font-semibold text-slate-950 group-hover:text-emerald-800">{tema.panelAdi}</span>
+                    <span className="block text-[15px] font-extrabold text-slate-950 group-hover:text-[#1E3A8A]">{tema.panelAdi}</span>
                     <span className="mt-1 block text-xs leading-relaxed text-slate-600">{tema.tarz}</span>
                   </span>
                 </button>
@@ -497,12 +600,12 @@ export function AvukatSiteleriPage() {
         </div>
       </section>
 
-      <section className="border-b border-slate-200 py-14" aria-labelledby="avukat-paketler">
+      <section className="pt-20 sm:pt-28" aria-labelledby="avukat-paketler">
         <div className={SHELL}>
-          <h2 id="avukat-paketler" className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+          <h2 id="avukat-paketler" className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
             Paketler
           </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600">
+          <p className="mt-4 max-w-3xl text-base leading-relaxed text-slate-600 sm:text-lg">
             Kurulum bedeli tek seferliktir. Sitenizin yayında kalması için yıllık hizmet bedeli alınır; alan adı, sunucu,
             kurumsal e-posta ve teknik destek bu bedele dahildir.
           </p>
@@ -572,18 +675,18 @@ export function AvukatSiteleriPage() {
               <li
                 key={pkg.name}
                 className={cn(
-                  'relative flex h-full flex-col rounded-2xl border bg-white p-5 shadow-sm',
-                  pkg.badge ? 'border-emerald-300 ring-1 ring-emerald-200' : 'border-slate-200',
+                  'relative flex h-full flex-col rounded-xl border bg-white p-6',
+                  pkg.badge ? 'border-[#3B82F6] ring-1 ring-[#3B82F6]/40' : 'border-slate-200',
                 )}
               >
                 {pkg.badge ? (
-                  <span className="absolute -top-2.5 right-4 rounded-full bg-emerald-700 px-2.5 py-0.5 text-[11px] font-semibold text-white">
+                  <span className="absolute -top-3 right-4 rounded-md bg-[#1E3A8A] px-2.5 py-1 text-[11px] font-bold text-white">
                     {pkg.badge}
                   </span>
                 ) : null}
-                <h3 className="text-lg font-semibold text-slate-950">{pkg.name}</h3>
+                <h3 className="text-xl font-extrabold text-slate-950">{pkg.name}</h3>
                 <p className="mt-1 text-sm text-slate-600">{pkg.forWhom}</p>
-                <p className="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-600">{pkg.priceNote}</p>
+                <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-600">{pkg.priceNote}</p>
                 <ul className="mt-4 flex-1 space-y-2">
                   {pkg.items.map((item) => (
                     <li key={item} className="flex gap-2 text-sm text-slate-700">
@@ -595,7 +698,7 @@ export function AvukatSiteleriPage() {
                 {pkg.cta === 'tel' ? (
                   <a
                     href={AVUKAT_PHONE_HREF}
-                    className="mt-5 inline-flex items-center justify-center gap-2 rounded-lg bg-[#123b63] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0e2f50]"
+                    className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#1E3A8A] px-4 text-sm font-bold text-white hover:bg-[#1E40AF]"
                   >
                     <Phone className="h-4 w-4" aria-hidden />
                     Bizimle iletişime geçin
@@ -603,7 +706,7 @@ export function AvukatSiteleriPage() {
                 ) : (
                   <Link
                     to={AVUKAT_QUOTE_HREF}
-                    className="mt-5 inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-bold text-slate-900 hover:bg-slate-50"
                   >
                     Teklif isteyin
                   </Link>
@@ -614,12 +717,12 @@ export function AvukatSiteleriPage() {
         </div>
       </section>
 
-      <section className="border-b border-slate-200 bg-slate-50 py-14" aria-labelledby="avukat-karsilastir">
+      <section className="pt-20 sm:pt-28" aria-labelledby="avukat-karsilastir">
         <div className={SHELL}>
-          <h2 id="avukat-karsilastir" className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+          <h2 id="avukat-karsilastir" className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
             Tüm özellikleri karşılaştırın
           </h2>
-          <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="relative mt-8 overflow-x-auto rounded-xl border border-slate-200 bg-white">
             <table className="min-w-[640px] w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-sm">
@@ -630,7 +733,7 @@ export function AvukatSiteleriPage() {
                 </tr>
               </thead>
               <tbody>
-                {COMPARE_ROWS.map((group) => (
+                {(showAllRows ? COMPARE_ROWS : COMPARE_ROWS.slice(0, 2)).map((group) => (
                   <Fragment key={group.group}>
                     <tr className="bg-slate-50/80">
                       <td colSpan={4} className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -655,6 +758,20 @@ export function AvukatSiteleriPage() {
                 ))}
               </tbody>
             </table>
+            {showAllRows ? null : (
+              <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white to-transparent" />
+            )}
+          </div>
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setShowAllRows((v) => !v)}
+              aria-expanded={showAllRows}
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-sm font-bold text-slate-900 hover:bg-slate-50"
+            >
+              {showAllRows ? 'Daha az göster' : `Tüm özellikleri göster (${COMPARE_ROWS.reduce((n, g) => n + g.rows.length, 0)} özellik)`}
+              <ChevronDown className={cn('h-4 w-4 transition', showAllRows && 'rotate-180')} aria-hidden />
+            </button>
           </div>
           <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600">
             Fiyat bilgisi için bizi arayın. Kurulum bedeli tek seferliktir; siteniz, yıllık hizmet bedeli ödendiği sürece
@@ -663,12 +780,12 @@ export function AvukatSiteleriPage() {
         </div>
       </section>
 
-      <section className="border-b border-slate-200 py-14" aria-labelledby="avukat-nasil">
+      <section className="pt-20 sm:pt-28" aria-labelledby="avukat-nasil">
         <div className={SHELL}>
-          <h2 id="avukat-nasil" className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
+          <h2 id="avukat-nasil" className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
             Nasıl çalışır?
           </h2>
-          <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {[
               {
                 n: '1',
@@ -691,40 +808,43 @@ export function AvukatSiteleriPage() {
                 text: 'Hazır olduğunuzda tek tuşla yayınlayın.',
               },
             ].map((step) => (
-              <li key={step.n} className="rounded-2xl border border-slate-200 bg-white p-5">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-sm font-bold text-emerald-800">
-                  {step.n}
+              <li key={step.n} className="flex flex-col gap-2.5 rounded-xl border border-slate-200 bg-slate-50 p-6">
+                <span aria-hidden className="text-4xl font-extrabold tracking-tight text-slate-300">
+                  {step.n.padStart(2, '0')}
                 </span>
-                <h3 className="mt-3 text-base font-semibold text-slate-950">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">{step.text}</p>
+                <h3 className="text-xl font-extrabold text-slate-950">{step.title}</h3>
+                <p className="text-[15px] leading-relaxed text-slate-600">{step.text}</p>
               </li>
             ))}
           </ol>
         </div>
       </section>
 
-      <section className="border-b border-slate-200 bg-slate-50 py-14" aria-labelledby="avukat-sss">
-        <div className={`${SHELL} max-w-3xl`}>
-          <h2 id="avukat-sss" className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
-            Sık sorulan sorular
-          </h2>
-          <div className="mt-6 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
+      <section className="pt-20 sm:pt-28" aria-labelledby="avukat-sss">
+        <div className={`${SHELL} flex flex-col gap-8 lg:flex-row lg:gap-14`}>
+          <div className="lg:w-1/3 lg:shrink-0">
+            <h2 id="avukat-sss" className="text-3xl font-extrabold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
+              Sık sorulan sorular
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-slate-600 sm:text-lg">
+              Başka bir sorunuz varsa WhatsApp'tan yazabilir ya da bizi arayabilirsiniz.
+            </p>
+          </div>
+          <div className="flex-1 border-t border-slate-200">
             {FAQ.map((item) => {
               const open = openFaq === item.q
               return (
-                <div key={item.q}>
+                <div key={item.q} className="border-b border-slate-200 py-5">
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left text-sm font-semibold text-slate-900"
+                    className="flex w-full items-center justify-between gap-4 text-left text-[17px] font-bold text-slate-950"
                     aria-expanded={open}
                     onClick={() => setOpenFaq(open ? null : item.q)}
                   >
                     {item.q}
-                    <span aria-hidden className="text-slate-400">
-                      {open ? '−' : '+'}
-                    </span>
+                    <ChevronDown className={cn('h-5 w-5 shrink-0 text-slate-400 transition', open && 'rotate-180')} aria-hidden />
                   </button>
-                  {open ? <p className="px-4 pb-4 text-sm leading-relaxed text-slate-600">{item.a}</p> : null}
+                  {open ? <p className="mt-3 text-[15px] leading-relaxed text-slate-600">{item.a}</p> : null}
                 </div>
               )
             })}
@@ -732,20 +852,23 @@ export function AvukatSiteleriPage() {
         </div>
       </section>
 
-      <section className="bg-[#123b63] py-14 text-white" aria-labelledby="avukat-cta">
-        <div className={SHELL}>
-          <h2 id="avukat-cta" className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Büronuzun sitesini birlikte planlayalım
-          </h2>
-          <p className="mt-3 text-sm text-slate-200">Hafta içi 09.00–18.00 arasında bize ulaşın.</p>
-          <div className="mt-6">
+      <section className={`${SHELL} py-20 sm:py-28`} aria-labelledby="avukat-cta">
+        <div className="flex flex-col gap-6 rounded-xl bg-gradient-to-br from-[#16A34A] to-[#1D6FD8] px-6 py-10 text-white sm:px-12 sm:py-14 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl">
+            <h2 id="avukat-cta" className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Büronuzun sitesini birlikte planlayalım
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-white/85 sm:text-lg">
+              Hafta içi 09.00–18.00 arasında bize ulaşın ya da{' '}
+              <Link to={AVUKAT_QUOTE_HREF} className="font-bold underline underline-offset-4">
+                teklif isteyin
+              </Link>
+              .
+            </p>
+          </div>
+          <div className="lg:shrink-0">
             <ContactButtons light />
           </div>
-          <p className="mt-5">
-            <Link to={AVUKAT_QUOTE_HREF} className="text-sm font-semibold text-emerald-200 underline-offset-4 hover:underline">
-              Teklif isteyin
-            </Link>
-          </p>
         </div>
       </section>
 

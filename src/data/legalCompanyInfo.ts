@@ -27,8 +27,10 @@ export const defaultLegalCompanyInfo: LegalCompanyInfo = {
   companyName: 'Woontegra Teknoloji Yazılım ve Dijital Hizmetler Ltd. Şti.',
   brandName: 'Woontegra',
   email: 'info@woontegra.com',
-  phone: '+90 532 317 17 55',
-  whatsapp: '+90 532 317 17 55',
+  /** Şirket telefonu (sabit hat). */
+  phone: '0252 606 06 50',
+  /** WhatsApp hattı. */
+  whatsapp: '0532 317 17 55',
   website: 'https://www.woontegra.com',
   address: 'İskele Mahallesi Bademli Caddesi 43/6 Datça-Muğla',
   city: 'Muğla',
@@ -68,7 +70,7 @@ export function mergeLegalCompanyInfo(partial?: Partial<LegalCompanyInfo> | null
     brandName: pickString(partial.brandName, defaultLegalCompanyInfo.brandName),
     email: pickString(partial.email, defaultLegalCompanyInfo.email),
     phone: resolveLegalPhone(partial.phone),
-    whatsapp: pickString(partial.whatsapp, resolveLegalPhone(partial.phone)),
+    whatsapp: pickString(partial.whatsapp, defaultLegalCompanyInfo.whatsapp),
     website: pickString(partial.website, defaultLegalCompanyInfo.website),
     address: pickString(partial.address, defaultLegalCompanyInfo.address),
     city: pickString(partial.city, defaultLegalCompanyInfo.city),
