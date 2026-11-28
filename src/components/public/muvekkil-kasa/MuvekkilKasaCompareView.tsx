@@ -6,7 +6,6 @@ import {
   useMkComparePageContextOptional,
 } from '@/components/public/muvekkil-kasa/MkComparePageProvider'
 import { MK_COMPARE_DETAILS_ID, MK_COMPARE_SHELL } from '@/components/public/muvekkil-kasa/comparePageUtils'
-import { MuvekkilKasaMobileAppBadges } from '@/components/public/muvekkil-kasa/MuvekkilKasaMobileAppBadges'
 
 /**
  * Yedek görünüm: Page Builder içeriği gelene kadar (ve API'ye ulaşılamazsa) gösterilir.
@@ -26,17 +25,14 @@ function ComparePageBody() {
         ]}
         intro={
           <>
-            <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-100 backdrop-blur">
-              SaaS / Web Tabanlı
-            </span>
-            <h1 className="mt-5 max-w-4xl text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl lg:leading-[1.04]">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-300 sm:text-xs">SaaS / Web Tabanlı</p>
+            <h1 className="mt-2 max-w-4xl text-[28px] font-extrabold leading-tight tracking-tight text-white sm:mt-4 sm:text-5xl lg:leading-[1.04]">
               Müvekkil Kasa Defteri: Web Tabanlı Büro Kasası
             </h1>
-            <p className="mt-4 max-w-3xl text-base leading-relaxed text-slate-300 sm:text-lg">
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/75 sm:mt-4 sm:text-lg">
               Kurulum gerektirmeden tarayıcıdan erişilen, çok kullanıcılı ve WhatsApp destekli müvekkil kasa takibi. 7
               gün ücretsiz deneyin.
             </p>
-            <MuvekkilKasaMobileAppBadges />
           </>
         }
       />

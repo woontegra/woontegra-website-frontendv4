@@ -21,7 +21,6 @@ import { HeroCarouselSection } from '@/builder/render/blocks/HeroCarouselSection
 import { isRemovedServicePublicLink } from '@/lib/serviceSlugs'
 import { MuvekkilKasaProductHero } from '@/components/public/muvekkil-kasa/MuvekkilKasaProductHero'
 import { BhModuleHeroBreadcrumb } from '@/components/public/product/BhModuleHeroBreadcrumb'
-import { MuvekkilKasaMobileAppBadges } from '@/components/public/muvekkil-kasa/MuvekkilKasaMobileAppBadges'
 
 function heroButtonClass(variant: BlockButton['variant'], outlineClass: string, primaryClass: string) {
   return variant === 'outline' ? outlineClass : primaryClass
@@ -754,21 +753,19 @@ function MkCompareHeroLayout({
     <>
       {visibility.showBadge !== false && settings.badge?.trim() ? (
         <BuilderField path="badge" label="Rozet" type="text" className="inline-block">
-          <span className="inline-flex rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-100 backdrop-blur">
-            {settings.badge}
-          </span>
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-300 sm:text-xs">{settings.badge}</p>
         </BuilderField>
       ) : null}
       {showTitle ? (
-        <BuilderField path="title" label="Başlık" type="text" className="mt-5 block w-fit max-w-full">
-          <h1 className="max-w-4xl text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl lg:leading-[1.04]">
+        <BuilderField path="title" label="Başlık" type="text" className="block w-fit max-w-full">
+          <h1 className="mt-2 max-w-4xl text-[28px] sm:mt-4 font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:leading-[1.04]">
             {hero.title}
           </h1>
         </BuilderField>
       ) : null}
       {showDescription ? (
-        <BuilderField path="description" label="Açıklama" type="text" className="mt-4 block w-fit max-w-3xl">
-          <p className="text-base leading-relaxed text-slate-300 sm:text-lg">{hero.description}</p>
+        <BuilderField path="description" label="Açıklama" type="text" className="block w-fit max-w-3xl">
+          <p className="mt-2 text-sm leading-relaxed text-white/75 sm:mt-4 sm:text-lg">{hero.description}</p>
         </BuilderField>
       ) : null}
       {showButtons ? (
@@ -793,7 +790,6 @@ function MkCompareHeroLayout({
           ))}
         </div>
       ) : null}
-      <MuvekkilKasaMobileAppBadges />
     </>
   )
 

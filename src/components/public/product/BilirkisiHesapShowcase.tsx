@@ -67,21 +67,31 @@ export function BhHeroFacts() {
 }
 
 /** Mağaza rozetleri. `dark`: lacivert zemin üzerinde (ürün üst bölümü). */
-export function BhStoreBadges({ dark = false }: { dark?: boolean }) {
+export function BhStoreBadges({
+  dark = false,
+  googlePlayUrl = BH_GOOGLE_PLAY_URL,
+  appStoreUrl = BH_APP_STORE_URL,
+  appName = 'Bilirkişi Hesap',
+}: {
+  dark?: boolean
+  googlePlayUrl?: string
+  appStoreUrl?: string
+  appName?: string
+}) {
   const soonClass = dark
     ? 'border border-dashed border-white/30 bg-white/[0.06] text-white/75'
     : 'border border-dashed border-slate-400 text-slate-600'
   return (
     <div className="flex flex-wrap gap-3">
       <a
-        href={BH_GOOGLE_PLAY_URL}
+        href={googlePlayUrl}
         target="_blank"
         rel="noopener noreferrer"
         className={
           'inline-flex h-[52px] items-center gap-2.5 rounded-lg bg-black px-[18px] text-white transition hover:bg-slate-900' +
           (dark ? ' border border-white/25' : '')
         }
-        aria-label="Bilirkişi Hesap uygulamasını Google Play'den indirin"
+        aria-label={`${appName} uygulamasını Google Play'den indirin`}
       >
         <GooglePlayIcon />
         <span className="flex flex-col leading-tight">
@@ -89,16 +99,16 @@ export function BhStoreBadges({ dark = false }: { dark?: boolean }) {
           <span className="text-base font-bold">Google Play</span>
         </span>
       </a>
-      {BH_APP_STORE_URL ? (
+      {appStoreUrl ? (
         <a
-          href={BH_APP_STORE_URL}
+          href={appStoreUrl}
           target="_blank"
           rel="noopener noreferrer"
           className={
             'inline-flex h-[52px] items-center gap-2.5 rounded-lg bg-black px-[18px] text-white transition hover:bg-slate-900' +
             (dark ? ' border border-white/25' : '')
           }
-          aria-label="Bilirkişi Hesap uygulamasını App Store'dan indirin"
+          aria-label={`${appName} uygulamasını App Store'dan indirin`}
         >
           <AppleIcon />
           <span className="flex flex-col leading-tight">
@@ -416,7 +426,7 @@ export function BilirkisiHesapShowcase() {
  * Solda girilen bilgiler → ortada Bilirkişi Hesap → sağda kaydetme seçenekleri.
  * Çizgilerdeki akış ve noktalar CSS/SVG ile hareket eder; "hareketi azalt" tercihinde durur.
  * ------------------------------------------------------------------------- */
-type FlowNode = { label: string; Icon: LucideIcon; y: number }
+export type FlowNode = { label: string; Icon: LucideIcon; y: number }
 
 const FLOW_INPUTS: FlowNode[] = [
   { label: 'İşe giriş ve çıkış tarihleri', Icon: CalendarDays, y: 52 },
@@ -433,6 +443,12 @@ const FLOW_OUTPUTS: FlowNode[] = [
   { label: 'Mobil uygulama', Icon: Smartphone, y: 308 },
 ]
 
+/** Kutuları şemanın dikey ortasına göre dizer (masaüstü şeması için y değerleri). */
+export function layoutFlowNodes(items: { label: string; Icon: LucideIcon }[]): FlowNode[] {
+  const step = items.length <= 4 ? 80 : 68
+  return items.map((item, i) => ({ ...item, y: 172 + (i - (items.length - 1) / 2) * step }))
+}
+
 const VB_W = 840
 const VB_H = 344
 const CORE = { x: 440, y: 172 }
@@ -447,12 +463,13 @@ function outputPath(y: number) {
   return `M ${CORE.x + 78} ${CORE.y} C ${CORE.x + 140} ${CORE.y}, ${OUT_X - 60} ${y}, ${OUT_X} ${y}`
 }
 
-function FlowChip({ node, align }: { node: FlowNode; align: 'left' | 'right' }) {
+function FlowChip({ node, align, chipBg }: { node: FlowNode; align: 'left' | 'right'; chipBg: string }) {
   const { Icon } = node
   return (
     <div
-      className="absolute flex -translate-y-1/2 items-center gap-2 rounded-lg border border-white/15 bg-[#13355e]/90 py-1.5 pl-1.5 pr-2.5 text-[13px] font-semibold text-white shadow-[0_12px_24px_-16px_rgba(0,0,0,0.8)] backdrop-blur"
+      className="absolute flex -translate-y-1/2 items-center gap-2 rounded-lg border border-white/15 py-1.5 pl-1.5 pr-2.5 text-[13px] font-semibold text-white shadow-[0_12px_24px_-16px_rgba(0,0,0,0.8)] backdrop-blur"
       style={{
+        backgroundColor: chipBg,
         top: `${(node.y / VB_H) * 100}%`,
         ...(align === 'left'
           ? { right: `${100 - (IN_X / VB_W) * 100}%` }
@@ -467,9 +484,29 @@ function FlowChip({ node, align }: { node: FlowNode; align: 'left' | 'right' }) 
   )
 }
 
-export function BhFlowDiagram() {
+export type FlowDiagramProps = {
+  inputs?: FlowNode[]
+  outputs?: FlowNode[]
+  coreTitle?: string
+  coreSub?: string
+  CoreIcon?: LucideIcon
+  label?: string
+  /** Kutuların zemin rengi (üst bölümün rengine uygun koyu ton). */
+  chipBg?: string
+}
+
+/** Ürün üst bölümündeki hareketli akış şeması. Varsayılanlar Bilirkişi Hesap içindir. */
+export function BhFlowDiagram({
+  inputs = FLOW_INPUTS,
+  outputs = FLOW_OUTPUTS,
+  coreTitle = 'Bilirkişi Hesap',
+  coreSub = '50+ hesaplama modülü',
+  CoreIcon = Calculator,
+  label = 'Bilgileri girin, Bilirkişi Hesap hesaplasın, sonucu istediğiniz biçimde kaydedin',
+  chipBg = '#13355e',
+}: FlowDiagramProps = {}) {
   return (
-    <figure className="mt-4 lg:mt-8" aria-label="Bilgileri girin, Bilirkişi Hesap hesaplasın, sonucu istediğiniz biçimde kaydedin">
+    <figure className="mt-4 lg:mt-8" aria-label={label}>
       {/* Masaüstü: akış şeması */}
       <div className="relative hidden aspect-[840/344] w-full max-w-[840px] lg:block">
         <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="absolute inset-0 h-full w-full" aria-hidden>
@@ -479,35 +516,35 @@ export function BhFlowDiagram() {
               <stop offset="100%" stopColor="#34D399" />
             </linearGradient>
           </defs>
-          {FLOW_INPUTS.map((n) => (
+          {inputs.map((n) => (
             <g key={n.label}>
               <path d={inputPath(n.y)} fill="none" stroke="#60A5FA" strokeOpacity="0.18" strokeWidth="2" />
               <path d={inputPath(n.y)} fill="none" stroke="#60A5FA" strokeOpacity="0.75" strokeWidth="2" className="bh-flow-line" />
             </g>
           ))}
-          {FLOW_OUTPUTS.map((n) => (
+          {outputs.map((n) => (
             <g key={n.label}>
               <path d={outputPath(n.y)} fill="none" stroke="#34D399" strokeOpacity="0.18" strokeWidth="2" />
               <path d={outputPath(n.y)} fill="none" stroke="url(#bh-flow-out)" strokeOpacity="0.85" strokeWidth="2" className="bh-flow-line" />
             </g>
           ))}
-          {FLOW_INPUTS.map((n, i) => (
+          {inputs.map((n, i) => (
             <circle key={`dot-in-${n.label}`} r="4" fill="#93C5FD" className="bh-flow-dot">
-              <animateMotion dur="2.4s" begin={`${i * 0.45}s`} repeatCount="indefinite" path={inputPath(n.y)} />
+              <animateMotion dur="2.4s" begin={`-${i * 0.45}s`} repeatCount="indefinite" path={inputPath(n.y)} />
             </circle>
           ))}
-          {FLOW_OUTPUTS.map((n, i) => (
+          {outputs.map((n, i) => (
             <circle key={`dot-out-${n.label}`} r="4" fill="#6EE7B7" className="bh-flow-dot">
-              <animateMotion dur="2.4s" begin={`${1.2 + i * 0.4}s`} repeatCount="indefinite" path={outputPath(n.y)} />
+              <animateMotion dur="2.4s" begin={`-${1.2 + i * 0.4}s`} repeatCount="indefinite" path={outputPath(n.y)} />
             </circle>
           ))}
         </svg>
 
-        {FLOW_INPUTS.map((n) => (
-          <FlowChip key={n.label} node={n} align="left" />
+        {inputs.map((n) => (
+          <FlowChip key={n.label} node={n} align="left" chipBg={chipBg} />
         ))}
-        {FLOW_OUTPUTS.map((n) => (
-          <FlowChip key={n.label} node={n} align="right" />
+        {outputs.map((n) => (
+          <FlowChip key={n.label} node={n} align="right" chipBg={chipBg} />
         ))}
 
         <div
@@ -518,16 +555,16 @@ export function BhFlowDiagram() {
           <span aria-hidden className="bh-core-ring absolute inset-0 rounded-xl border-2 border-emerald-400/50 [animation-delay:1.2s]" />
           <div className="relative flex h-32 w-[150px] flex-col items-center justify-center gap-1.5 rounded-xl bg-gradient-to-br from-[#16A34A] to-[#1D6FD8] text-white shadow-[0_30px_60px_-20px_rgba(29,111,216,0.7)]">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15">
-              <Calculator className="h-5 w-5" aria-hidden />
+              <CoreIcon className="h-5 w-5" aria-hidden />
             </span>
-            <span className="text-base font-extrabold">Bilirkişi Hesap</span>
-            <span className="text-xs font-semibold text-white/80">50+ hesaplama modülü</span>
+            <span className="text-base font-extrabold">{coreTitle}</span>
+            <span className="text-xs font-semibold text-white/80">{coreSub}</span>
           </div>
         </div>
       </div>
 
       {/* Telefon ve tablet: dikey akış, her kutuya ayrı çizgi */}
-      <BhFlowMobile />
+      <BhFlowMobile inputs={inputs} outputs={outputs} coreTitle={coreTitle} coreSub={coreSub} CoreIcon={CoreIcon} chipBg={chipBg} />
     </figure>
   )
 }
@@ -536,7 +573,14 @@ type Box = { l: number; r: number; t: number; b: number; cx: number; cy: number 
 type MobilePaths = { ins: string[]; outs: string[] }
 
 /** Telefon ve tablet: masaüstündeki yatay şemanın küçültülmüş hali; her kutuya ayrı çizgi. */
-function BhFlowMobile() {
+function BhFlowMobile({
+  inputs,
+  outputs,
+  coreTitle,
+  coreSub,
+  CoreIcon,
+  chipBg,
+}: Required<Omit<FlowDiagramProps, 'label'>>) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const coreRef = useRef<HTMLDivElement>(null)
   const inRefs = useRef<(HTMLLIElement | null)[]>([])
@@ -587,7 +631,7 @@ function BhFlowMobile() {
   }, [])
 
   const chipClass =
-    'flex items-center gap-1.5 rounded-md border border-white/15 bg-[#143a66] px-2 py-1.5 text-[11px] font-semibold leading-tight text-white'
+    'flex items-center gap-1.5 rounded-md border border-white/15 px-2 py-1.5 text-[11px] font-semibold leading-tight text-white'
 
   return (
     <div
@@ -601,7 +645,7 @@ function BhFlowMobile() {
               <path d={d} fill="none" stroke="#60A5FA" strokeOpacity="0.18" strokeWidth="1.5" />
               <path d={d} fill="none" stroke="#60A5FA" strokeOpacity="0.75" strokeWidth="1.5" className="bh-flow-line" />
               <circle r="2.5" fill="#93C5FD" className="bh-flow-dot">
-                <animateMotion dur="2s" begin={`${i * 0.45}s`} repeatCount="indefinite" path={d} />
+                <animateMotion dur="2s" begin={`-${i * 0.45}s`} repeatCount="indefinite" path={d} />
               </circle>
             </g>
           ))}
@@ -610,7 +654,7 @@ function BhFlowMobile() {
               <path d={d} fill="none" stroke="#34D399" strokeOpacity="0.18" strokeWidth="1.5" />
               <path d={d} fill="none" stroke="#34D399" strokeOpacity="0.8" strokeWidth="1.5" className="bh-flow-line" />
               <circle r="2.5" fill="#6EE7B7" className="bh-flow-dot">
-                <animateMotion dur="2s" begin={`${1 + i * 0.4}s`} repeatCount="indefinite" path={d} />
+                <animateMotion dur="2s" begin={`-${1 + i * 0.4}s`} repeatCount="indefinite" path={d} />
               </circle>
             </g>
           ))}
@@ -618,13 +662,14 @@ function BhFlowMobile() {
       ) : null}
 
       <ul className="relative flex flex-col items-end gap-2">
-        {FLOW_INPUTS.map(({ label, Icon }, i) => (
+        {inputs.map(({ label, Icon }, i) => (
           <li
             key={label}
             ref={(el) => {
               inRefs.current[i] = el
             }}
             className={chipClass}
+            style={{ backgroundColor: chipBg }}
           >
             <Icon className="h-3.5 w-3.5 shrink-0 text-sky-300" aria-hidden />
             <span>{label}</span>
@@ -636,20 +681,21 @@ function BhFlowMobile() {
         <span aria-hidden className="bh-core-ring absolute inset-0 rounded-lg border-2 border-sky-400/60" />
         <span aria-hidden className="bh-core-ring absolute inset-0 rounded-lg border-2 border-emerald-400/50 [animation-delay:1.2s]" />
         <div className="relative flex w-[78px] flex-col items-center gap-1 rounded-lg bg-gradient-to-br from-[#16A34A] to-[#1D6FD8] px-1.5 py-3 text-center text-white shadow-[0_20px_40px_-18px_rgba(29,111,216,0.7)]">
-          <Calculator className="h-5 w-5" aria-hidden />
-          <span className="text-[12px] font-extrabold leading-tight">Bilirkişi Hesap</span>
-          <span className="text-[9px] font-semibold leading-tight text-white/80">50+ hesaplama modülü</span>
+          <CoreIcon className="h-5 w-5" aria-hidden />
+          <span className="text-[12px] font-extrabold leading-tight">{coreTitle}</span>
+          <span className="text-[9px] font-semibold leading-tight text-white/80">{coreSub}</span>
         </div>
       </div>
 
       <ul className="relative flex flex-col items-start gap-2">
-        {FLOW_OUTPUTS.map(({ label, Icon }, i) => (
+        {outputs.map(({ label, Icon }, i) => (
           <li
             key={label}
             ref={(el) => {
               outRefs.current[i] = el
             }}
             className={chipClass}
+            style={{ backgroundColor: chipBg }}
           >
             <Icon className="h-3.5 w-3.5 shrink-0 text-emerald-300" aria-hidden />
             <span>{label}</span>
